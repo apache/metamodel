@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faqs xmlns="http://maven.apache.org/FML/1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
+	title="What's new in MetaModel 1.7" toplink="false">
+	
+	<part id="features">
+		<title>New features</title>
+		
+		<faq id="column_name_line_numbers">
+			<question>Configuration of header (column name) line numbers</question>
+			<answer>
+				<p>When reading CSV files, fixed width files and Excel spreadsheets it is now possible to supply which line/row number to use for column headers.</p>
+				<p>Alternatively you can also specify to NOT interpret any lines as the header - in such a case columns will be named using an alphabetical approach like the headers of a spreadsheet: A, B, C... Z, AA, AB etc.</p>
+			</answer>
+		</faq>
+		
+		<faq id="excel_skipping_lines_and_columns">
+			<question>Configuration of line and column skipping in Excel</question>
+			<answer>
+				<p>In the Excel module configuration of automatic skipping of empty lines and columns have been made available. Previously the default strategy would always applied: Skip empty lines, not empty columns.</p>
+			</answer>
+		</faq>
+
+	</part>
+
+	<part id="api">
+		<title>Changes to the existing API</title>
+		
+		<faq id="strategy_pattern">
+			<question>Removal of IDataContextStrategy interface and strategy pattern</question>
+			<answer>
+				<p>From early on we've had a single DataContext implementation (the DefaultDataContext class) that took a strategy as a parameter. This led to design where it was very inconvenient to get access to datastore-specific features as well as to instantiate DataContexts without using the factory.</p>
+				<p>While you could argue that both these concerns are not main goals of MetaModel (actually quite the opposite), they are still sometimes nescesary for the expert users. For this reason we decided to remove the IDataContextStrategy interface and let all strategy implementations be actual DataContext implementations instead. The result is a more straight-forward class hierarchy which we think will make life easier for people new to MetaModel.</p>
+			</answer>
+		</faq>
+		
+		<faq id="poi_upgrade">
+			<question>Apache POI upgraded to 3.7</question>
+			<answer>
+				<p>Apache POI (used for Excel support in MetaModel) has been updated from version 3.6 to version 3.7.</p>
+			</answer>
+		</faq>
+		
+		<faq id="csv_line_inconsistency">
+			<question>Option to disable graceful handling of CSV line inconsistencies</question>
+			<answer>
+				<p>MetaModel has always had a feature to gracefully handle differences in line lengths for CSV files. Sometimes you want to be notified of such inconsistencies if your application should instead crash.</p>
+				<p>To accomodate this requirement we've added a "failOnInconsistentRowLength" property in the CsvConfiguration class. We've also supplied the special exception type "InconsistentRowLengthException" which will be thrown if the property is set to true and an inconsistency occurs.</p>
+			</answer>
+		</faq>
+		
+		<faq id="dataset_iterable">
+			<question>DataSet extends Iterable&lt;Row&gt;</question>
+			<answer>
+				<p>The DataSet interface now extends Iterable&lt;Row&gt;. Among other niceties this allows for usage of DataSets in for-each loops, like this:</p>
+				<div class="source">
+<pre>DataSet dataSet = ...;
+
+for (Row row : dataSet) {
+  ...
+}</pre>
+				</div>
+			</answer>
+		</faq>
+	</part>
+	
+	<part id="bugfixes">
+		<title>Bugfixes</title>
+		
+		<faq id="excel_file_handling">
+			<question>Unnescesary opening of file streams in Excel support</question>
+			<answer>
+				<p>In previous versions there was a minor bug pertaining to the file stream handing in the Excel module. For every read of an Excel spreadsheet there would be two open file input streams. Although not significant, this bug has been fixed.</p>
+			</answer>
+		</faq>
+	</part>
+</faqs>

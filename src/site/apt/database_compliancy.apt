@@ -1,0 +1,98 @@
+ ------
+ Database compliancy
+ ------
+
+Database compliancy
+
+ It is one of the important goals of MetaModel to be compliant with as many databases and datastores as possible! We ensure a broad compliance by several initiatives:
+
+ * A broad integration test suite.
+
+ * Extensive but fault-tolerant use of the Java DataBase Connectivity (JDBC) specification.
+
+ * Use of uniform SQL-99 compliant queries.
+ 
+Relational databases known to be working with MetaModel
+
+*----------------------+--------------------------+-------------------------------------------------------------------------------------------+-----------------+
+| <<Database>>         | <<Version>>              | <<JDBC driver>>                                                                           | <<Compliancy>>  |
+*----------------------+--------------------------+-------------------------------------------------------------------------------------------+-----------------+
+| MySQL                | 5+                       | {{{http://www.mysql.com/products/connector/j/}Connector/J}}                               | Fully compliant |
+*----------------------+--------------------------+-------------------------------------------------------------------------------------------+-----------------+
+| PostgreSQL           | 8+                       | {{{http://jdbc.postgresql.org/}PostgreSQL JDBC driver}}                                   | Fully compliant |
+*----------------------+--------------------------+-------------------------------------------------------------------------------------------+-----------------+
+| Oracle               | 10g                      | {{{http://www.oracle.com/technetwork/indexes/downloads/index.html}SQLJ/JDBC}}             | Fully compliant |
+*----------------------+--------------------------+-------------------------------------------------------------------------------------------+-----------------+
+| Apache Derby         | 10+                      | {{{http://db.apache.org/derby/derby_downloads.html#Latest+Official+Release}Derby driver}} | Fully compliant |
+*----------------------+--------------------------+-------------------------------------------------------------------------------------------+-----------------+
+| Firebird SQL         | 2.0+                     | {{{http://www.firebirdsql.org/index.php?op=files&id=jaybird}Jaybird driver}}              | Fully compliant |
+*----------------------+--------------------------+-------------------------------------------------------------------------------------------+-----------------+
+| Hsqldb/HyperSQL      | 1.8+                     | {{{http://sourceforge.net/project/showfiles.php?group_id=23316}Hsqldb driver}}            | Fully compliant |
+*----------------------+--------------------------+-------------------------------------------------------------------------------------------+-----------------+
+| H2                   | 1.2+                     | {{{http://www.h2database.com/html/download.html}H2 driver}}                               | Fully compliant |
+*----------------------+--------------------------+-------------------------------------------------------------------------------------------+-----------------+
+| SQLite               | 3.6.0+                   | {{{http://www.xerial.org/trac/Xerial/wiki/SQLiteJDBC}Xerial driver}}                      | Fully compliant |
+*----------------------+--------------------------+-------------------------------------------------------------------------------------------+-----------------+
+| Microsoft SQL Server | 2005 (+ possibly others) | {{{http://jtds.sourceforge.net/}JTDS driver}}                                             | Fully compliant |
+*----------------------+--------------------------+-------------------------------------------------------------------------------------------+-----------------+
+| Ingres               | -                        | {{{http://community.ingres.com/wiki/JDBC_Driver}Ingres JDBC driver}}                      | Fully compliant |
+*----------------------+--------------------------+-------------------------------------------------------------------------------------------+-----------------+
+
+Non-relational / NoSQL databases supported by MetaModel
+
+*----------------------+-----------------+
+| <<Database>>         | <<Compliancy>>  |
+*----------------------+-----------------+
+| MongoDB              | Fully compliant |
+*----------------------+-----------------+
+| CouchDB              | Fully compliant |
+*----------------------+-----------------+
+
+Business application supported (through system services) by MetaModel
+
+*----------------------+-----------------+
+| <<System>>           | <<Compliancy>>  |
+*----------------------+-----------------+
+| Salesforce.com       | Fully compliant |
+*----------------------+-----------------+
+| SugarCRM             | Fully compliant |
+*----------------------+-----------------+
+
+File data formats supported by MetaModel
+
+*-----------------------------+--------------------+-------------------+-----------------+
+| <<File format>>             | <<File extension>> | <<Version>>       | <<Compliancy>>  |
+*-----------------------------+--------------------+-------------------+-----------------+
+| Comma separated file        | .csv               | -                 | Fully compliant |
+*-----------------------------+--------------------+-------------------+-----------------+
+| Microsoft Excel spreadsheet | .xls               | Excel '97-2003    | Fully compliant |
+*-----------------------------+--------------------+-------------------+-----------------+
+|                             | .xlsx              | Excel 2007+       | Fully compliant |
+*-----------------------------+--------------------+-------------------+-----------------+
+| OpenOffice.org database     |	.odb               | OpenOffice 2.0+   | Fully compliant |
+*-----------------------------+--------------------+-------------------+-----------------+
+| XML file (SAX based)        | .xml               | -                 | Fully compliant |
+*-----------------------------+--------------------+-------------------+-----------------+
+| XML file (DOM based)        | .xml               | -                 | Experimental    |
+*-----------------------------+--------------------+-------------------+-----------------+
+| Microsoft Access database   | .mdb               | Access '97-2003   | Fully compliant |
+*-----------------------------+--------------------+-------------------+-----------------+
+|                             | .accdb             | Access 2007+      | Fully compliant |
+*-----------------------------+--------------------+-------------------+-----------------+
+| dBase database              | .dbf               | -                 | Fully compliant |
+*-----------------------------+--------------------+-------------------+-----------------+
+
+Java object datastores (aka POJO datastores)
+
+ MetaModel also supports creating datastores built on top of plain Java objects. Either by
+ using a collection of Java bean objects (with getters and setters) or by using
+ collections of Maps or arrays. In the case of using collections of arrays, you will need
+ to manually appoint column names to each index in the arrays.
+
+Composite datastores
+
+ MetaModel supports an advanced feature called composite datastores. In short it means that it's
+ possible to access and query several datastores as if they where one. This involves transparent
+ client-side joining, filtering, grouping etc. Composite datastores are typically not as performant
+ in terms of querying but provides for a convenient way to combine data that is otherwise inherently
+ separated from each other.

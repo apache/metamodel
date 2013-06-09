@@ -1,0 +1,83 @@
+ ------
+ Schema and table semantics
+ ------
+
+Schema and table semantics
+
+ Since the datastore types that MetaModel support are widely different, one might question "what does a schema or a table mean?" for eg. Excel spreadsheets, CSV files etc.
+ 
+ On this page we will answer such questions. In the table below there's a list of MetaModel modules and an explanation of the semantics of schemas and tables.
+ 
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+| <<Module>>           | <<Schema>>                             | <<Table>>                                                      |
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+| JDBC                 | A database schema, as defined by JDBC. | A database TABLE, VIEW or other tabular structure in a schema. |
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+| OpenOffice           | A database schema, as defined by JDBC. | A database TABLE, VIEW or other tabular structure in a schema. |
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+| CSV                  | A handle to the CSV file. If the file  | The actual file structure, based on the column name line.      |
+|                      | does not exist, schema will be empty.  |                                                                |
+|                      | Always has default schema and virtual  |                                                                |
+|                      | information schema.                    |                                                                |
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+| Excel                | A handle to the Excel spreadsheet. If  | A sheet in the spreadsheet                                     |
+|                      | the file does not exist, schema will   |                                                                |
+|                      | be empty.                              |                                                                |
+|                      | Always has default schema and virtual  |                                                                |
+|                      | information schema.                    |                                                                |
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+| Fixed width          | A handle to the Fixed value width      | The actual file structure, based on the column name line.      |
+|                      | file.                                  |                                                                |
+|                      | Always has default schema and virtual  |                                                                |
+|                      | information schema.                    |                                                                |
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+| Access               | A handle to the Access file.           | The tables in the Access database file.                        |
+|                      | Always has default schema and virtual  |                                                                |
+|                      | information schema.                    |                                                                |
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+| dBase                | A handle to the dBase file.            | The tables in the dBase database file.                         |
+|                      | Always has default schema and virtual  |                                                                |
+|                      | information schema.                    |                                                                |
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+| XML (SAX)            | A handle to the XML file.              | A certain position in the XML tree, defined by a user's xpath  |
+|                      | Always has default schema and virtual  | expression. Each table also has xpath expressions for each     |
+|                      | information schema.                    | column, which define the values of the rows in a table.        |
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+| XML (DOM)            | A handle to the XML file.              | All tables are virtual representations of recurring            |
+|                      | Always has default schema and virtual  | combinations of XML elements. The actual generation of tables  |
+|                      | information schema.                    | depend on whether you perform manual or automatic "flattening" |
+|                      |                                        | (denormalization) of tables                                    |
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+| MongoDB              | A MongoDB database.                    | A MongoDB collection with a virtual table model, which         |
+|                      |                                        | represent the properties of the documents in the collection.   |
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+| Salesforce.com       | A handle to the web services           | A type of Salesforce.com SObject.                              |
+|                      | of Salesforce                          |                                                                |
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+| SugarCRM             | A handle to the web services           | A SugarCRM 'module'.                                           |
+|                      | of SugarCRM                            |                                                                |
+*----------------------+----------------------------------------+----------------------------------------------------------------+
+
+Semantics of "Create table"
+
+ In addition to understanding "what is a table?" it is also useful to know what it
+ means to "create" a table, as it is facilitated by MetaModel 2.0 and onwards.
+ 
+*----------------------+-------------------------------------------------------+
+| <<Module>>           | <<Create table semantics>>                            |
+*----------------------+-------------------------------------------------------+
+| JDBC                 | Issue a CREATE TABLE statement to the database.       |
+*----------------------+-------------------------------------------------------+
+| CSV                  | Create or overwrite the CSV file with a (new) table   | 
+|                      | structure. If multiple files should be created, then  |
+|                      | create a new CsvDataContext and issue the createTable |
+|                      | operation there.                                      |
+*----------------------+-------------------------------------------------------+
+| Excel                | Creates a new sheet in the Excel spreadsheet.         |
+*----------------------+-------------------------------------------------------+
+| MongoDB              | Creates a new collection in the MongoDB database.     |
+*----------------------+-------------------------------------------------------+
+| CouchDB              | Creates a new CouchDB database.                       |
+*----------------------+-------------------------------------------------------+
+| POJO (Java objects)  | Creates a new collection of Java objects (Map based). |
+*----------------------+-------------------------------------------------------+

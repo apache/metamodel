@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dependencies>
+	<dependency>
+		<groupId>joda-time</groupId>
+		<artifactId>joda-time</artifactId>
+		<version>1.5.2</version>
+		<scope>compile</scope>
+	</dependency>
+	<dependency>
+		<groupId>commons-math</groupId>
+		<artifactId>commons-math</artifactId>
+		<version>1.1</version>
+	</dependency>
+	<dependency>
+		<groupId>commons-lang</groupId>
+		<artifactId>commons-lang</artifactId>
+		<version>2.4</version>
+	</dependency>
+		<!-- OpenCSV can be omitted if CSV file support is not essential -->
+	<dependency>
+		<groupId>net.sf.opencsv</groupId>
+		<artifactId>opencsv</artifactId>
+		<version>1.8</version>
+	</dependency>
+	<!--
+		Apache POI can be omitted if Excel spreadsheet support is not
+		essential
+	-->
+	<dependency>
+		<groupId>org.apache.poi</groupId>
+		<artifactId>poi</artifactId>
+		<version>3.0.2-FINAL</version>
+	</dependency>
+	<!--
+		HSQLDB can be omitted if OpenOffice.org database file support is not
+		essential
+	-->
+	<dependency>
+		<groupId>hsqldb</groupId>
+		<artifactId>hsqldb</artifactId>
+		<version>1.8.0.7</version>
+	</dependency>
+	<dependency>
+		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<version>3.8.2</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.easymock</groupId>
+		<artifactId>easymock</artifactId>
+		<version>2.3</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.derby</groupId>
+		<artifactId>derby</artifactId>
+		<version>10.3.1.4</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>postgresql</groupId>
+		<artifactId>postgresql</artifactId>
+		<version>8.3-603.jdbc3</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>mysql</groupId>
+		<artifactId>mysql-connector-java</artifactId>
+		<version>5.1.6</version>
+		<scope>test</scope>
+	</dependency>
+</dependencies>

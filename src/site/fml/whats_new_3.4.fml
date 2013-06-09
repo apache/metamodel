@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faqs xmlns="http://maven.apache.org/FML/1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
+	title="What's new in MetaModel 3.4" toplink="false">
+
+	<part id="features">
+		<title>New features</title>
+		
+		<faq id="null_interpretation">
+			<question>Clear interpretation of NULL</question>
+			<answer>
+				<p>
+					We've made the interpretation of NULL consistent across MetaModel modules, in spite the fact 
+					that it is not consistent across all backing datastores. This means that now you can safely 
+					rely on MetaModel to adapt queries so that NULL values are always interpreted like they are 
+					in Java and most other programming languages. This also means that the SQL way of interpreting 
+					NULL is being handled by MetaModel, allowing you to not have to cross paradigms or port different 
+					queries to different datastores.
+				</p>
+			</answer>
+		</faq>
+		
+		<faq id="simple_update_api">
+			<question>Simple update API</question>
+			<answer>
+				<p>
+					To make it even easier to perform updates on MetaModel datastores, we've added a number of "simple update" classes that you can pass along directly to the executeUpdate method of an updateable DataContext.
+				</p>
+				<ul>
+					<li>new InsertInto(..)</li>
+					<li>new Update(..)</li>
+					<li>new DeleteFrom(..)</li>
+					<li>new CreateTable(..)</li>
+					<li>new DropTable(..)</li>
+				</ul>
+				<p>
+					Using these classes, you can avoid having to implement the UpdateScript interface yourself. Also some of the DataContext implementations use these classes to determine that only a single update is to be executed, and may optimize accordingly. 
+				</p>
+			</answer>
+		</faq>
+				
+		<faq id="mongodb_locking_levels">
+			<question>Ability to specify MongoDB locking levels</question>
+			<answer>
+				<p>
+					It is now possible to specify a locking level advisor for MongoDB connections. 
+					This way you can either select a constant locking level, or have a component 
+					specify the locking level for individual actions.
+				</p>
+			</answer>
+		</faq>
+		
+		<faq id="virtual_filesystem">
+			<question>Virtualization of file references for CSV files, Excel spreadsheets and fixed width value files</question>
+			<answer>
+				<p>
+					We've introduced a simple <i>Resource</i> interface which makes it possible to feed the CSV, Excel and Fixed Width DataContexts with not just a physical file, but any source of binary data. This way you can use MetaModel to read such data e.g. from FTP servers, HTTP or through other data transports.
+				</p>
+			</answer>
+		</faq>
+	</part>
+	
+	<!--
+	<part id="api">
+		<title>Changes to the existing API</title>
+		
+		<faq id="TODO">
+			<question>TODO</question>
+			<answer>
+				<p>TODO.</p>
+			</answer>
+		</faq>
+	</part>
+	-->
+
+	<part id="bugfixes">
+		<title>Bugfixes</title>
+
+		<faq id="aggregates_on_single_row">
+			<question>Some aggregate queries yielded more than a single row</question>
+			<answer>
+				<p>A bug was fixed, which caused MetaModel to yield not a single, but a variable amount of rows containing aggregates, when the query also contained WHERE items.</p>
+			</answer>
+		</faq>
+		
+		<faq id="salesforce_table_serialization">
+			<question>Serialization of Salesforce.com table issue</question>
+			<answer>
+				<p>A bug was fixed, which caused tables from Salesforce.com to not be properly serializable because of connection references.</p>
+			</answer>
+		</faq>
+		
+	</part>
+</faqs>

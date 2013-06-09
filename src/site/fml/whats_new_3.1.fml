@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faqs xmlns="http://maven.apache.org/FML/1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
+	title="What's new in MetaModel 3.1" toplink="false">
+
+	<part id="features">
+		<title>New features</title>
+		
+		<faq id="parse_execute_string_query">
+			<question>Parse and execute String queries</question>
+			<answer>
+				<p>The main feature of MetaModel 3.1 is the ability to pass String-based queries to MetaModel.</p>
+				<p>String-based queries is not something we encourage using, but for some purposes it is really useful or maybe even required. For instance, some applications might provide the user with an option to inspect and optionally modify a query before it is executed - and doing so using a String editor would do that trick.</p>
+				<p>The consequence for MetaModel's API is that two new methods have been added to the DataContext interface. The <a href="http://metamodel.eobjects.org/apidocs/org/eobjects/metamodel/DataContext.html#parseQuery(java.lang.String)">parseQuery(String)</a> method which allows transforming a String query into a Query object:</p>
+				<blockquote>
+					DataContext dc = ...<br/>
+					Query query = dc.parseQuery("SELECT * FROM persons");
+				</blockquote>
+				<p>And the <a href="http://metamodel.eobjects.org/apidocs/org/eobjects/metamodel/DataContext.html#executeQuery(java.lang.String)">executeQuery(String)</a> method which allows executing the query directly:</p>
+				<blockquote>
+					DataContext dc = ...<br/>
+					DataSet dataSet = dc.executeQuery("SELECT * FROM persons");
+				</blockquote>
+			</answer>
+		</faq>
+	</part>
+	
+	<part id="api">
+		<title>Changes to the existing API</title>
+		
+		<faq id="filterbuilder_shortcuts">
+			<question>FilterBuilder shortcut methods</question>
+			<answer>
+				<p>The <a href="http://metamodel.eobjects.org/apidocs/org/eobjects/metamodel/query/builder/FilterBuilder.html">FilterBuilder</a> interface and it's implementations (used in query building as well as the WHERE-part of UPDATE statements) have been modified to introduce a series of 'shortcut' methods. These methods with names such as 'eq', 'ne', 'lt' and 'gt' provide a more convenient, short way of expressing the operator of your filters. Furthermore the equals(...) methods have been deprecated since the method name overlapped with <i>Object.equals(Object)</i>.</p>
+			</answer>
+		</faq>
+	</part>
+
+	<part id="bugfixes">
+		<title>Bugfixes</title>
+
+		<faq id="tempdir_system_property">
+			<question>Ineffective temp dir resolver</question>
+			<answer>
+				<p>We discovered a bug pertaining to how the temporary directory was resolved and used for various purposes. This was a minor bug, but should marginally increase performance.</p>
+			</answer>
+		</faq>
+		
+	</part>
+
+</faqs>

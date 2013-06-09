@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxws:bindings version="2.0"
+	xmlns:jaxws="http://java.sun.com/xml/ns/jaxws" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jxb="http://java.sun.com/xml/ns/jaxb">
+
+	<jaxws:bindings>
+		<handler-chains xmlns="http://java.sun.com/xml/ns/javaee">
+			<handler-chain>
+				<handler>
+					<handler-name>LoggingMessageHandler</handler-name>
+					<handler-class>org.eobjects.metamodel.sugarcrm.LoggingMessageHandler</handler-class>
+				</handler>
+			</handler-chain>
+		</handler-chains>
+	</jaxws:bindings>
+
+</jaxws:bindings>

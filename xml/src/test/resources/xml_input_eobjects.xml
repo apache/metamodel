@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eobjects.dk website="http://www.eobjects.dk">
+	<contributors>
+		<person>
+			<name>kasper</name>
+			<address>My address</address>
+			<address>Another address</address>
+			<address>A third address</address>
+		</person>
+		<person>
+			<name>asbjorn</name>
+			<address>Asbjorns address</address>
+		</person>
+	</contributors>
+	<projects>
+		<project name="datacleaner">Some description</project>
+		<project name="MetaModel" />
+	</projects>
+</eobjects.dk>

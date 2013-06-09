@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project xmlns="http://maven.apache.org/DECORATION/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd"
+	name="MetaModel">
+
+	<bannerLeft>
+		<name>MetaModel</name>
+		<href>index.html</href>
+	</bannerLeft>
+
+	<version position="none" />
+
+	<body>
+		<head>
+			<link rel="stylesheet" href="styles.css" type="text/css" />
+		</head>
+
+		<menu name="About MetaModel">
+			<item name="Home" href="index.html" />
+			<item name="Project goals" href="goals.html" />
+			<item name="News" href="http://eobjects.org/trac/blog/category/metamodel" target="_blank" />
+			<item name="Database compliancy" href="database_compliancy.html" />
+			<item name="Schema and table semantics" href="schema_and_table_semantics.html" />
+			<item name="Projects that use MetaModel" href="project_cases.html" />
+			<item name="FAQ" href="faq.html" />
+		</menu>
+
+		<menu name="See it (examples)">
+			<item name="Traverse schema model" href="example_schema_traversal.html" />
+			<item name="Simple queries to get started" href="example_simple_queries.html" />
+			<item name="Compiled queries" href="example_compiled_queries.html" />
+			<item name="Inserting data" href="example_inserting_data.html" />
+			<item name="POJO datastores" href="example_pojo_datastores.html" />
+			<item name="Connecting to Salesforce.com" href="example_salesforce_setup.html" />
+			<item name="Composite DataContext" href="example_composite_datacontext.html" />
+			<item name="Automatic type conversion" href="example_type_conversion.html" />
+			<item name="Using interceptors" href="example_interceptors.html" />
+			<item name="XML table mapping" href="example_xml_mapping.html" />
+		</menu>
+
+		<menu name="Use it">
+			<item name="API Documentation" href="apidocs/" />
+			<item name="Downloads" href="download.html" />
+			<item name="License" href="license.html" />
+		</menu>
+
+		<menu name="Changes">
+			<item name="What's new in 3.4?" href="whats_new_3.4.html" />
+			<item name="What's new in 3.3?" href="whats_new_3.3.html" />
+			<item name="What's new in 3.2?" href="whats_new_3.2.html" />
+			<item name="What's new in 3.1?" href="whats_new_3.1.html" />
+			<item name="What's new in 3.0?" href="whats_new_3.0.html" />
+			<item name="What's new in 2.2?" href="whats_new_2.2.html" />
+			<item name="What's new in 2.1?" href="whats_new_2.1.html" />
+			<item name="What's new in 2.0?" href="whats_new_2.0.html" />
+			<item name="What's new in 1.7?" href="whats_new_1.7.html" />
+			<item name="What's new in 1.6?" href="whats_new_1.6.html" />
+			<item name="What's new in 1.5?" href="whats_new_1.5.html" />
+		</menu>
+
+		<menu name="Develop it">
+			<item name="Mailing list" href="http://groups.google.com/group/metamodel" target="_blank" />
+			<item name="User forum" href="http://eobjects.org/trac/discussion/forum/7" target="_blank" />
+			<item name="Source code" href="source-repository.html" />
+			<item name="Issue tracking" href="issue-tracking.html" />
+		</menu>
+
+	</body>
+</project>

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faqs xmlns="http://maven.apache.org/FML/1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
+	title="Frequently Asked Questions" toplink="false">
+
+	<part id="general">
+		<title>General information</title>
+		<faq id="whatis">
+			<question>What is MetaModel?</question>
+			<answer>
+				<p>MetaModel is a Java based library for accessing, exploring and querying datastores.
+				Datastores may be relational databases, flat files, spreadsheet documents or single file
+				based databases such as MS Access and dBase.</p>
+				<p>MetaModel provides a uniform API for all these datastores. With the MetaModel API you
+				can explore the structure of the datastore (ie. Schemas, Tables, Columns, Relationships) and
+				you can query the datastore using a fluent Java API for querying in a manner that will feel
+				natural to anyone who's ever tried SQL, the industry standard for database querying.</p>
+			</answer>
+		</faq>
+
+		<faq id="why">
+			<question>Why should I care about MetaModel?</question>
+			<answer>
+				<p>Because MetaModel is the most versatile Java library for accessing different datastores.
+				No other library provides the same ability to access just about any datastore and MetaModel
+				even does this in a way that is intuitive, type-safe and supports advanced querying options.</p>
+			</answer>
+		</faq>
+	</part>
+	
+	<part id="how_it_works">
+		<title>How it works</title>
+		<faq id="supported_datastores">
+			<question>Which data formats does MetaModel support?
+			</question>
+			<answer>
+				<p>Please refer to the <a href="database_compliancy.html">database compliancy</a> page.</p>
+			</answer>
+		</faq>
+		
+		<faq id="unsupported_datastores">
+			<question>Which types of datastores does MetaModel not support?
+			</question>
+			<answer>
+				<p>For now MetaModel is limited to a tabular view on data, so any datastore that cannot be accessed in such a way will not be supported.</p>
+				<p>The upside is however that by far most datastore types are in fact tabular or can 
+				be interpreted as tabular. To make a point of this you can even use MetaModel with
+				XML-files as a datastore, even though XML-files are inherently hierarical and not
+				tabular, but MetaModel provides an abstraction layer that allows you to access an
+				XML files as if it was made up of schemas, tables and columns.</p>
+			</answer>
+		</faq>
+		
+		<faq id="how_querying">
+			<question>How do you support querying of non-queryable datastores like CSV files or spreadsheets?</question>
+			<answer>
+				<p>MetaModel includes it's own query interpretation engine, called <b>Query Postprocessor</b>.
+				If a datastore has it's own native query engine MetaModel will rewrite the query to fit to that
+				engine. If the datastore does not have a query engine then MetaModel will find out what data it needs
+				to execute the query and perform the data manipulation required by the query in memory.</p>
+			</answer>
+		</faq>
+		
+		<faq id="how_null_semantics">
+			<question>How are NULL values interpreted by MetaModel?</question>
+			<answer>
+				<p>MetaModel's end users are typically Java developers, so we interpret NULL in a similar way as Java does.</p>
+				<p>Why is this interesting? Because in ANSI SQL, the semantics around NULL values are different. In SQL the following statement is false, whereas it is true in Java:</p>
+				<pre>NULL = NULL</pre>
+				<p>The distinction becomes very important when dealing with queries that specify a filter where some field is not equal to some operand. For instance:</p>
+				<pre>SELECT * FROM persons WHERE gender &lt;&gt; 'M'</pre>
+				<p>Traditional SQL engines will not include records where gender is NULL in the result set of the above query. But MetaModel will, since we believe this is the most natural way of working with queries for developers!</p>
+			</answer>
+		</faq>
+		
+		<faq id="scalability">
+			<question>What are the performance characteristics of MetaModel?</question>
+			<answer>
+				<p>MetaModel was designed to keep memory down whenever possible, but not at the expense of providing a rich API for exploring and querying your datastores. Of course there are going to be a lot of added objects to express your queries as objects in stead of a single String but in the big picture this is never a problem. The same argument applies to the schema model - you could potentially build an application without storing metadata about your tables, columns etc. as Java objects but we believe the added expressiveness of the API far overshadows the added memory footprint. If you do however have datastores with tens of thousands of columns then it may begin to present a disadvantage of using MetaModel but we propose simply configuring your JVM with a larger heap space then, because given your datastore structure you're going to need it anyway :)</p>
+				<p>In terms of query execution speed we also do a lot to keep the memory consumption down. When possible results are streamed from their original datastore so buffer sizes will not outgrow the available memory. There are however some situations where it is not possible to apply a streaming approach. For example if you issue an ORDER BY statement or a GROUP BY statement on a datastore that does not support native querying (such as a CSV file), then MetaModel will have to load the full contents of the datastore into memory in order to process the query. So make sure you only do these kinds of queries when the contents is not expected to outgrow your total amount of memory (typical JVM configurations can hold several (tens of) thousands rows of data though, depending on the amount of columns).</p>
+			</answer>
+		</faq>
+	</part>
+	
+	<part id="dependencies">
+		<title>Which third-party libraries are used for...</title>
+		<faq id="csv">
+			<question>... CSV files</question>
+			<answer>
+				<p>The <b>MetaModel-csv</b> module depends on the <a href="http://opencsv.sourceforge.net/" target="_blank">opencsv</a>
+				library for parsing of CSV files. The query and update layer is implemented using MetaModel's Query Postprocessor engine.</p> 
+			</answer>
+		</faq>
+		<faq id="excel">
+			<question>... Excel spreadsheets</question>
+			<answer>
+				<p>The <b>MetaModel-excel</b> module depends on the <a href="http://poi.apache.org/" target="_blank">Apache POI</a>
+				library for reading Excel spreadsheets. The query and update layer is implemented using MetaModel's Query Postprocessor engine.</p> 
+			</answer>
+		</faq>
+		<faq id="odb">
+			<question>... OpenOffice.org database files</question>
+			<answer>
+				<p>The <b>MetaModel-openoffice</b> module depends on the <a href="http://hsqldb.org/" target="_blank">Hsqldb 1.8</a>
+				database which is already the underlying database used by OpenOffice.org. The query layer is implemented in the
+				<b>MetaModel-jdbc</b> module as the database connection is established using JDBC.</p> 
+			</answer>
+		</faq>
+		<faq id="access">
+			<question>... Microsoft Access database files</question>
+			<answer>
+				<p>The <b>MetaModel-access</b> module depends on the <a href="http://jackcess.sourceforge.net/" target="_blank">Jackcess</a>
+				library for reading Microsoft Access database-files. The query layer is implemented using MetaModel's Query Postprocessor engine.</p> 
+			</answer>
+		</faq>
+		<faq id="dbase">
+			<question>... dBase files</question>
+			<answer>
+				<p>The <b>MetaModel-dbase</b> module depends on the <a href="http://xbasej.sourceforge.net/" target="_blank">xBaseJ</a>
+				library for reading dBase files. xBaseJ has been especially re-licensed and incorporated into MetaModel under the LGPL
+				license (originally it is GPL licensed). The query layer is implemented using MetaModel's Query Postprocessor engine.</p> 
+			</answer>
+		</faq>
+		<faq id="couchdb">
+			<question>... CouchDB databases</question>
+			<answer>
+				<p>The <b>MetaModel-couchdb</b> module depends on the <a href="https://github.com/helun/Ektorp" target="_blank">ektorp</a>
+				library for connecting to CouchDB databases. The query and update layer is implemented using MetaModel's Query Postprocessor engine.</p>
+			</answer>
+		</faq>
+		<faq id="mongodb">
+			<question>... MongoDB databases</question>
+			<answer>
+				<p>The <b>MetaModel-mongodb</b> module depends on the <a href="https://github.com/mongodb/mongo-java-driver" target="_blank">MongoDB Java driver</a>
+				library for connecting to MongoDB databases. The query and update layer is implemented using MetaModel's Query Postprocessor engine.</p>
+			</answer>
+		</faq>
+	</part>
+	
+	<part id="comparison">
+		<title>How does MetaModel compare to ...</title>
+		<faq id="compare_hibernate_jpa">
+			<question>Hibernate and Java Persistence API (JPA)?</question>
+			<answer>
+				<p>Hibernate and JPA are object-relational mappers (ORMs), which MetaModel is <i>not</i>.
+				The main difference lies in the fact that with Hibernate or JPA you need to have a fixed
+				domain model on which your application works. This is the case for most business applications
+				and MetaModel is no contestant in this arena.</p>
+				<p>MetaModel on the other hand does not have a fixed domain model - it works on the metadata
+				level where there are just arbitrary structures of data. You can also say that MetaModel's domain
+				model is data. So MetaModel would be a good starting point if you are building an application that
+				is datastore-agnostic or maybe even if you are building an ORM yourself.</p>
+				<p>Some distinguishing differences:</p>
+				<ul>
+					<li>Hibernate/JPA only supports relational JDBC-databases. MetaModel supports JDBC-databases in addition to CSV files, Excel spreadsheets <a href="database_compliancy.html">and much more</a>.</li>
+					<li>A JPA-based domain model is bound at compile time, while MetaModel represents the model of the datastore at runtime.</li>
+					<li>MetaModel can be used to explore and query any given datastore whereas Hibernate/JPA provides a way to bridge the gap of concrete domain modelling and a concrete database.</li>
+					<li>MetaModel supports type-safe, runtime generated, queries and datastore-exploration whereas Hibernate/JPA advocates hardcoded string literal binding and querying.</li>
+				</ul>
+			</answer>
+		</faq>
+		
+		<faq id="compare_jdbc">
+			<question>Java Database Connectivity (JDBC)?</question>
+			<answer>
+				<p>JDBC is the most common way of accessing a relational database in Java and thus it is heavily used
+				by MetaModel when working with relational databases. Database vendors (and in some cases complimentary
+				open source communities) typically provide a JDBC driver which allows for the connectivity to the database.</p>
+				<p>MetaModel uses and enhances JDBC in a variety of ways:</p>
+				<ul>
+					<li>Although the JDBC specification is pretty straight forward, not all vendors implement it correctly
+					or entirely. MetaModel encapsulates the differences of varying JDBC implementations.</li>
+					<li>While there is a metadata API in JDBC it is quite ackward to work with. It requires you to traverse
+					ResultSets describing the database structure in stead of first-class metadata objects like MetaModel's
+					Schema, Table, Column and Relationship objects.</li>
+					<li>JDBC querying is based on string literal queries, whereas MetaModel's Query API encapsulates this
+					complexity in a type-safe query building API which eradicates errors and provides compile time safety.</li>
+				</ul>
+			</answer>
+		</faq>
+		
+		<faq id="compare_linq">
+			<question>Language Integrated Query (LINQ) for .NET?</question>
+			<answer>
+				<p>MetaModel was greatly inspired by the ideas of LINQ for .NET. The two technologies
+				share a lot of similarities, but also some substantial differences. LINQ supports
+				querying as a part of the language, which we of course cannot introduce into Java
+				as a third party library.</p>
+				<p>Like LINQ...</p>
+				<ul>
+					<li>MetaModel can be used to query not only for relational databases but also other datastores.</li>
+					<li>MetaModel defines a DSL for querying (the Query Builder API) which aids the user to write correct and meaningful queries.</li>
+					<li>MetaModel is inspired by SQL to make querying feel natural to the developer.</li>
+					<li>MetaModel provides a compile time check for your queries.</li>
+					<li>MetaModel makes it possibble to compose and manipulate your query programmatically and in a type-safe manner.</li>
+				</ul>
+				<p>Unlike LINQ...</p>
+				<ul>
+					<li>MetaModel is a Java library.</li>
+					<li>MetaModel provides support for datastores such as CSV files, Excel spreadsheets and more.</li>
+					<li>MetaModel has a slightly different set of built-in functions and query clauses.</li>
+					<li>MetaModel is not a language feature, but simply a library.</li>
+				</ul>
+			</answer>
+		</faq>
+	</part>
+</faqs>

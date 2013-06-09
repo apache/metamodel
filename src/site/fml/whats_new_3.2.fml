@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faqs xmlns="http://maven.apache.org/FML/1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
+	title="What's new in MetaModel 3.2" toplink="false">
+
+	<part id="features">
+		<title>New features</title>
+		
+		<faq id="compiled_queries">
+			<question>Compiled queries</question>
+			<answer>
+				<p>A new feature was added, making it possible to compile often used queries. This will provide a performance gain when queries are fired multiple times.</p>
+				<p>For details and an example of using compiled queries, check out the new <a href="example_compiled_queries.html">Compiled queries</a> example page.</p>
+			</answer>
+		</faq>
+		
+		<faq id="dataset_index_caching">
+			<question>DataSet index caching</question>
+			<answer>
+				<p>Another performance improvement has been added by adding caching of Column and SelectItem indexes in DataSets. This makes the resolving of values pertaining to particular Columns or SelectItems have near-constant access time, without having to know it's column index.</p>
+			</answer>
+		</faq>
+	</part>
+	
+	<!--
+	<part id="api">
+		<title>Changes to the existing API</title>
+		
+		<faq id="TODO">
+			<question>TODO</question>
+			<answer>
+				<p>TODO.</p>
+			</answer>
+		</faq>
+	</part>
+
+	<part id="bugfixes">
+		<title>Bugfixes</title>
+
+		<faq id="TODO">
+			<question>TODO</question>
+			<answer>
+				<p>TODO.</p>
+			</answer>
+		</faq>
+		
+	</part>
+	-->
+</faqs>

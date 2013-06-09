@@ -1,0 +1,4 @@
+handlers = java.util.logging.ConsoleHandler
+.level = WARN
+org.eobjects.ConsoleHandler.level = WARN
+org.eobjects.ConsoleHandler.formatter = java.util.logging.SimpleFormatter

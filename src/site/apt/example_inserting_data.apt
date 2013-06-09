@@ -1,0 +1,63 @@
+ ------
+ Inserting data
+ ------
+ 
+Inserting data
+
+ Since MetaModel 2.0 it is possible to create tables and insert data into several of the supported datastores, eg. JDBC databases, CSV files and Excel spreadsheets.
+ 
+ Modifying data is done by means of implementing your own update scripts that are then submitted to the DataContext's executeUpdate(...) method. This approach guarantees isolation and coherence in all update operations. Here is a simple example:
+
++-------------------------------+
+File myFile = new File("unexisting_file.csv");
+
+UpdateableDataContext dataContext = DataContextFactory.createCsvDataContext(myFile);
+final Schema schema = dataContext.getDefaultSchema();
+dataContext.executeUpdate(new UpdateScript() {
+
+    public void run(UpdateCallback callback) {
+    
+        // CREATING A TABLE
+    
+        Table table = callback.createTable(schema, "my_table")
+            .withColumn("name").ofType(VARCHAR)
+            .withColumn("gender").ofType(CHAR)
+            .withColumn("age").ofType(INTEGER)
+            .execute();
+        
+        // INSERTING SOME ROWS
+        
+        callback.insertInto(table).value("name","John Doe").value("gender",'M').value("age",42).execute();
+        callback.insertInto(table).value("name","Jane Doe").value("gender",'F').value("age",42).execute();
+    }
+  
+});
++-------------------------------+
+
+ If you just want to insert or update a single record, you can skip the UpdateScript implementation and use the pre-built InsertInto, Update or DeleteFrom classes. But beware though that then you don't have any transaction boundaries or isolation inbetween those calls:
+
++-------------------------------+
+Table table = schema.getTableByName("my_table");
+dataContext.executeUpdate(new InsertInto(table).value("name", "Polly the Sheep").value("age", -1));
+dataContext.executeUpdate(new Update(table).where("name").eq("Polly the Sheep").value("age", 10));
+dataContext.executeUpdate(new DeleteFrom(table).where("name").eq("Polly the Sheep"));
++-------------------------------+
+
+ ... And just to go full circle, here's how you can continue to explore the data:
+
++-------------------------------+
+System.out.println("Columns: " + Arrays.toString(table.getColumnNames()));
+
+DataSet ds = dc.query().from(table).select(table.getColumns()).orderBy(table.getColumnByName("name")).execute();
+while (ds.next()) {
+    System.out.println("Row: " + Arrays.toString(ds.getRow().getValues()));
+}
++-------------------------------+
+
+ This snippet will print out:
+
++-------------------------------+
+Columns: [name, gender, age]
+Row: [Jane Doe,F,42]
+Row: [John Doe,M,42]
++-------------------------------+

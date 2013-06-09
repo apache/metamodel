@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faqs xmlns="http://maven.apache.org/FML/1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
+	title="What's new in MetaModel 3.3" toplink="false">
+
+	<part id="features">
+		<title>New features</title>
+		
+		<faq id="salesforce_module">
+			<question>Salesforce.com connectivity</question>
+			<answer>
+				<p>
+					We've added a new module in MetaModel which allows connecting to the Salesforce.com cloud based CRM system.
+					Connectivity is done through their online web services. Using this module you can both explore the structure
+					of the Salesforce objects ("SObjects") and you can query, update, delete and insert new records into Salesforce.
+				</p>
+				<p>
+					To help you get started, there's a <a href="example_salesforce_setup.html">new help page available</a> to help setting up your Salesforce.com connecting and firing your first queries etc.
+				</p>	
+			</answer>
+		</faq>
+		
+		<faq id="sugarcrm_module">
+			<question>SugarCRM connectivity</question>
+			<answer>
+				<p>We've also added another CRM system to the portfolio of supported MetaModel systems: SugarCRM, the most popular open source CRM system.</p>
+				<p>
+					Support for SugarCRM goes through the SOAP interfaces of your SugarCRM installation.
+					The MetaModel module is read-only, which does allow for nice integration and analysis situations,
+					but not for pushing data back to SugarCRM.
+				</p>
+			</answer>
+		</faq>
+		
+		<faq id="db2_first_row_and_max_rows">
+			<question>DB2 support for First-Row and Max-Rows clauses</question>
+			<answer>
+				<p>We've improved the DB2 query adaptor part of the JDBC module, so that queries which specify a "Max rows" (aka LIMIT) or a "First row" (aka OFFSET) will be properly propagated to the SQL generated for DB2.</p>
+			</answer>
+		</faq>
+		
+	</part>
+	
+	<!--
+	<part id="api">
+		<title>Changes to the existing API</title>
+		
+		<faq id="TODO">
+			<question>TODO</question>
+			<answer>
+				<p>TODO.</p>
+			</answer>
+		</faq>
+	</part>
+
+	<part id="bugfixes">
+		<title>Bugfixes</title>
+
+		<faq id="TODO">
+			<question>TODO</question>
+			<answer>
+				<p>TODO.</p>
+			</answer>
+		</faq>
+		
+	</part>
+	-->
+</faqs>

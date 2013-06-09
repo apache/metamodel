@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faqs xmlns="http://maven.apache.org/FML/1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
+	title="What's new in MetaModel 2.1" toplink="false">
+
+	<part id="features">
+		<title>New features</title>
+
+		<faq id="mongo_db_support">
+			<question>MongoDB support</question>
+			<answer>
+				<p>MetaModel 2.1 ships with MongoDB support! This means that you can
+					get a traditional table/column view on your schema-less MongoDB
+					databases. The MongoDB implementation of MetaModel has a number of
+					interesting features:
+				</p>
+				<ul>
+					<li>Autodetection of schema structure. You can provide a MongoDB
+						instance and let MetaModel autodetect an appropriate schema
+						structure automatically (it will inspect the first 1000 documents
+						of each document).
+					</li>
+					<li>Or you can specify your schema structure manually!</li>
+					<li>
+						You can even write data to MongoDB, since the MongoDB
+						datacontext
+						implements our
+						<a href="/apidocs/org/eobjects/metamodel/UpdateableDataContext.html">UpdateableDataContext</a>
+						interface.
+					</li>
+				</ul>
+				<p>We think that the addition of MongoDB to the list of supported
+					datastores is significant. Both because MongoDB is really rising in
+					popularity, but also because it demonstrates how MetaModel can be
+					applied and provide a consistent and typesafe querying interface,
+					even to NoSQL databases.
+				</p>
+				<p>
+					The new MongoDB support is provided through the
+					<a
+						href="/apidocs/org/eobjects/metamodel/mongodb/MongoDbDataContext.html">MongoDbDataContext</a>
+					class.
+				</p>
+			</answer>
+		</faq>
+
+		<faq id="xml_sax_support">
+			<question>Fast and memory effecient XML reading (SAX based)
+			</question>
+			<answer>
+				<p>Previously the XML support in MetaModel was based on DOM parsing
+					which means that eventually the whole XML tree will be loaded into
+					memory. That is of course not so memory effecient and not so fast
+					as desired.
+				</p>
+				<p>MetaModel 2.1 provides a new strategy for parsing XML documents,
+					in addition to the old DOM based one. The new strategy uses SAX
+					parsing, which is a streaming approach that has a low memory
+					footprint and a very quick response time.
+				</p>
+				<p>
+					The new XML support is provided through the
+					<a href="/apidocs/org/eobjects/metamodel/xml/XmlSaxDataContext.html">XmlSaxDataContext</a>
+					class.
+				</p>
+			</answer>
+		</faq>
+
+	</part>
+
+	<part id="bugfixes">
+		<title>Bugfixes</title>
+
+		<faq id="csv_append_newline">
+			<question>CSV append newline issue</question>
+			<answer>
+				<p>There was an issue when inserting rows into CSV files, that an
+					existing newline was assumed. If the CSV file where the rows were
+					being inserted did not end on a newline, then the values would be
+					appended to the existing last line. This bug has been fixed.
+				</p>
+			</answer>
+		</faq>
+		<faq id="jdbc_explicit_null">
+			<question>Explicit inserting NULL in databases</question>
+			<answer>
+				<p>When inserting records into a database there is a difference on
+					whether you insert NULL or if you just don't specify a value to
+					insert. In 2.1 this issue has been fixed so that you can both
+					insert NULLs or omit inserting a value (which will typically rely
+					on the database to insert a default or generated value).
+				</p>
+			</answer>
+		</faq>
+		<faq id="excel_empty_string_parsing">
+			<question>Empty string parsing in Excel</question>
+			<answer>
+				<p>There was an issue in the Excel adapter that caused it to throw
+					an exception in certain situations where it would try to parse an
+					empty string as a number. This issue has now been fixed.
+				</p>
+			</answer>
+		</faq>
+	</part>
+
+</faqs>

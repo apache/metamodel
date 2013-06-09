@@ -1,0 +1,34 @@
+ ------
+ Automatic type conversion
+ ------
+ 
+Automatic type conversion
+
+ Some datastores have less expressive data types than what you need - and certainly less expressive than Java's type system. Therefore MetaModel provides an API for automatic conversion of
+ data types between their physical values and their logical values.
+ 
+ An obvious example is CSV files, which only host String values, since their storage is plain text files. But often times there are columns within a CSV file that should be interpreted eg. as
+ numbers, dates or booleans. To overcome this issue, you can apply MetaModel's type converters. It will look like this:
+ 
++-------------------------------+
+UpdateableDataContext dc = DataContextFactory.createCsvDataContext(...);
+Column numberCol = dc.getColumnByQualifiedLabel("my_number");
+Column booleanCol = dc.getColumnByQualifiedLabel("my_boolean");
+dc = Converters.addTypeConverter(dc, numberCol, new StringToIntegerConverter());
+dc = Converters.addTypeConverter(dc, booleanCol, new StringToBooleanConverter());
++-------------------------------+
+
+ Afterwards, all queries and updates on these columns will automatically get their types converted, so that your view of the data can use the proper Java types.
+
+ You can also ask MetaModel to auto-detect the converters to apply. For doing that MetaModel will inspect the result of a query and assert if any of the columns are plausible candidates for conversion:
+ 
++-------------------------------+
+UpdateableDataContext dc = DataContextFactory.createCsvDataContext(...);
+Table table = dc.getDefaultSchema().getTables()[0];
+Map<Column, TypeConverter<?,?>> converters = 
+              Converters.autoDetectConverters(dc, table, 1000); // query at max 1000 rows
+dc = Converters.addTypeConverters(dc, converters);
++-------------------------------+
+
+ For more information, take a look at the {{{./apidocs/org/eobjects/metamodel/convert/Converters.html} Converters}}
+ class which has useful static methods for applying converters easily.

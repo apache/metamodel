@@ -1,0 +1,39 @@
+ ------
+ POJO datastores - Query your Java objects
+ ------
+ 
+POJO datastores - Query your Java objects!
+
+ With the <<MetaModel-pojo>> module of MetaModel you can use MetaModel's query engine to fire queries on a collection of regular Java objects (Java beans, Maps or arrays).
+ 
+ Assume we have a Person class:
+
++-------------------------------+
+public class Person {
+  private String name;
+  private int age;
+  
+  // getters and setters
+}
++-------------------------------+
+ 
+ And some list of persons:
+
++-------------------------------+
+List<Person> persons = ...
++-------------------------------+
+
+ You can easily wrap this collection in a PojoDataContext and query it like a database, for instance to get all the adult names:
+ 
++-------------------------------+
+TableDataProvider<Person> provider = new ObjectTableDataProvider<Person>("persons",Person.class,persons);
+DataContext dc = new PojoDataContext(provider);
+
+DataSet ds = dc.query().from("persons").select("name").where("age").greaterThan(18).execute();
+while (ds.next()) {
+  Row row = ds.getRow();
+  String name = (String) row.getValue(0);
+  System.out.println(name);
+}
+ds.close();
++-------------------------------+

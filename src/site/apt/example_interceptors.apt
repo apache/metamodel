@@ -1,0 +1,42 @@
+ ------
+ Using interceptors
+ ------
+ 
+Using interceptors
+
+ As of version 2.2, MetaModel has introduced an interceptor mechanism which allows you to add code to
+ your DataContext that will be invoked before or after certain operations.
+ 
+ The interceptors are implemented as a decorating, logical DataContext around your physical DataContext.
+ In the graph below the 5 types of interceptors are depicted:
+
+[interceptors.png] Modules in MetaModel
+
+ To get a handle for an interceptable DataContext, use
+ the {{{./apidocs/org/eobjects/metamodel/intercept/Interceptors.html} Interceptors}}.intercept(...) method.
+
+ To apply an interceptor, implement one of the five interfaces:
+
+ * QueryInterceptor: To intercept queries before they are executed.
+
+ * DataSetInterceptor: To intercept datasets before they are returned.
+ 
+ * TableCreationInterceptor: To intercept "create table" operations before they are executed.
+ 
+ * RowInsertionInterceptor: To intercept "insert into" operations before they are executed.
+ 
+ * SchemaInterceptor: To intercept schemas before they are returned.
+ 
+ Once you've implemented your interceptor, for instance a QueryInterceptor, add it to an InterceptableDataContext, like this:
+ 
++-------------------------------+
+public DataContext addMyInterceptor(DataContext dc) {
+  InterceptableDataContext interceptableDataContext = Interceptors.intercept(dc);
+  interceptableDataContext.addQueryInterceptor(new MyQueryInterceptor());
+  return interceptableDataContext;
+}
++-------------------------------+
+
+ The important part about this code snippet is, that it returns the InterceptableDataContext instance. 
+ Since this is itself also an implementation of the DataContext interface, you should be able to use this
+ throughout your code without modifications.

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faqs xmlns="http://maven.apache.org/FML/1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
+	title="What's new in MetaModel 2.2" toplink="false">
+
+	<part id="features">
+		<title>New features</title>
+		
+		<faq id="interceptors">
+			<question>Interceptors</question>
+			<answer>
+				<p>We've added an interceptor layer to MetaModel, which makes it possible for you to
+				intercept operations just before or just after they have been executed. Use-cases of
+				interceptors are many, but you might need them for migration purposes, for query
+				rewriting or for logging or security.</p>
+				<p>Using interceptors you can intercept schemas before they are returned to the user,
+				queries before they are executed, datasets before they are returned, or update operations
+				before they are written.</p>
+				<p>Read the <a href="./example_interceptors.html">Using interceptors</a> page for examples and more information on interceptors.</p>
+			</answer>
+		</faq>
+
+		<faq id="type_conversion">
+			<question>Revised type conversion layer</question>
+			<answer>
+				<p>We've used the new interceptor layer to implement a type conversion layer which allows you to transparently convert
+				values of certain column before they are read and written. For instance, you might want to interpret a column in a CSV file
+				as numbers, even though the column is inherently a string column. With the new type mechanism, that operation is as easy as:</p>
+				<blockquote>
+				DataContext dc = ...;<br/>
+				dc = Converters.addTypeConverter(dc, column, new StringToIntegerConverter());
+				</blockquote>
+				<p>Other examples might be to automatically compress and decompress byte arrays, or even serializing and deserializing complete objects to BLOBs.</p>
+				<p>Read the <a href="./example_type_conversion.html">Automatic type conversion</a> page for examples and more information on type conversion.</p>
+			</answer>
+		</faq>
+		
+		<faq id="jdbc_batch_update_performance">
+			<question>Improved JDBC batch update performance</question>
+			<answer>
+				<p>The JDBC module's update performance has been greatly improved by using prepared statements as well as committing only once per update.
+				Since this is completely in line with the semantics of the existing API, the improvement is not something that you will notice in actual
+				code, but expect a very nice performance improvement (depending on the DB) on execution of large update batches.</p>
+			</answer>
+		</faq>
+	</part>
+	
+	<part id="api">
+		<title>Changes to the existing API</title>
+		
+		<faq id="sanitized_type_transformers">
+			<question>Sanitized the column type transformers feature</question>
+			<answer>
+				<p>MetaModel has offered conversion of types for a pretty long while, by using the ColumnTypeTransformer class.
+				But with version 2.2 we've rewritten this layer to be based on the new interceptor mechanism. This means that you
+				can now do type conversion of any column type and you no longer have to worry about changing the source columns' type to
+				have this feature.</p>
+				<p>The ColumnTypeTransformer class has been removed to make place for this new and better implementation of the same concept!</p>
+			</answer>
+		</faq>
+		
+		<faq id="jdbc_failover_strategy_removed">
+			<question>Removed JDBC "complex query" failover strategy</question>
+			<answer>We've removed a failover strategy feature from the JDBC module that we did not think was vaiable. The strategy
+			would handle failing complex queries by falling back to a simple query variant and then use the Query Postprocessor
+			for further treatment in case of failing complex queries. But an important issue remained, that the "simple failover query"
+			might be a full table scan, which in case of large tables can be very bad for performance of the whole system. Therefore it was
+			decided to let these issues fail (since they either way represent a query style that the database will not allow) and not attempt
+			the failover strategy.</answer>
+		</faq>
+	</part>
+
+	<part id="bugfixes">
+		<title>Bugfixes</title>
+
+		<faq id="jdbc_escape_quotes">
+			<question>Quote escaping in database INSERT statements</question>
+			<answer>
+				<p>A bug was fixed, which pertained to the generation of INSERT statements and having quotes in the inserted values.</p>
+			</answer>
+		</faq>
+		<faq id="mongodb_in_metamodel_full">
+			<question>MongoDB added in MetaModel-full module</question>
+			<answer>
+				<p>Although MongoDB was officially added in MetaModel 2.1, it was by mistake not included as a dependency in the 
+				MetaModel-full module. It has now been added, so the 'full' maven dependency is easily manageable.</p>
+			</answer>
+		</faq>
+	</part>
+
+</faqs>

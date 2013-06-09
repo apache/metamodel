@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<!-- Automatically converted from version '1.3.pre-linux' -->
+<!-- Automatically converted from version '1.2-linux' -->
+<!-- innotek VirtualBox Machine Configuration -->
+<VirtualBox xmlns="http://www.innotek.de/VirtualBox-settings" version="1.3-linux">
+  <Machine OSType="winxp" lastStateChange="2008-10-05T08:40:24Z" name="WindowsXP" uuid="{95210120-5ad8-496d-f7ba-ff3b4b3f98f0}">
+    <ExtraData>
+      <ExtraDataItem name="GUI/SaveMountedAtRuntime" value="yes"/>
+      <ExtraDataItem name="GUI/LastWindowPostion" value="122,62,1164,742,max"/>
+      <ExtraDataItem name="GUI/Fullscreen" value="off"/>
+      <ExtraDataItem name="GUI/Seamless" value="off"/>
+      <ExtraDataItem name="GUI/AutoresizeGuest" value="on"/>
+      <ExtraDataItem name="GUI/LastCloseAction" value="powerOff"/>
+    </ExtraData>
+    <Hardware>
+      <CPU>
+        <HardwareVirtEx enabled="false"/>
+        <PAE enabled="false"/>
+      </CPU>
+      <Memory RAMSize="2000"/>
+      <Boot>
+        <Order position="1" device="HardDisk"/>
+      </Boot>
+      <Display VRAMSize="32" MonitorCount="1"/>
+      <RemoteDisplay enabled="false" port="3389" authType="Null" authTimeout="5000"/>
+      <BIOS>
+        <ACPI enabled="true"/>
+        <IOAPIC enabled="false"/>
+        <Logo fadeIn="true" fadeOut="true" displayTime="0"/>
+        <BootMenu mode="MessageAndMenu"/>
+        <TimeOffset value="0"/>
+        <PXEDebug enabled="false"/>
+        <IDEController type="PIIX3"/>
+      </BIOS>
+      <DVDDrive passthrough="false">
+        <Image uuid="{01ae79a0-ee5e-4cfc-1e9f-933a1c9b8285}"/>
+      </DVDDrive>
+      <FloppyDrive enabled="true"/>
+      <USBController enabled="true" enabledEhci="true"/>
+      <SATAController enabled="false" PortCount="1" IDE0MasterEmulationPort="0" IDE0SlaveEmulationPort="1" IDE1MasterEmulationPort="2" IDE1SlaveEmulationPort="3"/>
+      <Network>
+        <Adapter slot="0" enabled="true" MACAddress="080027BB6A3B" cable="true" speed="1000000" type="Am79C973">
+          <NAT/>
+        </Adapter>
+        <Adapter slot="1" enabled="false" MACAddress="080027344E9A" cable="true" speed="1000000" type="Am79C973"/>
+        <Adapter slot="2" enabled="false" MACAddress="08002712137C" cable="true" speed="1000000" type="Am79C973"/>
+        <Adapter slot="3" enabled="false" MACAddress="080027B96F4C" cable="true" speed="1000000" type="Am79C973"/>
+      </Network>
+      <UART>
+        <Port slot="0" enabled="false" IOBase="0x3f8" IRQ="4" hostMode="Disconnected"/>
+        <Port slot="1" enabled="false" IOBase="0x3f8" IRQ="4" hostMode="Disconnected"/>
+      </UART>
+      <LPT>
+        <Port slot="0" enabled="false" IOBase="0x378" IRQ="4"/>
+        <Port slot="1" enabled="false" IOBase="0x378" IRQ="4"/>
+      </LPT>
+      <AudioAdapter controller="AC97" driver="ALSA" enabled="true"/>
+      <SharedFolders>
+        <SharedFolder name="kasper-home" hostPath="/home/kasper" writable="true"/>
+      </SharedFolders>
+      <Clipboard mode="Bidirectional"/>
+      <Guest memoryBalloonSize="0" statisticsUpdateInterval="0"/>
+    </Hardware>
+    <HardDiskAttachments>
+      <HardDiskAttachment hardDisk="{e5731938-16a4-4115-21b4-7b0a2f952248}" bus="IDE" channel="0" device="0"/>
+    </HardDiskAttachments>
+  </Machine>
+</VirtualBox>

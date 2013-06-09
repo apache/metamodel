@@ -1,0 +1,68 @@
+ ------
+ Composite DataContext | Example
+ ------
+ 
+Composite DataContext
+
+ A composite DataContext is a DataContext that allows you to access several datastores
+ as if they where one. It makes it easy to do queries that span several physical sources
+ without having to deal with the complexity this usually involves.
+ 
+ A note of warning when dealing with composite DataContexts though: Queries will usually
+ take up quite a lot of memory if you try to join tables from separate sources. Some may
+ critisize the fact that MetaModel allows this somewhat "dangerous" behaviour but on the
+ other hand we feel that any powerful tool can be used the wrong way and composite DataContexts
+ are no exception.
+ 
+Show me the code
+
+ Say you have two datastores, a CSV file and a database. Let's first create the composite
+ DataContext from which we access them in a united fashion:
+ 
++-------------------------------+
+DataContext csvDataContext = ...
+DataContext databaseDataContext = ...
+
+DataContext compositeDataContext = DataContextFactory.createCompositeDataContext(csvDataContext, databaseDataContext);
++-------------------------------+
+
+ Because we might encounter name-clashes in table and column names, it is still possible to create
+ our queries using the originial DataContext's schema structures. It is also possible to retrieve
+ the schema structure from the composite.
+ 
++-------------------------------+
+Table csvTable1 = csvDataContext.getDefaultSchema().getTableByName("customers");
+Table csvTable2 = compositeDataContext.getDefaultSchema().getTableByName("customers");
+
+// these should be the same!
+assert csvTable1 == csvTable2;
++-------------------------------+
+
+ We can now create a query using structures from both of the contained DataContexts:
+ 
++-------------------------------+
+Column csvNameColumn = csvTable1.getColumnByName("name");
+Table dbTable = databaseDataContext.getDefaultSchema().getTableByName("customers");
+
+Query q = compositeDataContext.query().from(csvTable1).leftJoin(dbTable)
+           .on(csvNameColumn, dbTable.getColumnByName("name"))
+           .select(csvNameColumn, dbTable.getColumnByName("id")).toQuery();
++-------------------------------+
+
+ This query will correspond to (if it was possible to execute something like this in SQL):
+ 
++-------------------------------+
+SELECT customers.name, "CUSTOMERS"."ID" FROM customers.csv.customers LEFT JOIN PUBLIC."CUSTOMERS" ON customers.name = "CUSTOMERS"."NAME"
++-------------------------------+
+
+ And ... executing it will print out a list of customer names (from the CSV file) and their id's in the database. In our test suite we have an example of this, it prints out:
+ 
+*------------------------------+--------+
+| Diecast Collectables         | 495    |
+*------------------------------+--------+
+| Lego (not in DB)             | <null> |
+*------------------------------+--------+
+| Motor Mint Distributors Inc. | 486    |
+*------------------------------+--------+
+| ...                          | ...    |
+*------------------------------+--------+
