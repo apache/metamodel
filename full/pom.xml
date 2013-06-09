@@ -103,11 +103,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.eobjects.metamodel</groupId>
-			<artifactId>MetaModel-dbase</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eobjects.metamodel</groupId>
 			<artifactId>MetaModel-access</artifactId>
 			<version>${project.version}</version>
 		</dependency>

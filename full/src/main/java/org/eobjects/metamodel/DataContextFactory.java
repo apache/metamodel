@@ -32,7 +32,6 @@ import org.eobjects.metamodel.access.AccessDataContext;
 import org.eobjects.metamodel.couchdb.CouchDbDataContext;
 import org.eobjects.metamodel.csv.CsvConfiguration;
 import org.eobjects.metamodel.csv.CsvDataContext;
-import org.eobjects.metamodel.dbase.DbaseDataContext;
 import org.eobjects.metamodel.excel.ExcelConfiguration;
 import org.eobjects.metamodel.excel.ExcelDataContext;
 import org.eobjects.metamodel.fixedwidth.FixedWidthConfiguration;
@@ -114,28 +113,6 @@ public class DataContextFactory {
      */
     public static DataContext createAccessDataContext(File file) {
         return new AccessDataContext(file);
-    }
-
-    /**
-     * Creates a DataContext based on a dBase file
-     * 
-     * @param file
-     *            a dBase (.dbf) file
-     * @return a DataContext object that matches the request
-     */
-    public static DataContext createDbaseDataContext(File file) {
-        return new DbaseDataContext(file);
-    }
-
-    /**
-     * Creates a DataContext based on a dBase file
-     * 
-     * @param filename
-     *            the path to a dBase (.dbf) file
-     * @return a DataContext object that matches the request
-     */
-    public static DataContext createDbaseDataContext(String filename) {
-        return new DbaseDataContext(filename);
     }
 
     /**

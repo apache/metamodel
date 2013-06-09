@@ -62,7 +62,6 @@
 		<module>excel</module>
 		<module>csv</module>
 		<module>xml</module>
-		<module>dbase</module>
 		<module>access</module>
 		<module>jdbc</module>
 		<module>mongodb</module>
