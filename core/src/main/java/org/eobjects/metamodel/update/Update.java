@@ -29,7 +29,6 @@ import org.eobjects.metamodel.UpdateableDataContext;
 import org.eobjects.metamodel.data.AbstractRowBuilder;
 import org.eobjects.metamodel.data.Style;
 import org.eobjects.metamodel.data.WhereClauseBuilder;
-import org.eobjects.metamodel.insert.InsertInto;
 import org.eobjects.metamodel.query.FilterItem;
 import org.eobjects.metamodel.query.SelectItem;
 import org.eobjects.metamodel.query.builder.AbstractFilterBuilder;
@@ -45,7 +44,7 @@ import org.eobjects.metamodel.schema.Table;
  * based on the knowledge that there will only be a single update statement
  * executed.
  */
-public final class Update extends AbstractRowBuilder<InsertInto> implements UpdateScript, WhereClauseBuilder<Update> {
+public final class Update extends AbstractRowBuilder<Update> implements UpdateScript, WhereClauseBuilder<Update> {
 
     private final Table _table;
     private final List<FilterItem> _whereItems;
