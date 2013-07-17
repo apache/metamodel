@@ -52,6 +52,9 @@ public class FileResource implements Resource, Serializable {
 
     @Override
     public boolean isReadOnly() {
+        if (!isExists()) {
+            return false;
+        }
         boolean canWrite = _file.canWrite();
         return !canWrite;
     }
