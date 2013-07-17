@@ -22,6 +22,7 @@ package org.eobjects.metamodel.salesforce;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.eobjects.metamodel.MetaModelException;
 import org.eobjects.metamodel.QueryPostprocessDataContext;
@@ -58,6 +59,7 @@ import com.sforce.ws.ConnectionException;
  */
 public class SalesforceDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
 
+    public static final TimeZone SOQL_TIMEZONE = TimeZone.getTimeZone("UTC");
     public static final String SOQL_DATE_FORMAT_IN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
     public static final String SOQL_DATE_FORMAT_OUT = "yyyy-MM-dd'T'HH:mm:ssZZZ";
 
@@ -273,7 +275,9 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
             sb.append(operand);
         } else if (operand instanceof Date) {
             SimpleDateFormat dateFormat = new SimpleDateFormat(SOQL_DATE_FORMAT_OUT);
+            dateFormat.setTimeZone(SOQL_TIMEZONE); 
             String str = dateFormat.format((Date) operand);
+            logger.debug("Date '{}' formatted as: {}", operand, str); 
             sb.append(str);
         } else if (operand instanceof Column) {
             sb.append(((Column) operand).getName());
@@ -317,6 +321,7 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
     }
 
     private QueryResult executeSoqlQuery(String query) {
+        logger.info("Executing SOQL query: {}", query); 
         try {
             QueryResult queryResult = _connection.query(query);
             return queryResult;

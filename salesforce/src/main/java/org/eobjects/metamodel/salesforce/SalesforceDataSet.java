@@ -112,6 +112,7 @@ final class SalesforceDataSet extends AbstractDataSet {
             }
             if (columnType.isTimeBased()) {
                 SimpleDateFormat format = new SimpleDateFormat(SalesforceDataContext.SOQL_DATE_FORMAT_IN);
+                format.setTimeZone(SalesforceDataContext.SOQL_TIMEZONE); 
                 try {
                     return format.parse(value.toString());
                 } catch (ParseException e) {

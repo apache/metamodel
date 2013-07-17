@@ -44,12 +44,34 @@ import org.eobjects.metamodel.util.Month;
 
 public class SalesforceDataContextTest extends SalesforceTestCase {
 
+    public void testQueryStrangeRecord() throws Exception {
+        SalesforceDataContext dc = new SalesforceDataContext(getUsername(), getPassword(), getSecurityToken());
+
+        Column[] timeColumns = dc.getDefaultSchema().getTableByName("Contact").getTimeBasedColumns();
+        assertEquals(
+                "[Column[name=Birthdate,columnNumber=30,type=DATE,nullable=true,nativeType=date,columnSize=0], "
+                        + "Column[name=CreatedDate,columnNumber=33,type=DATE,nullable=false,nativeType=datetime,columnSize=0], "
+                        + "Column[name=LastModifiedDate,columnNumber=35,type=DATE,nullable=false,nativeType=datetime,columnSize=0], "
+                        + "Column[name=SystemModstamp,columnNumber=37,type=DATE,nullable=false,nativeType=datetime,columnSize=0], "
+                        + "Column[name=LastActivityDate,columnNumber=38,type=DATE,nullable=true,nativeType=date,columnSize=0], "
+                        + "Column[name=LastCURequestDate,columnNumber=39,type=DATE,nullable=true,nativeType=datetime,columnSize=0], "
+                        + "Column[name=LastCUUpdateDate,columnNumber=40,type=DATE,nullable=true,nativeType=datetime,columnSize=0], "
+                        + "Column[name=EmailBouncedDate,columnNumber=42,type=DATE,nullable=true,nativeType=datetime,columnSize=0]]",
+                Arrays.toString(timeColumns));
+        DataSet ds = dc.query().from("Contact").select("LastModifiedDate").where("Id").eq("003b0000006xfAUAAY")
+                .execute();
+        assertTrue(ds.next());
+        System.out.println(ds.getRow());
+        assertFalse(ds.next());
+    }
+
     public void testInvalidLoginException() throws Exception {
         try {
             new SalesforceDataContext("foo", "bar", "baz");
             fail("Exception expected");
         } catch (IllegalStateException e) {
-            assertEquals("Failed to log in to Salesforce service: INVALID_LOGIN: Invalid username, password, security token; or user locked out.",
+            assertEquals(
+                    "Failed to log in to Salesforce service: INVALID_LOGIN: Invalid username, password, security token; or user locked out.",
                     e.getMessage());
         }
     }
@@ -237,10 +259,10 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
     public void testRewriteWhereItem() throws Exception {
         final StringBuilder sb = new StringBuilder("FOOBAR: ");
 
-        Calendar cal = Calendar.getInstance();
+        final Calendar cal = Calendar.getInstance();
         cal.setTime(DateUtils.get(2013, Month.JANUARY, 23));
         cal.setTimeZone(TimeZone.getTimeZone("GMT+1"));
-        Date date = cal.getTime();
+        final Date date = cal.getTime();
 
         final List<FilterItem> children = new ArrayList<FilterItem>();
         children.add(new FilterItem(new SelectItem(new MutableColumn("foo")), OperatorType.EQUALS_TO, "hello\n 'world'"));
@@ -250,7 +272,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
 
         SalesforceDataContext.rewriteFilterItem(sb, filterItem);
 
-        assertEquals("FOOBAR: (foo = 'hello\\n \\'world\\'' OR bar = 123 OR baz = 2013-01-23T00:00:00+0100)",
+        assertEquals("FOOBAR: (foo = 'hello\n \'world\'' OR bar = 123 OR baz = 2013-01-22T23:00:00+0000)",
                 sb.toString());
     }
 }
