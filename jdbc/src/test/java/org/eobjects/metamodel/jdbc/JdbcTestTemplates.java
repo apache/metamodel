@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eobjects.metamodel.BatchUpdateScript;
 import org.eobjects.metamodel.UpdateCallback;
 import org.eobjects.metamodel.UpdateScript;
 import org.eobjects.metamodel.create.ColumnCreationBuilder;
@@ -341,7 +342,7 @@ public class JdbcTestTemplates {
             });
         }
 
-        dc.executeUpdate(new UpdateScript() {
+        dc.executeUpdate(new BatchUpdateScript() {
             @Override
             public void run(UpdateCallback cb) {
                 Table table = cb.createTable(schema, tableName).withColumn("id").asPrimaryKey().ofType(ColumnType.INTEGER)

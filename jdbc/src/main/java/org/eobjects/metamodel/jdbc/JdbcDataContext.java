@@ -35,16 +35,13 @@ import java.util.StringTokenizer;
 import javax.sql.DataSource;
 
 import org.eobjects.metamodel.AbstractDataContext;
+import org.eobjects.metamodel.BatchUpdateScript;
 import org.eobjects.metamodel.MetaModelException;
 import org.eobjects.metamodel.UpdateScript;
 import org.eobjects.metamodel.UpdateableDataContext;
-import org.eobjects.metamodel.create.CreateTable;
 import org.eobjects.metamodel.data.DataSet;
 import org.eobjects.metamodel.data.EmptyDataSet;
 import org.eobjects.metamodel.data.MaxRowsDataSet;
-import org.eobjects.metamodel.delete.DeleteFrom;
-import org.eobjects.metamodel.drop.DropTable;
-import org.eobjects.metamodel.insert.InsertInto;
 import org.eobjects.metamodel.jdbc.dialects.DB2QueryRewriter;
 import org.eobjects.metamodel.jdbc.dialects.DefaultQueryRewriter;
 import org.eobjects.metamodel.jdbc.dialects.H2QueryRewriter;
@@ -57,7 +54,6 @@ import org.eobjects.metamodel.query.CompiledQuery;
 import org.eobjects.metamodel.query.Query;
 import org.eobjects.metamodel.schema.Schema;
 import org.eobjects.metamodel.schema.TableType;
-import org.eobjects.metamodel.update.Update;
 import org.eobjects.metamodel.util.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -749,12 +745,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     public void executeUpdate(final UpdateScript update) {
         final JdbcUpdateCallback updateCallback;
 
-        if (update instanceof InsertInto || update instanceof Update || update instanceof DeleteFrom
-                || update instanceof CreateTable || update instanceof DropTable) {
-            // we will only need to fire a single operation, so we don't want
-            // the overhead of the batch callback
-            updateCallback = new JdbcSimpleUpdateCallback(this);
-        } else if (_supportsBatchUpdates) {
+        if (_supportsBatchUpdates && update instanceof BatchUpdateScript) { 
             updateCallback = new JdbcBatchUpdateCallback(this);
         } else {
             updateCallback = new JdbcSimpleUpdateCallback(this);
