@@ -19,11 +19,16 @@
  */
 package org.eobjects.metamodel.salesforce;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sforce.soap.partner.fault.ApiFault;
 import com.sforce.soap.partner.fault.ExceptionCode;
 import com.sforce.ws.ConnectionException;
 
 public class SalesforceUtils {
+    
+    private static final Logger logger = LoggerFactory.getLogger(SalesforceUtils.class); 
 
     /**
      * Wraps a checked exception thrown by Salesforce into an
@@ -34,6 +39,7 @@ public class SalesforceUtils {
      * @return
      */
     public static IllegalStateException wrapException(ConnectionException e, String whatWentWrong) {
+        logger.error("Wrapping Salesforce.com ConnectionException", e); 
         String message = null;
         Throwable cause = e;
         while (message == null && cause != null) {
@@ -43,6 +49,7 @@ public class SalesforceUtils {
                 message = exceptionCode + ": " + exceptionMessage;
                 break;
             }
+            cause = cause.getCause(); 
         }
         throw new IllegalStateException(whatWentWrong + ": " + message, cause);
     }
