@@ -626,7 +626,7 @@ public class ExcelDataContextTest extends TestCase {
             @Override
             public void run(UpdateCallback cb) {
                 cb.insertInto(dc.getTableByQualifiedLabel("my_table_1")).value("foo", 456.2)
-                        .value("bar", "парфюмери�? +и ко�?метика").value("baz", false).execute();
+                .value("bar", "парфюмерия +и косметика").value("baz", false).execute();
             }
         });
 
@@ -642,7 +642,7 @@ public class ExcelDataContextTest extends TestCase {
         assertTrue(ds.next());
         assertEquals("Row[values=[123, str 1, true]]", ds.getRow().toString());
         assertTrue(ds.next());
-        assertEquals("Row[values=[456.2, парфюмери�? +и ко�?метика, false]]", ds.getRow().toString());
+        assertEquals("Row[values=[456.2, парфюмерия +и косметика, false]]", ds.getRow().toString());
         assertTrue(ds.next());
         assertEquals("Row[values=[789, 2011-07-08 00:00:00, false]]", ds.getRow().toString());
         assertFalse(ds.next());
