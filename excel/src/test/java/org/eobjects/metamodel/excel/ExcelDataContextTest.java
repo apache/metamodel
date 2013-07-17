@@ -1,21 +1,20 @@
 /**
- * eobjects.org MetaModel
- * Copyright (C) 2010 eobjects.org
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * This copyrighted material is made available to anyone wishing to use, modify,
- * copy, or redistribute it subject to the terms and conditions of the GNU
- * Lesser General Public License, as published by the Free Software Foundation.
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
- * for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this distribution; if not, write to:
- * Free Software Foundation, Inc.
- * 51 Franklin Street, Fifth Floor
- * Boston, MA  02110-1301  USA
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.eobjects.metamodel.excel;
 
@@ -627,7 +626,7 @@ public class ExcelDataContextTest extends TestCase {
             @Override
             public void run(UpdateCallback cb) {
                 cb.insertInto(dc.getTableByQualifiedLabel("my_table_1")).value("foo", 456.2)
-                        .value("bar", "парфюмерия +и косметика").value("baz", false).execute();
+                        .value("bar", "парфюмери�? +и ко�?метика").value("baz", false).execute();
             }
         });
 
@@ -643,7 +642,7 @@ public class ExcelDataContextTest extends TestCase {
         assertTrue(ds.next());
         assertEquals("Row[values=[123, str 1, true]]", ds.getRow().toString());
         assertTrue(ds.next());
-        assertEquals("Row[values=[456.2, парфюмерия +и косметика, false]]", ds.getRow().toString());
+        assertEquals("Row[values=[456.2, парфюмери�? +и ко�?метика, false]]", ds.getRow().toString());
         assertTrue(ds.next());
         assertEquals("Row[values=[789, 2011-07-08 00:00:00, false]]", ds.getRow().toString());
         assertFalse(ds.next());

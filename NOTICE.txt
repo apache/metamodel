@@ -1,5 +1,0 @@
-eobjects.org MetaModel
-Copyright 2009 eobjects.org
-
-This product includes software developed by
-eobjects.org (http://eobjects.org/).
