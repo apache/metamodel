@@ -45,6 +45,10 @@ import org.eobjects.metamodel.util.Month;
 public class SalesforceDataContextTest extends SalesforceTestCase {
 
     public void testQueryStrangeRecord() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
         SalesforceDataContext dc = new SalesforceDataContext(getUsername(), getPassword(), getSecurityToken());
 
         Column[] timeColumns = dc.getDefaultSchema().getTableByName("Contact").getTimeBasedColumns();
@@ -60,9 +64,11 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
                 Arrays.toString(timeColumns));
         DataSet ds = dc.query().from("Contact").select("LastModifiedDate").where("Id").eq("003b0000006xfAUAAY")
                 .execute();
-        assertTrue(ds.next());
-        System.out.println(ds.getRow());
-        assertFalse(ds.next());
+        if (ds.next()) {
+            System.out.println(ds.getRow());
+            assertFalse(ds.next());
+        }
+        ds.close();
     }
 
     public void testInvalidLoginException() throws Exception {
@@ -272,7 +278,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
 
         SalesforceDataContext.rewriteFilterItem(sb, filterItem);
 
-        assertEquals("FOOBAR: (foo = 'hello\n \'world\'' OR bar = 123 OR baz = 2013-01-22T23:00:00+0000)",
+        assertEquals("FOOBAR: (foo = 'hello\\n \\'world\\'' OR bar = 123 OR baz = 2013-01-22T23:00:00+0000)",
                 sb.toString());
     }
 }

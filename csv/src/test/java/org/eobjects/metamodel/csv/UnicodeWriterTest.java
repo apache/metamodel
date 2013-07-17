@@ -46,5 +46,7 @@ public class UnicodeWriterTest {
         assertEquals(UnicodeWriter.UTF8_BOM[1], bytes[1]);
         assertEquals(UnicodeWriter.UTF8_BOM[2], bytes[2]);
         assertEquals((byte) 'H', bytes[3]);
+        
+        is.close();
     }
 }

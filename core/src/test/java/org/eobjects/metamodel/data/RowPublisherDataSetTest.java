@@ -54,6 +54,8 @@ public class RowPublisherDataSetTest extends TestCase {
 		assertTrue(ds.next());
 		assertEquals("Row[values=[foo4, bar4]]", ds.getRow().toString());
 		assertFalse(ds.next());
+		
+		ds.close();
 	}
 
 	public void testExceptionInAction() throws Exception {
@@ -81,7 +83,8 @@ public class RowPublisherDataSetTest extends TestCase {
 		} catch (Exception e) {
 			assertEquals("foobar!", e.getMessage());
 			assertEquals(IllegalStateException.class, e.getClass());
+		} finally {
+		    ds.close();
 		}
-
 	}
 }

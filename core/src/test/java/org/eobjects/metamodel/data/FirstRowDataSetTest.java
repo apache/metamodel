@@ -49,11 +49,15 @@ public class FirstRowDataSetTest extends TestCase {
         assertTrue(ds.next());
         assertEquals(5, ds.getRow().getValue(0));
         assertFalse(ds.next());
+        
+        ds.close();
     }
 
     public void testOffsetHigherThanSize() throws Exception {
         FirstRowDataSet ds = new FirstRowDataSet(dataSet, 8);
         assertFalse(ds.next());
+        
+        ds.close();
     }
 
     public void testOneOffset() throws Exception {
@@ -74,5 +78,7 @@ public class FirstRowDataSetTest extends TestCase {
         assertTrue(ds.next());
         assertEquals(5, ds.getRow().getValue(0));
         assertFalse(ds.next());
+        
+        ds.close();
     }
 }

@@ -66,6 +66,8 @@ public class JdbcSchemaTest extends JdbcTestCase {
 		ObjectInputStream objectInputStream = new ObjectInputStream(
 				new FileInputStream(file));
 		schema = (Schema) objectInputStream.readObject();
+		objectInputStream.close();
+		
 		assertEquals("Schema[name=PUBLIC]", schema.toString());
 		assertTrue(schema instanceof JdbcSchema);
 

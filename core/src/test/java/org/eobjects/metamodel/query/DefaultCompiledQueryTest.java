@@ -75,15 +75,19 @@ public class DefaultCompiledQueryTest {
                         + "SELECT changeSetColumn FROM (SELECT dataSourceIdColumn AS innerDataSourceRecordId FROM datastore WHERE dataSourceNameColumn = ? GROUP BY dataSourceIdColumn HAVING COUNT(dataSourceIdColumn) = 2) innerDS, datastore "
                         + "WHERE versionColumn = 2 AND changeSetColumn = ? AND innerDS.innerDataSourceRecordId = dataSourceIdColumn AND dataSourceNameColumn = ?]",
                 defaultCompiledQuery.toString());
+        
+        defaultCompiledQuery.close();
     }
 
     @Test
     public void testCloneWithParameterValues() {
         DefaultCompiledQuery defaultCompiledQuery = new DefaultCompiledQuery(query);
         Query resultQuery = defaultCompiledQuery.cloneWithParameterValues(new Object[] { "BE", 1, "BE" });
+        defaultCompiledQuery.close();
 
         defaultCompiledQuery = new DefaultCompiledQuery(resultQuery);
         Assert.assertEquals(0, defaultCompiledQuery.getParameters().size());
+        defaultCompiledQuery.close();
     }
 
 }

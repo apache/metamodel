@@ -44,6 +44,8 @@ public class DataSetTableModelTest extends TestCase {
 
         @SuppressWarnings("deprecation")
         TableModel tableModel = data.toTableModel();
+        data.close();
+
         assertEquals(3, tableModel.getColumnCount());
         assertEquals("CUSTOMERNUMBER", tableModel.getColumnName(0));
         assertEquals("CUSTOMERNAME", tableModel.getColumnName(1));
@@ -52,5 +54,6 @@ public class DataSetTableModelTest extends TestCase {
 
         // Take a small sample from the data
         assertEquals("Taylor", tableModel.getValueAt(1, 2).toString());
+        
     }
 }

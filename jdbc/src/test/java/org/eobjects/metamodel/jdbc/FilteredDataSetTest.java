@@ -70,5 +70,7 @@ public class FilteredDataSetTest extends JdbcTestCase {
 				"Row[values=[489, Double Decker Gift Stores, Ltd, Hardy, Thomas, (171) 555-7555, 120 Hanover Sq., null, London, null, WA1 1DP, UK, 1501, 43300.0]]",
 				dataSet.getRow().toString());
 		assertFalse(dataSet.next());
+		
+		dataSet.close();
 	}
 }
