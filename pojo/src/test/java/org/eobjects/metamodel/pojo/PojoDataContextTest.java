@@ -25,6 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import junit.framework.TestCase;
+
+import org.eobjects.metamodel.DataContext;
 import org.eobjects.metamodel.UpdateCallback;
 import org.eobjects.metamodel.UpdateScript;
 import org.eobjects.metamodel.data.DataSet;
@@ -33,9 +36,37 @@ import org.eobjects.metamodel.schema.Schema;
 import org.eobjects.metamodel.schema.Table;
 import org.eobjects.metamodel.util.SimpleTableDef;
 
-import junit.framework.TestCase;
-
 public class PojoDataContextTest extends TestCase {
+
+    public void testExampleScenario() throws Exception {
+        Collection<Person> persons = new ArrayList<Person>();
+        persons.add(new Person("Bono", 42));
+        persons.add(new Person("Elvis Presley", 42));
+
+        Map<String, Object> record1 = new HashMap<String, Object>();
+        record1.put("name", "Bruce Springsteen");
+        record1.put("title", "The Boss");
+
+        Map<String, Object> record2 = new HashMap<String, Object>();
+        record2.put("name", "Elvis Presley");
+        record2.put("title", "The King");
+
+        List<Map<String, ?>> titles = new ArrayList<Map<String, ?>>();
+        titles.add(record1);
+        titles.add(record2);
+
+        TableDataProvider<?> provider1 = new ObjectTableDataProvider<Person>("persons", Person.class, persons);
+        TableDataProvider<?> provider2 = new MapTableDataProvider(new SimpleTableDef("titles", new String[] { "name",
+                "title" }), titles);
+
+        DataContext dc = new PojoDataContext(Arrays.<TableDataProvider<?>> asList(provider1, provider2));
+
+        DataSet dataSet = dc.query().from("persons").innerJoin("titles").on("name", "name").selectAll().execute();
+
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[Elvis Presley, 42, Elvis Presley, The King]]", dataSet.getRow().toString());
+        assertFalse(dataSet.next());
+    }
 
     public void testScenarioWithMap() throws Exception {
         final SimpleTableDef tableDef = new SimpleTableDef("bar", new String[] { "col1", "col2", "col3" },

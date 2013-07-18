@@ -16,24 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.builder;
+package org.eobjects.metamodel.pojo;
 
-import org.eobjects.metamodel.schema.Table;
+public class Person {
 
-public interface TableFromBuilder extends
-		SatisfiedFromBuilder {
+    private String name;
+    private int age;
+    
+    public Person() {
+    }
+    
+    public Person(String name, int age) {
+        this();
+        setName(name);
+        setAge(age);
+    }
 
-	public JoinFromBuilder innerJoin(Table table);
-	
-	public JoinFromBuilder innerJoin(String tableName);
-	
-	public JoinFromBuilder leftJoin(Table table);
-	
-	public JoinFromBuilder leftJoin(String tableName);
-	
-	public JoinFromBuilder rightJoin(Table table);
-	
-	public JoinFromBuilder rightJoin(String tableName);
+    public int getAge() {
+        return age;
+    }
 
-	public TableFromBuilder as(String alias);
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

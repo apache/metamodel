@@ -22,5 +22,7 @@ import org.eobjects.metamodel.schema.Column;
 
 public interface JoinFromBuilder extends SatisfiedFromBuilder {
 
-	public SatisfiedFromBuilder on(Column left, Column right);
+    public SatisfiedFromBuilder on(Column left, Column right) throws IllegalArgumentException;
+
+    public SatisfiedFromBuilder on(String left, String right) throws IllegalArgumentException;
 }

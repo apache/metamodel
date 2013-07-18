@@ -26,58 +26,79 @@ import org.eobjects.metamodel.query.JoinType;
 import org.eobjects.metamodel.query.Query;
 import org.eobjects.metamodel.schema.Table;
 
-final class TableFromBuilderImpl extends SatisfiedFromBuilderCallback implements
-		TableFromBuilder {
+final class TableFromBuilderImpl extends SatisfiedFromBuilderCallback implements TableFromBuilder {
 
-	private FromItem fromItem;
+    private FromItem fromItem;
 
-	public TableFromBuilderImpl(Table table, Query query,
-			DataContext dataContext) {
-		super(query, dataContext);
+    public TableFromBuilderImpl(Table table, Query query, DataContext dataContext) {
+        super(query, dataContext);
 
-		fromItem = new FromItem(table);
-		query.from(fromItem);
-	}
+        fromItem = new FromItem(table);
+        query.from(fromItem);
+    }
 
-	@Override
-	public JoinFromBuilder innerJoin(Table table) {
-		if (table == null) {
-			throw new IllegalArgumentException("table cannot be null");
-		}
-		return new JoinFromBuilderImpl(getQuery(), fromItem, table,
-				JoinType.INNER, getDataContext());
-	}
+    @Override
+    public JoinFromBuilder innerJoin(String tableName) {
+        return innerJoin(findTable(tableName));
+    }
 
-	@Override
-	public JoinFromBuilder leftJoin(Table table) {
-		if (table == null) {
-			throw new IllegalArgumentException("table cannot be null");
-		}
-		return new JoinFromBuilderImpl(getQuery(), fromItem, table,
-				JoinType.LEFT, getDataContext());
-	}
+    @Override
+    public JoinFromBuilder innerJoin(Table table) {
+        if (table == null) {
+            throw new IllegalArgumentException("table cannot be null");
+        }
+        return new JoinFromBuilderImpl(getQuery(), fromItem, table, JoinType.INNER, getDataContext());
+    }
 
-	@Override
-	public JoinFromBuilder rightJoin(Table table) {
-		if (table == null) {
-			throw new IllegalArgumentException("table cannot be null");
-		}
-		return new JoinFromBuilderImpl(getQuery(), fromItem, table,
-				JoinType.RIGHT, getDataContext());
-	}
+    @Override
+    public JoinFromBuilder leftJoin(String tableName) {
+        return leftJoin(findTable(tableName));
+    }
 
-	@Override
-	public TableFromBuilder as(String alias) {
-		if (alias == null) {
-			throw new IllegalArgumentException("alias cannot be null");
-		}
-		fromItem.setAlias(alias);
-		return this;
-	}
+    @Override
+    public JoinFromBuilder leftJoin(Table table) {
+        if (table == null) {
+            throw new IllegalArgumentException("table cannot be null");
+        }
+        return new JoinFromBuilderImpl(getQuery(), fromItem, table, JoinType.LEFT, getDataContext());
+    }
 
-	@Override
-	protected void decorateIdentity(List<Object> identifiers) {
-		super.decorateIdentity(identifiers);
-		identifiers.add(fromItem);
-	}
+    @Override
+    public JoinFromBuilder rightJoin(String tableName) {
+        return rightJoin(findTable(tableName));
+    }
+
+    @Override
+    public JoinFromBuilder rightJoin(Table table) {
+        if (table == null) {
+            throw new IllegalArgumentException("table cannot be null");
+        }
+        return new JoinFromBuilderImpl(getQuery(), fromItem, table, JoinType.RIGHT, getDataContext());
+    }
+
+    @Override
+    public TableFromBuilder as(String alias) {
+        if (alias == null) {
+            throw new IllegalArgumentException("alias cannot be null");
+        }
+        fromItem.setAlias(alias);
+        return this;
+    }
+
+    @Override
+    protected void decorateIdentity(List<Object> identifiers) {
+        super.decorateIdentity(identifiers);
+        identifiers.add(fromItem);
+    }
+
+    private Table findTable(String tableName) {
+        if (tableName == null) {
+            throw new IllegalArgumentException("tableName cannot be null");
+        }
+        Table table = getDataContext().getTableByQualifiedLabel(tableName);
+        if (table == null) {
+            throw new IllegalArgumentException("No such table: " + tableName);
+        }
+        return table;
+    }
 }

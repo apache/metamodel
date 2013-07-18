@@ -28,46 +28,60 @@ import org.eobjects.metamodel.query.SelectItem;
 import org.eobjects.metamodel.schema.Column;
 import org.eobjects.metamodel.schema.Table;
 
-final class JoinFromBuilderImpl extends SatisfiedFromBuilderCallback implements
-		JoinFromBuilder {
+final class JoinFromBuilderImpl extends SatisfiedFromBuilderCallback implements JoinFromBuilder {
 
-	private JoinType joinType;
-	private FromItem leftItem;
-	private FromItem rightItem;
+    private JoinType joinType;
+    private FromItem leftItem;
+    private FromItem rightItem;
 
-	public JoinFromBuilderImpl(Query query, FromItem leftItem,
-			Table rightTable, JoinType joinType, DataContext dataContext) {
-		super(query, dataContext);
-		this.joinType = joinType;
-		this.leftItem = leftItem;
-		this.rightItem = new FromItem(rightTable);
-	}
+    public JoinFromBuilderImpl(Query query, FromItem leftItem, Table rightTable, JoinType joinType,
+            DataContext dataContext) {
+        super(query, dataContext);
+        this.joinType = joinType;
+        this.leftItem = leftItem;
+        this.rightItem = new FromItem(rightTable);
+    }
 
-	@Override
-	public SatisfiedFromBuilder on(Column left, Column right) {
-		if (left == null) {
-			throw new IllegalArgumentException("left cannot be null");
-		}
-		if (right == null) {
-			throw new IllegalArgumentException("right cannot be null");
-		}
-		getQuery().getFromClause().removeItem(leftItem);
+    @Override
+    public SatisfiedFromBuilder on(String left, String right) throws IllegalArgumentException {
+        Table leftTable = leftItem.getTable();
+        if (leftTable == null) {
+            throw new IllegalArgumentException("Left side of join is not a Table, cannot resolve ON item: '" + left + "'.");
+        }
+        Table rightTable = rightItem.getTable();
+        if (rightTable == null) {
+            throw new IllegalArgumentException("Right side of join is not a Table, cannot resolve ON item: '" + right + "'.");
+        }
 
-		SelectItem[] leftOn = new SelectItem[] { new SelectItem(left) };
-		SelectItem[] rightOn = new SelectItem[] { new SelectItem(right) };
-		FromItem fromItem = new FromItem(joinType, leftItem, rightItem, leftOn,
-				rightOn);
+        Column leftColumn = leftTable.getColumnByName(left);
+        Column rightColumn = rightTable.getColumnByName(right);
+        return on(leftColumn, rightColumn);
+    }
 
-		getQuery().from(fromItem);
+    @Override
+    public SatisfiedFromBuilder on(Column left, Column right) throws IllegalArgumentException {
+        if (left == null) {
+            throw new IllegalArgumentException("left cannot be null");
+        }
+        if (right == null) {
+            throw new IllegalArgumentException("right cannot be null");
+        }
+        getQuery().getFromClause().removeItem(leftItem);
 
-		return this;
-	}
-	
-	@Override
-	protected void decorateIdentity(List<Object> identifiers) {
-		super.decorateIdentity(identifiers);
-		identifiers.add(joinType);
-		identifiers.add(leftItem);
-		identifiers.add(rightItem);
-	}
+        SelectItem[] leftOn = new SelectItem[] { new SelectItem(left) };
+        SelectItem[] rightOn = new SelectItem[] { new SelectItem(right) };
+        FromItem fromItem = new FromItem(joinType, leftItem, rightItem, leftOn, rightOn);
+
+        getQuery().from(fromItem);
+
+        return this;
+    }
+
+    @Override
+    protected void decorateIdentity(List<Object> identifiers) {
+        super.decorateIdentity(identifiers);
+        identifiers.add(joinType);
+        identifiers.add(leftItem);
+        identifiers.add(rightItem);
+    }
 }
