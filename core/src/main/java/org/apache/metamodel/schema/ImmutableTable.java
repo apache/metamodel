@@ -29,8 +29,6 @@ import java.util.List;
  * constructor in ImmutableSchema.
  * 
  * @see ImmutableSchema
- * 
- * @author Kasper Sørensen
  */
 final class ImmutableTable extends AbstractTable implements Serializable {
 

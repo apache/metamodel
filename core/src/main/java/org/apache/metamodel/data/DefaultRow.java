@@ -35,7 +35,7 @@ public final class DefaultRow extends AbstractRow implements Row {
     private final DataSetHeader _header;
     private final Object[] _values;
     private final Style[] _styles;
-
+    
     /**
      * This field was replaced by the DataSetHeader field above.
      * 

@@ -25,20 +25,21 @@ import java.lang.reflect.Field;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.LegacyDeserializationObjectInputStream;
 
 import junit.framework.TestCase;
 
 public class DefaultRowTest extends TestCase {
 
-    SelectItem[] items = new SelectItem[] { new SelectItem(new MutableColumn("foo")),
+    private SelectItem[] items = new SelectItem[] { new SelectItem(new MutableColumn("foo")),
             new SelectItem(new MutableColumn("bar")) };
-    Object[] values = new Object[] { "foo", "bar" };
+    private Object[] values = new Object[] { "foo", "bar" };
 
     public void testDeserializeBackwardsCompatible() throws Exception {
         Object obj;
         FileInputStream fileIn = new FileInputStream("src/test/resources/metamodel-3.0-default-row.ser");
         try {
-            ObjectInputStream ois = new ObjectInputStream(fileIn);
+            ObjectInputStream ois = new LegacyDeserializationObjectInputStream(fileIn);
             obj = ois.readObject();
             ois.close();
         } finally {
