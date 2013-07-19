@@ -18,7 +18,7 @@ Use in Maven
 
 +-------------------------------+
 <dependency>
-    <groupId>org.eobjects.metamodel</groupId>
+    <groupId>org.apache.metamodel</groupId>
     <artifactId>MetaModel-full</artifactId>
     <version>${siteDownloadVersion}</version>
 </dependency>
@@ -27,13 +27,13 @@ Use in Maven
  Apache Ivy:
 
 +-------------------------------+
-<dependency org="org.eobjects.metamodel" name="MetaModel-full" rev="${siteDownloadVersion}"/>
+<dependency org="org.apache.metamodel" name="MetaModel-full" rev="${siteDownloadVersion}"/>
 +-------------------------------+
 
  Groovy Grape:
 
 +-------------------------------+ 
 @Grapes(
-    @Grab(group='org.eobjects.metamodel', module='MetaModel-full', version='${siteDownloadVersion}')
+    @Grab(group='org.apache.metamodel', module='MetaModel-full', version='${siteDownloadVersion}')
 )
 +-------------------------------+

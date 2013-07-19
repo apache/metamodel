@@ -36,7 +36,7 @@ import org.apache.metamodel.query.SelectItem;
 /**
  * DataSet for split queries. Queries will be executed as needed, not at once.
  * 
- * @see org.eobjects.metamodel.jdbc.QuerySplitter
+ * @see org.apache.metamodel.jdbc.QuerySplitter
  */
 final class SplitQueriesDataSet extends AbstractDataSet {
 

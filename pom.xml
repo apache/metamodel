@@ -188,7 +188,7 @@
 						</goals>
 						<phase>site</phase>
 						<configuration>
-							<excludePackageNames>org.xBaseJ:org.xBaseJ.*:org.eobjects.metamodel.jdbc.dialects:org.eobjects.metamodel.detect</excludePackageNames>
+							<excludePackageNames>org.apache.metamodel.jdbc.dialects:org.apache.metamodel.detect</excludePackageNames>
 						</configuration>
 					</execution>
 				</executions>

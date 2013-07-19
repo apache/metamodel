@@ -65,7 +65,7 @@ Install MetaModel
  
 +-------------------------------+
 <dependency>
-    <groupId>org.eobjects.metamodel</groupId>
+    <groupId>org.apache.metamodel</groupId>
     <artifactId>MetaModel-full</artifactId>
     <version>${siteDownloadVersion}</version>
 </dependency>

@@ -9,7 +9,7 @@
 		</layout>
 	</appender>
 
-	<logger name="org.eobjects">
+	<logger name="org.apache.metamodel">
 		<level value="debug" />
 	</logger>
 
