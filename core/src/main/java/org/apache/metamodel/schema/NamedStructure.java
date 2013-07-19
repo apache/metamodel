@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.schema;
+package org.apache.metamodel.schema;
 
-import org.eobjects.metamodel.util.HasName;
+import org.apache.metamodel.util.HasName;
 
 /**
  * Super-interface for named structural types in a DataContext.

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.drop;
+package org.apache.metamodel.drop;
 
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.schema.Table;
 
 /**
  * Abstract {@link TableDropBuilder} implementation

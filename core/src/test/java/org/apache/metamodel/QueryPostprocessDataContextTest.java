@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
 import java.nio.channels.UnsupportedAddressTypeException;
 import java.util.ArrayList;
@@ -25,28 +25,28 @@ import java.util.List;
 
 import javax.swing.table.TableModel;
 
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.DataSetTableModel;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.query.CompiledQuery;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.query.FunctionType;
-import org.eobjects.metamodel.query.GroupByItem;
-import org.eobjects.metamodel.query.JoinType;
-import org.eobjects.metamodel.query.OperatorType;
-import org.eobjects.metamodel.query.OrderByItem;
-import org.eobjects.metamodel.query.QueryParameter;
-import org.eobjects.metamodel.query.OrderByItem.Direction;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.MutableColumn;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.Relationship;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetTableModel;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.CompiledQuery;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.FunctionType;
+import org.apache.metamodel.query.GroupByItem;
+import org.apache.metamodel.query.JoinType;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.OrderByItem;
+import org.apache.metamodel.query.QueryParameter;
+import org.apache.metamodel.query.OrderByItem.Direction;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Relationship;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 public class QueryPostprocessDataContextTest extends MetaModelTestCase {
 

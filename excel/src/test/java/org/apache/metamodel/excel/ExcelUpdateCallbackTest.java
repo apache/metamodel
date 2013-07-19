@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -29,8 +29,8 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.schema.Table;
 
 public class ExcelUpdateCallbackTest extends TestCase {
 

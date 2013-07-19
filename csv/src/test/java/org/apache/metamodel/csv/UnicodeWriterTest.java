@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.csv;
+package org.apache.metamodel.csv;
 
 import static org.junit.Assert.assertEquals;
 
@@ -25,7 +25,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Writer;
 
-import org.eobjects.metamodel.util.UnicodeWriter;
+import org.apache.metamodel.util.UnicodeWriter;
 import org.junit.Test;
 
 public class UnicodeWriterTest {

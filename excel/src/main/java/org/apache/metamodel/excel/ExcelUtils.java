@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -47,22 +47,22 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.MetaModelHelper;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.DataSetHeader;
-import org.eobjects.metamodel.data.DefaultRow;
-import org.eobjects.metamodel.data.EmptyDataSet;
-import org.eobjects.metamodel.data.Style;
-import org.eobjects.metamodel.data.Style.SizeUnit;
-import org.eobjects.metamodel.data.StyleBuilder;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.Action;
-import org.eobjects.metamodel.util.DateUtils;
-import org.eobjects.metamodel.util.FormatHelper;
-import org.eobjects.metamodel.util.Func;
-import org.eobjects.metamodel.util.Resource;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelHelper;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetHeader;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.EmptyDataSet;
+import org.apache.metamodel.data.Style;
+import org.apache.metamodel.data.Style.SizeUnit;
+import org.apache.metamodel.data.StyleBuilder;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.Action;
+import org.apache.metamodel.util.DateUtils;
+import org.apache.metamodel.util.FormatHelper;
+import org.apache.metamodel.util.Func;
+import org.apache.metamodel.util.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.XMLReader;

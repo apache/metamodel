@@ -1,4 +1,4 @@
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,16 +9,16 @@ import javax.swing.table.TableModel;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.DataSetTableModel;
-import org.eobjects.metamodel.jdbc.JdbcDataContext;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.query.JoinType;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Relationship;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.schema.TableType;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetTableModel;
+import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.JoinType;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Relationship;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.TableType;
 
 /**
  * Test case that tests oracle interaction. An express edition of the oracle

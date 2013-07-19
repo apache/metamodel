@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -28,26 +28,26 @@ import javax.sql.DataSource;
 import javax.swing.table.TableModel;
 
 import org.easymock.EasyMock;
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.QueryPostprocessDataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.DataSetTableModel;
-import org.eobjects.metamodel.jdbc.dialects.DefaultQueryRewriter;
-import org.eobjects.metamodel.jdbc.dialects.IQueryRewriter;
-import org.eobjects.metamodel.query.CompiledQuery;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.FunctionType;
-import org.eobjects.metamodel.query.OperatorType;
-import org.eobjects.metamodel.query.OrderByItem;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.QueryParameter;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Relationship;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.schema.TableType;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetTableModel;
+import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
+import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
+import org.apache.metamodel.query.CompiledQuery;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.FunctionType;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.OrderByItem;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.QueryParameter;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Relationship;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.TableType;
 
 public class JdbcDataContextTest extends JdbcTestCase {
 

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -27,25 +27,25 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.create.CreateTable;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.delete.DeleteFrom;
-import org.eobjects.metamodel.drop.DropTable;
-import org.eobjects.metamodel.insert.InsertInto;
-import org.eobjects.metamodel.jdbc.dialects.IQueryRewriter;
-import org.eobjects.metamodel.query.FunctionType;
-import org.eobjects.metamodel.query.OperatorType;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.update.Update;
-import org.eobjects.metamodel.util.MutableRef;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.create.CreateTable;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.delete.DeleteFrom;
+import org.apache.metamodel.drop.DropTable;
+import org.apache.metamodel.insert.InsertInto;
+import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
+import org.apache.metamodel.query.FunctionType;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.update.Update;
+import org.apache.metamodel.util.MutableRef;
 
 /**
  * Test case that tests interaction with the H2 embedded database

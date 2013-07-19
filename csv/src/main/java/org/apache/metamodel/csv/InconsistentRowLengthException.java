@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.csv;
+package org.apache.metamodel.csv;
 
-import org.eobjects.metamodel.InconsistentRowFormatException;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.Row;
+import org.apache.metamodel.InconsistentRowFormatException;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
 
 /**
  * Exception thrown when a line in a CSV file has an inconsistent amount of

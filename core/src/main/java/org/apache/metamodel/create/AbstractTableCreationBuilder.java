@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.create;
+package org.apache.metamodel.create;
 
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.MutableColumn;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.schema.TableType;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.TableType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

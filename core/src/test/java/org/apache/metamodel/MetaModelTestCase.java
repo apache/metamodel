@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -26,21 +26,21 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.easymock.EasyMock;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.DefaultRow;
-import org.eobjects.metamodel.data.EmptyDataSet;
-import org.eobjects.metamodel.data.InMemoryDataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.data.SimpleDataSetHeader;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.MutableColumn;
-import org.eobjects.metamodel.schema.MutableRelationship;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.TableType;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.EmptyDataSet;
+import org.apache.metamodel.data.InMemoryDataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.SimpleDataSetHeader;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableRelationship;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.TableType;
 
 /**
  * Convenient super-class to use for unittesting

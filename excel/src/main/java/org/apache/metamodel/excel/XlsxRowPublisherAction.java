@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import java.io.InputStream;
 import java.util.List;
 
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.eobjects.metamodel.data.RowPublisher;
-import org.eobjects.metamodel.data.Style;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.util.Action;
-import org.eobjects.metamodel.util.FileHelper;
+import org.apache.metamodel.data.RowPublisher;
+import org.apache.metamodel.data.Style;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.util.Action;
+import org.apache.metamodel.util.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;

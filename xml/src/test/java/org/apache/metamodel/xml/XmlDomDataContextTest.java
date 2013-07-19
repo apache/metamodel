@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.xml;
+package org.apache.metamodel.xml;
 
 import java.io.File;
 import java.net.URL;
@@ -30,15 +30,15 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.DataSetTableModel;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.query.JoinType;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Relationship;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetTableModel;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.JoinType;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Relationship;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 

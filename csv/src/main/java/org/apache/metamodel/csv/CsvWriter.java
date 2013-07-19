@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.csv;
+package org.apache.metamodel.csv;
 
-import org.eobjects.metamodel.util.Resource;
+import org.apache.metamodel.util.Resource;
 
 /**
  * This class is an adaptation of the CSVWriter class of OpenCSV. We've made the

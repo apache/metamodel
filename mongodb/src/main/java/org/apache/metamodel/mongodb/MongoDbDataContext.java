@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.mongodb;
+package org.apache.metamodel.mongodb;
 
 import java.util.HashSet;
 import java.util.List;
@@ -26,23 +26,23 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.bson.types.ObjectId;
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.QueryPostprocessDataContext;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.UpdateableDataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.SimpleTableDef;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.SimpleTableDef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

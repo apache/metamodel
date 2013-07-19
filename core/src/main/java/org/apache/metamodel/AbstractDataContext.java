@@ -16,23 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.query.CompiledQuery;
-import org.eobjects.metamodel.query.DefaultCompiledQuery;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.builder.InitFromBuilder;
-import org.eobjects.metamodel.query.builder.InitFromBuilderImpl;
-import org.eobjects.metamodel.query.parser.QueryParser;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.query.CompiledQuery;
+import org.apache.metamodel.query.DefaultCompiledQuery;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.builder.InitFromBuilder;
+import org.apache.metamodel.query.builder.InitFromBuilderImpl;
+import org.apache.metamodel.query.parser.QueryParser;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 /**
  * Abstract implementation of the DataContext interface. Provides convenient

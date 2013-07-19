@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.util;
+package org.apache.metamodel.util;
 
-import org.eobjects.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelException;
 
 /**
  * Exception type for errors that occur while dealing with {@link Resource}s.

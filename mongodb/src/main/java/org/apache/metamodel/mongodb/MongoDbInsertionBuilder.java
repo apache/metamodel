@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.mongodb;
+package org.apache.metamodel.mongodb;
 
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.insert.AbstractRowInsertionBuilder;
-import org.eobjects.metamodel.insert.RowInsertionBuilder;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
+import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 

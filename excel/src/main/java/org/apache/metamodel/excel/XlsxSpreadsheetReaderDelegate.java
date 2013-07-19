@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -27,20 +27,20 @@ import java.util.Map.Entry;
 
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.RowPublisherDataSet;
-import org.eobjects.metamodel.data.Style;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.MutableColumn;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.AlphabeticSequence;
-import org.eobjects.metamodel.util.FileHelper;
-import org.eobjects.metamodel.util.Ref;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.RowPublisherDataSet;
+import org.apache.metamodel.data.Style;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.AlphabeticSequence;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;

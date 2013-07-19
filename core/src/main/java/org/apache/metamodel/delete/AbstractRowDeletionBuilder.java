@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.delete;
+package org.apache.metamodel.delete;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.query.FilterClause;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.query.builder.AbstractFilterBuilder;
-import org.eobjects.metamodel.query.builder.FilterBuilder;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.FilterClause;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.query.builder.AbstractFilterBuilder;
+import org.apache.metamodel.query.builder.FilterBuilder;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
 
 /**
  * Abstract {@link RowDeletionBuilder} implementation

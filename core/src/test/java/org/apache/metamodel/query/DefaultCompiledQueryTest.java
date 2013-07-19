@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.MutableColumn;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.TableType;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.TableType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

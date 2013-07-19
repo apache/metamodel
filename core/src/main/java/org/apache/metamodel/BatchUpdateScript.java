@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
 /**
  * Indicator sub-interface of {@link UpdateScript}. Implementing your updates

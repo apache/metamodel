@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.fixedwidth;
+package org.apache.metamodel.fixedwidth;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.util.BaseObject;
-import org.eobjects.metamodel.util.FileHelper;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.util.BaseObject;
+import org.apache.metamodel.util.FileHelper;
 
 /**
  * Configuration of metadata about a fixed width values datacontext.

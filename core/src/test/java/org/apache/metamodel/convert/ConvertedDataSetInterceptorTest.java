@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.convert;
+package org.apache.metamodel.convert;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.MockUpdateableDataContext;
-import org.eobjects.metamodel.UpdateableDataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.InMemoryDataSet;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MockUpdateableDataContext;
+import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.InMemoryDataSet;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
 
 public class ConvertedDataSetInterceptorTest extends TestCase {
 

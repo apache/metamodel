@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.util.FileHelper;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.util.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

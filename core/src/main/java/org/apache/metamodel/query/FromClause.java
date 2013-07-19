@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.schema.Table;
 
 /**
  * Represents the FROM clause of a query containing FromItem's.

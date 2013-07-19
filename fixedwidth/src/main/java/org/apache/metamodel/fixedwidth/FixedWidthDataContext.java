@@ -16,27 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.fixedwidth;
+package org.apache.metamodel.fixedwidth;
 
 import java.io.File;
 import java.io.InputStream;
 import java.io.Reader;
 
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.QueryPostprocessDataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.MutableColumn;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.schema.TableType;
-import org.eobjects.metamodel.util.AlphabeticSequence;
-import org.eobjects.metamodel.util.FileHelper;
-import org.eobjects.metamodel.util.FileResource;
-import org.eobjects.metamodel.util.Resource;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.TableType;
+import org.apache.metamodel.util.AlphabeticSequence;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FileResource;
+import org.apache.metamodel.util.Resource;
 
 /**
  * DataContext implementation for fixed width value files.

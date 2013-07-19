@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.intercept;
+package org.apache.metamodel.intercept;
 
 import java.io.File;
 import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.UpdateableDataContext;
-import org.eobjects.metamodel.create.TableCreationBuilder;
-import org.eobjects.metamodel.csv.CsvDataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.insert.RowInsertionBuilder;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.create.TableCreationBuilder;
+import org.apache.metamodel.csv.CsvDataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.schema.Table;
 
 public class InterceptionCsvIntegrationTest extends TestCase {
 

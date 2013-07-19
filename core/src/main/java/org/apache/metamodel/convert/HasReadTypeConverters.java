@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.convert;
+package org.apache.metamodel.convert;
 
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.schema.Column;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.schema.Column;
 
 /**
  * Defines an interface for objects that are aware of {@link TypeConverter}s,

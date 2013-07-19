@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.update;
+package org.apache.metamodel.update;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.data.RowBuilder;
-import org.eobjects.metamodel.data.WhereClauseBuilder;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.data.RowBuilder;
+import org.apache.metamodel.data.WhereClauseBuilder;
+import org.apache.metamodel.schema.Table;
 
 /**
  * Builder object for row update on a {@link Table}.

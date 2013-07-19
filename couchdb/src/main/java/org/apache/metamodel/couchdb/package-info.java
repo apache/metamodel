@@ -19,5 +19,5 @@
 /**
  * Module package for CouchDB support
  */
-package org.eobjects.metamodel.couchdb;
+package org.apache.metamodel.couchdb;
 

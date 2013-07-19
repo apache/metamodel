@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import java.util.Iterator;
 

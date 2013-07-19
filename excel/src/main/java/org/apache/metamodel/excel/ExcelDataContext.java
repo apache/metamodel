@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,21 +24,21 @@ import java.io.InputStream;
 import java.io.PushbackInputStream;
 
 import org.apache.poi.POIXMLDocument;
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.QueryPostprocessDataContext;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.UpdateableDataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.FileHelper;
-import org.eobjects.metamodel.util.FileResource;
-import org.eobjects.metamodel.util.LazyRef;
-import org.eobjects.metamodel.util.Ref;
-import org.eobjects.metamodel.util.Resource;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FileResource;
+import org.apache.metamodel.util.LazyRef;
+import org.apache.metamodel.util.Ref;
+import org.apache.metamodel.util.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

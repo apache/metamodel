@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.eobjects.metamodel.drop.AbstractTableDropBuilder;
-import org.eobjects.metamodel.drop.TableDropBuilder;
-import org.eobjects.metamodel.jdbc.dialects.IQueryRewriter;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.drop.AbstractTableDropBuilder;
+import org.apache.metamodel.drop.TableDropBuilder;
+import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 /**
  * {@link TableDropBuilder} that issues an SQL DROP TABLE statement

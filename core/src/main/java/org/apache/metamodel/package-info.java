@@ -19,5 +19,5 @@
 /**
  * Root package for MetaModel
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 

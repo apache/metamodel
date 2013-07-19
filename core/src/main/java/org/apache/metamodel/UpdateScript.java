@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
-import org.eobjects.metamodel.util.Action;
+import org.apache.metamodel.util.Action;
 
 /**
  * Represents any updating operation or update script that can be executed on a

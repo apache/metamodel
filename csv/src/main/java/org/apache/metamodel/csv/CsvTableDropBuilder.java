@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.csv;
+package org.apache.metamodel.csv;
 
-import org.eobjects.metamodel.drop.AbstractTableDropBuilder;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.drop.AbstractTableDropBuilder;
+import org.apache.metamodel.schema.Table;
 
 final class CsvTableDropBuilder extends AbstractTableDropBuilder {
 

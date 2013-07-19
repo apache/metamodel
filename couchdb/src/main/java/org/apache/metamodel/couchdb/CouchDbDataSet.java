@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.couchdb;
+package org.apache.metamodel.couchdb;
 
 import java.util.Iterator;
 import java.util.List;
@@ -25,10 +25,10 @@ import java.util.Map;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.ektorp.StreamingViewResult;
-import org.eobjects.metamodel.data.AbstractDataSet;
-import org.eobjects.metamodel.data.DefaultRow;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.query.SelectItem;
+import org.apache.metamodel.data.AbstractDataSet;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.SelectItem;
 
 /**
  * DataSet implementation for couch db.

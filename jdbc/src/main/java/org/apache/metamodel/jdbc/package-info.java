@@ -19,5 +19,5 @@
 /**
  * Module package for JDBC compliant databases
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 

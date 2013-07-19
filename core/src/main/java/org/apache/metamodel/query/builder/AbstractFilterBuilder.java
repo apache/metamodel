@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.builder;
+package org.apache.metamodel.query.builder;
 
 import java.util.Collection;
 import java.util.Date;
 
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.OperatorType;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
 
 /**
  * Abstract implementation of {@link FilterBuilder} interface. All built filters

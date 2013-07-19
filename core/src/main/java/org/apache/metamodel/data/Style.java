@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.data;
+package org.apache.metamodel.data;
 
 import java.io.Serializable;
 

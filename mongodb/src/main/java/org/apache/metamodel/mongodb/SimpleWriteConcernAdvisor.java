@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.mongodb;
+package org.apache.metamodel.mongodb;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;

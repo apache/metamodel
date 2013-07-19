@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.data;
+package org.apache.metamodel.data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,8 +25,8 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.util.EqualsBuilder;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.util.EqualsBuilder;
 
 /**
  * {@link TableModel} implementation which wraps a {@link DataSet} and presents its data.

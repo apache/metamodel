@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -33,27 +33,27 @@ import java.util.StringTokenizer;
 
 import javax.sql.DataSource;
 
-import org.eobjects.metamodel.AbstractDataContext;
-import org.eobjects.metamodel.BatchUpdateScript;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.UpdateableDataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.EmptyDataSet;
-import org.eobjects.metamodel.data.MaxRowsDataSet;
-import org.eobjects.metamodel.jdbc.dialects.DB2QueryRewriter;
-import org.eobjects.metamodel.jdbc.dialects.DefaultQueryRewriter;
-import org.eobjects.metamodel.jdbc.dialects.H2QueryRewriter;
-import org.eobjects.metamodel.jdbc.dialects.HsqldbQueryRewriter;
-import org.eobjects.metamodel.jdbc.dialects.IQueryRewriter;
-import org.eobjects.metamodel.jdbc.dialects.MysqlQueryRewriter;
-import org.eobjects.metamodel.jdbc.dialects.PostgresqlQueryRewriter;
-import org.eobjects.metamodel.jdbc.dialects.SQLServerQueryRewriter;
-import org.eobjects.metamodel.query.CompiledQuery;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.TableType;
-import org.eobjects.metamodel.util.FileHelper;
+import org.apache.metamodel.AbstractDataContext;
+import org.apache.metamodel.BatchUpdateScript;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.EmptyDataSet;
+import org.apache.metamodel.data.MaxRowsDataSet;
+import org.apache.metamodel.jdbc.dialects.DB2QueryRewriter;
+import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
+import org.apache.metamodel.jdbc.dialects.H2QueryRewriter;
+import org.apache.metamodel.jdbc.dialects.HsqldbQueryRewriter;
+import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
+import org.apache.metamodel.jdbc.dialects.MysqlQueryRewriter;
+import org.apache.metamodel.jdbc.dialects.PostgresqlQueryRewriter;
+import org.apache.metamodel.jdbc.dialects.SQLServerQueryRewriter;
+import org.apache.metamodel.query.CompiledQuery;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.TableType;
+import org.apache.metamodel.util.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

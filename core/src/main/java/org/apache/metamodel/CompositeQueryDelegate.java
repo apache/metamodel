@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.Func;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.Func;
 
 final class CompositeQueryDelegate extends QueryPostprocessDelegate {
 

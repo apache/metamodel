@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.util;
+package org.apache.metamodel.util;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -25,8 +25,8 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Date;
 
-import org.eobjects.metamodel.query.QueryParameter;
-import org.eobjects.metamodel.schema.ColumnType;
+import org.apache.metamodel.query.QueryParameter;
+import org.apache.metamodel.schema.ColumnType;
 
 /**
  * Helper class for formatting

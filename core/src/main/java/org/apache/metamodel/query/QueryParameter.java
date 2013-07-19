@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
-import org.eobjects.metamodel.DataContext;
+import org.apache.metamodel.DataContext;
 
 /**
  * Represents a query parameter, in SQL represented with a '?' symbol.

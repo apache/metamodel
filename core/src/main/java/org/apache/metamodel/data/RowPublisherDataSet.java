@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.data;
+package org.apache.metamodel.data;
 
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.util.Action;
-import org.eobjects.metamodel.util.SharedExecutorService;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.util.Action;
+import org.apache.metamodel.util.SharedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

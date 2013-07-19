@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.intercept;
+package org.apache.metamodel.intercept;
 
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.create.ColumnCreationBuilder;
-import org.eobjects.metamodel.create.TableCreationBuilder;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.create.ColumnCreationBuilder;
+import org.apache.metamodel.create.TableCreationBuilder;
+import org.apache.metamodel.schema.Table;
 
 final class InterceptableTableCreationBuilder implements TableCreationBuilder {
 

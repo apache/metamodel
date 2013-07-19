@@ -19,5 +19,5 @@
 /**
  * Module package for MongoDB support
  */
-package org.eobjects.metamodel.mongodb;
+package org.apache.metamodel.mongodb;
 

@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import java.util.Arrays;
 
-import org.eobjects.metamodel.jdbc.dialects.DefaultQueryRewriter;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
+import org.apache.metamodel.schema.Table;
 
 public class JdbcInsertBuilderTest extends JdbcTestCase {
 

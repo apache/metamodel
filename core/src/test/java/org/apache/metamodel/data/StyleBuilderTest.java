@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.data;
+package org.apache.metamodel.data;
 
-import org.eobjects.metamodel.data.Style.Color;
+import org.apache.metamodel.data.Style.Color;
 
 import junit.framework.TestCase;
 

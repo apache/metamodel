@@ -16,20 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import java.io.File;
 import java.lang.reflect.Field;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.data.Style;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.Style;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 public class DefaultSpreadsheetReaderDelegateTest extends TestCase {
 

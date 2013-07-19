@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.data;
+package org.apache.metamodel.data;
 
 import java.util.List;
 
-import org.eobjects.metamodel.util.BaseObject;
+import org.apache.metamodel.util.BaseObject;
 
 /**
  * Default immutable implementation of {@link Style}.

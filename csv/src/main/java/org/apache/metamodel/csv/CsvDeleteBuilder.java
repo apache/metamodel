@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.csv;
+package org.apache.metamodel.csv;
 
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.delete.AbstractRowDeletionBuilder;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.Action;
-import org.eobjects.metamodel.util.FileHelper;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.Action;
+import org.apache.metamodel.util.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.pojo;
+package org.apache.metamodel.pojo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,21 +25,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.MetaModelHelper;
-import org.eobjects.metamodel.QueryPostprocessDataContext;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.UpdateableDataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.MaxRowsDataSet;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.SimpleTableDef;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelHelper;
+import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.MaxRowsDataSet;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.SimpleTableDef;
 
 /**
  * A {@link DataContext} used to serve MetaModel support for collections of Java

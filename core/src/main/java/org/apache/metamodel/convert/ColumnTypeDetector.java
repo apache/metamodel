@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.convert;
+package org.apache.metamodel.convert;
 
-import org.eobjects.metamodel.util.BooleanComparator;
-import org.eobjects.metamodel.util.TimeComparator;
+import org.apache.metamodel.util.BooleanComparator;
+import org.apache.metamodel.util.TimeComparator;
 
 /**
  * A class capable of detecting/narrowing a string column type to something more

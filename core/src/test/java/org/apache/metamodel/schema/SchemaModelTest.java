@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.schema;
+package org.apache.metamodel.schema;
 
 import java.util.Arrays;
 
-import org.eobjects.metamodel.MetaModelTestCase;
+import org.apache.metamodel.MetaModelTestCase;
 
 public class SchemaModelTest extends MetaModelTestCase {
 

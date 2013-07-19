@@ -16,20 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.access;
+package org.apache.metamodel.access;
 
 import java.util.Arrays;
 import java.util.Date;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 public class AccessDataContextTest extends TestCase {
 

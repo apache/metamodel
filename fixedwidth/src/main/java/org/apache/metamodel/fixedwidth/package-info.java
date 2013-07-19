@@ -19,5 +19,5 @@
 /**
  * Module package for Fixed width value files
  */
-package org.eobjects.metamodel.fixedwidth;
+package org.apache.metamodel.fixedwidth;
 

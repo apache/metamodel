@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
-import org.eobjects.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Schema;
 
 /**
  * A simple subclass of {@link QueryPostprocessDataContext} which provides less

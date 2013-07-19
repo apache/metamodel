@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
 import java.util.List;
 
-import org.eobjects.metamodel.util.BaseObject;
+import org.apache.metamodel.util.BaseObject;
 
 /**
  * Represents a GROUP BY item. GroupByItems always use a select item (that may

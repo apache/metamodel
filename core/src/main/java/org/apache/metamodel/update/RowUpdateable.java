@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.update;
+package org.apache.metamodel.update;
 
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.schema.Table;
 
 public interface RowUpdateable {
 

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.intercept;
+package org.apache.metamodel.intercept;
 
-import org.eobjects.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.insert.RowInsertionBuilder;
 
 /**
  * An {@link Interceptor} for {@link RowInsertionBuilder}, allowing for

@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eobjects.metamodel.schema.Column;
+import org.apache.metamodel.schema.Column;
 
 /**
  * Represents a clause of filters in the query. This type of clause is used for

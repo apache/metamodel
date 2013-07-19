@@ -19,5 +19,5 @@
 /**
  * API for schema structure
  */
-package org.eobjects.metamodel.schema;
+package org.apache.metamodel.schema;
 

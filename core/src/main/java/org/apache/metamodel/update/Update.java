@@ -16,24 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.update;
+package org.apache.metamodel.update;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.UpdateableDataContext;
-import org.eobjects.metamodel.data.AbstractRowBuilder;
-import org.eobjects.metamodel.data.Style;
-import org.eobjects.metamodel.data.WhereClauseBuilder;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.query.builder.AbstractFilterBuilder;
-import org.eobjects.metamodel.query.builder.FilterBuilder;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.data.AbstractRowBuilder;
+import org.apache.metamodel.data.Style;
+import org.apache.metamodel.data.WhereClauseBuilder;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.query.builder.AbstractFilterBuilder;
+import org.apache.metamodel.query.builder.FilterBuilder;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
 
 /**
  * Represents a single UPDATE operation to be applied to a

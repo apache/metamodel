@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc.dialects;
+package org.apache.metamodel.jdbc.dialects;
 
-import org.eobjects.metamodel.jdbc.JdbcDataContext;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 /**
  * Query rewriter for PostgreSQL

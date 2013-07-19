@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.intercept;
+package org.apache.metamodel.intercept;
 
-import org.eobjects.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSet;
 
 /**
  * An {@link Interceptor} for {@link DataSet}s, allowing to touch, enrich or

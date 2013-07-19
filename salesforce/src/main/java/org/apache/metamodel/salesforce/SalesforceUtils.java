@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.salesforce;
+package org.apache.metamodel.salesforce;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

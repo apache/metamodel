@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.dialects;
+package org.apache.metamodel.dialects;
 
 import java.sql.Types;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.jdbc.dialects.PostgresqlQueryRewriter;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.MutableColumn;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.MutableTable;
+import org.apache.metamodel.jdbc.dialects.PostgresqlQueryRewriter;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
 
 public class PostgresqlQueryRewriterTest extends TestCase {
 

@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.schema;
+package org.apache.metamodel.schema;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eobjects.metamodel.util.Action;
-import org.eobjects.metamodel.util.CollectionUtils;
-import org.eobjects.metamodel.util.EqualsBuilder;
-import org.eobjects.metamodel.util.HasNameMapper;
-import org.eobjects.metamodel.util.Predicate;
+import org.apache.metamodel.util.Action;
+import org.apache.metamodel.util.CollectionUtils;
+import org.apache.metamodel.util.EqualsBuilder;
+import org.apache.metamodel.util.HasNameMapper;
+import org.apache.metamodel.util.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

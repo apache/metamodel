@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.insert;
+package org.apache.metamodel.insert;
 
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.data.AbstractRowBuilder;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.data.AbstractRowBuilder;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
 
 /**
  * Abstract implementation of the {@link RowInsertionBuilder} interface,

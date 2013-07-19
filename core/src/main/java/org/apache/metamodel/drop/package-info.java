@@ -19,5 +19,5 @@
 /**
  * API for dropping tables
  */
-package org.eobjects.metamodel.drop;
+package org.apache.metamodel.drop;
 

@@ -16,20 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.mongodb;
+package org.apache.metamodel.mongodb;
 
 import java.io.Closeable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eobjects.metamodel.AbstractUpdateCallback;
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.create.TableCreationBuilder;
-import org.eobjects.metamodel.delete.RowDeletionBuilder;
-import org.eobjects.metamodel.drop.TableDropBuilder;
-import org.eobjects.metamodel.insert.RowInsertionBuilder;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.AbstractUpdateCallback;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.create.TableCreationBuilder;
+import org.apache.metamodel.delete.RowDeletionBuilder;
+import org.apache.metamodel.drop.TableDropBuilder;
+import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 import com.mongodb.DBCollection;
 

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.create;
+package org.apache.metamodel.create;
 
-import org.eobjects.metamodel.schema.Column;
+import org.apache.metamodel.schema.Column;
 
 /**
  * Builder object for creating {@link Column}s. This class also extendsthe

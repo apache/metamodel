@@ -16,23 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.mongodb;
+package org.apache.metamodel.mongodb;
 
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.insert.RowInsertionBuilder;
-import org.eobjects.metamodel.jdbc.JdbcDataContext;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.FileHelper;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.FileHelper;
 
 import com.mongodb.DB;
 import com.mongodb.Mongo;

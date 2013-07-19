@@ -1,4 +1,4 @@
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -6,12 +6,12 @@ import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.jdbc.JdbcDataContext;
-import org.eobjects.metamodel.jdbc.JdbcTestTemplates;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.jdbc.JdbcTestTemplates;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 /**
  * DB2 integration test. This is a read-only integration test, meant to be

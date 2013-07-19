@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.csv;
+package org.apache.metamodel.csv;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,28 +28,28 @@ import javax.swing.table.TableModel;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.QueryPostprocessDataContext;
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.convert.Converters;
-import org.eobjects.metamodel.convert.StringToBooleanConverter;
-import org.eobjects.metamodel.convert.StringToIntegerConverter;
-import org.eobjects.metamodel.convert.TypeConverter;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.DataSetTableModel;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.FunctionType;
-import org.eobjects.metamodel.query.OperatorType;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.MutableColumn;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.FileHelper;
-import org.eobjects.metamodel.util.MutableRef;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.convert.Converters;
+import org.apache.metamodel.convert.StringToBooleanConverter;
+import org.apache.metamodel.convert.StringToIntegerConverter;
+import org.apache.metamodel.convert.TypeConverter;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetTableModel;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.FunctionType;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.MutableRef;
 
 public class CsvDataContextTest extends TestCase {
 

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.intercept;
+package org.apache.metamodel.intercept;
 
-import org.eobjects.metamodel.delete.RowDeletionBuilder;
+import org.apache.metamodel.delete.RowDeletionBuilder;
 
 /**
  * An {@link Interceptor} for {@link RowDeletionBuilder}, allowing for

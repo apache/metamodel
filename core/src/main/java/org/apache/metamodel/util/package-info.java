@@ -19,5 +19,5 @@
 /**
  * Utilities and convenient classes
  */
-package org.eobjects.metamodel.util;
+package org.apache.metamodel.util;
 

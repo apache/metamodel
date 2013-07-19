@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.couchdb;
+package org.apache.metamodel.couchdb;
 
 import java.util.List;
 
 import org.ektorp.CouchDbConnector;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.delete.AbstractRowDeletionBuilder;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.schema.Table;
 
 final class CouchDbRowDeletionBuilder extends AbstractRowDeletionBuilder {
 

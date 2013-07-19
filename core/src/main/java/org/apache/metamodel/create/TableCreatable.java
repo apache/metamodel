@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.create;
+package org.apache.metamodel.create;
 
-import org.eobjects.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Schema;
 
 /**
  * Interface for objects that support creating new tables.

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.parser;
+package org.apache.metamodel.query.parser;
 
-import org.eobjects.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelException;
 
 /**
  * Subtype of {@link MetaModelException} which indicate a problem in parsing a

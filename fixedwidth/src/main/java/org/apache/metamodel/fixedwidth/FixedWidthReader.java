@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.fixedwidth;
+package org.apache.metamodel.fixedwidth;
 
 import java.io.BufferedReader;
 import java.io.Closeable;

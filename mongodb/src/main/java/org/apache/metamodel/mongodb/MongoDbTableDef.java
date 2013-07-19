@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.mongodb;
+package org.apache.metamodel.mongodb;
 
 import java.io.Serializable;
 
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.util.SimpleTableDef;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.util.SimpleTableDef;
 
 /**
  * Defines a table layout for {@link MongoDbDataContext} tables. This class can

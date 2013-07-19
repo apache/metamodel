@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.builder;
+package org.apache.metamodel.query.builder;
 
 import java.util.Collection;
 import java.util.Date;
 
-import org.eobjects.metamodel.schema.Column;
+import org.apache.metamodel.schema.Column;
 
 /**
  * Interface for builder callbacks that "respond" to filter condition building.

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.convert;
+package org.apache.metamodel.convert;
 
-import org.eobjects.metamodel.util.BooleanComparator;
+import org.apache.metamodel.util.BooleanComparator;
 
 /**
  * A {@link TypeConverter} that converts String values (on the physical layer)

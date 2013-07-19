@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
 import java.util.List;
 import java.util.ListIterator;
 
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.DefaultRow;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.data.SimpleDataSetHeader;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.update.AbstractRowUpdationBuilder;
-import org.eobjects.metamodel.update.RowUpdationBuilder;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.SimpleDataSetHeader;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.update.AbstractRowUpdationBuilder;
+import org.apache.metamodel.update.RowUpdationBuilder;
 
 /**
  * Simple implementation of the {@link RowUpdationBuilder} interface, which

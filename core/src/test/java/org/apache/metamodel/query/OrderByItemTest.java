@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
-import org.eobjects.metamodel.query.OrderByItem.Direction;
+import org.apache.metamodel.query.OrderByItem.Direction;
 import junit.framework.TestCase;
 
 public class OrderByItemTest extends TestCase {

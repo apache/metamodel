@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
-import org.eobjects.metamodel.util.AggregateBuilder;
+import org.apache.metamodel.util.AggregateBuilder;
 
 final class CountAggregateBuilder implements AggregateBuilder<Long> {
 

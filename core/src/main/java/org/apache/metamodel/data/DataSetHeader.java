@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.data;
+package org.apache.metamodel.data;
 
 import java.io.Serializable;
 
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
 
 /**
  * Represents the header of a {@link DataSet}, which define the

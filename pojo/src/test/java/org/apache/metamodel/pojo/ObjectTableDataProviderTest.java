@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.pojo;
+package org.apache.metamodel.pojo;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.util.SimpleTableDef;
+import org.apache.metamodel.util.SimpleTableDef;
 
 public class ObjectTableDataProviderTest extends TestCase {
 

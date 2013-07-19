@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.delete;
+package org.apache.metamodel.delete;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.data.WhereClauseBuilder;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.data.WhereClauseBuilder;
+import org.apache.metamodel.schema.Table;
 
 /**
  * Builder object for row deletions in a {@link Table}.

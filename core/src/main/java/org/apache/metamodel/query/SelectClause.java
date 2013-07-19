@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
 import java.util.List;
 
-import org.eobjects.metamodel.schema.Column;
+import org.apache.metamodel.schema.Column;
 
 /**
  * Represents the SELECT clause of a query containing SelectItems.

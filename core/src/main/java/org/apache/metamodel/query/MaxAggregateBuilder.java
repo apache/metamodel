@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
-import org.eobjects.metamodel.util.AggregateBuilder;
-import org.eobjects.metamodel.util.ObjectComparator;
+import org.apache.metamodel.util.AggregateBuilder;
+import org.apache.metamodel.util.ObjectComparator;
 
 final class MaxAggregateBuilder implements AggregateBuilder<Object> {
 

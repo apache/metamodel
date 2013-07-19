@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.data;
+package org.apache.metamodel.data;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.MutableColumn;
-import org.eobjects.metamodel.util.Action;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.util.Action;
 
 public class RowPublisherDataSetTest extends TestCase {
 

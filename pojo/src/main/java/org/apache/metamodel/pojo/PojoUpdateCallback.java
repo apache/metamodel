@@ -16,32 +16,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.pojo;
+package org.apache.metamodel.pojo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eobjects.metamodel.AbstractUpdateCallback;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.create.AbstractTableCreationBuilder;
-import org.eobjects.metamodel.create.TableCreationBuilder;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.delete.AbstractRowDeletionBuilder;
-import org.eobjects.metamodel.delete.RowDeletionBuilder;
-import org.eobjects.metamodel.drop.AbstractTableDropBuilder;
-import org.eobjects.metamodel.drop.TableDropBuilder;
-import org.eobjects.metamodel.insert.AbstractRowInsertionBuilder;
-import org.eobjects.metamodel.insert.RowInsertionBuilder;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.SimpleTableDef;
+import org.apache.metamodel.AbstractUpdateCallback;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.create.AbstractTableCreationBuilder;
+import org.apache.metamodel.create.TableCreationBuilder;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
+import org.apache.metamodel.delete.RowDeletionBuilder;
+import org.apache.metamodel.drop.AbstractTableDropBuilder;
+import org.apache.metamodel.drop.TableDropBuilder;
+import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
+import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.SimpleTableDef;
 
 /**
  * Update callback for the pojo module.

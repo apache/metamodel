@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.csv;
+package org.apache.metamodel.csv;
 
 import java.io.IOException;
 
-import org.eobjects.metamodel.schema.AbstractTable;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.MutableColumn;
-import org.eobjects.metamodel.schema.Relationship;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.TableType;
-import org.eobjects.metamodel.util.AlphabeticSequence;
-import org.eobjects.metamodel.util.FileHelper;
+import org.apache.metamodel.schema.AbstractTable;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.Relationship;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.TableType;
+import org.apache.metamodel.util.AlphabeticSequence;
+import org.apache.metamodel.util.FileHelper;
 
 import au.com.bytecode.opencsv.CSVReader;
 

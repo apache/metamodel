@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.util;
+package org.apache.metamodel.util;
 
 import java.util.Comparator;
 
 import junit.framework.TestCase;
-import org.eobjects.metamodel.util.ToStringComparator;
+import org.apache.metamodel.util.ToStringComparator;
 
 public class ToStringComparatorTest extends TestCase {
 

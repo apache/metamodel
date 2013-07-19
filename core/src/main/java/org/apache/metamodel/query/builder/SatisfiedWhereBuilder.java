@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.builder;
+package org.apache.metamodel.query.builder;
 
-import org.eobjects.metamodel.schema.Column;
+import org.apache.metamodel.schema.Column;
 
 public interface SatisfiedWhereBuilder<B extends SatisfiedQueryBuilder<?>>
 		extends SatisfiedQueryBuilder<B> {

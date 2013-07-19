@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.parser;
+package org.apache.metamodel.query.parser;
 
-import org.eobjects.metamodel.query.Query;
+import org.apache.metamodel.query.Query;
 
 final class WhereItemParser implements QueryPartProcessor {
 

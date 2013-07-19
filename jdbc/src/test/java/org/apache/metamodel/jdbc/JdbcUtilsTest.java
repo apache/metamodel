@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,7 +25,7 @@ import java.util.logging.LogManager;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelException;
 
 public class JdbcUtilsTest extends TestCase {
 

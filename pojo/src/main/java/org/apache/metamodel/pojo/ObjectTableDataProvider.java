@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.pojo;
+package org.apache.metamodel.pojo;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.util.SimpleTableDef;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.util.SimpleTableDef;
 
 /**
  * {@link TableDataProvider} for regular Java objects with getter and setter

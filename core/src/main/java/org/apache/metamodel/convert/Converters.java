@@ -16,26 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.convert;
+package org.apache.metamodel.convert;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.MetaModelHelper;
-import org.eobjects.metamodel.UpdateableDataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.data.RowBuilder;
-import org.eobjects.metamodel.data.Style;
-import org.eobjects.metamodel.intercept.InterceptableDataContext;
-import org.eobjects.metamodel.intercept.Interceptors;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.SuperColumnType;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelHelper;
+import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.RowBuilder;
+import org.apache.metamodel.data.Style;
+import org.apache.metamodel.intercept.InterceptableDataContext;
+import org.apache.metamodel.intercept.Interceptors;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.SuperColumnType;
+import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

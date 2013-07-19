@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.builder;
+package org.apache.metamodel.query.builder;
 
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 /**
  * The initial interface used when building a query. A query starts by stating

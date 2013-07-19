@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.parser;
+package org.apache.metamodel.query.parser;
 
 /**
  * Parser of query parts. This parser is aware of parenthesis symbols '(' and

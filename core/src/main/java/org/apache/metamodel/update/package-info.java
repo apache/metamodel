@@ -19,5 +19,5 @@
 /**
  * API for updating rows
  */
-package org.eobjects.metamodel.update;
+package org.apache.metamodel.update;
 

@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.xml;
+package org.apache.metamodel.xml;
 
 import java.io.File;
 import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 public class XmlSaxDataContextTest extends TestCase {
 

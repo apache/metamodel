@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.fixedwidth;
+package org.apache.metamodel.fixedwidth;
 
-import org.eobjects.metamodel.fixedwidth.FixedWidthConfiguration;
+import org.apache.metamodel.fixedwidth.FixedWidthConfiguration;
 
 import junit.framework.TestCase;
 

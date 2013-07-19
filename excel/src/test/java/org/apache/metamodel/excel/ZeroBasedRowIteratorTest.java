@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import java.io.FileInputStream;
 
@@ -26,7 +26,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.easymock.EasyMock;
-import org.eobjects.metamodel.excel.ZeroBasedRowIterator;
+import org.apache.metamodel.excel.ZeroBasedRowIterator;
 
 public class ZeroBasedRowIteratorTest extends TestCase {
 

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.mongodb;
+package org.apache.metamodel.mongodb;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,16 +26,16 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.InMemoryDataSet;
-import org.eobjects.metamodel.query.FunctionType;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.InMemoryDataSet;
+import org.apache.metamodel.query.FunctionType;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;

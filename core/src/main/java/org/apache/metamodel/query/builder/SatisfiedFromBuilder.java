@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.builder;
+package org.apache.metamodel.query.builder;
 
-import org.eobjects.metamodel.query.FunctionType;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.query.FunctionType;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
 
 /**
  * Represents a builder where the FROM part is satisfied, ie. a SELECT clause is

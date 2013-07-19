@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc.dialects;
+package org.apache.metamodel.jdbc.dialects;
 
 import java.sql.Types;
 
-import org.eobjects.metamodel.jdbc.JdbcDataContext;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.ColumnType;
+import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.ColumnType;
 
 /**
  * A query rewriter can be used for rewriting (part of) a query's string

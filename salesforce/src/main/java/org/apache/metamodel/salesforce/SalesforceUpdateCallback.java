@@ -16,26 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.salesforce;
+package org.apache.metamodel.salesforce;
 
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eobjects.metamodel.AbstractUpdateCallback;
-import org.eobjects.metamodel.create.TableCreationBuilder;
-import org.eobjects.metamodel.delete.RowDeletionBuilder;
-import org.eobjects.metamodel.drop.TableDropBuilder;
-import org.eobjects.metamodel.insert.RowInsertionBuilder;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.LogicalOperator;
-import org.eobjects.metamodel.query.OperatorType;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.update.RowUpdationBuilder;
+import org.apache.metamodel.AbstractUpdateCallback;
+import org.apache.metamodel.create.TableCreationBuilder;
+import org.apache.metamodel.delete.RowDeletionBuilder;
+import org.apache.metamodel.drop.TableDropBuilder;
+import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.LogicalOperator;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.update.RowUpdationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

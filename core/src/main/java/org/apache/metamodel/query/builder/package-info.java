@@ -19,5 +19,5 @@
 /**
  * API for query building
  */
-package org.eobjects.metamodel.query.builder;
+package org.apache.metamodel.query.builder;
 

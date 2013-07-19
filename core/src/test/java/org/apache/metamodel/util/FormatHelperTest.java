@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.util;
+package org.apache.metamodel.util;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
 
-import org.eobjects.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.ColumnType;
 
 import junit.framework.TestCase;
 

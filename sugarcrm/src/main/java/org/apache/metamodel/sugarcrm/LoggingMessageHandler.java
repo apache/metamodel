@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.sugarcrm;
+package org.apache.metamodel.sugarcrm;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Collections;

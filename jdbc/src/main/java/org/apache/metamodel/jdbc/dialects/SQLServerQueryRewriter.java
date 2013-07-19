@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc.dialects;
+package org.apache.metamodel.jdbc.dialects;
 
-import org.eobjects.metamodel.jdbc.JdbcDataContext;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.SelectClause;
+import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectClause;
 
 public class SQLServerQueryRewriter extends DefaultQueryRewriter {
 

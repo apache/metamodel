@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.schema;
+package org.apache.metamodel.schema;
 
 import java.io.Serializable;
 
-import org.eobjects.metamodel.DataContext;
+import org.apache.metamodel.DataContext;
 
 /**
  * Represents a schema and it's metadata description. Schemas represent a

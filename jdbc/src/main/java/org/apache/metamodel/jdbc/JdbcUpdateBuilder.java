@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.jdbc.dialects.IQueryRewriter;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.update.AbstractRowUpdationBuilder;
-import org.eobjects.metamodel.update.RowUpdationBuilder;
-import org.eobjects.metamodel.util.FileHelper;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.update.AbstractRowUpdationBuilder;
+import org.apache.metamodel.update.RowUpdationBuilder;
+import org.apache.metamodel.util.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -29,16 +29,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.jdbc.dialects.IQueryRewriter;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.OperatorType;
-import org.eobjects.metamodel.query.QueryParameter;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.TableType;
-import org.eobjects.metamodel.util.FileHelper;
-import org.eobjects.metamodel.util.FormatHelper;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.QueryParameter;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.TableType;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FormatHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

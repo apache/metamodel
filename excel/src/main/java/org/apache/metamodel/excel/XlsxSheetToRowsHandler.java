@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,10 +36,10 @@ import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
-import org.eobjects.metamodel.data.Style;
-import org.eobjects.metamodel.data.Style.SizeUnit;
-import org.eobjects.metamodel.data.StyleBuilder;
-import org.eobjects.metamodel.util.DateUtils;
+import org.apache.metamodel.data.Style;
+import org.apache.metamodel.data.Style.SizeUnit;
+import org.apache.metamodel.data.StyleBuilder;
+import org.apache.metamodel.util.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;

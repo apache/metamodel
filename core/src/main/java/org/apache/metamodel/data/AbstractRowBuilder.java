@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.data;
+package org.apache.metamodel.data;
 
 import java.util.Arrays;
 
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
 
 /**
  * Abstract {@link RowBuilder} implementation.

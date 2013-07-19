@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.schema;
+package org.apache.metamodel.schema;
 
 /**
  * This is a copy of the content (comments removed) of Java 6.0's

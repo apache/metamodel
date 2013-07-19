@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.convert;
+package org.apache.metamodel.convert;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.intercept.DataSetInterceptor;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.intercept.DataSetInterceptor;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
 
 /**
  * A {@link DataSetInterceptor} used for intercepting values in {@link DataSet}s

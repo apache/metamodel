@@ -19,5 +19,5 @@
 /**
  * Module package for Comma Separated Values (CSV) files
  */
-package org.eobjects.metamodel.csv;
+package org.apache.metamodel.csv;
 

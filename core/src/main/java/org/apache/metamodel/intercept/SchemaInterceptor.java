@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.intercept;
+package org.apache.metamodel.intercept;
 
-import org.eobjects.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Schema;
 
 /**
  * An {@link Interceptor} for {@link Schema}s, which allows for intercepting

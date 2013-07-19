@@ -19,5 +19,5 @@
 /**
  * Module package for XML files
  */
-package org.eobjects.metamodel.xml;
+package org.apache.metamodel.xml;
 

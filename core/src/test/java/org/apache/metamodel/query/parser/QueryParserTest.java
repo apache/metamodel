@@ -16,26 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.parser;
+package org.apache.metamodel.query.parser;
 
 import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.MetaModelHelper;
-import org.eobjects.metamodel.MockDataContext;
-import org.eobjects.metamodel.query.FilterClause;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.query.OperatorType;
-import org.eobjects.metamodel.query.OrderByItem;
-import org.eobjects.metamodel.query.OrderByItem.Direction;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.MutableColumn;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelHelper;
+import org.apache.metamodel.MockDataContext;
+import org.apache.metamodel.query.FilterClause;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.OrderByItem;
+import org.apache.metamodel.query.OrderByItem.Direction;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
 
 public class QueryParserTest extends TestCase {
 

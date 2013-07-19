@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc.dialects;
+package org.apache.metamodel.jdbc.dialects;
 
-import org.eobjects.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.jdbc.JdbcDataContext;
 
 /**
  * Query rewriter for H2

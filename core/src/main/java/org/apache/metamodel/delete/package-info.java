@@ -19,5 +19,5 @@
 /**
  * API for deleting rows
  */
-package org.eobjects.metamodel.delete;
+package org.apache.metamodel.delete;
 

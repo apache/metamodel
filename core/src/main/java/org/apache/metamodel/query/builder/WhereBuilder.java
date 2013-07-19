@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.builder;
+package org.apache.metamodel.query.builder;
 
-import org.eobjects.metamodel.query.CompiledQuery;
-import org.eobjects.metamodel.query.QueryParameter;
+import org.apache.metamodel.query.CompiledQuery;
+import org.apache.metamodel.query.QueryParameter;
 
 /**
  * Builder interface for WHERE items.

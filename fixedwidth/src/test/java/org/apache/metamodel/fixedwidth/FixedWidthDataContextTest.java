@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.fixedwidth;
+package org.apache.metamodel.fixedwidth;
 
 import java.io.File;
 import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.fixedwidth.FixedWidthConfiguration;
-import org.eobjects.metamodel.fixedwidth.FixedWidthDataContext;
-import org.eobjects.metamodel.fixedwidth.InconsistentValueWidthException;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.fixedwidth.FixedWidthConfiguration;
+import org.apache.metamodel.fixedwidth.FixedWidthDataContext;
+import org.apache.metamodel.fixedwidth.InconsistentValueWidthException;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 public class FixedWidthDataContextTest extends TestCase {
 

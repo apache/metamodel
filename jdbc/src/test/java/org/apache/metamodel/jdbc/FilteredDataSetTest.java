@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import java.sql.Connection;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.FilteredDataSet;
-import org.eobjects.metamodel.data.IRowFilter;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.FilteredDataSet;
+import org.apache.metamodel.data.IRowFilter;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Table;
 
 public class FilteredDataSetTest extends JdbcTestCase {
 

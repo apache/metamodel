@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
 import java.util.List;
 
-import org.eobjects.metamodel.util.BaseObject;
+import org.apache.metamodel.util.BaseObject;
 
 /**
  * Represents an ORDER BY item. An OrderByItem sorts the resulting DataSet

@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.mongodb;
+package org.apache.metamodel.mongodb;
 
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.create.AbstractTableCreationBuilder;
-import org.eobjects.metamodel.create.TableCreationBuilder;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.ImmutableColumn;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.create.AbstractTableCreationBuilder;
+import org.apache.metamodel.create.TableCreationBuilder;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.ImmutableColumn;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 final class MongoDbTableCreationBuilder extends
 		AbstractTableCreationBuilder<MongoDbUpdateCallback> implements

@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.insert;
+package org.apache.metamodel.insert;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.UpdateableDataContext;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
 
 public abstract class SyntaxExamplesTest extends TestCase {
 

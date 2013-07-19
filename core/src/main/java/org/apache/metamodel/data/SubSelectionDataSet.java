@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.data;
+package org.apache.metamodel.data;
 
-import org.eobjects.metamodel.query.SelectItem;
+import org.apache.metamodel.query.SelectItem;
 
 /**
  * {@link DataSet} wrapper for doing subselection.

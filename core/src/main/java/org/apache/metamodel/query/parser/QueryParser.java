@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.parser;
+package org.apache.metamodel.query.parser;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.query.Query;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.query.Query;
 
 /**
  * A parser class of for full SQL-like queries.

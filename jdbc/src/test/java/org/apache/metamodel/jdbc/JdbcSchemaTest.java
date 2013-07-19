@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,9 +26,9 @@ import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.util.Arrays;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 public class JdbcSchemaTest extends JdbcTestCase {
 

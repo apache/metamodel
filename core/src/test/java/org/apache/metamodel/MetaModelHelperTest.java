@@ -16,33 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.DataSetHeader;
-import org.eobjects.metamodel.data.DefaultRow;
-import org.eobjects.metamodel.data.EmptyDataSet;
-import org.eobjects.metamodel.data.InMemoryDataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.data.SimpleDataSetHeader;
-import org.eobjects.metamodel.data.SubSelectionDataSet;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.query.JoinType;
-import org.eobjects.metamodel.query.OperatorType;
-import org.eobjects.metamodel.query.OrderByItem;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.MutableColumn;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetHeader;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.EmptyDataSet;
+import org.apache.metamodel.data.InMemoryDataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.SimpleDataSetHeader;
+import org.apache.metamodel.data.SubSelectionDataSet;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.JoinType;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.OrderByItem;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 public class MetaModelHelperTest extends MetaModelTestCase {
 

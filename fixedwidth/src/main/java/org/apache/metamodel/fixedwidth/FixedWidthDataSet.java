@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.fixedwidth;
+package org.apache.metamodel.fixedwidth;
 
-import org.eobjects.metamodel.data.AbstractDataSet;
-import org.eobjects.metamodel.data.DefaultRow;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.util.FileHelper;
+import org.apache.metamodel.data.AbstractDataSet;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.util.FileHelper;
 
 /**
  * DataSet implementation for fixed width values.

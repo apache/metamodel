@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
 import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.CompositeSchema;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.CompositeSchema;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 public class CompositeDataContextTest extends TestCase {
 

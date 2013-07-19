@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.openoffice;
+package org.apache.metamodel.openoffice;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -29,14 +29,14 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.eobjects.metamodel.AbstractDataContext;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.jdbc.JdbcDataContext;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.TableType;
-import org.eobjects.metamodel.util.FileHelper;
+import org.apache.metamodel.AbstractDataContext;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.TableType;
+import org.apache.metamodel.util.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

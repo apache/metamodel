@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.schema;
+package org.apache.metamodel.schema;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.util.CollectionUtils;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

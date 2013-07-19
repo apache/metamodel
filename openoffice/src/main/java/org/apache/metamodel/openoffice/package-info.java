@@ -19,5 +19,5 @@
 /**
  * Module package for OpenOffice.org database files
  */
-package org.eobjects.metamodel.openoffice;
+package org.apache.metamodel.openoffice;
 

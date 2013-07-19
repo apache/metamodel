@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -34,19 +34,19 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eobjects.metamodel.BatchUpdateScript;
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.create.ColumnCreationBuilder;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.drop.DropTable;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.DateUtils;
-import org.eobjects.metamodel.util.Month;
+import org.apache.metamodel.BatchUpdateScript;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.create.ColumnCreationBuilder;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.drop.DropTable;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.DateUtils;
+import org.apache.metamodel.util.Month;
 import org.junit.Ignore;
 
 /**

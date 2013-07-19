@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.sugarcrm;
+package org.apache.metamodel.sugarcrm;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eobjects.metamodel.schema.AbstractSchema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.Ref;
+import org.apache.metamodel.schema.AbstractSchema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.Ref;
 
 import com.sugarcrm.ws.soap.SugarsoapPortType;
 

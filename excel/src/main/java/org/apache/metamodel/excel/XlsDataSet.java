@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import java.util.Iterator;
 
 import org.apache.poi.ss.usermodel.Workbook;
-import org.eobjects.metamodel.data.AbstractDataSet;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.query.SelectItem;
+import org.apache.metamodel.data.AbstractDataSet;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.SelectItem;
 
 /**
  * Stream {@link DataSet} implementation for Excel support.

@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.fixedwidth;
+package org.apache.metamodel.fixedwidth;
 
-import org.eobjects.metamodel.InconsistentRowFormatException;
-import org.eobjects.metamodel.data.Row;
+import org.apache.metamodel.InconsistentRowFormatException;
+import org.apache.metamodel.data.Row;
 
 /**
  * Exception thrown when inconsistent widths of a Fixed Width Value file

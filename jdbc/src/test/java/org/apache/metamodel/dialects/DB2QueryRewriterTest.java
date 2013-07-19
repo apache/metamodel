@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.dialects;
+package org.apache.metamodel.dialects;
 
 import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.jdbc.dialects.DB2QueryRewriter;
-import org.eobjects.metamodel.query.FunctionType;
-import org.eobjects.metamodel.query.OperatorType;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.MutableColumn;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.TableType;
+import org.apache.metamodel.jdbc.dialects.DB2QueryRewriter;
+import org.apache.metamodel.query.FunctionType;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.TableType;
 
 public class DB2QueryRewriterTest extends TestCase {
 

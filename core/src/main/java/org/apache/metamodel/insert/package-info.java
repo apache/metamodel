@@ -19,5 +19,5 @@
 /**
  * API for inserting rows
  */
-package org.eobjects.metamodel.insert;
+package org.apache.metamodel.insert;
 

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
 import java.io.File;
 import java.io.InputStream;
@@ -27,22 +27,22 @@ import java.util.Collection;
 import javax.sql.DataSource;
 
 import org.ektorp.http.StdHttpClient.Builder;
-import org.eobjects.metamodel.access.AccessDataContext;
-import org.eobjects.metamodel.couchdb.CouchDbDataContext;
-import org.eobjects.metamodel.csv.CsvConfiguration;
-import org.eobjects.metamodel.csv.CsvDataContext;
-import org.eobjects.metamodel.excel.ExcelConfiguration;
-import org.eobjects.metamodel.excel.ExcelDataContext;
-import org.eobjects.metamodel.fixedwidth.FixedWidthConfiguration;
-import org.eobjects.metamodel.fixedwidth.FixedWidthDataContext;
-import org.eobjects.metamodel.jdbc.JdbcDataContext;
-import org.eobjects.metamodel.mongodb.MongoDbDataContext;
-import org.eobjects.metamodel.openoffice.OpenOfficeDataContext;
-import org.eobjects.metamodel.salesforce.SalesforceDataContext;
-import org.eobjects.metamodel.schema.TableType;
-import org.eobjects.metamodel.sugarcrm.SugarCrmDataContext;
-import org.eobjects.metamodel.util.FileHelper;
-import org.eobjects.metamodel.xml.XmlDomDataContext;
+import org.apache.metamodel.access.AccessDataContext;
+import org.apache.metamodel.couchdb.CouchDbDataContext;
+import org.apache.metamodel.csv.CsvConfiguration;
+import org.apache.metamodel.csv.CsvDataContext;
+import org.apache.metamodel.excel.ExcelConfiguration;
+import org.apache.metamodel.excel.ExcelDataContext;
+import org.apache.metamodel.fixedwidth.FixedWidthConfiguration;
+import org.apache.metamodel.fixedwidth.FixedWidthDataContext;
+import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.mongodb.MongoDbDataContext;
+import org.apache.metamodel.openoffice.OpenOfficeDataContext;
+import org.apache.metamodel.salesforce.SalesforceDataContext;
+import org.apache.metamodel.schema.TableType;
+import org.apache.metamodel.sugarcrm.SugarCrmDataContext;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.xml.XmlDomDataContext;
 import org.xml.sax.InputSource;
 
 import com.mongodb.DB;

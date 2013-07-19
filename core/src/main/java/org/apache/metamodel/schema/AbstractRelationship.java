@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.schema;
+package org.apache.metamodel.schema;
 
 import java.util.List;
 
-import org.eobjects.metamodel.util.BaseObject;
+import org.apache.metamodel.util.BaseObject;
 
 public abstract class AbstractRelationship extends BaseObject implements
 		Relationship {

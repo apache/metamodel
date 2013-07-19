@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.intercept;
+package org.apache.metamodel.intercept;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.MockUpdateableDataContext;
-import org.eobjects.metamodel.convert.ConvertedDataSetInterceptor;
-import org.eobjects.metamodel.data.DataSet;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MockUpdateableDataContext;
+import org.apache.metamodel.convert.ConvertedDataSetInterceptor;
+import org.apache.metamodel.data.DataSet;
 
 import junit.framework.TestCase;
 

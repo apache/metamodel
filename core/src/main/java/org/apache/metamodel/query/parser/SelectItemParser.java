@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.parser;
+package org.apache.metamodel.query.parser;
 
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.query.FunctionType;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.FunctionType;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
 
 public final class SelectItemParser implements QueryPartProcessor {
 

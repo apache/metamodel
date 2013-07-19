@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,15 +25,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.eobjects.metamodel.data.IRowFilter;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.util.BaseObject;
-import org.eobjects.metamodel.util.CollectionUtils;
-import org.eobjects.metamodel.util.FormatHelper;
-import org.eobjects.metamodel.util.ObjectComparator;
-import org.eobjects.metamodel.util.WildcardPattern;
+import org.apache.metamodel.data.IRowFilter;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.util.BaseObject;
+import org.apache.metamodel.util.CollectionUtils;
+import org.apache.metamodel.util.FormatHelper;
+import org.apache.metamodel.util.ObjectComparator;
+import org.apache.metamodel.util.WildcardPattern;
 
 /**
  * Represents a filter in a query that resides either within a WHERE clause or a

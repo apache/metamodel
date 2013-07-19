@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.data;
+package org.apache.metamodel.data;
 
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.eobjects.metamodel.data.Style.Color;
-import org.eobjects.metamodel.data.Style.SizeUnit;
-import org.eobjects.metamodel.data.Style.TextAlignment;
-import org.eobjects.metamodel.util.EqualsBuilder;
+import org.apache.metamodel.data.Style.Color;
+import org.apache.metamodel.data.Style.SizeUnit;
+import org.apache.metamodel.data.Style.TextAlignment;
+import org.apache.metamodel.util.EqualsBuilder;
 
 /**
  * Builder class for {@link Style} and related objects, like {@link Color}.

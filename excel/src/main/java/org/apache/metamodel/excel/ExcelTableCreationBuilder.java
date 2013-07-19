@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.eobjects.metamodel.create.AbstractTableCreationBuilder;
-import org.eobjects.metamodel.create.TableCreationBuilder;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.create.AbstractTableCreationBuilder;
+import org.apache.metamodel.create.TableCreationBuilder;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 /**
  * {@link TableCreationBuilder} implementation for Excel spreadsheets.

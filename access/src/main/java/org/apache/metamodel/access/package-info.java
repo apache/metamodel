@@ -19,5 +19,5 @@
 /**
  * Module package for MS Access database files
  */
-package org.eobjects.metamodel.access;
+package org.apache.metamodel.access;
 

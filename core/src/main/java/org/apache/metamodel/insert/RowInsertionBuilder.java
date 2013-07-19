@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.insert;
+package org.apache.metamodel.insert;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.data.RowBuilder;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.RowBuilder;
+import org.apache.metamodel.schema.Table;
 
 /**
  * Builder object for row insertion, into a {@link Table}.

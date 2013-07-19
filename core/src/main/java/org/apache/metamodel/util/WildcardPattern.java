@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.util;
+package org.apache.metamodel.util;
 
 import java.io.Serializable;
 import java.util.StringTokenizer;
 
-import org.eobjects.metamodel.query.FilterItem;
+import org.apache.metamodel.query.FilterItem;
 
 /**
  * Represents a pattern with a wildcard character. These are typically used in

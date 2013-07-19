@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.csv;
+package org.apache.metamodel.csv;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -30,19 +30,19 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.List;
 
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.QueryPostprocessDataContext;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.UpdateableDataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.FileHelper;
-import org.eobjects.metamodel.util.FileResource;
-import org.eobjects.metamodel.util.Func;
-import org.eobjects.metamodel.util.Resource;
-import org.eobjects.metamodel.util.UrlResource;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FileResource;
+import org.apache.metamodel.util.Func;
+import org.apache.metamodel.util.Resource;
+import org.apache.metamodel.util.UrlResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

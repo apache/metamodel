@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.couchdb;
+package org.apache.metamodel.couchdb;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.ektorp.CouchDbConnector;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.update.AbstractRowUpdationBuilder;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.update.AbstractRowUpdationBuilder;
 
 final class CouchDbRowUpdationBuilder extends AbstractRowUpdationBuilder {
 

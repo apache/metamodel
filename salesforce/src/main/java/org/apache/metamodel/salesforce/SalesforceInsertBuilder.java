@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.salesforce;
+package org.apache.metamodel.salesforce;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.insert.AbstractRowInsertionBuilder;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
 
 import com.sforce.soap.partner.sobject.SObject;
 

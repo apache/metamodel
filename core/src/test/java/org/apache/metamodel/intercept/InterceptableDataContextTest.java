@@ -16,20 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.intercept;
+package org.apache.metamodel.intercept;
 
 import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.MockUpdateableDataContext;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.MaxRowsDataSet;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MockUpdateableDataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.MaxRowsDataSet;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 public class InterceptableDataContextTest extends TestCase {
 

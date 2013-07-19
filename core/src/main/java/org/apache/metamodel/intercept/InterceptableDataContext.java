@@ -16,26 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.intercept;
+package org.apache.metamodel.intercept;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.UpdateableDataContext;
-import org.eobjects.metamodel.create.TableCreationBuilder;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.delete.RowDeletionBuilder;
-import org.eobjects.metamodel.drop.TableDropBuilder;
-import org.eobjects.metamodel.insert.RowInsertionBuilder;
-import org.eobjects.metamodel.query.CompiledQuery;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.builder.InitFromBuilder;
-import org.eobjects.metamodel.query.builder.InitFromBuilderImpl;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.update.RowUpdationBuilder;
-import org.eobjects.metamodel.util.HasNameMapper;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.create.TableCreationBuilder;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.delete.RowDeletionBuilder;
+import org.apache.metamodel.drop.TableDropBuilder;
+import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.query.CompiledQuery;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.builder.InitFromBuilder;
+import org.apache.metamodel.query.builder.InitFromBuilderImpl;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.update.RowUpdationBuilder;
+import org.apache.metamodel.util.HasNameMapper;
 
 public class InterceptableDataContext implements UpdateableDataContext {
 

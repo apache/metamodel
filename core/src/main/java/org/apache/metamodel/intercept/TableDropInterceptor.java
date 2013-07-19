@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.intercept;
+package org.apache.metamodel.intercept;
 
-import org.eobjects.metamodel.drop.TableDropBuilder;
+import org.apache.metamodel.drop.TableDropBuilder;
 
 /**
  * An {@link Interceptor} for {@link TableDropBuilder}s, which allows for

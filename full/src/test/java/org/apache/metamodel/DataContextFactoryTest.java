@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
 import java.io.File;
 
-import org.eobjects.metamodel.excel.ExcelConfiguration;
-import org.eobjects.metamodel.excel.ExcelDataContext;
+import org.apache.metamodel.excel.ExcelConfiguration;
+import org.apache.metamodel.excel.ExcelDataContext;
 
 import junit.framework.TestCase;
 

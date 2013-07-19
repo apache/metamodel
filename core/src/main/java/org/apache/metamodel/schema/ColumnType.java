@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.schema;
+package org.apache.metamodel.schema;
 
-import static org.eobjects.metamodel.schema.SuperColumnType.BINARY_TYPE;
-import static org.eobjects.metamodel.schema.SuperColumnType.BOOLEAN_TYPE;
-import static org.eobjects.metamodel.schema.SuperColumnType.LITERAL_TYPE;
-import static org.eobjects.metamodel.schema.SuperColumnType.NUMBER_TYPE;
-import static org.eobjects.metamodel.schema.SuperColumnType.OTHER_TYPE;
-import static org.eobjects.metamodel.schema.SuperColumnType.TIME_TYPE;
+import static org.apache.metamodel.schema.SuperColumnType.BINARY_TYPE;
+import static org.apache.metamodel.schema.SuperColumnType.BOOLEAN_TYPE;
+import static org.apache.metamodel.schema.SuperColumnType.LITERAL_TYPE;
+import static org.apache.metamodel.schema.SuperColumnType.NUMBER_TYPE;
+import static org.apache.metamodel.schema.SuperColumnType.OTHER_TYPE;
+import static org.apache.metamodel.schema.SuperColumnType.TIME_TYPE;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -38,10 +38,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.eobjects.metamodel.util.NumberComparator;
-import org.eobjects.metamodel.util.ObjectComparator;
-import org.eobjects.metamodel.util.TimeComparator;
-import org.eobjects.metamodel.util.ToStringComparator;
+import org.apache.metamodel.util.NumberComparator;
+import org.apache.metamodel.util.ObjectComparator;
+import org.apache.metamodel.util.TimeComparator;
+import org.apache.metamodel.util.ToStringComparator;
 
 /**
  * Represents the data-type of columns. Most of the elements in this enum are

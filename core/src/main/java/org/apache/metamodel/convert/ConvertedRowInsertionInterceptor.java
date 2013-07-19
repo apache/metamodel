@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.convert;
+package org.apache.metamodel.convert;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eobjects.metamodel.insert.RowInsertionBuilder;
-import org.eobjects.metamodel.intercept.RowInsertionInterceptor;
-import org.eobjects.metamodel.schema.Column;
+import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.intercept.RowInsertionInterceptor;
+import org.apache.metamodel.schema.Column;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

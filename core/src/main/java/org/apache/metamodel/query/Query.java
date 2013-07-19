@@ -16,27 +16,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.query.OrderByItem.Direction;
-import org.eobjects.metamodel.query.parser.QueryParserException;
-import org.eobjects.metamodel.query.parser.QueryPartCollectionProcessor;
-import org.eobjects.metamodel.query.parser.QueryPartParser;
-import org.eobjects.metamodel.query.parser.QueryPartProcessor;
-import org.eobjects.metamodel.query.parser.SelectItemParser;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.BaseObject;
-import org.eobjects.metamodel.util.BooleanComparator;
-import org.eobjects.metamodel.util.FormatHelper;
-import org.eobjects.metamodel.util.NumberComparator;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.query.OrderByItem.Direction;
+import org.apache.metamodel.query.parser.QueryParserException;
+import org.apache.metamodel.query.parser.QueryPartCollectionProcessor;
+import org.apache.metamodel.query.parser.QueryPartParser;
+import org.apache.metamodel.query.parser.QueryPartProcessor;
+import org.apache.metamodel.query.parser.SelectItemParser;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.BaseObject;
+import org.apache.metamodel.util.BooleanComparator;
+import org.apache.metamodel.util.FormatHelper;
+import org.apache.metamodel.util.NumberComparator;
 
 /**
  * Represents a query to retrieve data by. A query is made up of six clauses,

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.builder;
+package org.apache.metamodel.query.builder;
 
 public interface CountSelectBuilder<B extends SatisfiedQueryBuilder<?>> extends
 		SatisfiedSelectBuilder<B> {

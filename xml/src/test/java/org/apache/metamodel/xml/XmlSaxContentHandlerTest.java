@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.xml;
+package org.apache.metamodel.xml;
 
 import java.io.FileReader;
 import java.util.ArrayList;
@@ -28,9 +28,9 @@ import javax.xml.parsers.SAXParserFactory;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.data.RowPublisher;
-import org.eobjects.metamodel.data.Style;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.RowPublisher;
+import org.apache.metamodel.data.Style;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 

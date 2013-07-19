@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import java.io.ObjectStreamException;
 import java.util.List;
 
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.MutableTable;
-import org.eobjects.metamodel.schema.Relationship;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.TableType;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Relationship;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.TableType;
 
 /**
  * Table implementation that is based on JDBC metadata.

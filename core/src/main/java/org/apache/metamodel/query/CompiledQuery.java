@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
 import java.io.Closeable;
 import java.util.List;
 
-import org.eobjects.metamodel.DataContext;
+import org.apache.metamodel.DataContext;
 
 /**
  * A {@link CompiledQuery} is a {@link Query} which has been compiled, typically

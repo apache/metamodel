@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.builder;
+package org.apache.metamodel.query.builder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.OperatorType;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.QueryParameter;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.QueryParameter;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
 
 final class WhereBuilderImpl extends AbstractQueryFilterBuilder<SatisfiedWhereBuilder<GroupedQueryBuilder>> implements
         WhereBuilder<GroupedQueryBuilder>, SatisfiedWhereBuilder<GroupedQueryBuilder> {

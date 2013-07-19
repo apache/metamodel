@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.pojo;
+package org.apache.metamodel.pojo;
 
 import java.io.Serializable;
 import java.util.Map;
 
-import org.eobjects.metamodel.util.HasName;
-import org.eobjects.metamodel.util.SimpleTableDef;
+import org.apache.metamodel.util.HasName;
+import org.apache.metamodel.util.SimpleTableDef;
 
 /**
  * Represents a named collection to be comprehended by a {@link PojoDataContext}

@@ -16,20 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.sugarcrm;
+package org.apache.metamodel.sugarcrm;
 
 import java.util.Arrays;
 import java.util.Date;
 
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.data.InMemoryDataSet;
-import org.eobjects.metamodel.data.MaxRowsDataSet;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.InMemoryDataSet;
+import org.apache.metamodel.data.MaxRowsDataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
 import com.sugarcrm.ws.soap.GetEntryListResultVersion2;
 

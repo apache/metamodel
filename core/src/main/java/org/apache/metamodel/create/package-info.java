@@ -19,5 +19,5 @@
 /**
  * API for creating tables
  */
-package org.eobjects.metamodel.create;
+package org.apache.metamodel.create;
 

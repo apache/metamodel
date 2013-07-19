@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.drop.AbstractTableDropBuilder;
-import org.eobjects.metamodel.drop.TableDropBuilder;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.drop.AbstractTableDropBuilder;
+import org.apache.metamodel.drop.TableDropBuilder;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.Table;
 
 final class ExcelDropTableBuilder extends AbstractTableDropBuilder implements TableDropBuilder {
 

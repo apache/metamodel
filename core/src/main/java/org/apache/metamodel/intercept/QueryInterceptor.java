@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.intercept;
+package org.apache.metamodel.intercept;
 
-import org.eobjects.metamodel.query.Query;
+import org.apache.metamodel.query.Query;
 
 /**
  * An {@link Interceptor} for Queries, allowing to touch or modify a query

@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.csv;
+package org.apache.metamodel.csv;
 
-import org.eobjects.metamodel.insert.AbstractRowInsertionBuilder;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
+import org.apache.metamodel.schema.Table;
 
 final class CsvInsertBuilder extends AbstractRowInsertionBuilder<CsvUpdateCallback> {
 

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.csv;
+package org.apache.metamodel.csv;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,21 +28,21 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 
-import org.eobjects.metamodel.AbstractUpdateCallback;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.create.TableCreationBuilder;
-import org.eobjects.metamodel.delete.RowDeletionBuilder;
-import org.eobjects.metamodel.drop.TableDropBuilder;
-import org.eobjects.metamodel.insert.RowInsertionBuilder;
-import org.eobjects.metamodel.schema.Schema;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.update.RowUpdationBuilder;
-import org.eobjects.metamodel.util.Action;
-import org.eobjects.metamodel.util.EqualsBuilder;
-import org.eobjects.metamodel.util.FileHelper;
-import org.eobjects.metamodel.util.FileResource;
-import org.eobjects.metamodel.util.Resource;
+import org.apache.metamodel.AbstractUpdateCallback;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.create.TableCreationBuilder;
+import org.apache.metamodel.delete.RowDeletionBuilder;
+import org.apache.metamodel.drop.TableDropBuilder;
+import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.update.RowUpdationBuilder;
+import org.apache.metamodel.util.Action;
+import org.apache.metamodel.util.EqualsBuilder;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FileResource;
+import org.apache.metamodel.util.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

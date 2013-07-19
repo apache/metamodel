@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc;
+package org.apache.metamodel.jdbc;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,11 +24,11 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.commons.pool.impl.GenericObjectPool;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.query.CompiledQuery;
-import org.eobjects.metamodel.query.DefaultCompiledQuery;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.SelectItem;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.query.CompiledQuery;
+import org.apache.metamodel.query.DefaultCompiledQuery;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

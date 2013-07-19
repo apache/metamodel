@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel;
+package org.apache.metamodel;
 
-import org.eobjects.metamodel.create.TableCreatable;
-import org.eobjects.metamodel.delete.RowDeletable;
-import org.eobjects.metamodel.drop.TableDroppable;
-import org.eobjects.metamodel.insert.RowInsertable;
-import org.eobjects.metamodel.update.RowUpdateable;
+import org.apache.metamodel.create.TableCreatable;
+import org.apache.metamodel.delete.RowDeletable;
+import org.apache.metamodel.drop.TableDroppable;
+import org.apache.metamodel.insert.RowInsertable;
+import org.apache.metamodel.update.RowUpdateable;
 
 /**
  * An {@link UpdateCallback} is used by an {@link UpdateScript} to perform

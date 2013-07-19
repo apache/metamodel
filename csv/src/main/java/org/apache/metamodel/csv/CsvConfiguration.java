@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.csv;
+package org.apache.metamodel.csv;
 
 import java.io.Serializable;
 import java.util.List;
 
-import org.eobjects.metamodel.util.BaseObject;
-import org.eobjects.metamodel.util.FileHelper;
+import org.apache.metamodel.util.BaseObject;
+import org.apache.metamodel.util.FileHelper;
 
 /**
  * Represents the configuration for reading/parsing CSV files.

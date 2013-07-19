@@ -19,5 +19,5 @@
 /**
  * Module package for MS Excel spreadsheet files
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 

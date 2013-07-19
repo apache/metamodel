@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.xml;
+package org.apache.metamodel.xml;
 
 import java.io.Serializable;
 import java.util.Arrays;
 
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.schema.Table;
 
 /**
  * Defines a table layout for {@link XmlSaxDataContext}. This class is used as

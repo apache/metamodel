@@ -16,17 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query.builder;
+package org.apache.metamodel.query.builder;
 
 import java.util.List;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.query.JoinType;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.JoinType;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
 
 final class JoinFromBuilderImpl extends SatisfiedFromBuilderCallback implements
 		JoinFromBuilder {

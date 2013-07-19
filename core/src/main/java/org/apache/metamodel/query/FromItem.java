@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.query;
+package org.apache.metamodel.query;
 
 import java.util.List;
 
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Relationship;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.BaseObject;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Relationship;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.BaseObject;
 
 /**
  * Represents a FROM item. FROM items can take different forms:

@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.couchdb;
+package org.apache.metamodel.couchdb;
 
 import org.ektorp.CouchDbInstance;
-import org.eobjects.metamodel.MetaModelException;
-import org.eobjects.metamodel.drop.AbstractTableDropBuilder;
-import org.eobjects.metamodel.schema.MutableSchema;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.drop.AbstractTableDropBuilder;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.Table;
 
 final class CouchDbTableDropBuilder extends AbstractTableDropBuilder {
 

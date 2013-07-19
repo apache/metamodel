@@ -16,19 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.dialects;
+package org.apache.metamodel.dialects;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.jdbc.dialects.AbstractQueryRewriter;
-import org.eobjects.metamodel.jdbc.dialects.DefaultQueryRewriter;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.query.OperatorType;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.MutableColumn;
-import org.eobjects.metamodel.schema.MutableTable;
+import org.apache.metamodel.jdbc.dialects.AbstractQueryRewriter;
+import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableTable;
 
 public class AbstractQueryRewriterTest extends TestCase {
 

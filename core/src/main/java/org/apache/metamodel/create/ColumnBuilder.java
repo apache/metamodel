@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.create;
+package org.apache.metamodel.create;
 
-import org.eobjects.metamodel.DataContext;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
 
 /**
  * Abstract interface for components that build columns.

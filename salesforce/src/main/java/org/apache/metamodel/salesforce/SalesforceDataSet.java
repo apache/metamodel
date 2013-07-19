@@ -16,20 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.salesforce;
+package org.apache.metamodel.salesforce;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.eobjects.metamodel.data.AbstractDataSet;
-import org.eobjects.metamodel.data.DataSetHeader;
-import org.eobjects.metamodel.data.DefaultRow;
-import org.eobjects.metamodel.data.Row;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.ColumnType;
-import org.eobjects.metamodel.util.BooleanComparator;
-import org.eobjects.metamodel.util.NumberComparator;
+import org.apache.metamodel.data.AbstractDataSet;
+import org.apache.metamodel.data.DataSetHeader;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.util.BooleanComparator;
+import org.apache.metamodel.util.NumberComparator;
 
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.soap.partner.QueryResult;

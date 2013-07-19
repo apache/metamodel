@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.delete;
+package org.apache.metamodel.delete;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.MockUpdateableDataContext;
-import org.eobjects.metamodel.UpdateCallback;
-import org.eobjects.metamodel.UpdateScript;
-import org.eobjects.metamodel.data.DataSet;
-import org.eobjects.metamodel.schema.Table;
+import org.apache.metamodel.MockUpdateableDataContext;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.schema.Table;
 
 public class AbstractRowDeletionCallbackTest extends TestCase {
 

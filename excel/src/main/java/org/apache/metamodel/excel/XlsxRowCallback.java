@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import java.util.List;
 
-import org.eobjects.metamodel.data.Style;
+import org.apache.metamodel.data.Style;
 
 /**
  * Callback for read rows in an XLSX spreadsheet.

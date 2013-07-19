@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.data;
+package org.apache.metamodel.data;
 
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.builder.FilterBuilder;
-import org.eobjects.metamodel.schema.Column;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.builder.FilterBuilder;
+import org.apache.metamodel.schema.Column;
 
 /**
  * An interface for builder components that formulate a WHERE clause, either for

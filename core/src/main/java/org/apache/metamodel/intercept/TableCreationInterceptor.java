@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.intercept;
+package org.apache.metamodel.intercept;
 
-import org.eobjects.metamodel.create.TableCreationBuilder;
+import org.apache.metamodel.create.TableCreationBuilder;
 
 /**
  * An {@link Interceptor} for {@link TableCreationBuilder}s, which allows for

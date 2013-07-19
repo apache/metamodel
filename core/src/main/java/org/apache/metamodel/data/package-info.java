@@ -19,5 +19,5 @@
 /**
  * API for data sets
  */
-package org.eobjects.metamodel.data;
+package org.apache.metamodel.data;
 

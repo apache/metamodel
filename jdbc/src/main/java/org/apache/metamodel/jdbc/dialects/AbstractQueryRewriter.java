@@ -16,25 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.jdbc.dialects;
+package org.apache.metamodel.jdbc.dialects;
 
 import java.util.List;
 
-import org.eobjects.metamodel.jdbc.JdbcDataContext;
-import org.eobjects.metamodel.query.AbstractQueryClause;
-import org.eobjects.metamodel.query.FilterClause;
-import org.eobjects.metamodel.query.FilterItem;
-import org.eobjects.metamodel.query.FromClause;
-import org.eobjects.metamodel.query.FromItem;
-import org.eobjects.metamodel.query.GroupByClause;
-import org.eobjects.metamodel.query.GroupByItem;
-import org.eobjects.metamodel.query.OperatorType;
-import org.eobjects.metamodel.query.OrderByClause;
-import org.eobjects.metamodel.query.OrderByItem;
-import org.eobjects.metamodel.query.Query;
-import org.eobjects.metamodel.query.SelectClause;
-import org.eobjects.metamodel.query.SelectItem;
-import org.eobjects.metamodel.schema.ColumnType;
+import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.query.AbstractQueryClause;
+import org.apache.metamodel.query.FilterClause;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.FromClause;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.GroupByClause;
+import org.apache.metamodel.query.GroupByItem;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.OrderByClause;
+import org.apache.metamodel.query.OrderByItem;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectClause;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.ColumnType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

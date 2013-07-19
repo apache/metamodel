@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.convert;
+package org.apache.metamodel.convert;
 
 import java.text.DateFormat;
 import java.util.Date;
 
 import junit.framework.TestCase;
 
-import org.eobjects.metamodel.util.DateUtils;
-import org.eobjects.metamodel.util.Month;
+import org.apache.metamodel.util.DateUtils;
+import org.apache.metamodel.util.Month;
 
 public class StringToDateConverterTest extends TestCase {
 

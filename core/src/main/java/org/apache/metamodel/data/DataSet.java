@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.data;
+package org.apache.metamodel.data;
 
 import java.io.Closeable;
 import java.util.Iterator;
@@ -24,7 +24,7 @@ import java.util.List;
 
 import javax.swing.table.TableModel;
 
-import org.eobjects.metamodel.query.SelectItem;
+import org.apache.metamodel.query.SelectItem;
 
 /**
  * Represents a tabular DataSet where values are bound to columns and rows. A

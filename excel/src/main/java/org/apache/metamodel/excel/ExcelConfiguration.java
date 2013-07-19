@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import java.io.Serializable;
 import java.util.List;
 
-import org.eobjects.metamodel.util.BaseObject;
+import org.apache.metamodel.util.BaseObject;
 
 /**
  * Represents the configuration for reading/parsing Excel spreadsheets.

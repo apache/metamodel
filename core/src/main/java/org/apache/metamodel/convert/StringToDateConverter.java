@@ -16,15 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.convert;
+package org.apache.metamodel.convert;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.eobjects.metamodel.util.Func;
-import org.eobjects.metamodel.util.TimeComparator;
+import org.apache.metamodel.util.Func;
+import org.apache.metamodel.util.TimeComparator;
 
 /**
  * A {@link TypeConverter} that converts String values (on the physical layer)

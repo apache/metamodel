@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.eobjects.metamodel.excel;
+package org.apache.metamodel.excel;
 
 import java.util.Date;
 
@@ -24,15 +24,15 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
-import org.eobjects.metamodel.data.Style;
-import org.eobjects.metamodel.data.Style.Color;
-import org.eobjects.metamodel.data.Style.SizeUnit;
-import org.eobjects.metamodel.data.Style.TextAlignment;
-import org.eobjects.metamodel.insert.AbstractRowInsertionBuilder;
-import org.eobjects.metamodel.insert.RowInsertionBuilder;
-import org.eobjects.metamodel.schema.Column;
-import org.eobjects.metamodel.schema.Table;
-import org.eobjects.metamodel.util.LazyRef;
+import org.apache.metamodel.data.Style;
+import org.apache.metamodel.data.Style.Color;
+import org.apache.metamodel.data.Style.SizeUnit;
+import org.apache.metamodel.data.Style.TextAlignment;
+import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
+import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.LazyRef;
 
 /**
  * {@link RowInsertionBuilder} for excel spreadsheets.
