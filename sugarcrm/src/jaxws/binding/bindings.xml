@@ -8,7 +8,7 @@
 			<handler-chain>
 				<handler>
 					<handler-name>LoggingMessageHandler</handler-name>
-					<handler-class>org.eobjects.metamodel.sugarcrm.LoggingMessageHandler</handler-class>
+					<handler-class>org.apache.metamodel.sugarcrm.LoggingMessageHandler</handler-class>
 				</handler>
 			</handler-chain>
 		</handler-chains>
