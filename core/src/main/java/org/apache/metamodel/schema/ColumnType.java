@@ -87,7 +87,7 @@ public enum ColumnType {
      */
     LIST(OTHER_TYPE), MAP(OTHER_TYPE);
 
-    private SuperColumnType _superType;
+    private final SuperColumnType _superType;
 
     private ColumnType(SuperColumnType superType) {
         if (superType == null) {
