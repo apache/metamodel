@@ -83,7 +83,7 @@ final class CsvDataSet extends AbstractDataSet {
 			return false;
 		}
 	}
-
+	
 	private boolean nextInternal() {
 		if (_reader == null) {
 			return false;

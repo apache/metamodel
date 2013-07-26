@@ -19,85 +19,114 @@
 package org.apache.metamodel.csv;
 
 import java.io.File;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import junit.framework.TestCase;
 
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.csv.CsvConfiguration;
-import org.apache.metamodel.csv.CsvDataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Table;
 
-import junit.framework.TestCase;
-
 public class CsvBigFileMemoryTest extends TestCase {
 
-	private final int hugeFileRows = 3000;
-	private final int hugeFileCols = 2000;
+    private final int hugeFileRows = 30000;
+    private final int hugeFileCols = 2000;
 
-	private File getHugeFile() {
-		final File file = new File("target/huge_csv.csv");
-		if (!file.exists()) {
+    private File getHugeFile() {
+        final File file = new File("target/huge_csv.csv");
+        if (!file.exists()) {
 
-			final ExampleDataGenerator exampleDataGenerator = new ExampleDataGenerator(
-					hugeFileRows, hugeFileCols);
-			exampleDataGenerator.createFile(file);
-		}
-		return file;
-	}
+            final ExampleDataGenerator exampleDataGenerator = new ExampleDataGenerator(hugeFileRows, hugeFileCols);
+            exampleDataGenerator.createFile(file);
+        }
+        return file;
+    }
 
-	/**
-	 * Runs a performance test based on the data created by the
-	 * ExampleDataCreator utility.
-	 * 
-	 * @see ExampleDataGenerator
-	 * @throws Exception
-	 */
-	public void testHugeFile() throws Exception {
-		final File file = getHugeFile();
+    /**
+     * Runs a performance test based on the data created by the
+     * ExampleDataCreator utility.
+     * 
+     * @see ExampleDataGenerator
+     * @throws Exception
+     */
+    public void testHugeFile() throws Exception {
+        final File file = getHugeFile();
 
-		final long timeAtStart = System.currentTimeMillis();
-		System.out.println("time at start: " + timeAtStart);
+        final long timeAtStart = System.currentTimeMillis();
+        System.out.println("time at start: " + timeAtStart);
 
-		final DataContext dc = new CsvDataContext(file, new CsvConfiguration());
-		final Table t = dc.getDefaultSchema().getTables()[0];
+        final DataContext dc = new CsvDataContext(file, new CsvConfiguration(1, false, false));
+        final Table t = dc.getDefaultSchema().getTables()[0];
 
-		final long timeAfterDataContext = System.currentTimeMillis();
-		System.out.println("time after DataContext: " + timeAfterDataContext);
+        final long timeAfterDataContext = System.currentTimeMillis();
+        System.out.println("time after DataContext: " + timeAfterDataContext);
 
-		final Query q = new Query().select(t.getColumns()).from(t);
-		DataSet ds = dc.executeQuery(q);
+        final Query q = new Query().select(t.getColumns()).from(t);
+        DataSet ds = dc.executeQuery(q);
 
-		long timeAfterQuery = System.currentTimeMillis();
-		System.out.println("time after query: " + timeAfterQuery);
+        long timeAfterQuery = System.currentTimeMillis();
+        System.out.println("time after query: " + timeAfterQuery);
 
-		while (ds.next()) {
-			assertEquals(hugeFileCols, ds.getRow().getValues().length);
-		}
-		ds.close();
+        final CountDownLatch countDown = new CountDownLatch(hugeFileRows);
+        final AtomicBoolean success = new AtomicBoolean(true);
 
-		long timeAfterDataSet = System.currentTimeMillis();
-		System.out.println("time after dataSet: " + timeAfterDataSet);
+        ExecutorService executorService = Executors.newFixedThreadPool(30);
 
-		if (!file.delete()) {
-			file.deleteOnExit();
-		}
-	}
+        while (ds.next()) {
+            final Row row = ds.getRow();
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    if (hugeFileCols != row.getValues().length) {
+                        System.out.println("Weird row: " + row);
+                        success.set(false);
+                    }
+                    countDown.countDown();
+                }
+            });
+        }
+        ds.close();
 
-	public void testApproximatedCountHugeFile() throws Exception {
-		DataContext dc = new CsvDataContext(getHugeFile());
+        countDown.await();
+        assertTrue(success.get());
 
-		Table table = dc.getDefaultSchema().getTables()[0];
-		Query q = dc.query().from(table).selectCount().toQuery();
-		SelectItem selectItem = q.getSelectClause().getItem(0);
-		selectItem.setFunctionApproximationAllowed(true);
+        executorService.shutdown();
 
-		DataSet ds = dc.executeQuery(q);
-		assertTrue(ds.next());
-		Object[] values = ds.getRow().getValues();
-		assertEquals(1, values.length);
-		assertEquals(3332, ((Long) ds.getRow().getValue(selectItem)).intValue());
-		assertEquals(3332, ((Long) values[0]).intValue());
-		assertFalse(ds.next());
-	}
+        long timeAfterDataSet = System.currentTimeMillis();
+        System.out.println("time after dataSet: " + timeAfterDataSet);
+
+        long totalTime = timeAfterDataSet - timeAfterDataContext;
+        System.out.println("Total time to process large file: " + totalTime + " millis");
+
+        // results with old impl: [13908, 13827, 14577]
+        
+        // results with new impl: [8567, 8965, 8154]
+
+        if (!file.delete()) {
+            file.deleteOnExit();
+        }
+    }
+
+    public void testApproximatedCountHugeFile() throws Exception {
+        DataContext dc = new CsvDataContext(getHugeFile());
+
+        Table table = dc.getDefaultSchema().getTables()[0];
+        Query q = dc.query().from(table).selectCount().toQuery();
+        SelectItem selectItem = q.getSelectClause().getItem(0);
+        selectItem.setFunctionApproximationAllowed(true);
+
+        DataSet ds = dc.executeQuery(q);
+        assertTrue(ds.next());
+        Object[] values = ds.getRow().getValues();
+        assertEquals(1, values.length);
+        assertEquals(3332, ((Long) ds.getRow().getValue(selectItem)).intValue());
+        assertEquals(3332, ((Long) values[0]).intValue());
+        assertFalse(ds.next());
+    }
 }
