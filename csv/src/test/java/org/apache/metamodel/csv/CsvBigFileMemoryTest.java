@@ -104,9 +104,9 @@ public class CsvBigFileMemoryTest extends TestCase {
         long totalTime = timeAfterDataSet - timeAfterDataContext;
         System.out.println("Total time to process large file: " + totalTime + " millis");
 
-        // results with old impl: [13908, 13827, 14577]
+        // results with old impl: [13908, 13827, 14577]. Total= 42312
         
-        // results with new impl: [8567, 8965, 8154]
+        // results with new impl: [9052, 9200, 8193]. Total= 26445
 
         if (!file.delete()) {
             file.deleteOnExit();
