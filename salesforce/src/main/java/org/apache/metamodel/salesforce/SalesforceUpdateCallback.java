@@ -135,9 +135,26 @@ final class SalesforceUpdateCallback extends AbstractUpdateCallback implements C
                 logger.debug("Succesfully {}ed record with id={}", action, saveResult.getId());
                 successes++;
             } else {
+                final com.sforce.soap.partner.Error[] errorArray = saveResult.getErrors();
+
+                if (!"insert".equals(action)) {
+                    boolean onlyMalformedId = true;
+                    for (com.sforce.soap.partner.Error error : errorArray) {
+                        if (com.sforce.soap.partner.StatusCode.MALFORMED_ID == error.getStatusCode()) {
+                            logger.debug("Encountered MALFORMED_ID error for {} action. Ignoring.", action);
+                        } else {
+                            onlyMalformedId = false;
+                            break;
+                        }
+                    }
+                    
+                    if (onlyMalformedId) {
+                        return;
+                    }
+                }
+                
                 errors++;
 
-                final com.sforce.soap.partner.Error[] errorArray = saveResult.getErrors();
                 for (com.sforce.soap.partner.Error error : errorArray) {
                     if (firstError == null) {
                         firstError = error;
