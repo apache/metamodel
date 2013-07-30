@@ -40,6 +40,7 @@
 		<module>xml</module>
 		<module>access</module>
 		<module>jdbc</module>
+		<module>hbase</module>
 		<module>mongodb</module>
 		<module>couchdb</module>
 		<module>openoffice</module>
