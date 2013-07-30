@@ -244,6 +244,15 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
         assertEquals("Another test value", ds.getRow().getValue(0));
         assertFalse(ds.next());
         ds.close();
+        
+        // UPDATE (a record that does not exist)
+        
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.update(tableName).where("id").eq("fooooooobaaaaaaaar").value("name", "A test value that should never occur").execute();
+            }
+        });
 
         // DELETE
 
