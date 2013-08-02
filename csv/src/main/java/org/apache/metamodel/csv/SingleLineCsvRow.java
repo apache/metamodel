@@ -55,7 +55,7 @@ final class SingleLineCsvRow extends AbstractRow {
     private String[] getValuesInternal() {
         if (_values == null) {
             final CSVParser parser = _dataSet.getCsvParser();
-            String[] csvValues;
+            final String[] csvValues;
             try {
                 csvValues = parser.parseLine(_line);
             } catch (IOException e) {
@@ -94,10 +94,8 @@ final class SingleLineCsvRow extends AbstractRow {
 
     @Override
     public Object getValue(int index) throws IndexOutOfBoundsException {
-        String[] values = getValuesInternal();
-        if (values == null) {
-            return null;
-        }
+        final String[] values = getValuesInternal();
+        assert values != null;
         return values[index];
     }
 
