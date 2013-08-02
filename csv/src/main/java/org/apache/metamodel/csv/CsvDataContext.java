@@ -35,6 +35,7 @@ import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
@@ -46,6 +47,7 @@ import org.apache.metamodel.util.UrlResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.com.bytecode.opencsv.CSVParser;
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
@@ -336,20 +338,47 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
     @Override
     public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
         final int lineNumber = _configuration.getColumnNameLineNumber();
-        final CSVReader reader = createCsvReader(lineNumber);
         final int columnCount = table.getColumnCount();
-        final boolean failOnInconsistentRowLength = _configuration.isFailOnInconsistentRowLength();
-        if (maxRows < 0) {
-            return new CsvDataSet(reader, columns, null, columnCount, failOnInconsistentRowLength);
-        } else {
-            return new CsvDataSet(reader, columns, maxRows, columnCount, failOnInconsistentRowLength);
+
+        final BufferedReader reader = FileHelper.getBufferedReader(_resource.read(), _configuration.getEncoding());
+
+        try {
+            // skip column header lines
+            for (int i = 0; i < lineNumber; i++) {
+                String line = reader.readLine();
+                if (line == null) {
+                    return new EmptyDataSet(columns);
+                }
+            }
+        } catch (IOException e) {
+            throw new MetaModelException("IOException occurred while reading from CSV resource: " + _resource, e);
         }
+
+        final boolean failOnInconsistentRowLength = _configuration.isFailOnInconsistentRowLength();
+
+        final Integer maxRowsOrNull = (maxRows > 0 ? maxRows : null);
+
+        if (_configuration.isMultilineValues()) {
+            final CSVReader csvReader = createCsvReader(reader);
+            return new CsvDataSet(csvReader, columns, maxRowsOrNull, columnCount, failOnInconsistentRowLength);
+        }
+
+        final CSVParser csvParser = new CSVParser(_configuration.getSeparatorChar(), _configuration.getQuoteChar(),
+                _configuration.getEscapeChar());
+        return new SingleLineCsvDataSet(reader, csvParser, columns, maxRowsOrNull, columnCount,
+                failOnInconsistentRowLength);
     }
 
     protected CSVReader createCsvReader(int skipLines) {
-        final Reader fileReader = FileHelper.getReader(_resource.read(), _configuration.getEncoding());
-        final CSVReader csvReader = new CSVReader(fileReader, _configuration.getSeparatorChar(),
+        final Reader reader = FileHelper.getReader(_resource.read(), _configuration.getEncoding());
+        final CSVReader csvReader = new CSVReader(reader, _configuration.getSeparatorChar(),
                 _configuration.getQuoteChar(), _configuration.getEscapeChar(), skipLines);
+        return csvReader;
+    }
+
+    protected CSVReader createCsvReader(BufferedReader reader) {
+        final CSVReader csvReader = new CSVReader(reader, _configuration.getSeparatorChar(),
+                _configuration.getQuoteChar(), _configuration.getEscapeChar());
         return csvReader;
     }
 
