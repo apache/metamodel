@@ -35,7 +35,7 @@ import org.apache.metamodel.schema.Table;
 
 public class CsvBigFileMemoryTest extends TestCase {
 
-    private final int hugeFileRows = 30000;
+    private final int hugeFileRows = 3000;
     private final int hugeFileCols = 2000;
 
     private File getHugeFile() {
