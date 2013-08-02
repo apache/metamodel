@@ -18,11 +18,13 @@
  */
 package org.apache.metamodel.csv;
 
+import java.io.IOException;
+
+import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.AbstractRow;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Style;
 import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.util.LazyRef;
 
 import au.com.bytecode.opencsv.CSVParser;
 
@@ -34,50 +36,65 @@ final class SingleLineCsvRow extends AbstractRow {
     private static final long serialVersionUID = 1L;
 
     private final SingleLineCsvDataSet _dataSet;
-    private final LazyRef<String[]> _valuesRef;
+    private final String _line;
+    private final int _columnsInTable;
+    private final boolean _failOnInconsistentRowLength;
+    private final int _rowNumber;
+    private String[] _values;
 
     public SingleLineCsvRow(SingleLineCsvDataSet dataSet, final String line, final int columnsInTable,
             final boolean failOnInconsistentRowLength, final int rowNumber) {
         _dataSet = dataSet;
-        _valuesRef = new LazyRef<String[]>() {
-            @Override
-            protected String[] fetch() throws Throwable {
-                final CSVParser parser = _dataSet.getCsvParser();
-                final String[] csvValues = parser.parseLine(line);
+        _line = line;
+        _columnsInTable = columnsInTable;
+        _failOnInconsistentRowLength = failOnInconsistentRowLength;
+        _rowNumber = rowNumber;
+        _values = null;
+    }
 
-                if (failOnInconsistentRowLength) {
-                    if (columnsInTable != csvValues.length) {
-                        throw new InconsistentRowLengthException(columnsInTable, SingleLineCsvRow.this, csvValues,
-                                rowNumber);
-                    }
-                }
-
-                // convert the line's values into the row values that where
-                // requested
-                final DataSetHeader header = _dataSet.getHeader();
-                final int size = header.size();
-                final String[] rowValues = new String[size];
-
-                for (int i = 0; i < size; i++) {
-                    final Column column = header.getSelectItem(i).getColumn();
-                    final int columnNumber = column.getColumnNumber();
-                    if (columnNumber < csvValues.length) {
-                        rowValues[i] = csvValues[columnNumber];
-                    } else {
-                        // Ticket #125: Missing values should be enterpreted as
-                        // null.
-                        rowValues[i] = null;
-                    }
-                }
-
-                return rowValues;
+    private String[] getValuesInternal() {
+        if (_values == null) {
+            final CSVParser parser = _dataSet.getCsvParser();
+            String[] csvValues;
+            try {
+                csvValues = parser.parseLine(_line);
+            } catch (IOException e) {
+                throw new MetaModelException("Failed to parse CSV line no. " + _rowNumber + ": " + _line);
             }
-        };
+
+            if (_failOnInconsistentRowLength) {
+                if (_columnsInTable != csvValues.length) {
+                    throw new InconsistentRowLengthException(_columnsInTable, SingleLineCsvRow.this, csvValues,
+                            _rowNumber);
+                }
+            }
+
+            // convert the line's values into the row values that where
+            // requested
+            final DataSetHeader header = _dataSet.getHeader();
+            final int size = header.size();
+            final String[] rowValues = new String[size];
+
+            for (int i = 0; i < size; i++) {
+                final Column column = header.getSelectItem(i).getColumn();
+                final int columnNumber = column.getColumnNumber();
+                if (columnNumber < csvValues.length) {
+                    rowValues[i] = csvValues[columnNumber];
+                } else {
+                    // Ticket #125: Missing values should be enterpreted as
+                    // null.
+                    rowValues[i] = null;
+                }
+            }
+
+            _values = rowValues;
+        }
+        return _values;
     }
 
     @Override
     public Object getValue(int index) throws IndexOutOfBoundsException {
-        String[] values = _valuesRef.get();
+        String[] values = getValuesInternal();
         if (values == null) {
             return null;
         }
