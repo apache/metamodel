@@ -328,7 +328,7 @@ public class CsvDataContextTest extends TestCase {
 
     public void testWhereColumnInValues() throws Exception {
         File file = new File("src/test/resources/csv_people.csv");
-        QueryPostprocessDataContext dc = new CsvDataContext(file);
+        QueryPostprocessDataContext dc = new CsvDataContext(file, new CsvConfiguration(1, true, true));
         Table table = dc.getDefaultSchema().getTableByName("csv_people");
 
         Query q = dc.query().from(table).as("t").select("name").and("age").where("age").in("18", "20").toQuery();
@@ -377,7 +377,7 @@ public class CsvDataContextTest extends TestCase {
 
     public void testMaterializeTable() throws Exception {
         File file = new File("src/test/resources/csv_people.csv");
-        CsvDataContext dc = new CsvDataContext(file);
+        CsvDataContext dc = new CsvDataContext(file, new CsvConfiguration(1, false, false));
         Table table = dc.getSchemas()[0].getTables()[0];
         DataSet dataSet = dc.materializeMainSchemaTable(table, table.getColumns(), -1);
         assertNull(dataSet.getRow());
