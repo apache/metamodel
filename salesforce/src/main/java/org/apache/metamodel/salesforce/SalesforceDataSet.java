@@ -110,10 +110,23 @@ final class SalesforceDataSet extends AbstractDataSet {
                 return NumberComparator.toNumber(columnType.isNumber());
             }
             if (columnType.isTimeBased()) {
-                SimpleDateFormat format = new SimpleDateFormat(SalesforceDataContext.SOQL_DATE_FORMAT_IN);
-                format.setTimeZone(SalesforceDataContext.SOQL_TIMEZONE); 
+                final SimpleDateFormat dateFormat;
+                switch (columnType) {
+                case TIME:
+                    dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_TIME_FORMAT_IN);
+                    break;
+                case DATE:
+                    dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_DATE_FORMAT_IN);
+                    break;
+                case TIMESTAMP:
+                default:
+                    dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_DATE_TIME_FORMAT_IN);
+                    break;
+                }
+
+                dateFormat.setTimeZone(SalesforceDataContext.SOQL_TIMEZONE);
                 try {
-                    return format.parse(value.toString());
+                    return dateFormat.parse(value.toString());
                 } catch (ParseException e) {
                     throw new IllegalStateException("Unable to parse date/time value: " + value);
                 }

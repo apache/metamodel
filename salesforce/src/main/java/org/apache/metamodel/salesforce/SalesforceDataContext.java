@@ -59,8 +59,12 @@ import com.sforce.ws.ConnectionException;
 public class SalesforceDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
 
     public static final TimeZone SOQL_TIMEZONE = TimeZone.getTimeZone("UTC");
-    public static final String SOQL_DATE_FORMAT_IN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-    public static final String SOQL_DATE_FORMAT_OUT = "yyyy-MM-dd'T'HH:mm:ssZZZ";
+    public static final String SOQL_DATE_FORMAT_IN = "yyyy-MM-dd";
+    public static final String SOQL_DATE_FORMAT_OUT = "yyyy-MM-dd";
+    public static final String SOQL_DATE_TIME_FORMAT_IN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+    public static final String SOQL_DATE_TIME_FORMAT_OUT = "yyyy-MM-dd'T'HH:mm:ssZZZ";
+    public static final String SOQL_TIME_FORMAT_IN = "HH:mm:ss.SSS";
+    public static final String SOQL_TIME_FORMAT_OUT = "HH:mm:ssZZZ";
 
     private static final Logger logger = LoggerFactory.getLogger(SalesforceDataContext.class);
 
@@ -273,10 +277,23 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
         } else if (operand instanceof Number) {
             sb.append(operand);
         } else if (operand instanceof Date) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(SOQL_DATE_FORMAT_OUT);
-            dateFormat.setTimeZone(SOQL_TIMEZONE); 
+            final SimpleDateFormat dateFormat;
+            switch (selectItem.getExpectedColumnType()) {
+            case TIME:
+                dateFormat = new SimpleDateFormat(SOQL_TIME_FORMAT_OUT);
+                break;
+            case DATE:
+                dateFormat = new SimpleDateFormat(SOQL_DATE_FORMAT_OUT);
+                break;
+            case TIMESTAMP:
+            default:
+                dateFormat = new SimpleDateFormat(SOQL_DATE_TIME_FORMAT_OUT);
+                break;
+            }
+
+            dateFormat.setTimeZone(SOQL_TIMEZONE);
             String str = dateFormat.format((Date) operand);
-            logger.debug("Date '{}' formatted as: {}", operand, str); 
+            logger.debug("Date '{}' formatted as: {}", operand, str);
             sb.append(str);
         } else if (operand instanceof Column) {
             sb.append(((Column) operand).getName());
@@ -320,7 +337,7 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
     }
 
     private QueryResult executeSoqlQuery(String query) {
-        logger.info("Executing SOQL query: {}", query); 
+        logger.info("Executing SOQL query: {}", query);
         try {
             QueryResult queryResult = _connection.query(query);
             return queryResult;
