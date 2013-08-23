@@ -26,7 +26,7 @@ public class ResourceUtils {
     /**
      * Gets the parent name of a resource. For example, if the resource's
      * qualified path is /foo/bar/baz, this method will return "bar".
-     *
+     * 
      * @param resource
      * @return
      */
@@ -36,13 +36,19 @@ public class ResourceUtils {
 
         assert qualifiedPath.endsWith(name);
 
-        int indexOfChild = qualifiedPath.length() - name.length() - 1;
+        int indexOfChild = qualifiedPath.length() - name.length();
 
         if (indexOfChild <= 0) {
             return name;
         }
 
         String parentQualifiedPath = qualifiedPath.substring(0, indexOfChild);
+
+        if ("/".equals(parentQualifiedPath)) {
+            return parentQualifiedPath;
+        }
+
+        parentQualifiedPath = parentQualifiedPath.substring(0, parentQualifiedPath.length() - 1);
 
         int lastIndexOfSlash = parentQualifiedPath.lastIndexOf('/');
         int lastIndexOfBackSlash = parentQualifiedPath.lastIndexOf('\\');
@@ -53,9 +59,9 @@ public class ResourceUtils {
         }
 
         // add one because of the slash/backslash itself
-        lastIndexToUse++;
+        // lastIndexToUse++;
 
-        String parentName = parentQualifiedPath.substring(lastIndexToUse);
+        String parentName = parentQualifiedPath.substring(lastIndexToUse + 1);
         return parentName;
     }
 }

@@ -33,8 +33,19 @@ public class ResourceUtilsTest extends TestCase {
 
         assertEquals("resources", ResourceUtils.getParentName(res));
 
-        assertEquals("", ResourceUtils.getParentName(new InMemoryResource("")));
         assertEquals("foo", ResourceUtils.getParentName(new InMemoryResource("foo")));
         assertEquals("bar", ResourceUtils.getParentName(new InMemoryResource("foo/bar\\baz")));
+    }
+
+    public void testGetParentNameRootFile() throws Exception {
+        assertEquals("c:", ResourceUtils.getParentName(new InMemoryResource("c:\\foo.txt")));
+        assertEquals("/", ResourceUtils.getParentName(new InMemoryResource("/foo.txt")));
+    }
+
+    public void testGetParentNameOddPaths() throws Exception {
+        assertEquals("", ResourceUtils.getParentName(new InMemoryResource("")));
+        assertEquals("", ResourceUtils.getParentName(new InMemoryResource("/")));
+        assertEquals("", ResourceUtils.getParentName(new InMemoryResource("//")));
+        assertEquals("", ResourceUtils.getParentName(new InMemoryResource("////")));
     }
 }
