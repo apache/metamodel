@@ -38,14 +38,15 @@ public class ClasspathResource implements Resource, Serializable {
         }
         _resourcePath = resourcePath;
     }
-    
+
     @Override
     public String toString() {
         return "ClasspathResource[" + _resourcePath + "]";
     }
-    
+
     /**
      * Gets the name of the classpath entry
+     *
      * @return
      */
     public String getResourcePath() {
@@ -65,6 +66,11 @@ public class ClasspathResource implements Resource, Serializable {
             }
         }
         return name;
+    }
+
+    @Override
+    public String getQualifiedPath() {
+        return _resourcePath;
     }
 
     protected ClassLoader getClassLoader() {

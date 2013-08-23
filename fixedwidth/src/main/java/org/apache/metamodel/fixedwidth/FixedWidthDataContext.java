@@ -37,6 +37,7 @@ import org.apache.metamodel.util.AlphabeticSequence;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Resource;
+import org.apache.metamodel.util.ResourceUtils;
 
 /**
  * DataContext implementation for fixed width value files.
@@ -115,7 +116,7 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
     protected Schema getMainSchema() throws MetaModelException {
         final String schemaName = getDefaultSchemaName();
         final MutableSchema schema = new MutableSchema(schemaName);
-        final String tableName = schemaName.substring(0, schemaName.length() - 4);
+        final String tableName = _resource.getName();
         final MutableTable table = new MutableTable(tableName, TableType.TABLE, schema);
         schema.addTable(table);
 
@@ -154,7 +155,7 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
 
     @Override
     protected String getMainSchemaName() throws MetaModelException {
-        return _resource.getName();
+        return ResourceUtils.getParentName(_resource);
     }
 
     @Override

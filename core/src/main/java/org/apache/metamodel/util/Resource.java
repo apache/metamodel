@@ -34,6 +34,14 @@ public interface Resource extends HasName {
     public String getName();
 
     /**
+     * Gets the qualified path of the resource, which typically includes slash
+     * or backslash separated nodes in a hierarical tree structure.
+     *
+     * @return
+     */
+    public String getQualifiedPath();
+
+    /**
      * Determines if the file is read only, or if writes are also possible.
      * 
      * @return

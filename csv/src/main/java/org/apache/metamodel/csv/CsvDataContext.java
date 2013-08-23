@@ -43,6 +43,7 @@ import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Func;
 import org.apache.metamodel.util.Resource;
+import org.apache.metamodel.util.ResourceUtils;
 import org.apache.metamodel.util.UrlResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -386,14 +387,14 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
     protected CsvSchema getMainSchema() throws MetaModelException {
         CsvSchema schema = new CsvSchema(getMainSchemaName(), this);
         if (_resource.isExists()) {
-            schema.setTable(new CsvTable(schema));
+            schema.setTable(new CsvTable(schema, _resource.getName()));
         }
         return schema;
     }
 
     @Override
     protected String getMainSchemaName() {
-        return _resource.getName();
+        return ResourceUtils.getParentName(_resource);
     }
 
     protected boolean isWritable() {

@@ -37,6 +37,7 @@ final class CsvTable extends AbstractTable {
     private static final long serialVersionUID = 1L;
 
     private final CsvSchema _schema;
+    private final String _tableName;
     private Column[] _columns;
 
     /**
@@ -45,8 +46,8 @@ final class CsvTable extends AbstractTable {
      * @param schema
      * @param columnNames
      */
-    public CsvTable(CsvSchema schema, String[] columnNames) {
-        this(schema);
+    public CsvTable(CsvSchema schema, String tableName, String[] columnNames) {
+        this(schema, tableName);
         _columns = buildColumns(columnNames);
     }
 
@@ -55,14 +56,20 @@ final class CsvTable extends AbstractTable {
      * 
      * @param schema
      */
-    public CsvTable(CsvSchema schema) {
+    public CsvTable(CsvSchema schema, String tableName) {
         _schema = schema;
+        _tableName = tableName;
     }
 
     @Override
     public String getName() {
-        String schemaName = _schema.getName();
-        return schemaName.substring(0, schemaName.length() - 4);
+        if (_tableName == null) {
+            // can only occur when deserializing legacy objects. Using the
+            // legacy MetaModel code for creating table name here.
+            String schemaName = _schema.getName();
+            return schemaName.substring(0, schemaName.length() - 4);
+        }
+        return _tableName;
     }
 
     @Override
@@ -91,7 +98,8 @@ final class CsvTable extends AbstractTable {
             reader.close();
             return buildColumns(columnHeaders);
         } catch (IOException e) {
-            throw new IllegalStateException("Exception reading from resource: " + _schema.getDataContext().getResource().getName(), e);
+            throw new IllegalStateException("Exception reading from resource: "
+                    + _schema.getDataContext().getResource().getName(), e);
         } finally {
             FileHelper.safeClose(reader);
         }

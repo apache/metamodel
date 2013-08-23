@@ -40,7 +40,7 @@ public class FixedWidthDataContextTest extends TestCase {
         assertEquals(1, dc.getDefaultSchema().getTableCount());
 
         Table table = dc.getDefaultSchema().getTables()[0];
-        assertEquals("empty_file", table.getName());
+        assertEquals("empty_file.txt", table.getName());
         assertEquals(0, table.getColumnCount());
     }
 
@@ -50,7 +50,7 @@ public class FixedWidthDataContextTest extends TestCase {
         assertEquals(1, dc.getDefaultSchema().getTableCount());
 
         Table table = dc.getDefaultSchema().getTables()[0];
-        assertEquals("empty_file", table.getName());
+        assertEquals("empty_file.txt", table.getName());
         assertEquals(0, table.getColumnCount());
     }
 
@@ -60,7 +60,7 @@ public class FixedWidthDataContextTest extends TestCase {
         assertEquals(1, dc.getDefaultSchema().getTableCount());
 
         Table table = dc.getDefaultSchema().getTables()[0];
-        assertEquals("example_simple1", table.getName());
+        assertEquals("example_simple1.txt", table.getName());
         assertEquals(0, table.getColumnCount());
     }
 
@@ -70,15 +70,15 @@ public class FixedWidthDataContextTest extends TestCase {
 
         String[] schemaNames = dc.getSchemaNames();
         assertEquals(2, schemaNames.length);
-        assertEquals("[information_schema, example_simple1.txt]", Arrays.toString(schemaNames));
+        assertEquals("[information_schema, resources]", Arrays.toString(schemaNames));
 
         Schema schema = dc.getDefaultSchema();
-        assertEquals("Schema[name=example_simple1.txt]", schema.toString());
+        assertEquals("Schema[name=resources]", schema.toString());
 
         assertEquals(1, schema.getTableCount());
 
-        Table table = schema.getTableByName("example_simple1");
-        assertEquals("Table[name=example_simple1,type=TABLE,remarks=null]", table.toString());
+        Table table = schema.getTableByName("example_simple1.txt");
+        assertEquals("Table[name=example_simple1.txt,type=TABLE,remarks=null]", table.toString());
 
         assertEquals("[greeting, greeter]", Arrays.toString(table.getColumnNames()));
         assertEquals(10, table.getColumnByName("greeting").getColumnSize().intValue());
@@ -103,15 +103,15 @@ public class FixedWidthDataContextTest extends TestCase {
 
         String[] schemaNames = dc.getSchemaNames();
         assertEquals(2, schemaNames.length);
-        assertEquals("[information_schema, example_simple1.txt]", Arrays.toString(schemaNames));
+        assertEquals("[information_schema, resources]", Arrays.toString(schemaNames));
 
         Schema schema = dc.getDefaultSchema();
-        assertEquals("Schema[name=example_simple1.txt]", schema.toString());
+        assertEquals("Schema[name=resources]", schema.toString());
 
         assertEquals(1, schema.getTableCount());
 
-        Table table = schema.getTableByName("example_simple1");
-        assertEquals("Table[name=example_simple1,type=TABLE,remarks=null]", table.toString());
+        Table table = schema.getTableByName("example_simple1.txt");
+        assertEquals("Table[name=example_simple1.txt,type=TABLE,remarks=null]", table.toString());
 
         assertEquals("[A, B]", Arrays.toString(table.getColumnNames()));
 

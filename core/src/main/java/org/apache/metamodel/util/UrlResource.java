@@ -84,6 +84,11 @@ public class UrlResource implements Resource, Serializable {
     }
 
     @Override
+    public String getQualifiedPath() {
+        return _uri.toString();
+    }
+
+    @Override
     public boolean isReadOnly() {
         return true;
     }

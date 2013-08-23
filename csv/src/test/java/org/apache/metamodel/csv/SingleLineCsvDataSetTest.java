@@ -30,7 +30,7 @@ public class SingleLineCsvDataSetTest extends TestCase {
         CsvConfiguration configuration = new CsvConfiguration(1, true, false);
         CsvDataContext dc = new CsvDataContext(new File("src/test/resources/csv_people.csv"), configuration);
 
-        DataSet dataSet = dc.query().from("csv_people").select("age", "name").execute();
+        DataSet dataSet = dc.query().from("csv_people.csv").select("age", "name").execute();
 
         assertTrue(dataSet.next());
         assertEquals("Row[values=[18, mike]]", dataSet.getRow().toString());
