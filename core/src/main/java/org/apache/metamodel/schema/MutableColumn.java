@@ -73,6 +73,11 @@ public class MutableColumn extends AbstractColumn implements Serializable {
         setQuote(quote);
     }
 
+    public MutableColumn(String name, Table table) {
+        this(name);
+        setTable(table);
+    }
+
     @Override
     public int getColumnNumber() {
         return _columnNumber;

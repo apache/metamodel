@@ -68,6 +68,11 @@ public class MutableTable extends AbstractTable implements Serializable {
         setColumns(columns);
     }
 
+    public MutableTable(String name, Schema schema) {
+        this(name);
+        setSchema(schema);
+    }
+
     @Override
     public String getName() {
         return _name;
