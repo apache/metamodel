@@ -27,7 +27,6 @@ import java.util.Collection;
 import javax.sql.DataSource;
 
 import org.ektorp.http.StdHttpClient.Builder;
-import org.apache.metamodel.access.AccessDataContext;
 import org.apache.metamodel.couchdb.CouchDbDataContext;
 import org.apache.metamodel.csv.CsvConfiguration;
 import org.apache.metamodel.csv.CsvDataContext;
@@ -93,28 +92,6 @@ public class DataContextFactory {
     }
 
     /**
-     * Creates a DataContext based on a MS Access (.mdb) file
-     * 
-     * @param filename
-     *            the path to a MS Access (.mdb) file
-     * @return a DataContext object that matches the request
-     */
-    public static DataContext createAccessDataContext(String filename) {
-        return new AccessDataContext(filename);
-    }
-
-    /**
-     * Creates a DataContext based on a MS Access (.mdb) file
-     * 
-     * @param file
-     *            a MS Access (.mdb) file
-     * @return a DataContext object that matches the request
-     */
-    public static DataContext createAccessDataContext(File file) {
-        return new AccessDataContext(file);
-    }
-
-    /**
      * Creates a DataContext that connects to a Salesforce.com instance.
      * 
      * @param username
@@ -142,7 +119,8 @@ public class DataContextFactory {
      *            the name of the application you are connecting with
      * @return a DataContext object that matches the request
      */
-    public static DataContext createSugarCrmDataContext(String baseUrl, String username, String password, String applicationName) {
+    public static DataContext createSugarCrmDataContext(String baseUrl, String username, String password,
+            String applicationName) {
         return new SugarCrmDataContext(baseUrl, username, password, applicationName);
     }
 
@@ -187,9 +165,10 @@ public class DataContextFactory {
      *            the character encoding of the file
      * @return a DataContext object that matches the request
      */
-    public static UpdateableDataContext createCsvDataContext(File file, char separatorChar, char quoteChar, String encoding) {
-        CsvConfiguration configuration = new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, encoding, separatorChar,
-                quoteChar, CsvConfiguration.DEFAULT_ESCAPE_CHAR);
+    public static UpdateableDataContext createCsvDataContext(File file, char separatorChar, char quoteChar,
+            String encoding) {
+        CsvConfiguration configuration = new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, encoding,
+                separatorChar, quoteChar, CsvConfiguration.DEFAULT_ESCAPE_CHAR);
         CsvDataContext dc = new CsvDataContext(file, configuration);
         return dc;
     }
@@ -236,9 +215,10 @@ public class DataContextFactory {
      *            the separator char)
      * @return a DataContext object that matches the request
      */
-    public static DataContext createCsvDataContext(InputStream inputStream, char separatorChar, char quoteChar, String encoding) {
-        CsvConfiguration configuration = new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, encoding, separatorChar,
-                quoteChar, CsvConfiguration.DEFAULT_ESCAPE_CHAR);
+    public static DataContext createCsvDataContext(InputStream inputStream, char separatorChar, char quoteChar,
+            String encoding) {
+        CsvConfiguration configuration = new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, encoding,
+                separatorChar, quoteChar, CsvConfiguration.DEFAULT_ESCAPE_CHAR);
         CsvDataContext dc = new CsvDataContext(inputStream, configuration);
         return dc;
     }
@@ -269,8 +249,8 @@ public class DataContextFactory {
      * @return a DataContext object that matches the request
      */
     public static DataContext createFixedWidthDataContext(File file, String fileEncoding, int fixedValueWidth) {
-        return createFixedWidthDataContext(file, new FixedWidthConfiguration(FixedWidthConfiguration.DEFAULT_COLUMN_NAME_LINE,
-                fileEncoding, fixedValueWidth));
+        return createFixedWidthDataContext(file, new FixedWidthConfiguration(
+                FixedWidthConfiguration.DEFAULT_COLUMN_NAME_LINE, fileEncoding, fixedValueWidth));
     }
 
     /**
@@ -302,8 +282,8 @@ public class DataContextFactory {
      */
     public static DataContext createFixedWidthDataContext(File file, String fileEncoding, int fixedValueWidth,
             int headerLineNumber) {
-        return createFixedWidthDataContext(file, new FixedWidthConfiguration(FixedWidthConfiguration.DEFAULT_COLUMN_NAME_LINE,
-                fileEncoding, fixedValueWidth));
+        return createFixedWidthDataContext(file, new FixedWidthConfiguration(
+                FixedWidthConfiguration.DEFAULT_COLUMN_NAME_LINE, fileEncoding, fixedValueWidth));
     }
 
     /**
@@ -471,7 +451,8 @@ public class DataContextFactory {
      *            the types of tables to include in the generated schemas
      * @return a DataContext object that matches the request
      */
-    public static UpdateableDataContext createJdbcDataContext(Connection connection, String catalogName, TableType[] tableTypes) {
+    public static UpdateableDataContext createJdbcDataContext(Connection connection, String catalogName,
+            TableType[] tableTypes) {
         return new JdbcDataContext(connection, tableTypes, catalogName);
     }
 
@@ -567,7 +548,8 @@ public class DataContextFactory {
      *            the password, or null if unathenticated access should be used
      * @return a DataContext object that matches the request
      */
-    public static UpdateableDataContext createCouchDbDataContext(String hostname, Integer port, String username, String password) {
+    public static UpdateableDataContext createCouchDbDataContext(String hostname, Integer port, String username,
+            String password) {
 
         Builder httpClientBuilder = new Builder();
         httpClientBuilder.host(hostname);

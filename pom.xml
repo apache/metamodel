@@ -38,7 +38,6 @@
 		<module>excel</module>
 		<module>csv</module>
 		<module>xml</module>
-		<module>access</module>
 		<module>jdbc</module>
 		<module>mongodb</module>
 		<module>couchdb</module>
