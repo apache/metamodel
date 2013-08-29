@@ -33,7 +33,7 @@ public class ResourceUtilsTest extends TestCase {
 
         assertEquals("resources", ResourceUtils.getParentName(res));
 
-        assertEquals("foo", ResourceUtils.getParentName(new InMemoryResource("foo")));
+        assertEquals("", ResourceUtils.getParentName(new InMemoryResource("foo")));
         assertEquals("bar", ResourceUtils.getParentName(new InMemoryResource("foo/bar\\baz")));
     }
 
@@ -43,9 +43,9 @@ public class ResourceUtilsTest extends TestCase {
     }
 
     public void testGetParentNameOddPaths() throws Exception {
+        assertEquals("", ResourceUtils.getParentName(new InMemoryResource("////")));
         assertEquals("", ResourceUtils.getParentName(new InMemoryResource("")));
         assertEquals("", ResourceUtils.getParentName(new InMemoryResource("/")));
         assertEquals("", ResourceUtils.getParentName(new InMemoryResource("//")));
-        assertEquals("", ResourceUtils.getParentName(new InMemoryResource("////")));
     }
 }

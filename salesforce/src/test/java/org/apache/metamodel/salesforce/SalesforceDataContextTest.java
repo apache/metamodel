@@ -54,13 +54,13 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
         Column[] timeColumns = dc.getDefaultSchema().getTableByName("Contact").getTimeBasedColumns();
         assertEquals(
                 "[Column[name=Birthdate,columnNumber=30,type=DATE,nullable=true,nativeType=date,columnSize=0], "
-                        + "Column[name=CreatedDate,columnNumber=33,type=DATE,nullable=false,nativeType=datetime,columnSize=0], "
-                        + "Column[name=LastModifiedDate,columnNumber=35,type=DATE,nullable=false,nativeType=datetime,columnSize=0], "
-                        + "Column[name=SystemModstamp,columnNumber=37,type=DATE,nullable=false,nativeType=datetime,columnSize=0], "
+                        + "Column[name=CreatedDate,columnNumber=33,type=TIMESTAMP,nullable=false,nativeType=datetime,columnSize=0], "
+                        + "Column[name=LastModifiedDate,columnNumber=35,type=TIMESTAMP,nullable=false,nativeType=datetime,columnSize=0], "
+                        + "Column[name=SystemModstamp,columnNumber=37,type=TIMESTAMP,nullable=false,nativeType=datetime,columnSize=0], "
                         + "Column[name=LastActivityDate,columnNumber=38,type=DATE,nullable=true,nativeType=date,columnSize=0], "
-                        + "Column[name=LastCURequestDate,columnNumber=39,type=DATE,nullable=true,nativeType=datetime,columnSize=0], "
-                        + "Column[name=LastCUUpdateDate,columnNumber=40,type=DATE,nullable=true,nativeType=datetime,columnSize=0], "
-                        + "Column[name=EmailBouncedDate,columnNumber=42,type=DATE,nullable=true,nativeType=datetime,columnSize=0]]",
+                        + "Column[name=LastCURequestDate,columnNumber=39,type=TIMESTAMP,nullable=true,nativeType=datetime,columnSize=0], "
+                        + "Column[name=LastCUUpdateDate,columnNumber=40,type=TIMESTAMP,nullable=true,nativeType=datetime,columnSize=0], "
+                        + "Column[name=EmailBouncedDate,columnNumber=42,type=TIMESTAMP,nullable=true,nativeType=datetime,columnSize=0]]",
                 Arrays.toString(timeColumns));
         DataSet ds = dc.query().from("Contact").select("LastModifiedDate").where("Id").eq("003b0000006xfAUAAY")
                 .execute();
@@ -358,7 +358,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
         SalesforceDataContext.rewriteFilterItem(sb, filterItem);
 
         assertEquals(
-                "FOOBAR: (foo = 'hello\\n \\'world\\'' OR bar = 123 OR baz = 2013-01-22 OR zaz = 2013-01-22T23:00:00+0000 OR saz = 2013-01-22T23:00:00+0000)",
+                "FOOBAR: (foo = 'hello\\n \\'world\\'' OR bar = 123 OR baz = 2013-01-23 OR zaz = 2013-01-22T23:00:00+0000 OR saz = 2013-01-22T23:00:00+0000)",
                 sb.toString());
     }
 }

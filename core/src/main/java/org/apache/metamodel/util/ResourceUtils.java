@@ -39,7 +39,7 @@ public class ResourceUtils {
         int indexOfChild = qualifiedPath.length() - name.length();
 
         if (indexOfChild <= 0) {
-            return name;
+            return "";
         }
 
         String parentQualifiedPath = qualifiedPath.substring(0, indexOfChild);
