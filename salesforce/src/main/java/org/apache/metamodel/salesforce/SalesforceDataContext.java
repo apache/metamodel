@@ -21,6 +21,7 @@ package org.apache.metamodel.salesforce;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import org.apache.metamodel.MetaModelException;
@@ -279,19 +280,22 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
         } else if (operand instanceof Date) {
             final SimpleDateFormat dateFormat;
             switch (selectItem.getExpectedColumnType()) {
-            case TIME:
-                dateFormat = new SimpleDateFormat(SOQL_TIME_FORMAT_OUT);
-                break;
             case DATE:
+                // note: we don't apply the timezone for DATE fields, since they
+                // don't contain time-of-day information.
                 dateFormat = new SimpleDateFormat(SOQL_DATE_FORMAT_OUT);
+                break;
+            case TIME:
+                dateFormat = new SimpleDateFormat(SOQL_TIME_FORMAT_OUT, Locale.ENGLISH);
+                dateFormat.setTimeZone(SOQL_TIMEZONE);
                 break;
             case TIMESTAMP:
             default:
-                dateFormat = new SimpleDateFormat(SOQL_DATE_TIME_FORMAT_OUT);
+                dateFormat = new SimpleDateFormat(SOQL_DATE_TIME_FORMAT_OUT, Locale.ENGLISH);
+                dateFormat.setTimeZone(SOQL_TIMEZONE);
                 break;
             }
 
-            dateFormat.setTimeZone(SOQL_TIMEZONE);
             String str = dateFormat.format((Date) operand);
             logger.debug("Date '{}' formatted as: {}", operand, str);
             sb.append(str);

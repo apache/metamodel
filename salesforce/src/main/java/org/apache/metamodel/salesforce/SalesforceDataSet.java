@@ -20,6 +20,7 @@ package org.apache.metamodel.salesforce;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.metamodel.data.AbstractDataSet;
@@ -112,19 +113,22 @@ final class SalesforceDataSet extends AbstractDataSet {
             if (columnType.isTimeBased()) {
                 final SimpleDateFormat dateFormat;
                 switch (columnType) {
-                case TIME:
-                    dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_TIME_FORMAT_IN);
-                    break;
                 case DATE:
-                    dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_DATE_FORMAT_IN);
+                    // note: we don't apply the timezone for DATE fields, since
+                    // they don't contain time-of-day information.
+                    dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_DATE_FORMAT_IN, Locale.ENGLISH);
+                    break;
+                case TIME:
+                    dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_TIME_FORMAT_IN, Locale.ENGLISH);
+                    dateFormat.setTimeZone(SalesforceDataContext.SOQL_TIMEZONE);
                     break;
                 case TIMESTAMP:
                 default:
-                    dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_DATE_TIME_FORMAT_IN);
+                    dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_DATE_TIME_FORMAT_IN, Locale.ENGLISH);
+                    dateFormat.setTimeZone(SalesforceDataContext.SOQL_TIMEZONE);
                     break;
                 }
 
-                dateFormat.setTimeZone(SalesforceDataContext.SOQL_TIMEZONE);
                 try {
                     return dateFormat.parse(value.toString());
                 } catch (ParseException e) {

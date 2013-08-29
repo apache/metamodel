@@ -19,6 +19,7 @@
 package org.apache.metamodel.salesforce;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -30,6 +31,7 @@ import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.delete.DeleteFrom;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
@@ -268,6 +270,59 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
         assertEquals("Row[values=[0]]", ds.getRow().toString());
         assertFalse(ds.next());
         ds.close();
+    }
+
+    public void testInsertInContactsWithBirthdate() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        SalesforceDataContext dc = new SalesforceDataContext(getUsername(), getPassword(), getSecurityToken());
+
+        final String tableName = "Contact";
+        final String firstName = "MetaModelJohn";
+        final String lastName = "MetaModelDoe";
+        final String dateString = "1980-08-08 05:10:22";
+
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        final Date dateValue = dateFormat.parse(dateString);
+        assertEquals("1980-08-08 05:10:22", dateFormat.format(dateValue));
+
+        final Table table = dc.getTableByQualifiedLabel(tableName);
+
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto(table).value("FirstName", firstName).value("LastName", lastName)
+                        .value("BirthDate", dateValue).execute();
+            }
+        });
+
+        final DataSet dataSet = dc.query().from(table).select("Id", "BirthDate").where("FirstName").eq(firstName)
+                .where("LastName").eq(lastName).execute();
+
+        int rows = 0;
+
+        while (dataSet.next()) {
+            final String id = (String) dataSet.getRow().getValue(0);
+            try {
+                assertNotNull(id);
+
+                final Object dateValueFromDataSet = dataSet.getRow().getValue(1);
+                assertTrue(dateValueFromDataSet instanceof Date);
+                assertEquals("1980-08-08 00:00:00", dateFormat.format(dateValueFromDataSet));
+
+            } finally {
+                // clean up
+                dc.executeUpdate(new DeleteFrom(table).where("Id").eq(id));
+            }
+
+            rows++;
+        }
+
+        assertEquals(1, rows);
+
     }
 
     public void testRewriteWhereItem() throws Exception {
