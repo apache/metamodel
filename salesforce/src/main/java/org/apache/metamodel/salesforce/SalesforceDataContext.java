@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import com.sforce.ws.ConnectorConfig;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
@@ -70,6 +71,19 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
     private static final Logger logger = LoggerFactory.getLogger(SalesforceDataContext.class);
 
     private final PartnerConnection _connection;
+
+    public SalesforceDataContext(String endpoint, String username, String password, String securityToken) {
+        try {
+            ConnectorConfig config = new ConnectorConfig();
+            config.setUsername(username);
+            config.setPassword(password + securityToken);
+            config.setAuthEndpoint(endpoint);
+            config.setServiceEndpoint(endpoint);
+            _connection = Connector.newConnection(config);
+        } catch (ConnectionException e) {
+            throw SalesforceUtils.wrapException(e, "Failed to log in to Salesforce service");
+        }
+    }
 
     public SalesforceDataContext(String username, String password, String securityToken) {
         try {

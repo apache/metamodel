@@ -82,6 +82,29 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
         }
     }
 
+    public void testNonDefaultEndpoint() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        SalesforceDataContext dc = new SalesforceDataContext("https://test.salesforce.com/services/Soap/u/28.0", getUsername(), getPassword(), getSecurityToken());
+
+        Schema schema = dc.getDefaultSchema();
+        assertNotNull(schema);
+    }
+
+    public void testInvalidEndpoint() throws Exception {
+        try {
+            new SalesforceDataContext("https://non_existing_domain", "foo", "bar", "baz");
+            fail("Exception expected");
+        } catch (IllegalStateException e) {
+            assertEquals(
+                    "Failed to log in to Salesforce service: null",
+                    e.getMessage());
+        }
+    }
+
     public void testGetSchema() throws Exception {
         if (!isConfigured()) {
             System.err.println(getInvalidConfigurationMessage());
