@@ -12,7 +12,6 @@
 		<!-- Version printed in the docs -->
 		<siteDownloadVersion>${project.version}</siteDownloadVersion>
 		<checksum-maven-plugin.version>1.2</checksum-maven-plugin.version>
-		<maven-gpg-plugin.version>1.4</maven-gpg-plugin.version>
 		<skipTests>false</skipTests>
 	</properties>
 	<parent>
@@ -144,6 +143,51 @@
 				</configuration>
 			</plugin>
 			<plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <executions>
+                  <execution>
+                    <id>rat-verify</id>
+                    <phase>test</phase>
+                    <goals>
+                      <goal>check</goal>
+                    </goals>
+                  </execution>
+                </executions>
+                <configuration>
+          	    <licenses>
+            	  <license implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
+              	  <licenseFamilyCategory>ASL20</licenseFamilyCategory>
+              	  <licenseFamilyName>Apache Software License, 2.0</licenseFamilyName>
+              	  <notes>Single licensed ASL v2.0</notes>
+              	  <patterns>
+                	<pattern>Licensed to the Apache Software Foundation (ASF) under one
+                	or more contributor license agreements.</pattern>
+              	  </patterns>
+            	  </license>
+                 </licenses>
+                 <excludeSubProjects>false</excludeSubProjects>
+                 <excludes>
+                   <exclude>CHANGES.txt</exclude>
+                   <exclude>README.txt</exclude>
+                   <exclude>NOTICE.txt</exclude>
+                   <exclude>LICENSE.txt</exclude>
+                   <exclude>KEYS</exclude>
+                   <exclude>**/.gitignore/**</exclude>
+                   <exclude>.git/**</exclude>
+                   <exclude>.project</exclude>
+                   <exclude>*/.settings/*</exclude>
+                   <exclude>**/src/test/**</exclude>
+                   <exclude>**/src/site/**</exclude>
+                   <exclude>**/*.xml/**</exclude>
+                   <exclude>**/*.wsdl/**</exclude>
+                   <exclude>**/*.xsd/**</exclude>
+                   <exclude>**/.project</exclude>
+                   <exclude>**/target/**</exclude>
+                 </excludes>
+                </configuration>
+              </plugin>
+			<plugin>
 				<!-- Ensure inclusion of license header in all main java files -->
 				<groupId>com.google.code.maven-license-plugin</groupId>
 				<artifactId>maven-license-plugin</artifactId>
@@ -219,19 +263,6 @@
 						<configuration>
 							<excludePackageNames>org.apache.metamodel.jdbc.dialects:org.apache.metamodel.detect</excludePackageNames>
 						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>
