@@ -182,6 +182,7 @@
                    <exclude>**/src/test/**</exclude>
                    <exclude>**/src/site/**</exclude>
                    <exclude>**/*.xml/**</exclude>
+				   <exclude>**/*.xml*/**</exclude>
                    <exclude>**/*.wsdl/**</exclude>
                    <exclude>**/*.xsd/**</exclude>
                    <exclude>**/.project</exclude>
