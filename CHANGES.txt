@@ -1,0 +1,36 @@
+Release 4.0 - 2013-09-20
+
+Release Notes - Apache Metamodel - Version 4.0
+
+** Sub-task
+
+
+
+** Bug
+    * [METAMODEL-9] - SalesforceDataSet is throwing exception for insert sql of record having date/time.
+
+
+
+** Improvement
+    * [METAMODEL-4] - Use folder name as schema name for file based DataContexts
+	* [METAMODEL-5] - Faster CsvDataContext implementation for single-line values
+    * [METAMODEL-26] - Provide endpoint URL with SalesforceDataContext
+	* Upgraded Apache POI dependency to v. 3.9
+	* Improved fluent Query builder API by adding string parameter based
+	* Added a utility ObjectInputStream for deserializing legacy
+	* Performance improvement to CSV reading when values are only single line
+	* Setting up the project on apache infrastructure
+	
+** New Feature
+
+
+
+** Task
+	* [METAMODEL-10] - Exclude Jackcess dependency (Access module) from MetaModel
+	* Renaming the package hierarchy from org.eobjects to org.apache
+	
+
+
+
+** Wish
+
