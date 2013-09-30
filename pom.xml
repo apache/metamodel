@@ -198,8 +198,6 @@ under the License.
                    <exclude>.git/**</exclude>
                    <exclude>**/src/test/**</exclude>
                    <exclude>**/src/site/**</exclude>
-<!--                     <exclude>**/*.xml/**</exclude>
-				   <exclude>**/*.xml*/**</exclude>-->
                    <exclude>**/.project</exclude>
                    <exclude>**/.classpath</exclude>
                    <exclude>**/.settings/**</exclude>
@@ -479,5 +477,4 @@ under the License.
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
 </project>
