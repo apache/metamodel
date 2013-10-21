@@ -11,3 +11,4 @@
  * Setting up the project on apache infrastructure
  * [METAMODEL-10] - Exclude Jackcess dependency (Access module) from MetaModel
  * Renaming the package hierarchy from org.eobjects.metamodel to org.apache.metamodel
+ * [METAMODEL-29] - Fixed issue in CreateTable builder class, causing it to only support a single column definition

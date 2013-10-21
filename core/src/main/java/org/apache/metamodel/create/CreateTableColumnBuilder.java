@@ -39,4 +39,7 @@ public final class CreateTableColumnBuilder extends AbstractColumnBuilder<Create
         _createTable.run(callback);
     }
 
+    public CreateTableColumnBuilder withColumn(String name) {
+        return _createTable.withColumn(name);
+    }
 }

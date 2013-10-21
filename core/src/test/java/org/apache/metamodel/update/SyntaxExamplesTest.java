@@ -16,15 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.create;
+package org.apache.metamodel.update;
 
 import junit.framework.TestCase;
 
-import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
-import org.apache.metamodel.schema.Table;
 
 /**
  * Abstract test class (will not be executed) to check the builder API's
@@ -32,18 +29,11 @@ import org.apache.metamodel.schema.Table;
  */
 public abstract class SyntaxExamplesTest extends TestCase {
 
-    private TableCreatable dc;
-    private Table table;
     private Column col;
     private Schema schema;
 
-    public void testCreateLikeExistingStructure() throws Exception {
-        dc.createTable(schema, "foo").like(table).withColumn("bar").like(col).nullable(false).execute();
-    }
-
-    public void testCreateTableClass() throws Exception {
-        UpdateScript ct = new CreateTable(schema, "table").withColumn("foo").ofType(ColumnType.VARCHAR)
-                .withColumn("bar").withColumn("baz");
-        assertNotNull(ct);
+    public void testUpdateClass() throws Exception {
+        Update u = new Update(schema, "table").value(col, "foo").where("baz").eq("bar");
+        assertNotNull(u);
     }
 }

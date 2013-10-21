@@ -54,7 +54,7 @@ public final class CreateTable implements UpdateScript {
      * @param name
      * @return
      */
-    public ColumnBuilder<CreateTableColumnBuilder> withColumn(String name) {
+    public CreateTableColumnBuilder withColumn(String name) {
         MutableColumn column = new MutableColumn(name);
         _table.addColumn(column);
         return new CreateTableColumnBuilder(this, column);
