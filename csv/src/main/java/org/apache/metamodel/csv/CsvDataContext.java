@@ -270,15 +270,23 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
         if (!functionApproximationAllowed) {
             return null;
         }
+        
+        if (whereItems != null && !whereItems.isEmpty()) {
+            return null;
+        }
+        
+        final long length = _resource.getSize();
+        if (length < 0) {
+            // METAMODEL-30: Sometimes the size of the resource is not known
+            return null;
+        }
 
         return _resource.read(new Func<InputStream, Number>() {
             @Override
             public Number eval(InputStream inputStream) {
                 try {
-                    final long length = _resource.getSize();
                     // read up to 5 megs of the file and approximate number of
-                    // lines
-                    // based on that.
+                    // lines based on that.
 
                     final int sampleSize = (int) Math.min(length, 1024 * 1024 * 5);
                     final int chunkSize = Math.min(sampleSize, 1024 * 1024);
