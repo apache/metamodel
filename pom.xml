@@ -202,6 +202,7 @@ under the License.
                    <exclude>**/.classpath</exclude>
                    <exclude>**/.settings/**</exclude>
                    <exclude>**/target/**</exclude>
+                   <exclude>DEPENDENCIES</exclude>
                  </excludes>
                 </configuration>
               </plugin>
