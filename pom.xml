@@ -190,7 +190,7 @@ under the License.
                  <excludeSubProjects>false</excludeSubProjects>
                  <excludes>
                    <exclude>CHANGES.txt</exclude>
-                   <exclude>README.txt</exclude>
+                   <exclude>README</exclude>
                    <exclude>NOTICE.txt</exclude>
                    <exclude>LICENSE.txt</exclude>
                    <exclude>KEYS</exclude>
@@ -203,6 +203,7 @@ under the License.
                    <exclude>**/.settings/**</exclude>
                    <exclude>**/target/**</exclude>
                    <exclude>DEPENDENCIES</exclude>
+                   <exclude>DISCLAIMER</exclude>
                  </excludes>
                 </configuration>
               </plugin>

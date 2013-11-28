@@ -1,0 +1,21 @@
+README file for Apache Metamodel
+===========================
+
+MetaModel is a data access framework, providing a common interface for exploration and querying of different types of datastores.
+
+Mail Lists
+=========
+
+Dev list dev@metamodel.incubator.apache.org
+
+Website
+=======
+
+http://incubator.apache.org/projects/metamodel.html
+
+Building Code
+==============
+
+Metamodel uses maven for build. So code can be build by mvn clean install.
+
+
