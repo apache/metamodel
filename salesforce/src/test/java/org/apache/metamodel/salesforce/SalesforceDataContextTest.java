@@ -363,6 +363,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
         cal.set(Calendar.YEAR, 2013);
         cal.set(Calendar.MONTH, Calendar.JANUARY);
         cal.set(Calendar.DAY_OF_MONTH, 23);
+        cal.set(Calendar.AM_PM, 0);
         final Date date = cal.getTime();
         final Timestamp dateTime = new Timestamp(date.getTime());
 
