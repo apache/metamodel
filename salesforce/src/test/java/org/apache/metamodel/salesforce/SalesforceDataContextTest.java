@@ -41,6 +41,8 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.DateUtils;
+import org.apache.metamodel.util.Month;
 
 public class SalesforceDataContextTest extends SalesforceTestCase {
 
@@ -351,28 +353,13 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
     public void testRewriteWhereItem() throws Exception {
         final StringBuilder sb = new StringBuilder("FOOBAR: ");
 
-        final Calendar cal = Calendar.getInstance();
-        cal.setTimeZone(TimeZone.getTimeZone("GMT+1"));
-        cal.setTimeInMillis(0);
-        cal.set(Calendar.HOUR, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        cal.set(Calendar.HOUR, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.YEAR, 2013);
-        cal.set(Calendar.MONTH, Calendar.JANUARY);
-        cal.set(Calendar.DAY_OF_MONTH, 23);
-        cal.set(Calendar.AM_PM, 0);
-        final Date date = cal.getTime();
-        final Timestamp dateTime = new Timestamp(date.getTime());
+        final Date date = DateUtils.get(2013, Month.JANUARY, 23);
+        final Timestamp dateTime = new Timestamp(0l);
 
         final List<FilterItem> children = new ArrayList<FilterItem>();
         children.add(new FilterItem(new SelectItem(new MutableColumn("foo")), OperatorType.EQUALS_TO, "hello\n 'world'"));
         children.add(new FilterItem(new SelectItem(new MutableColumn("bar")), OperatorType.EQUALS_TO, 123));
         children.add(new FilterItem(new SelectItem(new MutableColumn("baz").setType(ColumnType.DATE)),
-                OperatorType.EQUALS_TO, date));
-        children.add(new FilterItem(new SelectItem(new MutableColumn("zaz").setType(ColumnType.TIMESTAMP)),
                 OperatorType.EQUALS_TO, date));
         children.add(new FilterItem(new SelectItem(new MutableColumn("saz").setType(ColumnType.TIMESTAMP)),
                 OperatorType.EQUALS_TO, dateTime));
@@ -382,7 +369,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
         SalesforceDataContext.rewriteFilterItem(sb, filterItem);
 
         assertEquals(
-                "FOOBAR: (foo = 'hello\\n \\'world\\'' OR bar = 123 OR baz = 2013-01-23 OR zaz = 2013-01-22T23:00:00+0000 OR saz = 2013-01-22T23:00:00+0000)",
+                "FOOBAR: (foo = 'hello\\n \\'world\\'' OR bar = 123 OR baz = 2013-01-23 OR saz = 1970-01-01T00:00:00+0000)",
                 sb.toString());
     }
 }
