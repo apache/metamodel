@@ -20,13 +20,11 @@ package org.apache.metamodel.excel;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.poi.openxml4j.opc.OPCPackage;
-import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.RowPublisherDataSet;
 import org.apache.metamodel.data.Style;
@@ -41,6 +39,8 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.AlphabeticSequence;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.Ref;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
@@ -62,7 +62,7 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
 
     public XlsxSpreadsheetReaderDelegate(ExcelConfiguration configuration) {
         _configuration = configuration;
-        _tableNamesToInternalIds = new HashMap<String, String>();
+        _tableNamesToInternalIds = new ConcurrentHashMap<String, String>();
     }
 
     @Override
@@ -70,6 +70,10 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
         final OPCPackage pkg = OPCPackage.open(inputStream);
         final XSSFReader xssfReader = new XSSFReader(pkg);
         final String relationshipId = _tableNamesToInternalIds.get(table.getName());
+        
+        if (relationshipId == null) {
+            throw new IllegalStateException("No internal relationshipId found for table: " + table);
+        }
 
         return buildDataSet(columns, maxRows, relationshipId, xssfReader);
     }
