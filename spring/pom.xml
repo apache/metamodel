@@ -26,6 +26,10 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>MetaModel-spring</artifactId>
 	<name>MetaModel module for Spring enabled configuration</name>
+	
+	<properties>
+		<spring.version>3.0.7.RELEASE</spring.version>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -42,7 +46,7 @@ under the License.
 		<dependency>
 		    <groupId>org.springframework</groupId>
 		    <artifactId>spring-context</artifactId>
-		    <version>3.0.7.RELEASE</version>
+		    <version>${spring.version}</version>
 		    <scope>provided</scope>
 		</dependency>
 
@@ -56,6 +60,12 @@ under the License.
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-test</artifactId>
+		    <version>${spring.version}</version>
+		    <scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

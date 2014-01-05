@@ -112,4 +112,13 @@ public class SpringResource implements Resource {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Gets the underlying spring {@link org.springframework.core.io.Resource}
+     * object.
+     * 
+     * @return
+     */
+    public org.springframework.core.io.Resource getResource() {
+        return _resource;
+    }
 }

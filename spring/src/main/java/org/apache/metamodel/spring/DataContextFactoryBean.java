@@ -190,7 +190,9 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         if (value.isEmpty()) {
             return ifNull;
         }
-        // TODO: Check special strings like &quot;
+        if ("none".equalsIgnoreCase(value)) {
+            return CsvConfiguration.NOT_A_CHAR;
+        }
         return value.charAt(0);
     }
 
@@ -204,4 +206,157 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         }
         return BooleanComparator.parseBoolean(value);
     }
+
+    public String getType() {
+        return _type;
+    }
+
+    public void setType(String type) {
+        _type = type;
+    }
+
+    public org.springframework.core.io.Resource getResource() {
+        return _resource;
+    }
+
+    public void setResource(org.springframework.core.io.Resource resource) {
+        _resource = resource;
+    }
+
+    public String getFilename() {
+        return _filename;
+    }
+
+    public void setFilename(String filename) {
+        _filename = filename;
+    }
+
+    public String getUrl() {
+        return _url;
+    }
+
+    public void setUrl(String url) {
+        _url = url;
+    }
+
+    public String getColumnNameLineNumber() {
+        return _columnNameLineNumber;
+    }
+
+    public void setColumnNameLineNumber(String columnNameLineNumber) {
+        _columnNameLineNumber = columnNameLineNumber;
+    }
+
+    public String getSkipEmptyLines() {
+        return _skipEmptyLines;
+    }
+
+    public void setSkipEmptyLines(String skipEmptyLines) {
+        _skipEmptyLines = skipEmptyLines;
+    }
+
+    public String getSkipEmptyColumns() {
+        return _skipEmptyColumns;
+    }
+
+    public void setSkipEmptyColumns(String skipEmptyColumns) {
+        _skipEmptyColumns = skipEmptyColumns;
+    }
+
+    public String getEncoding() {
+        return _encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        _encoding = encoding;
+    }
+
+    public String getSeparatorChar() {
+        return _separatorChar;
+    }
+
+    public void setSeparatorChar(String separatorChar) {
+        _separatorChar = separatorChar;
+    }
+
+    public String getQuoteChar() {
+        return _quoteChar;
+    }
+
+    public void setQuoteChar(String quoteChar) {
+        _quoteChar = quoteChar;
+    }
+
+    public String getEscapeChar() {
+        return _escapeChar;
+    }
+
+    public void setEscapeChar(String escapeChar) {
+        _escapeChar = escapeChar;
+    }
+
+    public String getFailOnInconsistentRowLength() {
+        return _failOnInconsistentRowLength;
+    }
+
+    public void setFailOnInconsistentRowLength(String failOnInconsistentRowLength) {
+        _failOnInconsistentRowLength = failOnInconsistentRowLength;
+    }
+
+    public String getMultilineValues() {
+        return _multilineValues;
+    }
+
+    public void setMultilineValues(String multilineValues) {
+        _multilineValues = multilineValues;
+    }
+
+    public TableType[] getTableTypes() {
+        return _tableTypes;
+    }
+
+    public void setTableTypes(TableType[] tableTypes) {
+        _tableTypes = tableTypes;
+    }
+
+    public String getCatalogName() {
+        return _catalogName;
+    }
+
+    public void setCatalogName(String catalogName) {
+        _catalogName = catalogName;
+    }
+
+    public DataSource getDataSource() {
+        return _dataSource;
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        _dataSource = dataSource;
+    }
+
+    public String getUsername() {
+        return _username;
+    }
+
+    public void setUsername(String username) {
+        _username = username;
+    }
+
+    public String getPassword() {
+        return _password;
+    }
+
+    public void setPassword(String password) {
+        _password = password;
+    }
+
+    public String getDriverClassName() {
+        return _driverClassName;
+    }
+
+    public void setDriverClassName(String driverClassName) {
+        _driverClassName = driverClassName;
+    }
+
 }
