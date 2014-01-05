@@ -69,6 +69,7 @@ under the License.
 		<module>salesforce</module>
 		<module>sugarcrm</module>
 		<module>full</module>
+		<module>spring</module>
 	</modules>
 	<issueManagement>
 		<system>Jira</system>
