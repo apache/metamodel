@@ -18,25 +18,12 @@
  */
 package org.apache.metamodel.spring;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-
 import javax.sql.DataSource;
 
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.csv.CsvConfiguration;
-import org.apache.metamodel.csv.CsvDataContext;
-import org.apache.metamodel.excel.ExcelConfiguration;
-import org.apache.metamodel.excel.ExcelDataContext;
-import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.schema.TableType;
-import org.apache.metamodel.util.BooleanComparator;
-import org.apache.metamodel.util.FileHelper;
-import org.apache.metamodel.util.FileResource;
-import org.apache.metamodel.util.Resource;
-import org.apache.metamodel.util.UrlResource;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
 
 /**
@@ -70,84 +57,56 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
 
     @Override
     public DataContext getObject() throws Exception {
-        String type = _type == null ? "" : _type.toLowerCase();
-        if ("csv".equals(type)) {
-            return createCsvDataContext();
+        final String type = _type == null ? "" : _type.toLowerCase();
+        final DataContextFactoryBeanDelegate delegate;
+
+        if (type.isEmpty()) {
+            throw new IllegalArgumentException("No DataContext 'type' property provided for DataContextFactoryBean");
+        } else if ("csv".equals(type)) {
+            delegate = new CsvDataContextFactoryBeanDelegate();
         } else if ("excel".equals(type)) {
-            return createExcelDataContext();
+            delegate = new ExcelDataContextFactoryBeanDelegate();
         } else if ("jdbc".equals(type)) {
-            return createJdbcDataContext();
+            delegate = new JdbcDataContextFactoryBeanDelegate();
+        } else {
+            delegate = createDelegateFromType();
+        }
+        
+        if (delegate == null) {
+            throw new UnsupportedOperationException("Unsupported DataContext type: " + _type);
         }
 
-        // TODO Auto-generated method stub
-        return null;
+        return delegate.createDataContext(this);
     }
 
-    private DataContext createJdbcDataContext() {
-        TableType[] tableTypes = _tableTypes;
-        if (tableTypes == null) {
-            tableTypes = TableType.DEFAULT_TABLE_TYPES;
-        }
-
-        if (_dataSource == null) {
-            final String driverClassName = getString(_driverClassName, null);
-            if (driverClassName != null) {
-                try {
-                    Class.forName(driverClassName);
-                } catch (ClassNotFoundException e) {
-                    logger.error("Failed to initialize JDBC driver class '" + driverClassName + "'!", e);
-                }
+    private DataContextFactoryBeanDelegate createDelegateFromType() {
+        final Class<?> cls;
+        try {
+            logger.debug("Attempting to interpret type '{}' as a delegate class name", _type);
+            cls = Class.forName(_type.trim());
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Failed to load type '" + _type + "' as a class", e);
             }
-
-            final Connection connection;
-            try {
-                if (_username == null && _password == null) {
-                    connection = DriverManager.getConnection(_url);
-                } else {
-                    connection = DriverManager.getConnection(_url, _username, _password);
-                }
-            } catch (Exception e) {
-                logger.error("Failed to get JDBC connection using URL: " + _url, e);
-                throw new IllegalStateException("Failed to get JDBC connection", e);
-            }
-
-            return new JdbcDataContext(connection, tableTypes, _catalogName);
+            return null;
         }
 
-        return new JdbcDataContext(_dataSource, tableTypes, _catalogName);
-    }
-
-    private DataContext createExcelDataContext() {
-        final int columnNameLineNumber = getInt(_columnNameLineNumber, ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE);
-        final boolean skipEmptyLines = getBoolean(_skipEmptyLines, true);
-        final boolean skipEmptyColumns = getBoolean(_skipEmptyColumns, false);
-        final ExcelConfiguration configuration = new ExcelConfiguration(columnNameLineNumber, skipEmptyLines,
-                skipEmptyColumns);
-        return new ExcelDataContext(getResourceInternal(), configuration);
-    }
-
-    private DataContext createCsvDataContext() {
-        final int columnNameLineNumber = getInt(_columnNameLineNumber, CsvConfiguration.DEFAULT_COLUMN_NAME_LINE);
-        final String encoding = getString(_encoding, FileHelper.DEFAULT_ENCODING);
-        final char separatorChar = getChar(_separatorChar, CsvConfiguration.DEFAULT_SEPARATOR_CHAR);
-        final char quoteChar = getChar(_quoteChar, CsvConfiguration.DEFAULT_QUOTE_CHAR);
-        final char escapeChar = getChar(_escapeChar, CsvConfiguration.DEFAULT_ESCAPE_CHAR);
-        final boolean failOnInconsistentRowLength = getBoolean(_failOnInconsistentRowLength, false);
-        final boolean multilineValues = getBoolean(_multilineValues, true);
-        final CsvConfiguration configuration = new CsvConfiguration(columnNameLineNumber, encoding, separatorChar,
-                quoteChar, escapeChar, failOnInconsistentRowLength, multilineValues);
-        return new CsvDataContext(getResourceInternal(), configuration);
-    }
-
-    private Resource getResourceInternal() {
-        if (_resource != null) {
-            return new SpringResource(_resource);
-        } else if (_filename != null) {
-            return new FileResource(_filename);
-        } else if (_url != null) {
-            return new UrlResource(_url);
+        if (cls == null) {
+            return null;
         }
-        return null;
+
+        if (!DataContextFactoryBeanDelegate.class.isAssignableFrom(cls)) {
+            return null;
+        }
+
+        try {
+            final DataContextFactoryBeanDelegate delegate = cls.asSubclass(DataContextFactoryBeanDelegate.class)
+                    .newInstance();
+            return delegate;
+        } catch (Exception e) {
+            logger.warn("Failed to instantiate delegate " + cls, e);
+            return null;
+        }
     }
 
     @Override
@@ -158,53 +117,6 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
     @Override
     public boolean isSingleton() {
         return false;
-    }
-
-    private int getInt(String value, int ifNull) {
-        if (value == null) {
-            return ifNull;
-        }
-        value = value.trim();
-        if (value.isEmpty()) {
-            return ifNull;
-        }
-        return Integer.parseInt(value);
-    }
-
-    private String getString(String value, String ifNull) {
-        if (value == null) {
-            return ifNull;
-        }
-        value = value.trim();
-        if (value.isEmpty()) {
-            return ifNull;
-        }
-        return value;
-    }
-
-    private char getChar(String value, char ifNull) {
-        if (value == null) {
-            return ifNull;
-        }
-        value = value.trim();
-        if (value.isEmpty()) {
-            return ifNull;
-        }
-        if ("none".equalsIgnoreCase(value)) {
-            return CsvConfiguration.NOT_A_CHAR;
-        }
-        return value.charAt(0);
-    }
-
-    private boolean getBoolean(String value, boolean ifNull) {
-        if (value == null) {
-            return ifNull;
-        }
-        value = value.trim();
-        if (value.isEmpty()) {
-            return ifNull;
-        }
-        return BooleanComparator.parseBoolean(value);
     }
 
     public String getType() {
