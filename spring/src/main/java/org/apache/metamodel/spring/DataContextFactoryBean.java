@@ -76,7 +76,12 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
             throw new UnsupportedOperationException("Unsupported DataContext type: " + _type);
         }
 
-        return delegate.createDataContext(this);
+        final DataContext dataContext = delegate.createDataContext(this);
+        if (dataContext == null) {
+            throw new IllegalStateException("Factory method failed to produce a non-null DataContext instance");
+        }
+        
+        return dataContext;
     }
 
     private DataContextFactoryBeanDelegate createDelegateFromType() {
