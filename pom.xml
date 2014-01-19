@@ -177,29 +177,6 @@ under the License.
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<!-- Ensure inclusion of license header in all main java files -->
-				<groupId>com.google.code.maven-license-plugin</groupId>
-				<artifactId>maven-license-plugin</artifactId>
-				<version>1.4.0</version>
-				<inherited>false</inherited>
-				<configuration>
-					<header>HEADER.txt</header>
-					<aggregate>true</aggregate>
-					<includes>
-						<include>**/src/**/java/org/**</include>
-					</includes>
-				</configuration>
-				<executions>
-					<execution>
-						<id>verify-license-headers</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
