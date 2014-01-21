@@ -41,8 +41,7 @@ under the License.
 		<url>https://git-wip-us.apache.org/repos/asf?p=incubator-metamodel.git</url>
 		<connection>scm:git:http://git-wip-us.apache.org/repos/asf/incubator-metamodel.git</connection>
 		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-metamodel.git</developerConnection>
-	  <tag>MetaModel-4.0.0-incubating</tag>
-  </scm>
+	</scm>
 	<groupId>org.apache.metamodel</groupId>
 	<artifactId>MetaModel</artifactId>
 	<version>4.0.1-incubating-SNAPSHOT</version>
