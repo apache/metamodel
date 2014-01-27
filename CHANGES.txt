@@ -1,4 +1,13 @@
-4.0
+(work in progress)
+
+ * [METAMODEL-11] - New module "MetaModel-spring" which adds a convenient FactoryBean to produce various types of DataContext objects based on externalizable parameters, for Spring framework users.
+ * [METAMODEL-32] - Fixed thread-safety issue in Excel module when tables (sheets) metadata is updated.
+ * [METAMODEL-35] - Improved query rewriting for DB2 when paged queries contain ORDER BY clause.
+ * [METAMODEL-34] - Updated LICENSE file to not include bundled dependencies' licenses.
+ * [METAMODEL-33] - Ensured that Apache Rat plugin for Maven is properly activated.
+ * [METAMODEL-37] - Removed old site sources from project.
+
+Apache MetaModel 4.0.0-incubating
 
  * [METAMODEL-9] - SalesforceDataSet is throwing exception for insert sql of record having date/time.
  * [METAMODEL-4] - Use folder name as schema name for file based DataContexts
