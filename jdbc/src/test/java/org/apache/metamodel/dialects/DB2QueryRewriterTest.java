@@ -68,12 +68,48 @@ public class DB2QueryRewriterTest extends TestCase {
                 "SELECT metamodel_subquery.bar FROM (SELECT sch.foo.bar, ROW_NUMBER() OVER() AS metamodel_row_number FROM sch.foo) metamodel_subquery WHERE metamodel_row_number > 400",
                 str);
     }
+    
+    public void testRewriteFirstRowWithoutOrderByClause() throws Exception {
+        Query q = new Query().from(table).select(col).setFirstRow(401);
+        String str = new DB2QueryRewriter(null).rewriteQuery(q);
 
+        assertEquals(
+                "SELECT metamodel_subquery.bar FROM (SELECT sch.foo.bar, ROW_NUMBER() OVER() AS metamodel_row_number FROM sch.foo) metamodel_subquery WHERE metamodel_row_number > 400",
+                str);
+    }
+    
+    public void testRewriteFirstRowWithOrderByClause() throws Exception {
+        Query q = new Query().from(table).select(col).setFirstRow(401);
+        q.orderBy(col);
+        String str = new DB2QueryRewriter(null).rewriteQuery(q);
+
+        assertEquals(
+                "SELECT metamodel_subquery.bar FROM (SELECT sch.foo.bar, ROW_NUMBER() OVER( ORDER BY sch.foo.bar ASC) AS metamodel_row_number FROM sch.foo) metamodel_subquery WHERE metamodel_row_number > 400",
+                str);
+    }
+
+    public void testRewriteFirstRowAndMaxRowsWithoutOrderByClause() throws Exception {
+        Query q = new Query().from(table).select(col).setFirstRow(401).setMaxRows(400);
+        String str = new DB2QueryRewriter(null).rewriteQuery(q);
+        assertEquals(
+                "SELECT metamodel_subquery.bar FROM (SELECT sch.foo.bar, ROW_NUMBER() OVER() AS metamodel_row_number FROM sch.foo) metamodel_subquery WHERE metamodel_row_number BETWEEN 401 AND 800",
+                str);
+    }
+    
     public void testRewriteFirstRowAndMaxRows() throws Exception {
         Query q = new Query().from(table).select(col).setFirstRow(401).setMaxRows(400);
         String str = new DB2QueryRewriter(null).rewriteQuery(q);
         assertEquals(
                 "SELECT metamodel_subquery.bar FROM (SELECT sch.foo.bar, ROW_NUMBER() OVER() AS metamodel_row_number FROM sch.foo) metamodel_subquery WHERE metamodel_row_number BETWEEN 401 AND 800",
+                str);
+    }
+    
+    public void testRewriteFirstRowAndMaxRowsWithOrderByClause() throws Exception {
+        Query q = new Query().from(table).select(col).setFirstRow(401).setMaxRows(400);
+        q.orderBy(col);
+        String str = new DB2QueryRewriter(null).rewriteQuery(q);
+        assertEquals(
+                "SELECT metamodel_subquery.bar FROM (SELECT sch.foo.bar, ROW_NUMBER() OVER( ORDER BY sch.foo.bar ASC) AS metamodel_row_number FROM sch.foo) metamodel_subquery WHERE metamodel_row_number BETWEEN 401 AND 800",
                 str);
     }
 
