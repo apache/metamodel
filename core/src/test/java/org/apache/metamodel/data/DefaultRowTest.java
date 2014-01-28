@@ -18,8 +18,11 @@
  */
 package org.apache.metamodel.data;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 
 import org.apache.metamodel.query.SelectItem;
@@ -34,6 +37,21 @@ public class DefaultRowTest extends TestCase {
     private SelectItem[] items = new SelectItem[] { new SelectItem(new MutableColumn("foo")),
             new SelectItem(new MutableColumn("bar")) };
     private Object[] values = new Object[] { "foo", "bar" };
+    
+    public void testSerializeAndDeserialize() throws Exception {
+        DefaultRow row = new DefaultRow(new SimpleDataSetHeader(items), values);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(row);
+        oos.close();
+        
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        ObjectInputStream ois = new ObjectInputStream(bais);
+        Object deserialized = ois.readObject();
+        
+        assertEquals("Row[values=[foo, bar]]", deserialized.toString());
+        assertEquals(row, deserialized);
+    }
 
     public void testDeserializeBackwardsCompatible() throws Exception {
         Object obj;

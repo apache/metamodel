@@ -18,8 +18,10 @@
  */
 package org.apache.metamodel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -230,6 +232,21 @@ public abstract class AbstractDataContext implements DataContext {
         if (columnName == null) {
             return null;
         }
+
+        final String[] tokens = tokenizePath(columnName, 3);
+        if (tokens != null) {
+            final Schema schema = getSchemaByToken(tokens[0]);
+            if (schema != null) {
+                final Table table = schema.getTableByName(tokens[1]);
+                if (table != null) {
+                    final Column column = table.getColumnByName(tokens[2]);
+                    if (column != null) {
+                        return column;
+                    }
+                }
+            }
+        }
+
         Schema schema = null;
         final String[] schemaNames = getSchemaNames();
         for (final String schemaName : schemaNames) {
@@ -366,6 +383,18 @@ public abstract class AbstractDataContext implements DataContext {
         if (tableName == null) {
             return null;
         }
+
+        final String[] tokens = tokenizePath(tableName, 2);
+        if (tokens != null) {
+            Schema schema = getSchemaByToken(tokens[0]);
+            if (schema != null) {
+                Table table = schema.getTableByName(tokens[1]);
+                if (table != null) {
+                    return table;
+                }
+            }
+        }
+
         Schema schema = null;
         String[] schemaNames = getSchemaNames();
         for (String schemaName : schemaNames) {
@@ -411,6 +440,75 @@ public abstract class AbstractDataContext implements DataContext {
         }
 
         return schema.getTableByName(tablePart);
+    }
+
+    /**
+     * Tokenizes a path for a table or a column.
+     * 
+     * @param tableName
+     * @param expectedParts
+     * @return
+     */
+    private String[] tokenizePath(String path, int expectedParts) {
+        final List<String> tokens = new ArrayList<String>(expectedParts);
+
+        boolean inQuotes = false;
+        final StringBuilder currentToken = new StringBuilder();
+        for (int i = 0; i < path.length(); i++) {
+            char c = path.charAt(i);
+            if (c == '.' && !inQuotes) {
+                // token finished
+                tokens.add(currentToken.toString());
+                currentToken.setLength(0);
+
+                if (tokens.size() > expectedParts) {
+                    // unsuccesfull - return null
+                    return null;
+                }
+            } else if (c == '"') {
+                if (inQuotes) {
+                    if (i + 1 < path.length() && path.charAt(i + 1) != '.') {
+                        // unsuccesfull - return null
+                        return null;
+                    }
+                } else {
+                    if (currentToken.length() > 0) {
+                        // unsuccesfull - return null
+                        return null;
+                    }
+                }
+                inQuotes = !inQuotes;
+            } else {
+                currentToken.append(c);
+            }
+        }
+
+        if (currentToken.length() > 0) {
+            tokens.add(currentToken.toString());
+        }
+
+        if (tokens.size() == expectedParts - 1) {
+            // add a special-meaning "null" which will be interpreted as the
+            // default schema (since the schema wasn't specified).
+            tokens.add(0, null);
+        } else if (tokens.size() != expectedParts) {
+            return null;
+        }
+
+        return tokens.toArray(new String[tokens.size()]);
+    }
+
+    private Schema getSchemaByToken(String token) {
+        if (token == null) {
+            return getDefaultSchema();
+        }
+        try {
+            return getSchemaByName(token);
+        } catch (RuntimeException e) {
+            // swallow this exception - the attempt did not work and the null
+            // will be treated.
+            return null;
+        }
     }
 
     private boolean isStartingToken(String partName, String fullName) {

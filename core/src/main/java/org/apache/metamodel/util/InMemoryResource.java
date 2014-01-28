@@ -78,6 +78,11 @@ public class InMemoryResource implements Resource, Serializable {
         return name;
     }
 
+    @Override
+    public String getQualifiedPath() {
+        return _path;
+    }
+
     /**
      * Gets the path of this resource
      * 

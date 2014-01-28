@@ -1,0 +1,24 @@
+(work in progress)
+
+ * [METAMODEL-11] - New module "MetaModel-spring" which adds a convenient FactoryBean to produce various types of DataContext objects based on externalizable parameters, for Spring framework users.
+ * [METAMODEL-32] - Fixed thread-safety issue in Excel module when tables (sheets) metadata is updated.
+ * [METAMODEL-35] - Improved query rewriting for DB2 when paged queries contain ORDER BY clause.
+ * [METAMODEL-34] - Updated LICENSE file to not include bundled dependencies' licenses.
+ * [METAMODEL-33] - Ensured that Apache Rat plugin for Maven is properly activated.
+ * [METAMODEL-37] - Removed old site sources from project.
+
+Apache MetaModel 4.0.0-incubating
+
+ * [METAMODEL-9] - SalesforceDataSet is throwing exception for insert sql of record having date/time.
+ * [METAMODEL-4] - Use folder name as schema name for file based DataContexts
+ * [METAMODEL-5] - Faster CsvDataContext implementation for single-line values
+ * [METAMODEL-26] - Provide endpoint URL with SalesforceDataContext
+ * Upgraded Apache POI dependency to v. 3.9
+ * Improved fluent Query builder API by adding string parameter based methods for joining tables
+ * Added a utility ObjectInputStream for deserializing legacy MetaModel objects
+ * Performance improvement to CSV reading when values are only single line based
+ * Setting up the project on apache infrastructure
+ * [METAMODEL-10] - Exclude Jackcess dependency (Access module) from MetaModel
+ * Renaming the package hierarchy from org.eobjects.metamodel to org.apache.metamodel
+ * [METAMODEL-29] - Fixed issue in CreateTable builder class, causing it to only support a single column definition
+ * [METAMODEL-30] - Fixed issue with count(*) queries on CSV resources that does not provide a byte stream length 

@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.salesforce;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -29,6 +31,7 @@ import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.delete.DeleteFrom;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
@@ -53,13 +56,13 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
         Column[] timeColumns = dc.getDefaultSchema().getTableByName("Contact").getTimeBasedColumns();
         assertEquals(
                 "[Column[name=Birthdate,columnNumber=30,type=DATE,nullable=true,nativeType=date,columnSize=0], "
-                        + "Column[name=CreatedDate,columnNumber=33,type=DATE,nullable=false,nativeType=datetime,columnSize=0], "
-                        + "Column[name=LastModifiedDate,columnNumber=35,type=DATE,nullable=false,nativeType=datetime,columnSize=0], "
-                        + "Column[name=SystemModstamp,columnNumber=37,type=DATE,nullable=false,nativeType=datetime,columnSize=0], "
+                        + "Column[name=CreatedDate,columnNumber=33,type=TIMESTAMP,nullable=false,nativeType=datetime,columnSize=0], "
+                        + "Column[name=LastModifiedDate,columnNumber=35,type=TIMESTAMP,nullable=false,nativeType=datetime,columnSize=0], "
+                        + "Column[name=SystemModstamp,columnNumber=37,type=TIMESTAMP,nullable=false,nativeType=datetime,columnSize=0], "
                         + "Column[name=LastActivityDate,columnNumber=38,type=DATE,nullable=true,nativeType=date,columnSize=0], "
-                        + "Column[name=LastCURequestDate,columnNumber=39,type=DATE,nullable=true,nativeType=datetime,columnSize=0], "
-                        + "Column[name=LastCUUpdateDate,columnNumber=40,type=DATE,nullable=true,nativeType=datetime,columnSize=0], "
-                        + "Column[name=EmailBouncedDate,columnNumber=42,type=DATE,nullable=true,nativeType=datetime,columnSize=0]]",
+                        + "Column[name=LastCURequestDate,columnNumber=39,type=TIMESTAMP,nullable=true,nativeType=datetime,columnSize=0], "
+                        + "Column[name=LastCUUpdateDate,columnNumber=40,type=TIMESTAMP,nullable=true,nativeType=datetime,columnSize=0], "
+                        + "Column[name=EmailBouncedDate,columnNumber=42,type=TIMESTAMP,nullable=true,nativeType=datetime,columnSize=0]]",
                 Arrays.toString(timeColumns));
         DataSet ds = dc.query().from("Contact").select("LastModifiedDate").where("Id").eq("003b0000006xfAUAAY")
                 .execute();
@@ -77,6 +80,29 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
         } catch (IllegalStateException e) {
             assertEquals(
                     "Failed to log in to Salesforce service: INVALID_LOGIN: Invalid username, password, security token; or user locked out.",
+                    e.getMessage());
+        }
+    }
+
+    public void testNonDefaultEndpoint() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        SalesforceDataContext dc = new SalesforceDataContext("https://test.salesforce.com/services/Soap/u/28.0", getUsername(), getPassword(), getSecurityToken());
+
+        Schema schema = dc.getDefaultSchema();
+        assertNotNull(schema);
+    }
+
+    public void testInvalidEndpoint() throws Exception {
+        try {
+            new SalesforceDataContext("https://non_existing_domain", "foo", "bar", "baz");
+            fail("Exception expected");
+        } catch (IllegalStateException e) {
+            assertEquals(
+                    "Failed to log in to Salesforce service: null",
                     e.getMessage());
         }
     }
@@ -244,13 +270,14 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
         assertEquals("Another test value", ds.getRow().getValue(0));
         assertFalse(ds.next());
         ds.close();
-        
+
         // UPDATE (a record that does not exist)
-        
+
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                callback.update(tableName).where("id").eq("fooooooobaaaaaaaar").value("name", "A test value that should never occur").execute();
+                callback.update(tableName).where("id").eq("fooooooobaaaaaaaar")
+                        .value("name", "A test value that should never occur").execute();
             }
         });
 
@@ -270,23 +297,79 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
         ds.close();
     }
 
+    public void testInsertInContactsWithBirthdate() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        SalesforceDataContext dc = new SalesforceDataContext(getUsername(), getPassword(), getSecurityToken());
+
+        final String tableName = "Contact";
+        final String firstName = "MetaModelJohn";
+        final String lastName = "MetaModelDoe";
+        final String dateString = "1980-08-08 05:10:22";
+
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        final Date dateValue = dateFormat.parse(dateString);
+        assertEquals("1980-08-08 05:10:22", dateFormat.format(dateValue));
+
+        final Table table = dc.getTableByQualifiedLabel(tableName);
+
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto(table).value("FirstName", firstName).value("LastName", lastName)
+                        .value("BirthDate", dateValue).execute();
+            }
+        });
+
+        final DataSet dataSet = dc.query().from(table).select("Id", "BirthDate").where("FirstName").eq(firstName)
+                .where("LastName").eq(lastName).execute();
+
+        int rows = 0;
+
+        while (dataSet.next()) {
+            final String id = (String) dataSet.getRow().getValue(0);
+            try {
+                assertNotNull(id);
+
+                final Object dateValueFromDataSet = dataSet.getRow().getValue(1);
+                assertTrue(dateValueFromDataSet instanceof Date);
+                assertEquals("1980-08-08 00:00:00", dateFormat.format(dateValueFromDataSet));
+
+            } finally {
+                // clean up
+                dc.executeUpdate(new DeleteFrom(table).where("Id").eq(id));
+            }
+
+            rows++;
+        }
+
+        assertEquals(1, rows);
+
+    }
+
     public void testRewriteWhereItem() throws Exception {
         final StringBuilder sb = new StringBuilder("FOOBAR: ");
 
-        final Calendar cal = Calendar.getInstance();
-        cal.setTime(DateUtils.get(2013, Month.JANUARY, 23));
-        cal.setTimeZone(TimeZone.getTimeZone("GMT+1"));
-        final Date date = cal.getTime();
+        final Date date = DateUtils.get(2013, Month.JANUARY, 23);
+        final Timestamp dateTime = new Timestamp(0l);
 
         final List<FilterItem> children = new ArrayList<FilterItem>();
         children.add(new FilterItem(new SelectItem(new MutableColumn("foo")), OperatorType.EQUALS_TO, "hello\n 'world'"));
         children.add(new FilterItem(new SelectItem(new MutableColumn("bar")), OperatorType.EQUALS_TO, 123));
-        children.add(new FilterItem(new SelectItem(new MutableColumn("baz")), OperatorType.EQUALS_TO, date));
+        children.add(new FilterItem(new SelectItem(new MutableColumn("baz").setType(ColumnType.DATE)),
+                OperatorType.EQUALS_TO, date));
+        children.add(new FilterItem(new SelectItem(new MutableColumn("saz").setType(ColumnType.TIMESTAMP)),
+                OperatorType.EQUALS_TO, dateTime));
+
         final FilterItem filterItem = new FilterItem(children);
 
         SalesforceDataContext.rewriteFilterItem(sb, filterItem);
 
-        assertEquals("FOOBAR: (foo = 'hello\\n \\'world\\'' OR bar = 123 OR baz = 2013-01-22T23:00:00+0000)",
+        assertEquals(
+                "FOOBAR: (foo = 'hello\\n \\'world\\'' OR bar = 123 OR baz = 2013-01-23 OR saz = 1970-01-01T00:00:00+0000)",
                 sb.toString());
     }
 }

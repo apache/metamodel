@@ -19,6 +19,7 @@
 package org.apache.metamodel.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -47,6 +48,15 @@ public class FileResource implements Resource, Serializable {
     @Override
     public String getName() {
         return _file.getName();
+    }
+
+    @Override
+    public String getQualifiedPath() {
+        try {
+            return _file.getCanonicalPath();
+        } catch (IOException e) {
+            return _file.getAbsolutePath();
+        }
     }
 
     @Override

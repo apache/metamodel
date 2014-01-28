@@ -107,9 +107,11 @@ final class SalesforceTable extends AbstractTable {
         case _double:
             return ColumnType.DOUBLE;
         case date:
-        case datetime:
-        case time:
             return ColumnType.DATE;
+        case datetime:
+            return ColumnType.TIMESTAMP;
+        case time:
+            return ColumnType.TIME;
         case string:
         case email:
         case url:
@@ -122,8 +124,9 @@ final class SalesforceTable extends AbstractTable {
         case id:
         case picklist:
             return ColumnType.VARCHAR;
+        default:
+            return ColumnType.OTHER;
         }
-        return ColumnType.OTHER;
     }
 
     @Override

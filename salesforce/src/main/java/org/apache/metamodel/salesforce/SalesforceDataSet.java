@@ -20,6 +20,7 @@ package org.apache.metamodel.salesforce;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.metamodel.data.AbstractDataSet;
@@ -110,10 +111,26 @@ final class SalesforceDataSet extends AbstractDataSet {
                 return NumberComparator.toNumber(columnType.isNumber());
             }
             if (columnType.isTimeBased()) {
-                SimpleDateFormat format = new SimpleDateFormat(SalesforceDataContext.SOQL_DATE_FORMAT_IN);
-                format.setTimeZone(SalesforceDataContext.SOQL_TIMEZONE); 
+                final SimpleDateFormat dateFormat;
+                switch (columnType) {
+                case DATE:
+                    // note: we don't apply the timezone for DATE fields, since
+                    // they don't contain time-of-day information.
+                    dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_DATE_FORMAT_IN, Locale.ENGLISH);
+                    break;
+                case TIME:
+                    dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_TIME_FORMAT_IN, Locale.ENGLISH);
+                    dateFormat.setTimeZone(SalesforceDataContext.SOQL_TIMEZONE);
+                    break;
+                case TIMESTAMP:
+                default:
+                    dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_DATE_TIME_FORMAT_IN, Locale.ENGLISH);
+                    dateFormat.setTimeZone(SalesforceDataContext.SOQL_TIMEZONE);
+                    break;
+                }
+
                 try {
-                    return format.parse(value.toString());
+                    return dateFormat.parse(value.toString());
                 } catch (ParseException e) {
                     throw new IllegalStateException("Unable to parse date/time value: " + value);
                 }

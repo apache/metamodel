@@ -48,6 +48,7 @@ public final class DateUtils {
 		c.set(Calendar.MINUTE, 0);
 		c.set(Calendar.SECOND, 0);
 		c.set(Calendar.MILLISECOND, 0);
+		c.set(Calendar.AM_PM, 0);
 		return c.getTime();
 	}
 
@@ -58,7 +59,7 @@ public final class DateUtils {
 		c.set(Calendar.MINUTE, 0);
 		c.set(Calendar.SECOND, 0);
 		c.set(Calendar.MILLISECOND, 0);
-
+		c.set(Calendar.AM_PM, 0);
 		return c.getTime();
 	}
 

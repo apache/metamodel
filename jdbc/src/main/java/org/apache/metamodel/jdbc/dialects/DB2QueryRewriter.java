@@ -100,7 +100,10 @@ public class DB2QueryRewriter extends DefaultQueryRewriter implements IQueryRewr
                 outerQuery.select(new SelectItem(selectItem, subQuerySelectItem));
             }
 
-            innerQuery.select(new SelectItem("ROW_NUMBER() OVER()", "metamodel_row_number"));
+            final String rewrittenOrderByClause = rewriteOrderByClause(innerQuery, innerQuery.getOrderByClause());
+            final String rowOver = "ROW_NUMBER() " + "OVER(" + rewrittenOrderByClause + ")";
+            innerQuery.select(new SelectItem(rowOver, "metamodel_row_number"));
+            innerQuery.getOrderByClause().removeItems();
 
             final String baseQueryString = rewriteQuery(outerQuery);
 

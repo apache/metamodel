@@ -21,8 +21,10 @@ package org.apache.metamodel.salesforce;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 
+import com.sforce.ws.ConnectorConfig;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
@@ -59,12 +61,29 @@ import com.sforce.ws.ConnectionException;
 public class SalesforceDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
 
     public static final TimeZone SOQL_TIMEZONE = TimeZone.getTimeZone("UTC");
-    public static final String SOQL_DATE_FORMAT_IN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-    public static final String SOQL_DATE_FORMAT_OUT = "yyyy-MM-dd'T'HH:mm:ssZZZ";
+    public static final String SOQL_DATE_FORMAT_IN = "yyyy-MM-dd";
+    public static final String SOQL_DATE_FORMAT_OUT = "yyyy-MM-dd";
+    public static final String SOQL_DATE_TIME_FORMAT_IN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+    public static final String SOQL_DATE_TIME_FORMAT_OUT = "yyyy-MM-dd'T'HH:mm:ssZZZ";
+    public static final String SOQL_TIME_FORMAT_IN = "HH:mm:ss.SSS";
+    public static final String SOQL_TIME_FORMAT_OUT = "HH:mm:ssZZZ";
 
     private static final Logger logger = LoggerFactory.getLogger(SalesforceDataContext.class);
 
     private final PartnerConnection _connection;
+
+    public SalesforceDataContext(String endpoint, String username, String password, String securityToken) {
+        try {
+            ConnectorConfig config = new ConnectorConfig();
+            config.setUsername(username);
+            config.setPassword(password + securityToken);
+            config.setAuthEndpoint(endpoint);
+            config.setServiceEndpoint(endpoint);
+            _connection = Connector.newConnection(config);
+        } catch (ConnectionException e) {
+            throw SalesforceUtils.wrapException(e, "Failed to log in to Salesforce service");
+        }
+    }
 
     public SalesforceDataContext(String username, String password, String securityToken) {
         try {
@@ -273,10 +292,26 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
         } else if (operand instanceof Number) {
             sb.append(operand);
         } else if (operand instanceof Date) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat(SOQL_DATE_FORMAT_OUT);
-            dateFormat.setTimeZone(SOQL_TIMEZONE); 
+            final SimpleDateFormat dateFormat;
+            switch (selectItem.getExpectedColumnType()) {
+            case DATE:
+                // note: we don't apply the timezone for DATE fields, since they
+                // don't contain time-of-day information.
+                dateFormat = new SimpleDateFormat(SOQL_DATE_FORMAT_OUT);
+                break;
+            case TIME:
+                dateFormat = new SimpleDateFormat(SOQL_TIME_FORMAT_OUT, Locale.ENGLISH);
+                dateFormat.setTimeZone(SOQL_TIMEZONE);
+                break;
+            case TIMESTAMP:
+            default:
+                dateFormat = new SimpleDateFormat(SOQL_DATE_TIME_FORMAT_OUT, Locale.ENGLISH);
+                dateFormat.setTimeZone(SOQL_TIMEZONE);
+                break;
+            }
+
             String str = dateFormat.format((Date) operand);
-            logger.debug("Date '{}' formatted as: {}", operand, str); 
+            logger.debug("Date '{}' formatted as: {}", operand, str);
             sb.append(str);
         } else if (operand instanceof Column) {
             sb.append(((Column) operand).getName());
@@ -320,7 +355,7 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
     }
 
     private QueryResult executeSoqlQuery(String query) {
-        logger.info("Executing SOQL query: {}", query); 
+        logger.info("Executing SOQL query: {}", query);
         try {
             QueryResult queryResult = _connection.query(query);
             return queryResult;

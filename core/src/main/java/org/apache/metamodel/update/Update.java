@@ -33,6 +33,7 @@ import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.query.builder.AbstractFilterBuilder;
 import org.apache.metamodel.query.builder.FilterBuilder;
 import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
 /**
@@ -47,11 +48,15 @@ public final class Update extends AbstractRowBuilder<Update> implements UpdateSc
 
     private final Table _table;
     private final List<FilterItem> _whereItems;
-
+    
     public Update(Table table) {
         super(table);
         _table = table;
         _whereItems = new ArrayList<FilterItem>();
+    }
+
+    public Update(Schema schema, String tableName) {
+        this(schema.getTableByName(tableName));
     }
 
     @Override

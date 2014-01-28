@@ -23,29 +23,26 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
-final class CsvCreateTableBuilder extends
-		AbstractTableCreationBuilder<CsvUpdateCallback> {
+final class CsvCreateTableBuilder extends AbstractTableCreationBuilder<CsvUpdateCallback> {
 
-	public CsvCreateTableBuilder(CsvUpdateCallback updateCallback,
-			Schema schema, String name) {
-		super(updateCallback, schema, name);
-		if (!(schema instanceof CsvSchema)) {
-			throw new IllegalArgumentException("Not a valid CSV schema: "
-					+ schema);
-		}
-	}
+    public CsvCreateTableBuilder(CsvUpdateCallback updateCallback, Schema schema, String name) {
+        super(updateCallback, schema, name);
+        if (!(schema instanceof CsvSchema)) {
+            throw new IllegalArgumentException("Not a valid CSV schema: " + schema);
+        }
+    }
 
-	@Override
-	public Table execute() {
-		CsvUpdateCallback csvUpdateCallback = getUpdateCallback();
+    @Override
+    public Table execute() {
+        CsvUpdateCallback csvUpdateCallback = getUpdateCallback();
 
-		MutableTable table = getTable();
-		String[] columnNames = table.getColumnNames();
-		csvUpdateCallback.writeRow(columnNames, false);
+        MutableTable table = getTable();
+        String[] columnNames = table.getColumnNames();
+        csvUpdateCallback.writeRow(columnNames, false);
 
-		CsvSchema schema = (CsvSchema) table.getSchema();
-		CsvTable csvTable = new CsvTable(schema, table.getColumnNames());
-		schema.setTable(csvTable);
-		return csvTable;
-	}
+        CsvSchema schema = (CsvSchema) table.getSchema();
+        CsvTable csvTable = new CsvTable(schema, table.getName(), table.getColumnNames());
+        schema.setTable(csvTable);
+        return csvTable;
+    }
 }

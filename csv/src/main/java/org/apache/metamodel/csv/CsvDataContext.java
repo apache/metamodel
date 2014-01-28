@@ -35,6 +35,7 @@ import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
@@ -42,10 +43,12 @@ import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Func;
 import org.apache.metamodel.util.Resource;
+import org.apache.metamodel.util.ResourceUtils;
 import org.apache.metamodel.util.UrlResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.com.bytecode.opencsv.CSVParser;
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
@@ -267,15 +270,23 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
         if (!functionApproximationAllowed) {
             return null;
         }
+        
+        if (whereItems != null && !whereItems.isEmpty()) {
+            return null;
+        }
+        
+        final long length = _resource.getSize();
+        if (length < 0) {
+            // METAMODEL-30: Sometimes the size of the resource is not known
+            return null;
+        }
 
         return _resource.read(new Func<InputStream, Number>() {
             @Override
             public Number eval(InputStream inputStream) {
                 try {
-                    final long length = _resource.getSize();
                     // read up to 5 megs of the file and approximate number of
-                    // lines
-                    // based on that.
+                    // lines based on that.
 
                     final int sampleSize = (int) Math.min(length, 1024 * 1024 * 5);
                     final int chunkSize = Math.min(sampleSize, 1024 * 1024);
@@ -336,20 +347,47 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
     @Override
     public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
         final int lineNumber = _configuration.getColumnNameLineNumber();
-        final CSVReader reader = createCsvReader(lineNumber);
         final int columnCount = table.getColumnCount();
-        final boolean failOnInconsistentRowLength = _configuration.isFailOnInconsistentRowLength();
-        if (maxRows < 0) {
-            return new CsvDataSet(reader, columns, null, columnCount, failOnInconsistentRowLength);
-        } else {
-            return new CsvDataSet(reader, columns, maxRows, columnCount, failOnInconsistentRowLength);
+
+        final BufferedReader reader = FileHelper.getBufferedReader(_resource.read(), _configuration.getEncoding());
+
+        try {
+            // skip column header lines
+            for (int i = 0; i < lineNumber; i++) {
+                String line = reader.readLine();
+                if (line == null) {
+                    return new EmptyDataSet(columns);
+                }
+            }
+        } catch (IOException e) {
+            throw new MetaModelException("IOException occurred while reading from CSV resource: " + _resource, e);
         }
+
+        final boolean failOnInconsistentRowLength = _configuration.isFailOnInconsistentRowLength();
+
+        final Integer maxRowsOrNull = (maxRows > 0 ? maxRows : null);
+
+        if (_configuration.isMultilineValues()) {
+            final CSVReader csvReader = createCsvReader(reader);
+            return new CsvDataSet(csvReader, columns, maxRowsOrNull, columnCount, failOnInconsistentRowLength);
+        }
+
+        final CSVParser csvParser = new CSVParser(_configuration.getSeparatorChar(), _configuration.getQuoteChar(),
+                _configuration.getEscapeChar());
+        return new SingleLineCsvDataSet(reader, csvParser, columns, maxRowsOrNull, columnCount,
+                failOnInconsistentRowLength);
     }
 
     protected CSVReader createCsvReader(int skipLines) {
-        final Reader fileReader = FileHelper.getReader(_resource.read(), _configuration.getEncoding());
-        final CSVReader csvReader = new CSVReader(fileReader, _configuration.getSeparatorChar(),
+        final Reader reader = FileHelper.getReader(_resource.read(), _configuration.getEncoding());
+        final CSVReader csvReader = new CSVReader(reader, _configuration.getSeparatorChar(),
                 _configuration.getQuoteChar(), _configuration.getEscapeChar(), skipLines);
+        return csvReader;
+    }
+
+    protected CSVReader createCsvReader(BufferedReader reader) {
+        final CSVReader csvReader = new CSVReader(reader, _configuration.getSeparatorChar(),
+                _configuration.getQuoteChar(), _configuration.getEscapeChar());
         return csvReader;
     }
 
@@ -357,14 +395,14 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
     protected CsvSchema getMainSchema() throws MetaModelException {
         CsvSchema schema = new CsvSchema(getMainSchemaName(), this);
         if (_resource.isExists()) {
-            schema.setTable(new CsvTable(schema));
+            schema.setTable(new CsvTable(schema, _resource.getName()));
         }
         return schema;
     }
 
     @Override
     protected String getMainSchemaName() {
-        return _resource.getName();
+        return ResourceUtils.getParentName(_resource);
     }
 
     protected boolean isWritable() {

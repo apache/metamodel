@@ -1,3 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<properties>
@@ -10,18 +29,23 @@
 		<httpcomponents.version>4.2.3</httpcomponents.version>
 		<!-- Version printed in the docs -->
 		<siteDownloadVersion>${project.version}</siteDownloadVersion>
+		<checksum-maven-plugin.version>1.2</checksum-maven-plugin.version>
+		<skipTests>false</skipTests>
 	</properties>
 	<parent>
 		<groupId>org.apache</groupId>
 		<artifactId>apache</artifactId>
 		<version>13</version>
-	</parent>
+	</parent> 
 	<scm>
 		<url>https://git-wip-us.apache.org/repos/asf?p=incubator-metamodel.git</url>
-	</scm>
+		<connection>scm:git:http://git-wip-us.apache.org/repos/asf/incubator-metamodel.git</connection>
+		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-metamodel.git</developerConnection>
+	  <tag>HEAD</tag>
+  </scm>
 	<groupId>org.apache.metamodel</groupId>
 	<artifactId>MetaModel</artifactId>
-	<version>4.0-SNAPSHOT</version>
+	<version>4.0.1-incubating-SNAPSHOT</version>
 	<name>MetaModel</name>
 	<description>MetaModel is a library that encapsulates the differences and enhances 
 		the capabilities of different datastores. Rich querying abilities are
@@ -38,7 +62,6 @@
 		<module>excel</module>
 		<module>csv</module>
 		<module>xml</module>
-		<module>access</module>
 		<module>jdbc</module>
 		<module>hbase</module>
 		<module>mongodb</module>
@@ -47,6 +70,7 @@
 		<module>salesforce</module>
 		<module>sugarcrm</module>
 		<module>full</module>
+		<module>spring</module>
 	</modules>
 	<issueManagement>
 		<system>Jira</system>
@@ -102,6 +126,33 @@
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
+	<distributionManagement>
+		<repository>
+			<id>apache.releases.https</id>
+			<name>Apache Release Distribution Repository</name>
+			<url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
+		</repository>
+		<snapshotRepository>
+			<id>apache.snapshots.https</id>
+			<name>Apache Development Snapshot Repository</name>
+			<url>https://repository.apache.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<id>apache.snapshots</id>
+			<url>http://repository.apache.org/snapshots/</url>
+			<name>Apache Snapshot Repo</name>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -115,22 +166,12 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<!-- Ensure inclusion of license header in all main java files -->
-				<groupId>com.google.code.maven-license-plugin</groupId>
-				<artifactId>maven-license-plugin</artifactId>
-				<version>1.4.0</version>
-				<inherited>false</inherited>
-				<configuration>
-					<header>HEADER.txt</header>
-					<aggregate>true</aggregate>
-					<includes>
-						<include>**/src/**/java/org/**</include>
-					</includes>
-				</configuration>
+				<groupId>org.apache.rat</groupId>
+				<artifactId>apache-rat-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>verify-license-headers</id>
-						<phase>verify</phase>
+						<id>rat-verify</id>
+						<phase>validate</phase>
 						<goals>
 							<goal>check</goal>
 						</goals>
@@ -193,6 +234,11 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>net.ju-n.maven.plugins</groupId>
+				<artifactId>checksum-maven-plugin</artifactId>
+				<version>${checksum-maven-plugin.version}</version>
+			</plugin>
 
 			<plugin>
 				<!-- enforce certain banned dependencies -->
@@ -251,10 +297,67 @@
 										<ignore />
 									</action>
 								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.rat
+										</groupId>
+										<artifactId>
+											apache-rat-plugin
+										</artifactId>
+										<versionRange>
+											[0.8,)
+										</versionRange>
+										<goals>
+											<goal>check</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
 				</plugin>
+				
+				<plugin>
+					<groupId>org.apache.rat</groupId>
+					<artifactId>apache-rat-plugin</artifactId>
+					<configuration>
+						<licenses>
+							<license implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
+								<licenseFamilyCategory>ASL20</licenseFamilyCategory>
+								<licenseFamilyName>Apache Software License, 2.0</licenseFamilyName>
+								<notes>Single licensed ASL v2.0</notes>
+								<patterns>
+									<pattern>Licensed to the Apache Software Foundation (ASF) under one
+										or more contributor license agreements.</pattern>
+								</patterns>
+							</license>
+						</licenses>
+						<excludeSubProjects>false</excludeSubProjects>
+						<excludes>
+							<exclude>CHANGES.txt</exclude>
+							<exclude>README</exclude>
+							<exclude>NOTICE.txt</exclude>
+							<exclude>LICENSE.txt</exclude>
+							<exclude>KEYS</exclude>
+							<exclude>**/.gitignore/**</exclude>
+							<exclude>.git/**</exclude>
+							<exclude>**/src/test/resources/**</exclude>
+							<exclude>**/src/site/**</exclude>
+							<exclude>**/.project</exclude>
+							<exclude>**/.classpath</exclude>
+							<exclude>**/.settings/**</exclude>
+							<exclude>**/target/**</exclude>
+							<exclude>DEPENDENCIES</exclude>
+							<exclude>DISCLAIMER</exclude>
+						</excludes>
+					</configuration>
+				
+				</plugin>
+				
 			</plugins>
 		</pluginManagement>
 	</build>
@@ -381,5 +484,4 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
 </project>
