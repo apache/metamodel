@@ -18,10 +18,15 @@
  */
 package org.apache.metamodel.spring;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.sql.DataSource;
 
 import org.apache.metamodel.DataContext;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.TableType;
+import org.apache.metamodel.util.SimpleTableDef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
@@ -54,6 +59,10 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
     private String _username;
     private String _password;
     private String _driverClassName;
+    private String _hostname;
+    private Integer _port;
+    private String _databaseName;
+    private SimpleTableDef[] _tableDefs;
 
     @Override
     public DataContext getObject() throws Exception {
@@ -68,10 +77,14 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
             delegate = new ExcelDataContextFactoryBeanDelegate();
         } else if ("jdbc".equals(type)) {
             delegate = new JdbcDataContextFactoryBeanDelegate();
+        } else if ("couchdb".equals(type)) {
+            delegate = new CouchDbDataContextFactoryBeanDelegate();
+        } else if ("mongodb".equals(type)) {
+            delegate = new MongoDbDataContextFactoryBeanDelegate();
         } else {
             delegate = createDelegateFromType();
         }
-        
+
         if (delegate == null) {
             throw new UnsupportedOperationException("Unsupported DataContext type: " + _type);
         }
@@ -80,7 +93,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         if (dataContext == null) {
             throw new IllegalStateException("Factory method failed to produce a non-null DataContext instance");
         }
-        
+
         return dataContext;
     }
 
@@ -112,6 +125,123 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
             logger.warn("Failed to instantiate delegate " + cls, e);
             return null;
         }
+    }
+
+    /**
+     * Sets the {@link SimpleTableDef}s of {@link #getTableDefs()} by providing
+     * a string representation of the following form (like a CREATE TABLE
+     * statement, except for the literal 'CREATE TABLE' prefix, and without
+     * column sizes):
+     * 
+     * <code>
+     * tablename1 (
+     * columnName1 VARCHAR,
+     * columnName2 INTEGER,
+     * columnName3 DATE
+     * );
+     * 
+     * tablename2 (
+     * columnName4 BIGINT,
+     * columnName5 CHAR,
+     * columnName6 BINARY
+     * );
+     * </code>
+     * 
+     * Each table definition is delimited/ended by the semi-colon (;) character.
+     * 
+     * The parser is at this point quite simple and restricts that column names
+     * cannot contain parentheses, commas, semi-colons or spaces. No quote
+     * characters or escape characters are available. Newlines, return carriages
+     * and tabs are ignored.
+     * 
+     * @param tableDefinitionsText
+     * 
+     * @throws IllegalArgumentException
+     */
+    public void setTableDefinitions(String tableDefinitionsText) throws IllegalArgumentException {
+        _tableDefs = parseTableDefs(tableDefinitionsText);
+    }
+
+    /**
+     * Parses an array of table definitions.
+     * 
+     * @see #setTableDefinitions(String)
+     * 
+     * @param tableDefinitionsText
+     * @return
+     */
+    public static SimpleTableDef[] parseTableDefs(String tableDefinitionsText) {
+        if (tableDefinitionsText == null) {
+            return null;
+        }
+
+        tableDefinitionsText = tableDefinitionsText.replaceAll("\n", "").replaceAll("\t", "").replaceAll("\r", "")
+                .replaceAll("  ", " ");
+
+        final List<SimpleTableDef> tableDefs = new ArrayList<SimpleTableDef>();
+        final String[] tableDefinitionTexts = tableDefinitionsText.split(";");
+        for (String tableDefinitionText : tableDefinitionTexts) {
+            final SimpleTableDef tableDef = parseTableDef(tableDefinitionText);
+            if (tableDef != null) {
+                tableDefs.add(tableDef);
+            }
+        }
+
+        if (tableDefs.isEmpty()) {
+            return null;
+        }
+
+        return tableDefs.toArray(new SimpleTableDef[tableDefs.size()]);
+    }
+
+    /**
+     * Parses a single table definition
+     * 
+     * @see #setTableDefinitions(String)
+     * 
+     * @param tableDefinitionText
+     * @return
+     */
+    protected static SimpleTableDef parseTableDef(String tableDefinitionText) {
+        if (tableDefinitionText == null || tableDefinitionText.trim().isEmpty()) {
+            return null;
+        }
+        
+        int startColumnSection = tableDefinitionText.indexOf("(");
+        if (startColumnSection == -1) {
+            throw new IllegalArgumentException("Failed to parse table definition: " + tableDefinitionText + ". No start parenthesis found for column section.");
+        }
+        
+        int endColumnSection = tableDefinitionText.indexOf(")", startColumnSection);
+        if (endColumnSection == -1) {
+            throw new IllegalArgumentException("Failed to parse table definition: " + tableDefinitionText + ". No end parenthesis found for column section.");
+        }
+
+        String tableName = tableDefinitionText.substring(0, startColumnSection).trim();
+        if (tableName.isEmpty()) {
+            throw new IllegalArgumentException("Failed to parse table definition: " + tableDefinitionText + ". No table name found.");
+        }
+
+        String columnSection = tableDefinitionText.substring(startColumnSection + 1, endColumnSection);
+
+        String[] columnDefinitionTexts = columnSection.split(",");
+        List<String> columnNames = new ArrayList<String>();
+        List<ColumnType> columnTypes = new ArrayList<ColumnType>();
+
+        for (String columnDefinition : columnDefinitionTexts) {
+            columnDefinition = columnDefinition.trim();
+            if (!columnDefinition.isEmpty()) {
+                int separator = columnDefinition.lastIndexOf(" ");
+                String columnName = columnDefinition.substring(0, separator).trim();
+                String columnTypeString = columnDefinition.substring(separator).trim();
+                ColumnType columnType = ColumnType.valueOf(columnTypeString);
+
+                columnNames.add(columnName);
+                columnTypes.add(columnType);
+            }
+        }
+        return new SimpleTableDef(tableName, columnNames.toArray(new String[columnNames.size()]),
+                columnTypes.toArray(new ColumnType[columnTypes.size()]));
     }
 
     @Override
@@ -276,4 +406,35 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _driverClassName = driverClassName;
     }
 
+    public String getHostname() {
+        return _hostname;
+    }
+
+    public void setHostname(String hostname) {
+        _hostname = hostname;
+    }
+
+    public Integer getPort() {
+        return _port;
+    }
+
+    public void setPort(Integer port) {
+        _port = port;
+    }
+
+    public String getDatabaseName() {
+        return _databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        _databaseName = databaseName;
+    }
+
+    public SimpleTableDef[] getTableDefs() {
+        return _tableDefs;
+    }
+
+    public void setTableDefs(SimpleTableDef[] tableDefs) {
+        _tableDefs = tableDefs;
+    }
 }

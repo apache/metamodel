@@ -41,6 +41,7 @@ import org.apache.metamodel.salesforce.SalesforceDataContext;
 import org.apache.metamodel.schema.TableType;
 import org.apache.metamodel.sugarcrm.SugarCrmDataContext;
 import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.SimpleTableDef;
 import org.apache.metamodel.xml.XmlDomDataContext;
 import org.xml.sax.InputSource;
 
@@ -511,10 +512,13 @@ public class DataContextFactory {
      *            the username, or null if unauthenticated access should be used
      * @param password
      *            the password, or null if unathenticated access should be used
+     * @param tableDefs
+     *            an array of table definitions, or null if table definitions
+     *            should be autodetected.
      * @return a DataContext object that matches the request
      */
     public static UpdateableDataContext createMongoDbDataContext(String hostname, Integer port, String databaseName,
-            String username, char[] password) {
+            String username, char[] password, SimpleTableDef[] tableDefs) {
         try {
             DB mongoDb;
             if (port == null) {
@@ -525,13 +529,38 @@ public class DataContextFactory {
             if (username != null) {
                 mongoDb.authenticate(username, password);
             }
-            return new MongoDbDataContext(mongoDb);
+
+            if (tableDefs == null || tableDefs.length == 0) {
+                return new MongoDbDataContext(mongoDb);
+            }
+            return new MongoDbDataContext(mongoDb, tableDefs);
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             }
             throw new IllegalStateException(e);
         }
+    }
+
+    /**
+     * Creates a new MongoDB datacontext.
+     * 
+     * @param hostname
+     *            The hostname of the MongoDB instance
+     * @param port
+     *            the port of the MongoDB instance, or null if the default port
+     *            should be used.
+     * @param databaseName
+     *            the name of the database
+     * @param username
+     *            the username, or null if unauthenticated access should be used
+     * @param password
+     *            the password, or null if unathenticated access should be used
+     * @return a DataContext object that matches the request
+     */
+    public static UpdateableDataContext createMongoDbDataContext(String hostname, Integer port, String databaseName,
+            String username, char[] password) {
+        return createMongoDbDataContext(hostname, port, databaseName, username, password, null);
     }
 
     /**
@@ -550,6 +579,28 @@ public class DataContextFactory {
      */
     public static UpdateableDataContext createCouchDbDataContext(String hostname, Integer port, String username,
             String password) {
+        return createCouchDbDataContext(hostname, port, username, password, null);
+    }
+
+    /**
+     * Creates a new CouchDB datacontext.
+     * 
+     * @param hostname
+     *            The hostname of the CouchDB instance
+     * @param port
+     *            the port of the CouchDB instance, or null if the default port
+     *            should be used.
+     * @param username
+     *            the username, or null if unauthenticated access should be used
+     * @param password
+     *            the password, or null if unathenticated access should be used
+     * @param tableDefs
+     *            an array of table definitions, or null if table definitions
+     *            should be autodetected.
+     * @return a DataContext object that matches the request
+     */
+    public static UpdateableDataContext createCouchDbDataContext(String hostname, Integer port, String username,
+            String password, SimpleTableDef[] tableDefs) {
 
         Builder httpClientBuilder = new Builder();
         httpClientBuilder.host(hostname);
@@ -568,6 +619,9 @@ public class DataContextFactory {
         httpClientBuilder.connectionTimeout(20000);
         httpClientBuilder.socketTimeout(20000);
 
-        return new CouchDbDataContext(httpClientBuilder);
+        if (tableDefs == null || tableDefs.length == 0) {
+            return new CouchDbDataContext(httpClientBuilder);
+        }
+        return new CouchDbDataContext(httpClientBuilder, tableDefs);
     }
 }
