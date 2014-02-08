@@ -34,14 +34,14 @@ public abstract class AbstractDataContextFactoryBeanDelegate implements DataCont
     
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected Resource getResource(DataContextFactoryBean bean) {
-        final org.springframework.core.io.Resource resource = bean.getResource();
+    protected Resource getResource(DataContextFactoryParameters params) {
+        final org.springframework.core.io.Resource resource = params.getResource();
         if (resource != null) {
             return new SpringResource(resource);
-        } else if (bean.getFilename() != null) {
-            return new FileResource(bean.getFilename());
-        } else if (bean.getUrl() != null) {
-            return new UrlResource(bean.getUrl());
+        } else if (params.getFilename() != null) {
+            return new FileResource(params.getFilename());
+        } else if (params.getUrl() != null) {
+            return new UrlResource(params.getUrl());
         }
         return null;
     }

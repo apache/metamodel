@@ -29,12 +29,12 @@ import org.apache.metamodel.util.Resource;
 public class ExcelDataContextFactoryBeanDelegate extends AbstractDataContextFactoryBeanDelegate {
 
     @Override
-    public DataContext createDataContext(DataContextFactoryBean bean) {
-        final Resource resource = getResource(bean);
-        final int columnNameLineNumber = getInt(bean.getColumnNameLineNumber(),
+    public DataContext createDataContext(DataContextFactoryParameters params) {
+        final Resource resource = getResource(params);
+        final int columnNameLineNumber = getInt(params.getColumnNameLineNumber(),
                 ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE);
-        final boolean skipEmptyLines = getBoolean(bean.getSkipEmptyLines(), true);
-        final boolean skipEmptyColumns = getBoolean(bean.getSkipEmptyColumns(), false);
+        final boolean skipEmptyLines = getBoolean(params.getSkipEmptyLines(), true);
+        final boolean skipEmptyColumns = getBoolean(params.getSkipEmptyColumns(), false);
         final ExcelConfiguration configuration = new ExcelConfiguration(columnNameLineNumber, skipEmptyLines,
                 skipEmptyColumns);
         return new ExcelDataContext(resource, configuration);

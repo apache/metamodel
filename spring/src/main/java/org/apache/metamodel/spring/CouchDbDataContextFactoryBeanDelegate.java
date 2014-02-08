@@ -29,12 +29,12 @@ import org.apache.metamodel.util.SimpleTableDef;
 public class CouchDbDataContextFactoryBeanDelegate extends AbstractDataContextFactoryBeanDelegate {
 
     @Override
-    public DataContext createDataContext(DataContextFactoryBean bean) {
-        String hostname = bean.getHostname();
-        Integer port = bean.getPort();
-        String username = bean.getUsername();
-        String password = bean.getPassword();
-        SimpleTableDef[] tableDefs = bean.getTableDefs();
+    public DataContext createDataContext(DataContextFactoryParameters params) {
+        String hostname = params.getHostname();
+        Integer port = params.getPort();
+        String username = params.getUsername();
+        String password = params.getPassword();
+        SimpleTableDef[] tableDefs = params.getTableDefs();
         return DataContextFactory.createCouchDbDataContext(hostname, port, username, password, tableDefs);
     }
 

@@ -36,7 +36,7 @@ import org.springframework.beans.factory.FactoryBean;
  * objects based on property values that will typically be injected by the
  * Spring configuration.
  */
-public class DataContextFactoryBean implements FactoryBean<DataContext> {
+public class DataContextFactoryBean implements FactoryBean<DataContext>, DataContextFactoryParameters {
 
     private static final Logger logger = LoggerFactory.getLogger(DataContextFactoryBean.class);
 
@@ -206,20 +206,23 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         if (tableDefinitionText == null || tableDefinitionText.trim().isEmpty()) {
             return null;
         }
-        
+
         int startColumnSection = tableDefinitionText.indexOf("(");
         if (startColumnSection == -1) {
-            throw new IllegalArgumentException("Failed to parse table definition: " + tableDefinitionText + ". No start parenthesis found for column section.");
+            throw new IllegalArgumentException("Failed to parse table definition: " + tableDefinitionText
+                    + ". No start parenthesis found for column section.");
         }
-        
+
         int endColumnSection = tableDefinitionText.indexOf(")", startColumnSection);
         if (endColumnSection == -1) {
-            throw new IllegalArgumentException("Failed to parse table definition: " + tableDefinitionText + ". No end parenthesis found for column section.");
+            throw new IllegalArgumentException("Failed to parse table definition: " + tableDefinitionText
+                    + ". No end parenthesis found for column section.");
         }
 
         String tableName = tableDefinitionText.substring(0, startColumnSection).trim();
         if (tableName.isEmpty()) {
-            throw new IllegalArgumentException("Failed to parse table definition: " + tableDefinitionText + ". No table name found.");
+            throw new IllegalArgumentException("Failed to parse table definition: " + tableDefinitionText
+                    + ". No table name found.");
         }
 
         String columnSection = tableDefinitionText.substring(startColumnSection + 1, endColumnSection);
@@ -262,6 +265,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _type = type;
     }
 
+    @Override
     public org.springframework.core.io.Resource getResource() {
         return _resource;
     }
@@ -270,6 +274,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _resource = resource;
     }
 
+    @Override
     public String getFilename() {
         return _filename;
     }
@@ -278,6 +283,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _filename = filename;
     }
 
+    @Override
     public String getUrl() {
         return _url;
     }
@@ -286,6 +292,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _url = url;
     }
 
+    @Override
     public String getColumnNameLineNumber() {
         return _columnNameLineNumber;
     }
@@ -294,6 +301,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _columnNameLineNumber = columnNameLineNumber;
     }
 
+    @Override
     public String getSkipEmptyLines() {
         return _skipEmptyLines;
     }
@@ -302,6 +310,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _skipEmptyLines = skipEmptyLines;
     }
 
+    @Override
     public String getSkipEmptyColumns() {
         return _skipEmptyColumns;
     }
@@ -310,6 +319,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _skipEmptyColumns = skipEmptyColumns;
     }
 
+    @Override
     public String getEncoding() {
         return _encoding;
     }
@@ -318,6 +328,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _encoding = encoding;
     }
 
+    @Override
     public String getSeparatorChar() {
         return _separatorChar;
     }
@@ -326,6 +337,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _separatorChar = separatorChar;
     }
 
+    @Override
     public String getQuoteChar() {
         return _quoteChar;
     }
@@ -334,6 +346,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _quoteChar = quoteChar;
     }
 
+    @Override
     public String getEscapeChar() {
         return _escapeChar;
     }
@@ -342,6 +355,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _escapeChar = escapeChar;
     }
 
+    @Override
     public String getFailOnInconsistentRowLength() {
         return _failOnInconsistentRowLength;
     }
@@ -350,6 +364,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _failOnInconsistentRowLength = failOnInconsistentRowLength;
     }
 
+    @Override
     public String getMultilineValues() {
         return _multilineValues;
     }
@@ -358,6 +373,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _multilineValues = multilineValues;
     }
 
+    @Override
     public TableType[] getTableTypes() {
         return _tableTypes;
     }
@@ -366,6 +382,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _tableTypes = tableTypes;
     }
 
+    @Override
     public String getCatalogName() {
         return _catalogName;
     }
@@ -374,6 +391,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _catalogName = catalogName;
     }
 
+    @Override
     public DataSource getDataSource() {
         return _dataSource;
     }
@@ -382,6 +400,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _dataSource = dataSource;
     }
 
+    @Override
     public String getUsername() {
         return _username;
     }
@@ -390,6 +409,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _username = username;
     }
 
+    @Override
     public String getPassword() {
         return _password;
     }
@@ -398,6 +418,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _password = password;
     }
 
+    @Override
     public String getDriverClassName() {
         return _driverClassName;
     }
@@ -406,6 +427,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _driverClassName = driverClassName;
     }
 
+    @Override
     public String getHostname() {
         return _hostname;
     }
@@ -414,6 +436,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _hostname = hostname;
     }
 
+    @Override
     public Integer getPort() {
         return _port;
     }
@@ -422,6 +445,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _port = port;
     }
 
+    @Override
     public String getDatabaseName() {
         return _databaseName;
     }
@@ -430,6 +454,7 @@ public class DataContextFactoryBean implements FactoryBean<DataContext> {
         _databaseName = databaseName;
     }
 
+    @Override
     public SimpleTableDef[] getTableDefs() {
         return _tableDefs;
     }

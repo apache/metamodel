@@ -29,13 +29,13 @@ import org.apache.metamodel.util.SimpleTableDef;
 public class MongoDbDataContextFactoryBeanDelegate extends AbstractDataContextFactoryBeanDelegate {
 
     @Override
-    public DataContext createDataContext(DataContextFactoryBean bean) {
-        String hostname = bean.getHostname();
-        Integer port = bean.getPort();
-        String databaseName = bean.getDatabaseName();
-        String username = bean.getUsername();
-        char[] password = bean.getPassword().toCharArray();
-        SimpleTableDef[] tableDefs = bean.getTableDefs();
+    public DataContext createDataContext(DataContextFactoryParameters params) {
+        String hostname = params.getHostname();
+        Integer port = params.getPort();
+        String databaseName = params.getDatabaseName();
+        String username = params.getUsername();
+        char[] password = params.getPassword().toCharArray();
+        SimpleTableDef[] tableDefs = params.getTableDefs();
         return DataContextFactory.createMongoDbDataContext(hostname, port, databaseName, username, password, tableDefs);
     }
 

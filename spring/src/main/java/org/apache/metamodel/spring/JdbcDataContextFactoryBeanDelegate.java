@@ -33,16 +33,16 @@ import org.apache.metamodel.schema.TableType;
 public class JdbcDataContextFactoryBeanDelegate extends AbstractDataContextFactoryBeanDelegate {
 
     @Override
-    public DataContext createDataContext(DataContextFactoryBean bean) {
-        TableType[] tableTypes = bean.getTableTypes();
+    public DataContext createDataContext(DataContextFactoryParameters params) {
+        TableType[] tableTypes = params.getTableTypes();
         if (tableTypes == null) {
             tableTypes = TableType.DEFAULT_TABLE_TYPES;
         }
 
-        final DataSource dataSource = bean.getDataSource();
+        final DataSource dataSource = params.getDataSource();
 
         if (dataSource == null) {
-            final String driverClassName = getString(bean.getDriverClassName(), null);
+            final String driverClassName = getString(params.getDriverClassName(), null);
             if (driverClassName != null) {
                 try {
                     Class.forName(driverClassName);
@@ -51,23 +51,23 @@ public class JdbcDataContextFactoryBeanDelegate extends AbstractDataContextFacto
                 }
             }
 
-            final String url = bean.getUrl();
+            final String url = params.getUrl();
             final Connection connection;
             try {
-                if (bean.getUsername() == null && bean.getPassword() == null) {
+                if (params.getUsername() == null && params.getPassword() == null) {
                     connection = DriverManager.getConnection(url);
                 } else {
-                    connection = DriverManager.getConnection(url, bean.getUsername(), bean.getPassword());
+                    connection = DriverManager.getConnection(url, params.getUsername(), params.getPassword());
                 }
             } catch (Exception e) {
                 logger.error("Failed to get JDBC connection using URL: " + url, e);
                 throw new IllegalStateException("Failed to get JDBC connection", e);
             }
 
-            return new JdbcDataContext(connection, tableTypes, bean.getCatalogName());
+            return new JdbcDataContext(connection, tableTypes, params.getCatalogName());
         }
 
-        return new JdbcDataContext(dataSource, tableTypes, bean.getCatalogName());
+        return new JdbcDataContext(dataSource, tableTypes, params.getCatalogName());
     }
 
 }

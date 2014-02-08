@@ -36,11 +36,11 @@ public interface DataContextFactoryBeanDelegate {
     /**
      * Creates the particular {@link DataContext} object.
      * 
-     * @param bean
+     * @param params
      *            the {@link DataContextFactoryBean} with properties set as per
      *            the spring configuration.
      * @return a non-null {@link DataContext} object, built with the properties
      *         set on the {@link DataContextFactoryBean}
      */
-    public DataContext createDataContext(DataContextFactoryBean bean);
+    public DataContext createDataContext(DataContextFactoryParameters params);
 }

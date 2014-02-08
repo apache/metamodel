@@ -32,7 +32,7 @@ import org.apache.metamodel.pojo.TableDataProvider;
 public class MockDataContextFactoryBeanDelegate implements DataContextFactoryBeanDelegate {
 
     @Override
-    public DataContext createDataContext(DataContextFactoryBean bean) {
+    public DataContext createDataContext(DataContextFactoryParameters bean) {
         String username = bean.getUsername();
         return new PojoDataContext(username, new ArrayList<TableDataProvider<?>>());
     }
