@@ -81,6 +81,8 @@ public class DataContextFactoryBean implements FactoryBean<DataContext>, DataCon
             delegate = new CouchDbDataContextFactoryBeanDelegate();
         } else if ("mongodb".equals(type)) {
             delegate = new MongoDbDataContextFactoryBeanDelegate();
+        } else if ("pojo".equals(type)) {
+            delegate = new PojoDataContextFactoryBeanDelegate();
         } else {
             delegate = createDelegateFromType();
         }
