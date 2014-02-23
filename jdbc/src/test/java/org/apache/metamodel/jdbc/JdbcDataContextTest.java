@@ -22,17 +22,25 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 import javax.swing.table.TableModel;
 
 import org.easymock.EasyMock;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
+import org.apache.metamodel.data.Row;
 import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.query.CompiledQuery;
@@ -272,7 +280,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
     public void testMaxRows() throws Exception {
         final Connection realCon = getTestDbConnection();
         final Statement realStatement = realCon.createStatement();
-        
+
         final Connection mockCon = EasyMock.createMock(Connection.class);
         final Statement mockStatement = EasyMock.createMock(Statement.class);
 
@@ -425,4 +433,91 @@ public class JdbcDataContextTest extends JdbcTestCase {
         assertEquals("Row[values=[Australia, 430300.0]]", data2.getRow().toString());
         assertEquals(new DataSetTableModel(data1), new DataSetTableModel(data2));
     }
+
+    public void testReleaseConnectionsInCompiledQuery() throws Exception {
+        final int connectionPoolSize = 2;
+        final int threadCount = 4;
+        final int noOfCallsPerThreads = 30;
+
+        final BasicDataSource ds = new BasicDataSource();
+        ds.setDriverClassName("org.hsqldb.jdbcDriver");
+        ds.setUrl("jdbc:hsqldb:res:metamodel");
+        ds.setInitialSize(connectionPoolSize);
+        ds.setMaxActive(connectionPoolSize);
+        ds.setMaxWait(10000);
+        ds.setMinEvictableIdleTimeMillis(1800000);
+        ds.setMinIdle(0);
+        ds.setMaxIdle(connectionPoolSize);
+        ds.setNumTestsPerEvictionRun(3);
+        ds.setTimeBetweenEvictionRunsMillis(-1);
+        ds.setDefaultTransactionIsolation(java.sql.Connection.TRANSACTION_READ_COMMITTED);
+
+        final JdbcDataContext dataContext = new JdbcDataContext(ds,
+                new TableType[] { TableType.TABLE, TableType.VIEW }, null);
+
+        final JdbcCompiledQuery compiledQuery = (JdbcCompiledQuery) dataContext.query().from("CUSTOMERS")
+                .select("CUSTOMERNAME").where("CUSTOMERNUMBER").eq(new QueryParameter()).compile();
+
+        assertEquals(0, compiledQuery.getActiveLeases());
+        assertEquals(0, compiledQuery.getIdleLeases());
+
+        final String compliedQueryString = compiledQuery.toSql();
+
+        assertEquals(
+                "SELECT _CUSTOMERS_._CUSTOMERNAME_ FROM PUBLIC._CUSTOMERS_ WHERE _CUSTOMERS_._CUSTOMERNUMBER_ = ?",
+                compliedQueryString.replace('\"', '_'));
+
+        assertEquals(0, compiledQuery.getActiveLeases());
+        assertEquals(0, compiledQuery.getIdleLeases());
+
+        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+        final CountDownLatch latch = new CountDownLatch(threadCount);
+        final List<Throwable> errors = new ArrayList<Throwable>();
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    for (int i = 0; i < noOfCallsPerThreads; i++) {
+                        final DataSet dataSet = dataContext.executeQuery(compiledQuery, new Object[] { 103 });
+                        try {
+                            assertTrue(dataSet.next());
+                            Row row = dataSet.getRow();
+                            assertNotNull(row);
+                            assertEquals("Atelier graphique", row.getValue(0).toString());
+                            assertFalse(dataSet.next());
+                        } finally {
+                            dataSet.close();
+                        }
+                    }
+                } catch (Throwable e) {
+                    errors.add(e);
+                } finally {
+                    latch.countDown();
+                }
+            }
+        };
+
+        for (int i = 0; i < threadCount; i++) {
+            executorService.execute(runnable);
+        }
+
+        try {
+            latch.await(60000, TimeUnit.MILLISECONDS);
+
+            if (errors.size() > 0) {
+                throw new IllegalStateException(errors.get(0));
+            }
+            assertTrue(true);
+        } finally {
+            executorService.shutdownNow();
+        }
+
+        assertEquals(0, compiledQuery.getActiveLeases());
+
+        compiledQuery.close();
+
+        assertEquals(0, compiledQuery.getActiveLeases());
+        assertEquals(0, compiledQuery.getIdleLeases());
+    }
+
 }
