@@ -318,7 +318,9 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         if (INFORMATION_SCHEMA_NAME.equals(schemaName)) {
             final DataSet informationDataSet = materializeInformationSchemaTable(table, selectItems, maxRows);
             if (firstRow > 1) {
-                dataSet = new FirstRowDataSet(informationDataSet, firstRow);
+                @SuppressWarnings("resource")
+                final DataSet firstRowDataSet = new FirstRowDataSet(informationDataSet, firstRow);
+                dataSet = firstRowDataSet;
             } else {
                 dataSet = informationDataSet;
             }
@@ -483,7 +485,8 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         }
 
         // Handle column subset
-        dataSet = MetaModelHelper.getSelection(selectItems, dataSet);
+        DataSet selectionDataSet = MetaModelHelper.getSelection(selectItems, dataSet);
+        dataSet = selectionDataSet;
 
         // Handle maxRows
         if (maxRows != -1) {

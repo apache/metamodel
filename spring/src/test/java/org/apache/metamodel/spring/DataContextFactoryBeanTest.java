@@ -18,68 +18,18 @@
  */
 package org.apache.metamodel.spring;
 
-import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.util.SimpleTableDef;
+import org.apache.metamodel.DataContext;
 
 import junit.framework.TestCase;
 
 public class DataContextFactoryBeanTest extends TestCase {
 
-    public void testParseTableDefNoExtraWhitespace() throws Exception {
-        SimpleTableDef tableDef = DataContextFactoryBean.parseTableDef("foo(bar VARCHAR,baz INTEGER)");
-        assertNotNull(tableDef);
-        assertEquals("foo", tableDef.getName());
-        assertEquals(2, tableDef.getColumnNames().length);
-        assertEquals("bar", tableDef.getColumnNames()[0]);
-        assertEquals("baz", tableDef.getColumnNames()[1]);
-        assertEquals(ColumnType.VARCHAR, tableDef.getColumnTypes()[0]);
-        assertEquals(ColumnType.INTEGER, tableDef.getColumnTypes()[1]);
-    }
-
-    public void testParseTableDefWithExtraWhitespace() throws Exception {
-        SimpleTableDef tableDef = DataContextFactoryBean
-                .parseTableDef("   foo ( bar   VARCHAR   ,    baz    INTEGER    )   ");
-        assertNotNull(tableDef);
-        assertEquals("foo", tableDef.getName());
-        assertEquals(2, tableDef.getColumnNames().length);
-        assertEquals("bar", tableDef.getColumnNames()[0]);
-        assertEquals("baz", tableDef.getColumnNames()[1]);
-        assertEquals(ColumnType.VARCHAR, tableDef.getColumnTypes()[0]);
-        assertEquals(ColumnType.INTEGER, tableDef.getColumnTypes()[1]);
-    }
-
-    public void testParseTableDefsGibberish() throws Exception {
-        try {
-            DataContextFactoryBean.parseTableDefs(" lorem ipsum gibberish ");
-            fail("Exception expected");
-        } catch (IllegalArgumentException e) {
-            assertEquals(
-                    "Failed to parse table definition:  lorem ipsum gibberish . No start parenthesis found for column section.",
-                    e.getMessage());
-        }
-    }
-
-    public void testParseTableDefs() throws Exception {
-        SimpleTableDef[] tableDefs = DataContextFactoryBean
-                .parseTableDefs("   foo ( bar   MAP   ,    baz    OTHER    )  ; \n\n\r\n\t  hello (  world   BINARY    )  ");
-
-        assertNotNull(tableDefs);
-        assertEquals(2, tableDefs.length);
-
-        SimpleTableDef tableDef = tableDefs[0];
-        assertNotNull(tableDef);
-        assertEquals("foo", tableDef.getName());
-        assertEquals(2, tableDef.getColumnNames().length);
-        assertEquals("bar", tableDef.getColumnNames()[0]);
-        assertEquals("baz", tableDef.getColumnNames()[1]);
-        assertEquals(ColumnType.MAP, tableDef.getColumnTypes()[0]);
-        assertEquals(ColumnType.OTHER, tableDef.getColumnTypes()[1]);
-
-        tableDef = tableDefs[1];
-        assertNotNull(tableDef);
-        assertEquals("hello", tableDef.getName());
-        assertEquals(1, tableDef.getColumnNames().length);
-        assertEquals("world", tableDef.getColumnNames()[0]);
-        assertEquals(ColumnType.BINARY, tableDef.getColumnTypes()[0]);
+    public void testUseDelegate() throws Exception {
+        DataContextFactoryBean bean = new DataContextFactoryBean();
+        bean.setUsername("foo");
+        bean.setType("org.apache.metamodel.spring.MockDataContextFactoryBeanDelegate");
+        
+        DataContext obj = bean.getObject();
+        assertEquals("org.apache.metamodel.pojo.PojoDataContext", obj.getClass().getName());
     }
 }

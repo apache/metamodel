@@ -18,15 +18,12 @@
  */
 package org.apache.metamodel.spring;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.sql.DataSource;
 
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.TableType;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.apache.metamodel.util.SimpleTableDefParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.FactoryBean;
@@ -161,93 +158,10 @@ public class DataContextFactoryBean implements FactoryBean<DataContext>, DataCon
      * @throws IllegalArgumentException
      */
     public void setTableDefinitions(String tableDefinitionsText) throws IllegalArgumentException {
-        _tableDefs = parseTableDefs(tableDefinitionsText);
+        _tableDefs = SimpleTableDefParser.parseTableDefs(tableDefinitionsText);
     }
 
-    /**
-     * Parses an array of table definitions.
-     * 
-     * @see #setTableDefinitions(String)
-     * 
-     * @param tableDefinitionsText
-     * @return
-     */
-    public static SimpleTableDef[] parseTableDefs(String tableDefinitionsText) {
-        if (tableDefinitionsText == null) {
-            return null;
-        }
-
-        tableDefinitionsText = tableDefinitionsText.replaceAll("\n", "").replaceAll("\t", "").replaceAll("\r", "")
-                .replaceAll("  ", " ");
-
-        final List<SimpleTableDef> tableDefs = new ArrayList<SimpleTableDef>();
-        final String[] tableDefinitionTexts = tableDefinitionsText.split(";");
-        for (String tableDefinitionText : tableDefinitionTexts) {
-            final SimpleTableDef tableDef = parseTableDef(tableDefinitionText);
-            if (tableDef != null) {
-                tableDefs.add(tableDef);
-            }
-        }
-
-        if (tableDefs.isEmpty()) {
-            return null;
-        }
-
-        return tableDefs.toArray(new SimpleTableDef[tableDefs.size()]);
-    }
-
-    /**
-     * Parses a single table definition
-     * 
-     * @see #setTableDefinitions(String)
-     * 
-     * @param tableDefinitionText
-     * @return
-     */
-    protected static SimpleTableDef parseTableDef(String tableDefinitionText) {
-        if (tableDefinitionText == null || tableDefinitionText.trim().isEmpty()) {
-            return null;
-        }
-
-        int startColumnSection = tableDefinitionText.indexOf("(");
-        if (startColumnSection == -1) {
-            throw new IllegalArgumentException("Failed to parse table definition: " + tableDefinitionText
-                    + ". No start parenthesis found for column section.");
-        }
-
-        int endColumnSection = tableDefinitionText.indexOf(")", startColumnSection);
-        if (endColumnSection == -1) {
-            throw new IllegalArgumentException("Failed to parse table definition: " + tableDefinitionText
-                    + ". No end parenthesis found for column section.");
-        }
-
-        String tableName = tableDefinitionText.substring(0, startColumnSection).trim();
-        if (tableName.isEmpty()) {
-            throw new IllegalArgumentException("Failed to parse table definition: " + tableDefinitionText
-                    + ". No table name found.");
-        }
-
-        String columnSection = tableDefinitionText.substring(startColumnSection + 1, endColumnSection);
-
-        String[] columnDefinitionTexts = columnSection.split(",");
-        List<String> columnNames = new ArrayList<String>();
-        List<ColumnType> columnTypes = new ArrayList<ColumnType>();
-
-        for (String columnDefinition : columnDefinitionTexts) {
-            columnDefinition = columnDefinition.trim();
-            if (!columnDefinition.isEmpty()) {
-                int separator = columnDefinition.lastIndexOf(" ");
-                String columnName = columnDefinition.substring(0, separator).trim();
-                String columnTypeString = columnDefinition.substring(separator).trim();
-                ColumnType columnType = ColumnType.valueOf(columnTypeString);
-
-                columnNames.add(columnName);
-                columnTypes.add(columnType);
-            }
-        }
-        return new SimpleTableDef(tableName, columnNames.toArray(new String[columnNames.size()]),
-                columnTypes.toArray(new ColumnType[columnTypes.size()]));
-    }
+    
 
     @Override
     public Class<DataContext> getObjectType() {
