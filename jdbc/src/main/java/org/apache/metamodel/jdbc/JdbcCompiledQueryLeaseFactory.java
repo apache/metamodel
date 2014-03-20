@@ -29,13 +29,11 @@ import org.apache.commons.pool.PoolableObjectFactory;
  */
 final class JdbcCompiledQueryLeaseFactory implements PoolableObjectFactory<JdbcCompiledQueryLease> {
 
-	private final JdbcDataContext _dataContext;
-    private final Connection _connection;
+    private final JdbcDataContext _dataContext;
     private final String _sql;
 
-    public JdbcCompiledQueryLeaseFactory(JdbcDataContext dataContext, Connection connection, String sql) {
-    	_dataContext = dataContext;
-        _connection = connection;
+    public JdbcCompiledQueryLeaseFactory(JdbcDataContext dataContext, String sql) {
+        _dataContext = dataContext;
         _sql = sql;
     }
     
@@ -43,8 +41,9 @@ final class JdbcCompiledQueryLeaseFactory implements PoolableObjectFactory<JdbcC
     @Override
     public JdbcCompiledQueryLease makeObject() throws Exception {
         try {
-            final PreparedStatement statement = _connection.prepareStatement(_sql);
-            final JdbcCompiledQueryLease lease = new JdbcCompiledQueryLease(_connection, statement);
+            final Connection connection = _dataContext.getConnection();
+            final PreparedStatement statement = connection.prepareStatement(_sql);
+            final JdbcCompiledQueryLease lease = new JdbcCompiledQueryLease(connection, statement);
             return lease;
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "preparing statement");
@@ -53,7 +52,9 @@ final class JdbcCompiledQueryLeaseFactory implements PoolableObjectFactory<JdbcC
 
     @Override
     public void destroyObject(JdbcCompiledQueryLease lease) throws Exception {
-        _dataContext.close(null, null, lease.getStatement());
+        final PreparedStatement statement = lease.getStatement();
+        final Connection connection = lease.getConnection();
+        _dataContext.close(connection, null, statement);
     }
 
     @Override

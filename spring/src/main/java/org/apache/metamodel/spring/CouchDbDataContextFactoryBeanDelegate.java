@@ -19,24 +19,23 @@
 package org.apache.metamodel.spring;
 
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.excel.ExcelConfiguration;
-import org.apache.metamodel.excel.ExcelDataContext;
-import org.apache.metamodel.util.Resource;
+import org.apache.metamodel.DataContextFactory;
+import org.apache.metamodel.couchdb.CouchDbDataContext;
+import org.apache.metamodel.util.SimpleTableDef;
 
 /**
- * {@link DataContextFactoryBeanDelegate} for {@link ExcelDataContext}.
+ * {@link DataContextFactoryBeanDelegate} for {@link CouchDbDataContext}.
  */
-public class ExcelDataContextFactoryBeanDelegate extends AbstractDataContextFactoryBeanDelegate {
+public class CouchDbDataContextFactoryBeanDelegate extends AbstractDataContextFactoryBeanDelegate {
 
     @Override
     public DataContext createDataContext(DataContextFactoryParameters params) {
-        final Resource resource = getResource(params);
-        final int columnNameLineNumber = getInt(params.getColumnNameLineNumber(),
-                ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE);
-        final boolean skipEmptyLines = getBoolean(params.getSkipEmptyLines(), true);
-        final boolean skipEmptyColumns = getBoolean(params.getSkipEmptyColumns(), false);
-        final ExcelConfiguration configuration = new ExcelConfiguration(columnNameLineNumber, skipEmptyLines,
-                skipEmptyColumns);
-        return new ExcelDataContext(resource, configuration);
+        String hostname = params.getHostname();
+        Integer port = params.getPort();
+        String username = params.getUsername();
+        String password = params.getPassword();
+        SimpleTableDef[] tableDefs = params.getTableDefs();
+        return DataContextFactory.createCouchDbDataContext(hostname, port, username, password, tableDefs);
     }
+
 }

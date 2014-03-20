@@ -18,23 +18,18 @@
  */
 package org.apache.metamodel.spring;
 
-import java.util.ArrayList;
-
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.pojo.PojoDataContext;
-import org.apache.metamodel.pojo.TableDataProvider;
 
-/**
- * Mock implementation of {@link DataContextFactoryBeanDelegate}. Used by test (
- * {@link MockDataContextTypeTest}) to verify that we can pass data context type
- * as a qualified class name of a factory delegate.
- */
-public class MockDataContextFactoryBeanDelegate implements DataContextFactoryBeanDelegate {
+import junit.framework.TestCase;
 
-    @Override
-    public DataContext createDataContext(DataContextFactoryParameters bean) {
-        String username = bean.getUsername();
-        return new PojoDataContext(username, new ArrayList<TableDataProvider<?>>());
+public class DataContextFactoryBeanTest extends TestCase {
+
+    public void testUseDelegate() throws Exception {
+        DataContextFactoryBean bean = new DataContextFactoryBean();
+        bean.setUsername("foo");
+        bean.setType("org.apache.metamodel.spring.MockDataContextFactoryBeanDelegate");
+        
+        DataContext obj = bean.getObject();
+        assertEquals("org.apache.metamodel.pojo.PojoDataContext", obj.getClass().getName());
     }
-
 }

@@ -18,12 +18,12 @@
  */
 package org.apache.metamodel.jdbc;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool.Config;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.DefaultCompiledQuery;
@@ -38,103 +38,119 @@ import org.slf4j.LoggerFactory;
  */
 final class JdbcCompiledQuery extends DefaultCompiledQuery implements CompiledQuery {
 
-	private static final Logger logger = LoggerFactory.getLogger(JdbcCompiledQuery.class);
+    private static final Logger logger = LoggerFactory.getLogger(JdbcCompiledQuery.class);
 
-	private final JdbcDataContext _dataContext;
-	private final Connection _connection;
-	private final String _sql;
-	private final Query _query;
-	private final GenericObjectPool<JdbcCompiledQueryLease> _pool;
-	private boolean _closed;
+    private final String _sql;
+    private final Query _query;
+    private final GenericObjectPool<JdbcCompiledQueryLease> _pool;
+    private boolean _closed;
 
-	public JdbcCompiledQuery(JdbcDataContext dc, Query query) {
-		super(query);
-		_dataContext = dc;
-		_connection = dc.getConnection();
-		_query = query;
-		_sql = dc.getQueryRewriter().rewriteQuery(query);
-		_pool = new GenericObjectPool<JdbcCompiledQueryLease>(new JdbcCompiledQueryLeaseFactory(dc, _connection, _sql));
-		_closed = false;
+    public JdbcCompiledQuery(JdbcDataContext dc, Query query) {
+        super(query);
+        _query = query;
+        _sql = dc.getQueryRewriter().rewriteQuery(query);
 
-		logger.debug("Created compiled JDBC query: {}", _sql);
-	}
+        final Config config = new Config();
+        config.maxActive = getSystemPropertyValue(JdbcDataContext.SYSTEM_PROPERTY_COMPILED_QUERY_POOL_MAX_SIZE, -1);
+        config.minEvictableIdleTimeMillis = getSystemPropertyValue(
+                JdbcDataContext.SYSTEM_PROPERTY_COMPILED_QUERY_POOL_MIN_EVICTABLE_IDLE_TIME_MILLIS, 500);
+        config.timeBetweenEvictionRunsMillis = getSystemPropertyValue(
+                JdbcDataContext.SYSTEM_PROPERTY_COMPILED_QUERY_POOL_TIME_BETWEEN_EVICTION_RUNS_MILLIS, 1000);
 
-	public JdbcCompiledQueryLease borrowLease() {
-		if (logger.isDebugEnabled()) {
-			logger.debug("Borrowing lease. Leases (before): Active={}, Idle={}", getActiveLeases(), getIdleLeases());
-		}
-		try {
-			return _pool.borrowObject();
-		} catch (Exception e) {
-			throw handleError(e, "borrow lease");
-		}
-	}
+        _pool = new GenericObjectPool<JdbcCompiledQueryLease>(new JdbcCompiledQueryLeaseFactory(dc, _sql), config);
+        _closed = false;
 
-	public void returnLease(JdbcCompiledQueryLease lease) {
-		if (logger.isDebugEnabled()) {
-			logger.debug("Returning lease. Leases (before): Active={}, Idle={}", getActiveLeases(), getIdleLeases());
-		}
-		try {
-			_pool.returnObject(lease);
-		} catch (Exception e) {
-			throw handleError(e, "return lease");
-		}
-	}
+        logger.debug("Created compiled JDBC query: {}", _sql);
+    }
 
-	private RuntimeException handleError(Exception e, String message) {
-		if (logger.isWarnEnabled()) {
-			logger.warn("Unexpected error occurred in compiled JDBC query: " + message, e);
-		}
-		
-		if (e instanceof SQLException) {
-			return JdbcUtils.wrapException((SQLException) e, message);
-		} else if (e instanceof RuntimeException) {
-			return (RuntimeException) e;
-		} else {
-			return new MetaModelException(message, e);
-		}
-	}
+    private int getSystemPropertyValue(String property, int defaultValue) {
+        String str = System.getProperty(property);
+        if (str == null) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(str);
+        } catch (NumberFormatException e) {
+            logger.debug("Failed to parse system property '{}': '{}'", property, str);
+            return defaultValue;
+        }
+    }
 
-	protected int getActiveLeases() {
-		return _pool.getNumActive();
-	}
+    public JdbcCompiledQueryLease borrowLease() {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Borrowing lease. Leases (before): Active={}, Idle={}", getActiveLeases(), getIdleLeases());
+        }
+        try {
+            return _pool.borrowObject();
+        } catch (Exception e) {
+            throw handleError(e, "borrow lease");
+        }
+    }
 
-	protected int getIdleLeases() {
-		return _pool.getNumIdle();
-	}
+    public void returnLease(JdbcCompiledQueryLease lease) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Returning lease. Leases (before): Active={}, Idle={}", getActiveLeases(), getIdleLeases());
+        }
+        try {
+            _pool.returnObject(lease);
+        } catch (Exception e) {
+            throw handleError(e, "return lease");
+        }
+    }
 
-	protected Query getQuery() {
-		return _query;
-	}
+    private RuntimeException handleError(Exception e, String message) {
+        if (logger.isWarnEnabled()) {
+            logger.warn("Unexpected error occurred in compiled JDBC query: " + message, e);
+        }
 
-	@Override
-	public String toSql() {
-		return _sql;
-	}
+        if (e instanceof SQLException) {
+            return JdbcUtils.wrapException((SQLException) e, message);
+        } else if (e instanceof RuntimeException) {
+            return (RuntimeException) e;
+        } else {
+            return new MetaModelException(message, e);
+        }
+    }
 
-	@Override
-	public void close() {
-		logger.debug("Closing compiled JDBC query: {}", _sql);
-		try {
-			_pool.close();
-		} catch (Exception e) {
-			throw handleError(e, "close pool of leases");
-		} finally {
-			_dataContext.close(_connection, null, null);
-			_closed = true;
-		}
-	}
+    protected int getActiveLeases() {
+        return _pool.getNumActive();
+    }
 
-	protected List<SelectItem> getSelectItems() {
-		return _query.getSelectClause().getItems();
-	}
+    protected int getIdleLeases() {
+        return _pool.getNumIdle();
+    }
 
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-		if (!_closed) {
-			logger.warn("finalize() invoked, but DataSet is not closed. Invoking close() on {}", this);
-			close();
-		}
-	}
+    protected Query getQuery() {
+        return _query;
+    }
+
+    @Override
+    public String toSql() {
+        return _sql;
+    }
+
+    @Override
+    public void close() {
+        logger.debug("Closing compiled JDBC query: {}", _sql);
+        try {
+            _pool.close();
+        } catch (Exception e) {
+            throw handleError(e, "close pool of leases");
+        } finally {
+            _closed = true;
+        }
+    }
+
+    protected List<SelectItem> getSelectItems() {
+        return _query.getSelectClause().getItems();
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (!_closed) {
+            logger.warn("finalize() invoked, but DataSet is not closed. Invoking close() on {}", this);
+            close();
+        }
+    }
 }

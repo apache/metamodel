@@ -19,24 +19,24 @@
 package org.apache.metamodel.spring;
 
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.excel.ExcelConfiguration;
-import org.apache.metamodel.excel.ExcelDataContext;
-import org.apache.metamodel.util.Resource;
+import org.apache.metamodel.DataContextFactory;
+import org.apache.metamodel.mongodb.MongoDbDataContext;
+import org.apache.metamodel.util.SimpleTableDef;
 
 /**
- * {@link DataContextFactoryBeanDelegate} for {@link ExcelDataContext}.
+ * {@link DataContextFactoryBeanDelegate} for {@link MongoDbDataContext}.
  */
-public class ExcelDataContextFactoryBeanDelegate extends AbstractDataContextFactoryBeanDelegate {
+public class MongoDbDataContextFactoryBeanDelegate extends AbstractDataContextFactoryBeanDelegate {
 
     @Override
     public DataContext createDataContext(DataContextFactoryParameters params) {
-        final Resource resource = getResource(params);
-        final int columnNameLineNumber = getInt(params.getColumnNameLineNumber(),
-                ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE);
-        final boolean skipEmptyLines = getBoolean(params.getSkipEmptyLines(), true);
-        final boolean skipEmptyColumns = getBoolean(params.getSkipEmptyColumns(), false);
-        final ExcelConfiguration configuration = new ExcelConfiguration(columnNameLineNumber, skipEmptyLines,
-                skipEmptyColumns);
-        return new ExcelDataContext(resource, configuration);
+        String hostname = params.getHostname();
+        Integer port = params.getPort();
+        String databaseName = params.getDatabaseName();
+        String username = params.getUsername();
+        char[] password = params.getPassword().toCharArray();
+        SimpleTableDef[] tableDefs = params.getTableDefs();
+        return DataContextFactory.createMongoDbDataContext(hostname, port, databaseName, username, password, tableDefs);
     }
+
 }

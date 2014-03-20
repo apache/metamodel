@@ -64,6 +64,10 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
 
     public static final String SYSTEM_PROPERTY_BATCH_UPDATES = "metamodel.jdbc.batch.updates";
     public static final String SYSTEM_PROPERTY_CONVERT_LOBS = "metamodel.jdbc.convert.lobs";
+    
+    public static final String SYSTEM_PROPERTY_COMPILED_QUERY_POOL_MAX_SIZE = "metamodel.jdbc.compiledquery.pool.max.size";
+    public static final String SYSTEM_PROPERTY_COMPILED_QUERY_POOL_MIN_EVICTABLE_IDLE_TIME_MILLIS = "metamodel.jdbc.compiledquery.pool.idle.timeout";
+    public static final String SYSTEM_PROPERTY_COMPILED_QUERY_POOL_TIME_BETWEEN_EVICTION_RUNS_MILLIS = "metamodel.jdbc.compiledquery.pool.eviction.period.millis";
 
     public static final String DATABASE_PRODUCT_POSTGRESQL = "PostgreSQL";
     public static final String DATABASE_PRODUCT_MYSQL = "MySQL";

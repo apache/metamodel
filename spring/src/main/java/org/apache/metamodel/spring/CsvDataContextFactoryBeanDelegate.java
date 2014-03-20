@@ -30,15 +30,15 @@ import org.apache.metamodel.util.Resource;
 public class CsvDataContextFactoryBeanDelegate extends AbstractDataContextFactoryBeanDelegate {
 
     @Override
-    public DataContext createDataContext(DataContextFactoryBean bean) {
-        final Resource resource = getResource(bean);
-        final int columnNameLineNumber = getInt(bean.getColumnNameLineNumber(), CsvConfiguration.DEFAULT_COLUMN_NAME_LINE);
-        final String encoding = getString(bean.getEncoding(), FileHelper.DEFAULT_ENCODING);
-        final char separatorChar = getChar(bean.getSeparatorChar(), CsvConfiguration.DEFAULT_SEPARATOR_CHAR);
-        final char quoteChar = getChar(bean.getQuoteChar(), CsvConfiguration.DEFAULT_QUOTE_CHAR);
-        final char escapeChar = getChar(bean.getEscapeChar(), CsvConfiguration.DEFAULT_ESCAPE_CHAR);
-        final boolean failOnInconsistentRowLength = getBoolean(bean.getFailOnInconsistentRowLength(), false);
-        final boolean multilineValues = getBoolean(bean.getMultilineValues(), true);
+    public DataContext createDataContext(DataContextFactoryParameters params) {
+        final Resource resource = getResource(params);
+        final int columnNameLineNumber = getInt(params.getColumnNameLineNumber(), CsvConfiguration.DEFAULT_COLUMN_NAME_LINE);
+        final String encoding = getString(params.getEncoding(), FileHelper.DEFAULT_ENCODING);
+        final char separatorChar = getChar(params.getSeparatorChar(), CsvConfiguration.DEFAULT_SEPARATOR_CHAR);
+        final char quoteChar = getChar(params.getQuoteChar(), CsvConfiguration.DEFAULT_QUOTE_CHAR);
+        final char escapeChar = getChar(params.getEscapeChar(), CsvConfiguration.DEFAULT_ESCAPE_CHAR);
+        final boolean failOnInconsistentRowLength = getBoolean(params.getFailOnInconsistentRowLength(), false);
+        final boolean multilineValues = getBoolean(params.getMultilineValues(), true);
         final CsvConfiguration configuration = new CsvConfiguration(columnNameLineNumber, encoding, separatorChar,
                 quoteChar, escapeChar, failOnInconsistentRowLength, multilineValues);
         return new CsvDataContext(resource, configuration);

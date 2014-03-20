@@ -234,7 +234,8 @@ public final class MetaModelHelper {
 
         DataSet result = new InMemoryDataSet(header, rows);
         if (whereItems != null) {
-            result = getFiltered(result, whereItems);
+            DataSet filteredResult = getFiltered(result, whereItems);
+            result = filteredResult;
         }
         return result;
     }

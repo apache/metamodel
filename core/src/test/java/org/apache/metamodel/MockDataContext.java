@@ -51,20 +51,25 @@ public class MockDataContext extends QueryPostprocessDataContext {
 
     @Override
     protected Schema getMainSchema() throws MetaModelException {
-        
+
         final MutableSchema schema = new MutableSchema(_schemaName);
         final MutableTable primaryTable = new MutableTable(_tableName).setSchema(schema);
-        primaryTable.addColumn(new MutableColumn("foo").setColumnNumber(0).setType(ColumnType.VARCHAR).setTable(primaryTable));
-        primaryTable.addColumn(new MutableColumn("bar").setColumnNumber(1).setType(ColumnType.VARCHAR).setTable(primaryTable));
-        primaryTable.addColumn(new MutableColumn("baz").setColumnNumber(2).setType(ColumnType.VARCHAR).setTable(primaryTable));
+        primaryTable.addColumn(new MutableColumn("foo").setColumnNumber(0).setType(ColumnType.VARCHAR)
+                .setTable(primaryTable));
+        primaryTable.addColumn(new MutableColumn("bar").setColumnNumber(1).setType(ColumnType.VARCHAR)
+                .setTable(primaryTable));
+        primaryTable.addColumn(new MutableColumn("baz").setColumnNumber(2).setType(ColumnType.VARCHAR)
+                .setTable(primaryTable));
 
         final MutableTable emptyTable = new MutableTable("an_empty_table").setSchema(schema);
-        emptyTable.addColumn(new MutableColumn("foo").setColumnNumber(0).setType(ColumnType.VARCHAR).setTable(emptyTable));
-        emptyTable.addColumn(new MutableColumn("bar").setColumnNumber(1).setType(ColumnType.VARCHAR).setTable(emptyTable));
-        
+        emptyTable.addColumn(new MutableColumn("foo").setColumnNumber(0).setType(ColumnType.VARCHAR)
+                .setTable(emptyTable));
+        emptyTable.addColumn(new MutableColumn("bar").setColumnNumber(1).setType(ColumnType.VARCHAR)
+                .setTable(emptyTable));
+
         schema.addTable(primaryTable);
         schema.addTable(emptyTable);
-        
+
         return schema;
     }
 
@@ -84,12 +89,11 @@ public class MockDataContext extends QueryPostprocessDataContext {
             data.add(new DefaultRow(header, new Object[] { "3", "hi", _value }, null));
             data.add(new DefaultRow(header, new Object[] { "4", "yo", "world" }, null));
 
-            DataSet ds = new InMemoryDataSet(header, data);
+            final DataSet sourceDataSet = new InMemoryDataSet(header, data);
 
-            SelectItem[] columnSelectItems = MetaModelHelper.createSelectItems(columns);
-            ds = MetaModelHelper.getSelection(columnSelectItems, ds);
-
-            return ds;
+            final SelectItem[] columnSelectItems = MetaModelHelper.createSelectItems(columns);
+            final DataSet selectionDataSet = MetaModelHelper.getSelection(columnSelectItems, sourceDataSet);
+            return selectionDataSet;
         } else if ("an_empty_table".equals(table.getName())) {
             return new EmptyDataSet(columns);
         }
