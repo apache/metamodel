@@ -27,7 +27,9 @@ import javax.swing.table.TableModel;
 
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
+import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
@@ -570,7 +572,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         }
         assertFalse(data.next());
     }
-    
+
     public void testJoinAndFirstRow() throws Exception {
         DataSet data;
 
@@ -582,7 +584,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         q.select(table2.getColumns());
         data = dc.executeQuery(q);
         assertEquals(48, data.toObjectArrays().size());
-        
+
         q.setFirstRow(3);
         data = dc.executeQuery(q);
         assertEquals(46, data.toObjectArrays().size());
@@ -857,5 +859,45 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         assertTrue(ds.next());
         assertEquals("Row[values=[1337]]", ds.getRow().toString());
         assertFalse(ds.next());
+    }
+
+    public void testExecutePrimaryKeyLookupQuery() throws Exception {
+        QueryPostprocessDataContext dc = new QueryPostprocessDataContext() {
+            @Override
+            protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+                throw new UnsupportedAddressTypeException();
+            }
+
+            @Override
+            protected Number executeCountQuery(Table table, List<FilterItem> whereItems,
+                    boolean functionApproximationAllowed) {
+                return null;
+            }
+
+            @Override
+            protected String getMainSchemaName() throws MetaModelException {
+                return "sch";
+            }
+
+            @Override
+            protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Object keyValue) {
+                assertEquals("foo", keyValue);
+                return new DefaultRow(new SimpleDataSetHeader(selectItems), new Object[] { "hello world" });
+            }
+
+            @Override
+            protected Schema getMainSchema() throws MetaModelException {
+                MutableSchema schema = new MutableSchema(getMainSchemaName());
+                MutableTable table = new MutableTable("tabl").setSchema(schema);
+                table.addColumn(new MutableColumn("col1").setTable(table).setPrimaryKey(true));
+                table.addColumn(new MutableColumn("col2").setTable(table));
+                return schema.addTable(table);
+            }
+        };
+
+        DataSet result = dc.query().from("tabl").select("col2").where("col1").eq("foo").execute();
+        assertTrue(result.next());
+        assertEquals("Row[values=[hello world]]", result.getRow().toString());
+        assertFalse(result.next());
     }
 }

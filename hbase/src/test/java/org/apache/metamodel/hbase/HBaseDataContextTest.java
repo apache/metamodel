@@ -107,8 +107,9 @@ public class HBaseDataContextTest extends TestCase {
         }
 
         // query only id
-        final DataSet dataSet4 = _dataContext.query().from(EXAMPLE_TABLE_NAME)
-                .select(HBaseDataContext.FIELD_ID).execute();
+        final DataSet dataSet4 = _dataContext.query().from(EXAMPLE_TABLE_NAME).select(HBaseDataContext.FIELD_ID)
+                .execute();
+
         try {
             assertTrue(dataSet4.next());
             assertEquals("Row[values=[junit1]]", dataSet4.getRow().toString());
@@ -118,6 +119,20 @@ public class HBaseDataContextTest extends TestCase {
         } finally {
             dataSet4.close();
         }
+
+        // primary key lookup query - using GET
+        final DataSet dataSet5 = _dataContext.query().from(EXAMPLE_TABLE_NAME).select(HBaseDataContext.FIELD_ID)
+                .where(HBaseDataContext.FIELD_ID).eq("junit1").execute();
+
+        try {
+            assertTrue(dataSet5.next());
+            assertEquals("Row[values=[junit1]]", dataSet5.getRow().toString());
+            assertFalse(dataSet5.next());
+        } finally {
+            dataSet5.close();
+        }
+
+        // TODO: Check if really GET was used instead of SCAN
     }
 
     private void insertRecordsNatively() throws Exception {

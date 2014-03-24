@@ -96,28 +96,58 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         final List<FilterItem> havingItems = query.getHavingClause().getItems();
         final List<OrderByItem> orderByItems = query.getOrderByClause().getItems();
 
-        // check for approximate SELECT COUNT(*) queries
-        if (fromItems.size() == 1 && selectItems.size() == 1 && groupByItems.isEmpty() && havingItems.isEmpty()) {
-            final SelectItem selectItem = query.getSelectClause().getItem(0);
-            if (SelectItem.isCountAllItem(selectItem)) {
-                final boolean functionApproximationAllowed = selectItem.isFunctionApproximationAllowed();
-                final FromItem fromItem = query.getFromClause().getItem(0);
-                final Table table = fromItem.getTable();
-                if (table != null) {
-                    if (isMainSchemaTable(table)) {
-                        logger.debug("Query is a COUNT query with {} where items. Trying executeCountQuery(...)",
-                                whereItems.size());
-                        final Number count = executeCountQuery(table, whereItems, functionApproximationAllowed);
-                        if (count == null) {
-                            logger.debug("DataContext did not return any count query results. Proceeding with manual counting.");
-                        } else {
-                            List<Row> data = new ArrayList<Row>(1);
-                            final DataSetHeader header = new SimpleDataSetHeader(new SelectItem[] { selectItem });
-                            data.add(new DefaultRow(header, new Object[] { count }));
-                            return new InMemoryDataSet(header, data);
+        // check certain common query types that can often be optimized by
+        // subclasses
+        if (fromItems.size() == 1 && groupByItems.isEmpty() && havingItems.isEmpty()) {
+
+            final FromItem fromItem = query.getFromClause().getItem(0);
+            final Table table = fromItem.getTable();
+            if (table != null) {
+                // check for approximate SELECT COUNT(*) queries
+                if (selectItems.size() == 1) {
+                    final SelectItem selectItem = query.getSelectClause().getItem(0);
+                    if (SelectItem.isCountAllItem(selectItem)) {
+                        final boolean functionApproximationAllowed = selectItem.isFunctionApproximationAllowed();
+                        if (isMainSchemaTable(table)) {
+                            logger.debug("Query is a COUNT query with {} where items. Trying executeCountQuery(...)",
+                                    whereItems.size());
+                            final Number count = executeCountQuery(table, whereItems, functionApproximationAllowed);
+                            if (count == null) {
+                                logger.debug("DataContext did not return any count query results. Proceeding with manual counting.");
+                            } else {
+                                List<Row> data = new ArrayList<Row>(1);
+                                final DataSetHeader header = new SimpleDataSetHeader(new SelectItem[] { selectItem });
+                                data.add(new DefaultRow(header, new Object[] { count }));
+                                return new InMemoryDataSet(header, data);
+                            }
                         }
                     }
                 }
+
+                // check for lookup query by primary key
+                if (whereItems.size() == 1) {
+                    final FilterItem whereItem = whereItems.get(0);
+                    final SelectItem selectItem = whereItem.getSelectItem();
+                    if (!whereItem.isCompoundFilter() && selectItem != null && selectItem.getColumn() != null) {
+                        final Column column = selectItem.getColumn();
+                        if (column.isPrimaryKey() && whereItem.getOperator() == OperatorType.EQUALS_TO) {
+                            logger.debug("Query is a primary key lookup query. Trying executePrimaryKeyLookupQuery(...)");
+                            if (table != null) {
+                                if (isMainSchemaTable(table)) {
+                                    final Object operand = whereItem.getOperand();
+                                    final Row row = executePrimaryKeyLookupQuery(table, selectItems, operand);
+                                    if (row == null) {
+                                        logger.debug("DataContext did not return any GET query results. Proceeding with manual lookup.");
+                                    } else {
+                                        final DataSetHeader header = new SimpleDataSetHeader(selectItems);
+                                        return new InMemoryDataSet(header, row);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
             }
         }
 
@@ -203,6 +233,25 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
      * @return the count of the particular table, or null if not available.
      */
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
+        return null;
+    }
+
+    /**
+     * Executes a query which obtains a row by primary key (as defined by
+     * {@link Column#isPrimaryKey()}). This method is provided to allow
+     * subclasses to optimize lookup queries since they are quite common and
+     * often a datastore can retrieve the row using some specialized means which
+     * is much more performant than scanning all records manually.
+     * 
+     * @param table
+     *            the table on which the lookup is requested.
+     * @param selectItems
+     *            the items to select from the lookup query.
+     * @param keyValue
+     *            the primary key value that is specified in the lookup query.
+     * @return the row if the particular table, or null if not available.
+     */
+    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Object keyValue) {
         return null;
     }
 

@@ -19,31 +19,43 @@
 package org.apache.metamodel.hbase;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.HTablePool;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.PageFilter;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetHeader;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MetaModel adaptor for Apache HBase.
  */
 public class HBaseDataContext extends QueryPostprocessDataContext {
+
+    private static final Logger logger = LoggerFactory.getLogger(HBaseDataContext.class);
 
     public static final String FIELD_ID = "_id";
 
@@ -159,13 +171,29 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
             try {
                 while (scanner.next() != null) {
                     result++;
-                }                
+                }
             } finally {
                 scanner.close();
             }
             return result;
         } catch (IOException e) {
             throw new MetaModelException(e);
+        }
+    }
+
+    @Override
+    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Object keyValue) {
+        HTableInterface hTable = _tablePool.getTable(table.getName());
+        Get get = new Get(ByteUtils.toBytes(keyValue));
+        try {
+            Result result = hTable.get(get);
+            DataSetHeader header = new SimpleDataSetHeader(selectItems);
+            Row row = new HBaseRow(header, result);
+            return row;
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to execute HBase get operation with key: " + keyValue, e);
+        } finally {
+            FileHelper.safeClose(hTable);
         }
     }
 
@@ -184,7 +212,9 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
             }
         }
 
-        scan.setMaxResultSize(maxRows);
+        if (maxRows > 0) {
+            setMaxRows(scan, maxRows);
+        }
 
         final HTableInterface hTable = _tablePool.getTable(table.getName());
         try {
@@ -193,6 +223,20 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
         } catch (Exception e) {
             FileHelper.safeClose(hTable);
             throw new MetaModelException(e);
+        }
+    }
+
+    private void setMaxRows(Scan scan, int maxRows) {
+        try {
+            // in old versions of the HBase API, the 'setMaxResultSize' method
+            // is not available
+            Method method = scan.getClass().getMethod("setMaxResultSize", long.class);
+            method.invoke(scan, (long) maxRows);
+            logger.debug("Succesfully set maxRows using Scan.setMaxResultSize({})", maxRows);
+        } catch (Exception e) {
+            logger.debug(
+                    "HBase API does not have Scan.setMaxResultSize(long) method, setting maxRows using PageFilter.", e);
+            scan.setFilter(new PageFilter(maxRows));
         }
     }
 
