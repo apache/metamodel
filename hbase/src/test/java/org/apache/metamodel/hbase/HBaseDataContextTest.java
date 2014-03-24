@@ -159,6 +159,7 @@ public class HBaseDataContextTest extends TestCase {
     private void createTableNatively() throws Exception {
         // check if the table exists
         if (_dataContext.getHBaseAdmin().isTableAvailable(EXAMPLE_TABLE_NAME)) {
+            System.out.println("Unittest table already exists: " + EXAMPLE_TABLE_NAME);
             // table already exists
             return;
         }
