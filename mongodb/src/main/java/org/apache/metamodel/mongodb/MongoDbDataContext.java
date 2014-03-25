@@ -43,7 +43,11 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
+<<<<<<< Upstream, based on origin/master
 import org.apache.metamodel.schema.MutableColumn;
+=======
+import org.apache.metamodel.schema.ColumnTypeImpl;
+>>>>>>> 4abc0d6 Adapted other modules to work with the ColumnType-as-an-interface change.
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
@@ -198,7 +202,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
             if (columnType == ObjectId.class) {
                 columnTypes[i] = ColumnType.ROWID;
             } else {
-                columnTypes[i] = ColumnType.convertColumnType(columnType);
+                columnTypes[i] = ColumnTypeImpl.convertColumnType(columnType);
             }
             i++;
         }

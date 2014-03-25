@@ -38,6 +38,7 @@ import org.apache.metamodel.query.OrderByItem;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
@@ -293,21 +294,17 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
             sb.append(operand);
         } else if (operand instanceof Date) {
             final SimpleDateFormat dateFormat;
-            switch (selectItem.getExpectedColumnType()) {
-            case DATE:
+            ColumnType expectedColumnType = selectItem.getExpectedColumnType();
+            if (expectedColumnType == ColumnType.DATE) {
                 // note: we don't apply the timezone for DATE fields, since they
                 // don't contain time-of-day information.
                 dateFormat = new SimpleDateFormat(SOQL_DATE_FORMAT_OUT);
-                break;
-            case TIME:
+            } else if (expectedColumnType == ColumnType.TIME) {
                 dateFormat = new SimpleDateFormat(SOQL_TIME_FORMAT_OUT, Locale.ENGLISH);
                 dateFormat.setTimeZone(SOQL_TIMEZONE);
-                break;
-            case TIMESTAMP:
-            default:
+            } else {
                 dateFormat = new SimpleDateFormat(SOQL_DATE_TIME_FORMAT_OUT, Locale.ENGLISH);
                 dateFormat.setTimeZone(SOQL_TIMEZONE);
-                break;
             }
 
             String str = dateFormat.format((Date) operand);

@@ -112,21 +112,16 @@ final class SalesforceDataSet extends AbstractDataSet {
             }
             if (columnType.isTimeBased()) {
                 final SimpleDateFormat dateFormat;
-                switch (columnType) {
-                case DATE:
+                if (columnType == ColumnType.DATE) {
                     // note: we don't apply the timezone for DATE fields, since
                     // they don't contain time-of-day information.
                     dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_DATE_FORMAT_IN, Locale.ENGLISH);
-                    break;
-                case TIME:
+                } else if (columnType == ColumnType.TIME) {
                     dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_TIME_FORMAT_IN, Locale.ENGLISH);
                     dateFormat.setTimeZone(SalesforceDataContext.SOQL_TIMEZONE);
-                    break;
-                case TIMESTAMP:
-                default:
+                } else {
                     dateFormat = new SimpleDateFormat(SalesforceDataContext.SOQL_DATE_TIME_FORMAT_IN, Locale.ENGLISH);
                     dateFormat.setTimeZone(SalesforceDataContext.SOQL_TIMEZONE);
-                    break;
                 }
 
                 try {

@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.ColumnTypeImpl;
 import org.apache.metamodel.util.SimpleTableDef;
 
 /**
@@ -93,7 +94,7 @@ public final class ObjectTableDataProvider<E> implements TableDataProvider<E> {
 
                         _fieldTypes.put(columnName, returnType);
                         columnNames.add(columnName);
-                        columnTypes.add(ColumnType.convertColumnType(returnType));
+                        columnTypes.add(ColumnTypeImpl.convertColumnType(returnType));
                     }
                 }
             }

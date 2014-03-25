@@ -40,17 +40,24 @@ import org.slf4j.LoggerFactory;
  */
 public class ColumnTypeImpl implements ColumnType {
 
+    private static final long serialVersionUID = 1L;
+
     public static final Logger logger = LoggerFactory.getLogger(ColumnTypeImpl.class);
 
     private final String _name;
     private final SuperColumnType _superColumnType;
     private final Class<?> _javaType;
+    private final boolean _largeObject;
 
     public ColumnTypeImpl(String name, SuperColumnType superColumnType) {
         this(name, superColumnType, null);
     }
 
     public ColumnTypeImpl(String name, SuperColumnType superColumnType, Class<?> javaType) {
+        this(name, superColumnType, javaType, false);
+    }
+
+    public ColumnTypeImpl(String name, SuperColumnType superColumnType, Class<?> javaType, boolean largeObject) {
         if (name == null) {
             throw new IllegalArgumentException("Name cannot be null");
         }
@@ -64,6 +71,7 @@ public class ColumnTypeImpl implements ColumnType {
         } else {
             _javaType = javaType;
         }
+        _largeObject = largeObject;
     }
 
     @Override
@@ -112,11 +120,7 @@ public class ColumnTypeImpl implements ColumnType {
 
     @Override
     public boolean isLargeObject() {
-        String name = getName();
-        if ("BLOB".equals(name) || "CLOB".equals(name) || "NCLOB".equals(name)) {
-
-        }
-        return false;
+        return _largeObject;
     }
 
     @Override

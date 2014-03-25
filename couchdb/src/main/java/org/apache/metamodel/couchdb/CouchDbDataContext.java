@@ -19,7 +19,7 @@
 package org.apache.metamodel.couchdb;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -27,15 +27,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.codehaus.jackson.JsonNode;
-import org.ektorp.CouchDbConnector;
-import org.ektorp.CouchDbInstance;
-import org.ektorp.StreamingViewResult;
-import org.ektorp.ViewQuery;
-import org.ektorp.ViewResult.Row;
-import org.ektorp.http.HttpClient;
-import org.ektorp.http.StdHttpClient;
-import org.ektorp.impl.StdCouchDbInstance;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.QueryPostprocessDataContext;
@@ -51,6 +42,15 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.codehaus.jackson.JsonNode;
+import org.ektorp.CouchDbConnector;
+import org.ektorp.CouchDbInstance;
+import org.ektorp.StreamingViewResult;
+import org.ektorp.ViewQuery;
+import org.ektorp.ViewResult.Row;
+import org.ektorp.http.HttpClient;
+import org.ektorp.http.StdHttpClient;
+import org.ektorp.impl.StdCouchDbInstance;
 
 /**
  * DataContext implementation for CouchDB
@@ -130,7 +130,7 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
                     Set<ColumnType> types = columnsAndTypes.get(key);
 
                     if (types == null) {
-                        types = EnumSet.noneOf(ColumnType.class);
+                        types = new HashSet<ColumnType>();
                         columnsAndTypes.put(key, types);
                     }
 

@@ -35,6 +35,7 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectClause;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.ColumnTypeImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +61,7 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
 
     @Override
     public ColumnType getColumnType(int jdbcType, String nativeType, Integer columnSize) {
-        return ColumnType.convertColumnType(jdbcType);
+        return ColumnTypeImpl.convertColumnType(jdbcType);
     }
 
     public String rewriteQuery(Query query) {

@@ -25,6 +25,7 @@ import static org.apache.metamodel.schema.SuperColumnType.NUMBER_TYPE;
 import static org.apache.metamodel.schema.SuperColumnType.OTHER_TYPE;
 import static org.apache.metamodel.schema.SuperColumnType.TIME_TYPE;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -38,7 +39,7 @@ import org.apache.metamodel.util.HasName;
 /**
  * Represents the data-type of columns.
  */
-public interface ColumnType extends HasName {
+public interface ColumnType extends HasName, Serializable {
 
     /*
      * Literal
@@ -46,11 +47,11 @@ public interface ColumnType extends HasName {
     public static final ColumnType CHAR = new ColumnTypeImpl("CHAR", LITERAL_TYPE);
     public static final ColumnType VARCHAR = new ColumnTypeImpl("VARCHAR", LITERAL_TYPE);
     public static final ColumnType LONGVARCHAR = new ColumnTypeImpl("LONGVARCHAR", LITERAL_TYPE);
-    public static final ColumnType CLOB = new ColumnTypeImpl("CLOB", LITERAL_TYPE, Clob.class);
+    public static final ColumnType CLOB = new ColumnTypeImpl("CLOB", LITERAL_TYPE, Clob.class, true);
     public static final ColumnType NCHAR = new ColumnTypeImpl("NCHAR", LITERAL_TYPE);
     public static final ColumnType NVARCHAR = new ColumnTypeImpl("NVARCHAR", LITERAL_TYPE);
     public static final ColumnType LONGNVARCHAR = new ColumnTypeImpl("LONGNVARCHAR", LITERAL_TYPE);
-    public static final ColumnType NCLOB = new ColumnTypeImpl("NCLOB", LITERAL_TYPE, Clob.class);
+    public static final ColumnType NCLOB = new ColumnTypeImpl("NCLOB", LITERAL_TYPE, Clob.class, true);
 
     /*
      * Numbers
@@ -84,7 +85,7 @@ public interface ColumnType extends HasName {
     public static final ColumnType BINARY = new ColumnTypeImpl("BINARY", BINARY_TYPE);
     public static final ColumnType VARBINARY = new ColumnTypeImpl("VARBINARY", BINARY_TYPE);
     public static final ColumnType LONGVARBINARY = new ColumnTypeImpl("LONGVARBINARY", BINARY_TYPE);
-    public static final ColumnType BLOB = new ColumnTypeImpl("BLOB", BINARY_TYPE, Blob.class);
+    public static final ColumnType BLOB = new ColumnTypeImpl("BLOB", BINARY_TYPE, Blob.class, true);
 
     /*
      * Other types (as defined in {@link Types}).
