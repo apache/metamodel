@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.ColumnTypeImpl;
 
 public class SimpleTableDefParser {
 
@@ -100,7 +101,7 @@ public class SimpleTableDefParser {
                 int separator = columnDefinition.lastIndexOf(" ");
                 String columnName = columnDefinition.substring(0, separator).trim();
                 String columnTypeString = columnDefinition.substring(separator).trim();
-                ColumnType columnType = ColumnType.valueOf(columnTypeString);
+                ColumnType columnType = ColumnTypeImpl.valueOf(columnTypeString);
 
                 columnNames.add(columnName);
                 columnTypes.add(columnType);

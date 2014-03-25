@@ -34,59 +34,59 @@ import junit.framework.TestCase;
 public class ColumnTypeTest extends TestCase {
 
 	public void testConvertColumnTypeFromJdbcTypes() throws Exception {
-		ColumnType type = ColumnType.convertColumnType(Types.VARCHAR);
+		ColumnType type = ColumnTypeImpl.convertColumnType(Types.VARCHAR);
 		assertEquals(ColumnType.VARCHAR, type);
 		
-		type = ColumnType.convertColumnType(Types.DATE);
+		type = ColumnTypeImpl.convertColumnType(Types.DATE);
         assertEquals(ColumnType.DATE, type);
 
-		type = ColumnType.convertColumnType(Types.TIME);
+		type = ColumnTypeImpl.convertColumnType(Types.TIME);
 		assertEquals(ColumnType.TIME, type);
 
-		type = ColumnType.convertColumnType(Types.TIMESTAMP);
+		type = ColumnTypeImpl.convertColumnType(Types.TIMESTAMP);
 		assertEquals(ColumnType.TIMESTAMP, type);
 
-		type = ColumnType.convertColumnType(42397443);
+		type = ColumnTypeImpl.convertColumnType(42397443);
 		assertEquals(ColumnType.OTHER, type);
 		
-		type = ColumnType.convertColumnType(-42397443);
+		type = ColumnTypeImpl.convertColumnType(-42397443);
 		assertEquals(ColumnType.OTHER, type);
 	}
 	
 	public void testConvertColumnTypeFromJavaClass() throws Exception {
-		ColumnType type = ColumnType.convertColumnType(String.class);
+		ColumnType type = ColumnTypeImpl.convertColumnType(String.class);
 		assertEquals(ColumnType.VARCHAR, type);
 
-		type = ColumnType.convertColumnType(Time.class);
+		type = ColumnTypeImpl.convertColumnType(Time.class);
 		assertEquals(ColumnType.TIME, type);
 
-		type = ColumnType.convertColumnType(Timestamp.class);
+		type = ColumnTypeImpl.convertColumnType(Timestamp.class);
 		assertEquals(ColumnType.TIMESTAMP, type);
 		
-		type = ColumnType.convertColumnType(java.sql.Date.class);
+		type = ColumnTypeImpl.convertColumnType(java.sql.Date.class);
 		assertEquals(ColumnType.DATE, type);
 
-		type = ColumnType.convertColumnType(Date.class);
+		type = ColumnTypeImpl.convertColumnType(Date.class);
 		assertEquals(ColumnType.TIMESTAMP, type);
 		
-		type = ColumnType.convertColumnType(Integer.class);
+		type = ColumnTypeImpl.convertColumnType(Integer.class);
 		assertEquals(ColumnType.INTEGER, type);
 		
-		type = ColumnType.convertColumnType(Object.class);
+		type = ColumnTypeImpl.convertColumnType(Object.class);
 		assertEquals(ColumnType.OTHER, type);
 		
-		type = ColumnType.convertColumnType(Map.class);
+		type = ColumnTypeImpl.convertColumnType(Map.class);
 		assertEquals(ColumnType.MAP, type);
-		type = ColumnType.convertColumnType(HashMap.class);
+		type = ColumnTypeImpl.convertColumnType(HashMap.class);
 		assertEquals(ColumnType.MAP, type);
-		type = ColumnType.convertColumnType(TreeMap.class);
+		type = ColumnTypeImpl.convertColumnType(TreeMap.class);
 		assertEquals(ColumnType.MAP, type);
 		
-		type = ColumnType.convertColumnType(List.class);
+		type = ColumnTypeImpl.convertColumnType(List.class);
 		assertEquals(ColumnType.LIST, type);
-		type = ColumnType.convertColumnType(ArrayList.class);
+		type = ColumnTypeImpl.convertColumnType(ArrayList.class);
 		assertEquals(ColumnType.LIST, type);
-		type = ColumnType.convertColumnType(LinkedList.class);
+		type = ColumnTypeImpl.convertColumnType(LinkedList.class);
 		assertEquals(ColumnType.LIST, type);
 	}
 }

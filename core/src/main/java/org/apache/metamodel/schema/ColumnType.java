@@ -25,192 +25,108 @@ import static org.apache.metamodel.schema.SuperColumnType.NUMBER_TYPE;
 import static org.apache.metamodel.schema.SuperColumnType.OTHER_TYPE;
 import static org.apache.metamodel.schema.SuperColumnType.TIME_TYPE;
 
-import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Blob;
 import java.sql.Clob;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.metamodel.util.NumberComparator;
-import org.apache.metamodel.util.ObjectComparator;
-import org.apache.metamodel.util.TimeComparator;
-import org.apache.metamodel.util.ToStringComparator;
+import org.apache.metamodel.util.HasName;
 
 /**
- * Represents the data-type of columns. Most of the elements in this enum are
- * based on the JDBC {@link Types} class, but with a few additions.
+ * Represents the data-type of columns.
  */
-public enum ColumnType {
+public interface ColumnType extends HasName {
 
-    /**
+    /*
      * Literal
      */
-    CHAR(LITERAL_TYPE), VARCHAR(LITERAL_TYPE), LONGVARCHAR(LITERAL_TYPE), CLOB(LITERAL_TYPE), NCHAR(LITERAL_TYPE), NVARCHAR(
-            LITERAL_TYPE), LONGNVARCHAR(LITERAL_TYPE), NCLOB(LITERAL_TYPE),
+    public static final ColumnType CHAR = new ColumnTypeImpl("CHAR", LITERAL_TYPE);
+    public static final ColumnType VARCHAR = new ColumnTypeImpl("VARCHAR", LITERAL_TYPE);
+    public static final ColumnType LONGVARCHAR = new ColumnTypeImpl("LONGVARCHAR", LITERAL_TYPE);
+    public static final ColumnType CLOB = new ColumnTypeImpl("CLOB", LITERAL_TYPE, Clob.class);
+    public static final ColumnType NCHAR = new ColumnTypeImpl("NCHAR", LITERAL_TYPE);
+    public static final ColumnType NVARCHAR = new ColumnTypeImpl("NVARCHAR", LITERAL_TYPE);
+    public static final ColumnType LONGNVARCHAR = new ColumnTypeImpl("LONGNVARCHAR", LITERAL_TYPE);
+    public static final ColumnType NCLOB = new ColumnTypeImpl("NCLOB", LITERAL_TYPE, Clob.class);
 
-    /**
+    /*
      * Numbers
      */
-    TINYINT(NUMBER_TYPE), SMALLINT(NUMBER_TYPE), INTEGER(NUMBER_TYPE), BIGINT(NUMBER_TYPE), FLOAT(NUMBER_TYPE), REAL(
-            NUMBER_TYPE), DOUBLE(NUMBER_TYPE), NUMERIC(NUMBER_TYPE), DECIMAL(NUMBER_TYPE),
+    public static final ColumnType TINYINT = new ColumnTypeImpl("TINYINT", NUMBER_TYPE, Short.class);
+    public static final ColumnType SMALLINT = new ColumnTypeImpl("SMALLINT", NUMBER_TYPE, Short.class);
+    public static final ColumnType INTEGER = new ColumnTypeImpl("INTEGER", NUMBER_TYPE, Integer.class);
+    public static final ColumnType BIGINT = new ColumnTypeImpl("BIGINT", NUMBER_TYPE, BigInteger.class);
+    public static final ColumnType FLOAT = new ColumnTypeImpl("FLOAT", NUMBER_TYPE, Double.class);
+    public static final ColumnType REAL = new ColumnTypeImpl("REAL", NUMBER_TYPE, Double.class);
+    public static final ColumnType DOUBLE = new ColumnTypeImpl("DOUBLE", NUMBER_TYPE, Double.class);
+    public static final ColumnType NUMERIC = new ColumnTypeImpl("NUMERIC", NUMBER_TYPE, Double.class);
+    public static final ColumnType DECIMAL = new ColumnTypeImpl("DECIMAL", NUMBER_TYPE, Double.class);
 
-    /**
+    /*
      * Time based
      */
-    DATE(TIME_TYPE), TIME(TIME_TYPE), TIMESTAMP(TIME_TYPE),
+    public static final ColumnType DATE = new ColumnTypeImpl("DATE", TIME_TYPE);
+    public static final ColumnType TIME = new ColumnTypeImpl("TIME", TIME_TYPE);
+    public static final ColumnType TIMESTAMP = new ColumnTypeImpl("TIMESTAMP", TIME_TYPE);
 
-    /**
+    /*
      * Booleans
      */
-    BIT(BOOLEAN_TYPE), BOOLEAN(BOOLEAN_TYPE),
+    public static final ColumnType BIT = new ColumnTypeImpl("BIT", BOOLEAN_TYPE);
+    public static final ColumnType BOOLEAN = new ColumnTypeImpl("BOOLEAN", BOOLEAN_TYPE);
 
-    /**
+    /*
      * Binary types
      */
-    BINARY(BINARY_TYPE), VARBINARY(BINARY_TYPE), LONGVARBINARY(BINARY_TYPE), BLOB(BINARY_TYPE),
+    public static final ColumnType BINARY = new ColumnTypeImpl("BINARY", BINARY_TYPE);
+    public static final ColumnType VARBINARY = new ColumnTypeImpl("VARBINARY", BINARY_TYPE);
+    public static final ColumnType LONGVARBINARY = new ColumnTypeImpl("LONGVARBINARY", BINARY_TYPE);
+    public static final ColumnType BLOB = new ColumnTypeImpl("BLOB", BINARY_TYPE, Blob.class);
 
-    /**
+    /*
      * Other types (as defined in {@link Types}).
      */
-    NULL(OTHER_TYPE), OTHER(OTHER_TYPE), JAVA_OBJECT(OTHER_TYPE), DISTINCT(OTHER_TYPE), STRUCT(OTHER_TYPE), ARRAY(
-            OTHER_TYPE), REF(OTHER_TYPE), DATALINK(OTHER_TYPE), ROWID(OTHER_TYPE), SQLXML(OTHER_TYPE),
+    public static final ColumnType NULL = new ColumnTypeImpl("NULL", OTHER_TYPE);
+    public static final ColumnType OTHER = new ColumnTypeImpl("OTHER", OTHER_TYPE);
+    public static final ColumnType JAVA_OBJECT = new ColumnTypeImpl("JAVA_OBJECT", OTHER_TYPE);
+    public static final ColumnType DISTINCT = new ColumnTypeImpl("DISTINCT", OTHER_TYPE);
+    public static final ColumnType STRUCT = new ColumnTypeImpl("STRUCT", OTHER_TYPE);
+    public static final ColumnType ARRAY = new ColumnTypeImpl("ARRAY", OTHER_TYPE);
+    public static final ColumnType REF = new ColumnTypeImpl("REF", OTHER_TYPE);
+    public static final ColumnType DATALINK = new ColumnTypeImpl("DATALINK", OTHER_TYPE);
+    public static final ColumnType ROWID = new ColumnTypeImpl("ROWID", OTHER_TYPE);
+    public static final ColumnType SQLXML = new ColumnTypeImpl("SQLXML", OTHER_TYPE);
 
-    /**
+    /*
      * Additional types (added by MetaModel for non-JDBC datastores)
      */
-    LIST(OTHER_TYPE), MAP(OTHER_TYPE);
+    public static final ColumnType LIST = new ColumnTypeImpl("LIST", OTHER_TYPE, List.class);
+    public static final ColumnType MAP = new ColumnTypeImpl("MAP", OTHER_TYPE, Map.class);
 
-    private final SuperColumnType _superType;
+    public Comparator<Object> getComparator();
 
-    private ColumnType(SuperColumnType superType) {
-        if (superType == null) {
-            throw new IllegalArgumentException("SuperColumnType cannot be null");
-        }
-        _superType = superType;
-    }
+    public boolean isBoolean();
 
-    public Comparator<Object> getComparator() {
-        if (isTimeBased()) {
-            return TimeComparator.getComparator();
-        }
-        if (isNumber()) {
-            return NumberComparator.getComparator();
-        }
-        if (isLiteral()) {
-            return ToStringComparator.getComparator();
-        }
-        return ObjectComparator.getComparator();
-    }
+    public boolean isBinary();
 
-    public boolean isBoolean() {
-        return _superType == BOOLEAN_TYPE;
-    }
+    public boolean isNumber();
 
-    public boolean isBinary() {
-        return _superType == BINARY_TYPE;
-    }
+    public boolean isTimeBased();
 
-    public boolean isNumber() {
-        return _superType == NUMBER_TYPE;
-    }
+    public boolean isLiteral();
 
-    public boolean isTimeBased() {
-        return _superType == TIME_TYPE;
-    }
-
-    public boolean isLiteral() {
-        return _superType == LITERAL_TYPE;
-    }
-
-    public boolean isLargeObject() {
-        switch (this) {
-        case BLOB:
-        case CLOB:
-        case NCLOB:
-            return true;
-        default:
-            return false;
-        }
-    }
+    public boolean isLargeObject();
 
     /**
      * @return a java class that is appropriate for handling column values of
      *         this column type
      */
-    public Class<?> getJavaEquivalentClass() {
-        switch (this) {
-        case TINYINT:
-        case SMALLINT:
-            return Short.class;
-        case INTEGER:
-            return Integer.class;
-        case BIGINT:
-            return BigInteger.class;
-        case DECIMAL:
-        case NUMERIC:
-        case FLOAT:
-        case REAL:
-        case DOUBLE:
-            return Double.class;
-        case DATE:
-        case TIME:
-        case TIMESTAMP:
-            return Date.class;
-        case BLOB:
-            return Blob.class;
-        case CLOB:
-        case NCLOB:
-            return Clob.class;
-        case MAP:
-            return Map.class;
-        case LIST:
-            return List.class;
-        default:
-            // All other types have fitting java equivalent classes in the super
-            // type
-            return _superType.getJavaEquivalentClass();
-        }
-    }
+    public Class<?> getJavaEquivalentClass();
 
-    public SuperColumnType getSuperType() {
-        return _superType;
-    }
-
-    /**
-     * Finds the ColumnType enum corresponding to the incoming JDBC
-     * type-constant
-     */
-    public static ColumnType convertColumnType(int jdbcType) {
-        try {
-            Field[] fields = JdbcTypes.class.getFields();
-            // We assume that the JdbcTypes class only consists of constant
-            // integer types, so we make no assertions here
-            for (int i = 0; i < fields.length; i++) {
-                Field field = fields[i];
-                int value = (Integer) field.getInt(null);
-                if (value == jdbcType) {
-                    String fieldName = field.getName();
-                    ColumnType[] enumConstants = ColumnType.class.getEnumConstants();
-                    for (int j = 0; j < enumConstants.length; j++) {
-                        ColumnType columnType = enumConstants[j];
-                        if (fieldName.equals(columnType.toString())) {
-                            return columnType;
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not access fields in JdbcTypes", e);
-        }
-        return OTHER;
-    }
+    public SuperColumnType getSuperType();
 
     /**
      * Gets the JDBC type as per the {@link Types} class.
@@ -220,73 +136,5 @@ public enum ColumnType {
      * @throws IllegalStateException
      *             in case getting the JDBC type was unsuccesful.
      */
-    public int getJdbcType() throws IllegalStateException {
-        final String name = this.toString();
-        try {
-            // We assume that the JdbcTypes class only consists of constant
-            // integer types, so we make no assertions here
-            final Field[] fields = JdbcTypes.class.getFields();
-            for (int i = 0; i < fields.length; i++) {
-                Field field = fields[i];
-                String fieldName = field.getName();
-                if (fieldName.equals(name)) {
-                    int value = (Integer) field.getInt(null);
-                    return value;
-                }
-            }
-            throw new IllegalStateException("No JdbcType found with field name: " + name);
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not access fields in JdbcTypes", e);
-        }
-    }
-
-    /**
-     * Finds the ColumnType enum corresponding to the incoming Java class.
-     * 
-     * @param cls
-     * @return
-     */
-    public static ColumnType convertColumnType(Class<?> cls) {
-        if (cls == null) {
-            throw new IllegalArgumentException("Class cannot be null");
-        }
-
-        final ColumnType type;
-        if (cls == String.class) {
-            type = ColumnType.VARCHAR;
-        } else if (cls == Boolean.class || cls == boolean.class) {
-            type = ColumnType.BOOLEAN;
-        } else if (cls == Character.class || cls == char.class || cls == Character[].class || cls == char[].class) {
-            type = ColumnType.CHAR;
-        } else if (cls == Byte.class || cls == byte.class) {
-            type = ColumnType.TINYINT;
-        } else if (cls == Short.class || cls == short.class) {
-            type = ColumnType.SMALLINT;
-        } else if (cls == Integer.class || cls == int.class) {
-            type = ColumnType.INTEGER;
-        } else if (cls == Long.class || cls == long.class || cls == BigInteger.class) {
-            type = ColumnType.BIGINT;
-        } else if (cls == Float.class || cls == float.class) {
-            type = ColumnType.FLOAT;
-        } else if (cls == Double.class || cls == double.class) {
-            type = ColumnType.DOUBLE;
-        } else if (cls == BigDecimal.class) {
-            type = ColumnType.DECIMAL;
-        } else if (Map.class.isAssignableFrom(cls)) {
-            type = ColumnType.MAP;
-        } else if (List.class.isAssignableFrom(cls)) {
-            type = ColumnType.LIST;
-        } else if (cls == java.sql.Date.class) {
-            type = ColumnType.DATE;
-        } else if (cls == Timestamp.class) {
-            type = ColumnType.TIMESTAMP;
-        } else if (cls == Time.class) {
-            type = ColumnType.TIME;
-        } else if (Date.class.isAssignableFrom(cls)) {
-            type = ColumnType.TIMESTAMP;
-        } else {
-            type = ColumnType.OTHER;
-        }
-        return type;
-    }
+    public int getJdbcType() throws IllegalStateException;
 }
