@@ -88,6 +88,30 @@ public class CsvDataContextTest extends TestCase {
                 .readFileAsString(targetFile).replaceAll("\n", "!LINEBREAK!"));
     }
 
+    public void testHandlingOfEmptyLinesMultipleLinesSupport() throws Exception {
+        // test with multiline values
+        DataContext dc = new CsvDataContext(new File("src/test/resources/csv_with_empty_lines.csv"),
+                new CsvConfiguration(1, false, true));
+        testHandlingOfEmptyLines(dc);
+    }
+
+    public void testHandlingOfEmptyLinesSingleLinesSupport() throws Exception {
+        // test with only single line values
+        DataContext dc = new CsvDataContext(new File("src/test/resources/csv_with_empty_lines.csv"),
+                new CsvConfiguration(1, false, false));
+        testHandlingOfEmptyLines(dc);
+    }
+
+    public void testHandlingOfEmptyLines(DataContext dc) throws Exception {
+        DataSet ds = dc.query().from(dc.getDefaultSchema().getTable(0)).selectAll().execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[hello, world]]", ds.getRow().toString());
+        assertTrue(ds.next());
+        assertEquals("Row[values=[hi, there]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+    }
+
     public void testEmptyFileNoHeaderLine() throws Exception {
         DataContext dc = new CsvDataContext(new File("src/test/resources/empty_file.csv"), new CsvConfiguration(
                 CsvConfiguration.NO_COLUMN_NAME_LINE));

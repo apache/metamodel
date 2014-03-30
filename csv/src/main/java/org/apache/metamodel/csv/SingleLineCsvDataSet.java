@@ -107,6 +107,11 @@ final class SingleLineCsvDataSet extends AbstractDataSet {
                 return false;
             }
 
+            if ("".equals(line)) {
+                // blank line - move to next line
+                return nextInternal();
+            }
+
             _rowNumber++;
             _row = new SingleLineCsvRow(this, line, _columnsInTable, _failOnInconsistentRowLength, _rowNumber);
             return true;
