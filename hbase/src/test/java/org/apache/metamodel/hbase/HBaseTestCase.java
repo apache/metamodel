@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.salesforce;
+package org.apache.metamodel.hbase;
 
 import java.io.File;
 import java.io.FileReader;
@@ -24,17 +24,12 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
-/**
- * Abstract test case which consults an external .properties file for SFDC
- * credentials to execute the tests.
- */
-public abstract class SalesforceTestCase extends TestCase {
+public abstract class HBaseTestCase extends TestCase {
 
-    private String _username;
-    private String _password;
-    private String _securityToken;
+    private String zookeeperHostname;
+    private int zookeeperPort;
     private boolean _configured;
-
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -43,39 +38,37 @@ public abstract class SalesforceTestCase extends TestCase {
         File file = new File(getPropertyFilePath());
         if (file.exists()) {
             properties.load(new FileReader(file));
-            _username = properties.getProperty("salesforce.username");
-            _password = properties.getProperty("salesforce.password");
-            _securityToken = properties.getProperty("salesforce.securityToken");
+            zookeeperHostname = properties.getProperty("hbase.zookeeper.hostname");
+            String zookeeperPortPropertyValue = properties.getProperty("hbase.zookeeper.port");
+            if (zookeeperPortPropertyValue != null && !zookeeperPortPropertyValue.isEmpty()) {
+                zookeeperPort = Integer.parseInt(zookeeperPortPropertyValue);
+            }
             
-            _configured = (_username != null && !_username.isEmpty());
+            _configured = (zookeeperHostname != null && !zookeeperHostname.isEmpty());
         } else {
             _configured = false;
         }
     }
-
+    
     private String getPropertyFilePath() {
         String userHome = System.getProperty("user.home");
         return userHome + "/metamodel-integrationtest-configuration.properties";
     }
 
     protected String getInvalidConfigurationMessage() {
-        return "!!! WARN !!! Salesforce module ignored\r\n" + "Please configure salesforce credentials locally ("
+        return "!!! WARN !!! HBase module ignored\r\n" + "Please configure HBase properties locally ("
                 + getPropertyFilePath() + "), to run integration tests";
     }
 
     public boolean isConfigured() {
         return _configured;
     }
-
-    public String getUsername() {
-        return _username;
+    
+    public String getZookeeperHostname() {
+        return zookeeperHostname;
     }
 
-    public String getPassword() {
-        return _password;
-    }
-
-    public String getSecurityToken() {
-        return _securityToken;
+    public int getZookeeperPort() {
+        return zookeeperPort;
     }
 }

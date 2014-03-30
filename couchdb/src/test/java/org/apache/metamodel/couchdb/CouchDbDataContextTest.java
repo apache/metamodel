@@ -71,7 +71,7 @@ public class CouchDbDataContextTest extends TestCase {
             System.out.println("Running CouchDB integration tests");
             serverAvailable = true;
         } catch (DbAccessException e) {
-            System.out.println("!!! WARNING: Skipping CouchDB tests because local server is not available");
+            System.err.println("!!! WARNING: Skipping CouchDB tests because local server is not available");
             e.printStackTrace();
             serverAvailable = false;
         }
@@ -101,8 +101,9 @@ public class CouchDbDataContextTest extends TestCase {
 
         connector = couchDbInstance.createConnector("test_table_map_and_list", true);
 
-        final CouchDbDataContext dc = new CouchDbDataContext(couchDbInstance, new SimpleTableDef("test_table_map_and_list",
-                new String[] { "id", "foo", "bar" }, new ColumnType[] { ColumnType.INTEGER, ColumnType.MAP, ColumnType.LIST }));
+        final CouchDbDataContext dc = new CouchDbDataContext(couchDbInstance, new SimpleTableDef(
+                "test_table_map_and_list", new String[] { "id", "foo", "bar" }, new ColumnType[] { ColumnType.INTEGER,
+                        ColumnType.MAP, ColumnType.LIST }));
         Table table = null;
         try {
             table = dc.getTableByQualifiedLabel("test_table_map_and_list");
@@ -119,14 +120,13 @@ public class CouchDbDataContextTest extends TestCase {
 
             dc.executeUpdate(new InsertInto(table).value("id", 1).value("foo", exampleMap).value("bar", exampleList));
 
-            DataSet ds = dc.query().from(table).select("id","foo","bar").execute();
+            DataSet ds = dc.query().from(table).select("id", "foo", "bar").execute();
             assertTrue(ds.next());
             Row row = ds.getRow();
             assertFalse(ds.next());
             ds.close();
 
-            assertEquals(
-                    "Row[values=[1, {hello=[world, welt, verden], foo=bar}, [{}, {meta=model, couch=db}]]]",
+            assertEquals("Row[values=[1, {hello=[world, welt, verden], foo=bar}, [{}, {meta=model, couch=db}]]]",
                     row.toString());
             assertTrue(row.getValue(0) instanceof Integer);
             assertTrue(row.getValue(1) instanceof Map);
@@ -241,8 +241,8 @@ public class CouchDbDataContextTest extends TestCase {
                 idColumn.toString());
         assertTrue(idColumn.isPrimaryKey());
 
-        assertEquals("Column[name=_rev,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]", schema
-                .getTableByName(TEST_DATABASE_NAME).getColumnByName("_rev").toString());
+        assertEquals("Column[name=_rev,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]",
+                schema.getTableByName(TEST_DATABASE_NAME).getColumnByName("_rev").toString());
 
         DataSet ds;
 
