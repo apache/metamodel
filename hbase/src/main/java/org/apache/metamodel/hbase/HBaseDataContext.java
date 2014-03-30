@@ -182,7 +182,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
     }
 
     @Override
-    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Object keyValue) {
+    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn, Object keyValue) {
         HTableInterface hTable = _tablePool.getTable(table.getName());
         Get get = new Get(ByteUtils.toBytes(keyValue));
         try {
@@ -191,7 +191,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
             Row row = new HBaseRow(header, result);
             return row;
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to execute HBase get operation with key: " + keyValue, e);
+            throw new IllegalStateException("Failed to execute HBase get operation with " + primaryKeyColumn.getName() + " = " + keyValue, e);
         } finally {
             FileHelper.safeClose(hTable);
         }

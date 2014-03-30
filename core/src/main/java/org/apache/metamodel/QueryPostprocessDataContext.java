@@ -135,7 +135,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
                             if (table != null) {
                                 if (isMainSchemaTable(table)) {
                                     final Object operand = whereItem.getOperand();
-                                    final Row row = executePrimaryKeyLookupQuery(table, selectItems, operand);
+                                    final Row row = executePrimaryKeyLookupQuery(table, selectItems, column, operand);
                                     if (row == null) {
                                         logger.debug("DataContext did not return any GET query results. Proceeding with manual lookup.");
                                     } else {
@@ -247,11 +247,13 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
      *            the table on which the lookup is requested.
      * @param selectItems
      *            the items to select from the lookup query.
+     * @param primaryKeyColumn
+     *            the column that is the primary key
      * @param keyValue
      *            the primary key value that is specified in the lookup query.
      * @return the row if the particular table, or null if not available.
      */
-    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Object keyValue) {
+    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn, Object keyValue) {
         return null;
     }
 

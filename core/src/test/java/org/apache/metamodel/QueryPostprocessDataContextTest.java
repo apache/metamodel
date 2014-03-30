@@ -880,7 +880,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
             }
 
             @Override
-            protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Object keyValue) {
+            protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn, Object keyValue) {
                 assertEquals("foo", keyValue);
                 return new DefaultRow(new SimpleDataSetHeader(selectItems), new Object[] { "hello world" });
             }

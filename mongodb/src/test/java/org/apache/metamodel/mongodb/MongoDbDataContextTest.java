@@ -161,7 +161,8 @@ public class MongoDbDataContextTest extends TestCase {
             // Instantiate the actual data context
             final DataContext dataContext = new MongoDbDataContext(db);
 
-            assertEquals("[my_collection, system.indexes]", Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
+            assertEquals("[my_collection, system.indexes]",
+                    Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
             Table table = dataContext.getDefaultSchema().getTableByName("my_collection");
             assertEquals("[_id, baz, foo, id, list, name]", Arrays.toString(table.getColumnNames()));
 
@@ -171,29 +172,32 @@ public class MongoDbDataContextTest extends TestCase {
             assertEquals(ColumnType.INTEGER, table.getColumnByName("id").getType());
             assertEquals(ColumnType.ROWID, table.getColumnByName("_id").getType());
 
-            DataSet ds = dataContext.query().from("my_collection").select("name").and("foo").and("baz").and("list").where("id")
-                    .greaterThan(800).or("foo").isEquals("bar").execute();
+            DataSet ds = dataContext.query().from("my_collection").select("name").and("foo").and("baz").and("list")
+                    .where("id").greaterThan(800).or("foo").isEquals("bar").execute();
             assertEquals(MongoDbDataSet.class, ds.getClass());
             assertFalse(((MongoDbDataSet) ds).isQueryPostProcessed());
             try {
                 assertTrue(ds.next());
-                assertEquals("Row[values=[record no. 0, bar, {count=0, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 0]]]",
-                        ds.getRow().toString());
-
-                assertTrue(ds.next());
-                assertEquals("Row[values=[record no. 5, bar, {count=5, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 5]]]",
+                assertEquals(
+                        "Row[values=[record no. 0, bar, {count=0, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 0]]]",
                         ds.getRow().toString());
 
                 assertTrue(ds.next());
                 assertEquals(
-                        "Row[values=[record no. 10, bar, {count=10, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 10]]]", ds
-                                .getRow().toString());
+                        "Row[values=[record no. 5, bar, {count=5, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 5]]]",
+                        ds.getRow().toString());
+
+                assertTrue(ds.next());
+                assertEquals(
+                        "Row[values=[record no. 10, bar, {count=10, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 10]]]",
+                        ds.getRow().toString());
 
                 for (int j = 15; j < 801; j++) {
                     if (j % 5 == 0) {
                         assertTrue(ds.next());
                         assertEquals("Row[values=[record no. " + j + ", bar, {count=" + j
-                                + ", constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , " + j + "]]]", ds.getRow().toString());
+                                + ", constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , " + j + "]]]", ds.getRow()
+                                .toString());
                     }
                 }
 
@@ -201,7 +205,8 @@ public class MongoDbDataContextTest extends TestCase {
                 assertTrue(ds.getRow().getValue(2) instanceof Map);
                 assertEquals(LinkedHashMap.class, ds.getRow().getValue(2).getClass());
 
-                assertTrue("unexpected type: " + ds.getRow().getValue(3).getClass(), ds.getRow().getValue(3) instanceof List);
+                assertTrue("unexpected type: " + ds.getRow().getValue(3).getClass(),
+                        ds.getRow().getValue(3) instanceof List);
                 assertEquals(BasicDBList.class, ds.getRow().getValue(3).getClass());
 
                 assertEquals(
@@ -235,7 +240,8 @@ public class MongoDbDataContextTest extends TestCase {
                 ds.close();
             }
 
-            ds = dataContext.query().from("my_collection").select("id").and("name").where("id").in(2, 6, 8, 9).execute();
+            ds = dataContext.query().from("my_collection").select("id").and("name").where("id").in(2, 6, 8, 9)
+                    .execute();
             assertTrue(ds.next());
             assertEquals("Row[values=[2, record no. 2]]", ds.getRow().toString());
             assertTrue(ds.next());
@@ -247,7 +253,8 @@ public class MongoDbDataContextTest extends TestCase {
             assertFalse(ds.next());
             ds.close();
 
-            ds = dataContext.query().from("my_collection").select("id").and("name").where("foo").isEquals("bar").execute();
+            ds = dataContext.query().from("my_collection").select("id").and("name").where("foo").isEquals("bar")
+                    .execute();
             assertEquals(MongoDbDataSet.class, ds.getClass());
             assertFalse(((MongoDbDataSet) ds).isQueryPostProcessed());
 
@@ -259,10 +266,30 @@ public class MongoDbDataContextTest extends TestCase {
                 ds.close();
             }
 
+            // test a primary key lookup query
+            BasicDBObject dbRow = new BasicDBObject();
+            dbRow.put("_id", 123456);
+            dbRow.put("id", 123456);
+            dbRow.put("name", "record no. " + 123456);
+            dbRow.put("foo", "bar123456");
+            BasicDBObject nestedObj = new BasicDBObject();
+            nestedObj.put("count", 123456);
+            nestedObj.put("constant", "foobarbaz");
+            dbRow.put("baz", nestedObj);
+
+            dbRow.put("list", Arrays.<Object> asList("l1", "l2", "l3", 123456));
+
+            col.insert(dbRow);
+
+            ds = dataContext.query().from("my_collection").select("id").and("name").where("_id").eq(123456).execute();
+            assertTrue(ds.next());
+            assertEquals("Row[values=[123456, record no. 123456]]", ds.getRow().toString());
+            assertFalse(ds.next());
+
             // do a query that we cannot push to mongo
             ds = dataContext.query().from("my_collection")
-                    .select(FunctionType.SUM, dataContext.getDefaultSchema().getTables()[0].getColumnByName("id")).where("foo")
-                    .isEquals("bar").execute();
+                    .select(FunctionType.SUM, dataContext.getDefaultSchema().getTables()[0].getColumnByName("id"))
+                    .where("foo").isEquals("bar").execute();
             assertEquals(InMemoryDataSet.class, ds.getClass());
 
             ds.close();
@@ -290,8 +317,8 @@ public class MongoDbDataContextTest extends TestCase {
 
                 @Override
                 public void run(UpdateCallback callback) {
-                    Table table = callback.createTable(defaultSchema, "some_entries").withColumn("foo").withColumn("bar")
-                            .withColumn("baz").withColumn("list").execute();
+                    Table table = callback.createTable(defaultSchema, "some_entries").withColumn("foo")
+                            .withColumn("bar").withColumn("baz").withColumn("list").execute();
 
                     callback.insertInto(table).value("foo", 1).value("bar", "hello").execute();
                     callback.insertInto(table).value("foo", 2).value("bar", "world").execute();

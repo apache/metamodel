@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.mongodb;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -25,24 +26,30 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.bson.types.ObjectId;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetHeader;
+import org.apache.metamodel.data.InMemoryDataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -206,6 +213,12 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
             for (SimpleTableDef tableDef : _tableDefs) {
 
                 MutableTable table = tableDef.toTable().setSchema(schema);
+                Column[] rowIdColumns = table.getColumnsOfType(ColumnType.ROWID);
+                for (Column column : rowIdColumns) {
+                    if (column instanceof MutableColumn) {
+                        ((MutableColumn) column).setPrimaryKey(true);
+                    }
+                }
 
                 schema.addTable(table);
             }
@@ -233,17 +246,37 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     @Override
+    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn, Object keyValue) {
+        final DBCollection collection = _mongoDb.getCollection(table.getName());
+
+        List<FilterItem> whereItems = new ArrayList<FilterItem>();
+        SelectItem selectItem = new SelectItem(primaryKeyColumn);
+        FilterItem primaryKeyWhereItem = new FilterItem(selectItem, OperatorType.EQUALS_TO, keyValue);
+        whereItems.add(primaryKeyWhereItem);
+        final DBObject query = createMongoDbQuery(table, whereItems);
+        final DBObject resultDBObject = collection.findOne(query);
+
+        DataSetHeader header = new SimpleDataSetHeader(selectItems);
+
+        Row row = MongoDBUtils.toRow(resultDBObject, header);
+
+        return row;
+    }
+
+    @Override
     public DataSet executeQuery(Query query) {
         // Check for queries containing only simple selects and where clauses,
         // or if it is a COUNT(*) query.
 
         // if from clause only contains a main schema table
         List<FromItem> fromItems = query.getFromClause().getItems();
-        if (fromItems.size() == 1 && fromItems.get(0).getTable() != null && fromItems.get(0).getTable().getSchema() == _schema) {
+        if (fromItems.size() == 1 && fromItems.get(0).getTable() != null
+                && fromItems.get(0).getTable().getSchema() == _schema) {
             final Table table = fromItems.get(0).getTable();
 
             // if GROUP BY, HAVING and ORDER BY clauses are not specified
-            if (query.getGroupByClause().isEmpty() && query.getHavingClause().isEmpty() && query.getOrderByClause().isEmpty()) {
+            if (query.getGroupByClause().isEmpty() && query.getHavingClause().isEmpty()
+                    && query.getOrderByClause().isEmpty()) {
 
                 final List<FilterItem> whereItems = query.getWhereClause().getItems();
 
@@ -270,11 +303,31 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                         columns[i] = selectItems.get(i).getColumn();
                     }
 
+                    // checking if the query is a primary key lookup query
+                    if (whereItems.size() == 1) {
+                        final FilterItem whereItem = whereItems.get(0);
+                        final SelectItem selectItem = whereItem.getSelectItem();
+                        if (!whereItem.isCompoundFilter() && selectItem != null && selectItem.getColumn() != null) {
+                            final Column column = selectItem.getColumn();
+                            if (column.isPrimaryKey() && whereItem.getOperator() == OperatorType.EQUALS_TO) {
+                                logger.debug("Query is a primary key lookup query. Trying executePrimaryKeyLookupQuery(...)");
+                                final Object operand = whereItem.getOperand();
+                                final Row row = executePrimaryKeyLookupQuery(table, selectItems, column, operand);
+                                if (row == null) {
+                                    logger.debug("DataContext did not return any primary key lookup query results. Proceeding with manual lookup.");
+                                } else {
+                                    final DataSetHeader header = new SimpleDataSetHeader(selectItems);
+                                    return new InMemoryDataSet(header, row);
+                                }
+                            }
+                        }
+                    }
+
                     int firstRow = (query.getFirstRow() == null ? 1 : query.getFirstRow());
                     int maxRows = (query.getMaxRows() == null ? -1 : query.getMaxRows());
 
-                    final DataSet dataSet = materializeMainSchemaTableInternal(table, columns, whereItems, firstRow, maxRows,
-                            false);
+                    final DataSet dataSet = materializeMainSchemaTableInternal(table, columns, whereItems, firstRow,
+                            maxRows, false);
                     return dataSet;
                 }
             }
@@ -284,8 +337,8 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
         return super.executeQuery(query);
     }
 
-    private DataSet materializeMainSchemaTableInternal(Table table, Column[] columns, List<FilterItem> whereItems, int firstRow,
-            int maxRows, boolean queryPostProcessed) {
+    private DataSet materializeMainSchemaTableInternal(Table table, Column[] columns, List<FilterItem> whereItems,
+            int firstRow, int maxRows, boolean queryPostProcessed) {
         final DBCollection collection = _mongoDb.getCollection(table.getName());
 
         final DBObject query = createMongoDbQuery(table, whereItems);
