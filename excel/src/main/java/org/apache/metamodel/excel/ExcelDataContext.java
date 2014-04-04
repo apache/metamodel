@@ -147,6 +147,10 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
         try {
             SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate(inputStreamRef);
             inputStream = inputStreamRef.get();
+            
+            // METAMODEL-47: Ensure that we have loaded the schema at this point
+            getDefaultSchema();
+            
             DataSet dataSet = delegate.executeQuery(inputStream, table, columns, maxRows);
             return dataSet;
         } catch (Exception e) {

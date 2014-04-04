@@ -30,8 +30,6 @@ import org.slf4j.LoggerFactory;
  * instead allows a publshing action to publish rows to the dataset in a
  * blocking manner, and thereby to adapt without having to load all rows into
  * memory.
- * 
- * @author Kasper Sørensen
  */
 public final class RowPublisherDataSet extends AbstractDataSet {
 
@@ -59,7 +57,10 @@ public final class RowPublisherDataSet extends AbstractDataSet {
 	public void close() {
 		super.close();
 		_closed = true;
-		_rowPublisher.finished();
+		if (_rowPublisher != null) {
+		    _rowPublisher.finished();
+		    _rowPublisher = null;
+		}
 	}
 
 	@Override

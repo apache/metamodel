@@ -50,8 +50,6 @@ import org.xml.sax.XMLReader;
  * {@link SpreadsheetReaderDelegate} implementation for the "new" XLSX format.
  * This implementation is very efficient as it uses SAX XML parsing which does
  * not bloat memory usage in the same way that POI's user model does.
- * 
- * @author Kasper Sørensen
  */
 final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
 

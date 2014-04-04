@@ -43,8 +43,6 @@ import org.slf4j.LoggerFactory;
 /**
  * The default {@link SpreadsheetReaderDelegate}, which uses POI's main user
  * model to read spreadsheets: the Workbook class.
- * 
- * @author Kasper Sørensen
  */
 final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
 
