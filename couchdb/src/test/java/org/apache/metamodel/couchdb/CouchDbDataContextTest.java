@@ -25,13 +25,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
-import org.ektorp.CouchDbConnector;
-import org.ektorp.DbAccessException;
-import org.ektorp.http.HttpClient;
-import org.ektorp.http.StdHttpClient;
-import org.ektorp.impl.StdCouchDbInstance;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.data.DataSet;
@@ -43,12 +36,12 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.ektorp.CouchDbConnector;
+import org.ektorp.http.HttpClient;
+import org.ektorp.http.StdHttpClient;
+import org.ektorp.impl.StdCouchDbInstance;
 
-public class CouchDbDataContextTest extends TestCase {
-
-    private static final String TEST_DATABASE_NAME = "eobjects_metamodel_test";
-
-    private boolean serverAvailable;
+public class CouchDbDataContextTest extends CouchDbTestCase {
 
     private HttpClient httpClient;
     private StdCouchDbInstance couchDbInstance;
@@ -58,27 +51,24 @@ public class CouchDbDataContextTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        httpClient = new StdHttpClient.Builder().host("localhost").build();
 
-        // set up a simple database
-        couchDbInstance = new StdCouchDbInstance(httpClient);
+        if (isConfigured()) {
+            httpClient = new StdHttpClient.Builder().host(getHostname()).build();
 
-        try {
-            if (couchDbInstance.getAllDatabases().contains(TEST_DATABASE_NAME)) {
-                throw new IllegalStateException("Couch DB instance already has a database called " + TEST_DATABASE_NAME);
+            // set up a simple database
+            couchDbInstance = new StdCouchDbInstance(httpClient);
+
+            final String databaseName = getDatabaseName();
+            if (couchDbInstance.getAllDatabases().contains(databaseName)) {
+                throw new IllegalStateException("Couch DB instance already has a database called " + databaseName);
             }
-            connector = couchDbInstance.createConnector(TEST_DATABASE_NAME, true);
-            System.out.println("Running CouchDB integration tests");
-            serverAvailable = true;
-        } catch (DbAccessException e) {
-            System.err.println("!!! WARNING: Skipping CouchDB tests because local server is not available");
-            e.printStackTrace();
-            serverAvailable = false;
+            connector = couchDbInstance.createConnector(databaseName, true);
+
+            final String[] columnNames = new String[] { "name", "gender", "age" };
+            final ColumnType[] columnTypes = new ColumnType[] { ColumnType.VARCHAR, ColumnType.CHAR, ColumnType.INTEGER };
+            predefinedTableDef = new SimpleTableDef(databaseName, columnNames, columnTypes);
         }
 
-        final String[] columnNames = new String[] { "name", "gender", "age" };
-        final ColumnType[] columnTypes = new ColumnType[] { ColumnType.VARCHAR, ColumnType.CHAR, ColumnType.INTEGER };
-        predefinedTableDef = new SimpleTableDef(TEST_DATABASE_NAME, columnNames, columnTypes);
     }
 
     @Override
@@ -87,15 +77,16 @@ public class CouchDbDataContextTest extends TestCase {
 
         connector = null;
 
-        if (serverAvailable) {
-            couchDbInstance.deleteDatabase(TEST_DATABASE_NAME);
-        }
+        if (isConfigured()) {
+            couchDbInstance.deleteDatabase(getDatabaseName());
 
-        httpClient.shutdown();
+            httpClient.shutdown();
+        }
     }
 
     public void testWorkingWithMapsAndLists() throws Exception {
-        if (!serverAvailable) {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
             return;
         }
 
@@ -139,7 +130,8 @@ public class CouchDbDataContextTest extends TestCase {
     }
 
     public void testCreateUpdateDeleteScenario() throws Exception {
-        if (!serverAvailable) {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
             return;
         }
 
@@ -149,16 +141,16 @@ public class CouchDbDataContextTest extends TestCase {
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                callback.dropTable(TEST_DATABASE_NAME).execute();
+                callback.dropTable(getDatabaseName()).execute();
             }
         });
 
-        assertNull(dc.getDefaultSchema().getTableByName(TEST_DATABASE_NAME));
+        assertNull(dc.getDefaultSchema().getTableByName(getDatabaseName()));
 
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                Table table = callback.createTable(dc.getDefaultSchema(), TEST_DATABASE_NAME).withColumn("foo")
+                Table table = callback.createTable(dc.getDefaultSchema(), getDatabaseName()).withColumn("foo")
                         .ofType(ColumnType.VARCHAR).withColumn("greeting").ofType(ColumnType.VARCHAR).execute();
                 assertEquals("[_id, _rev, foo, greeting]", Arrays.toString(table.getColumnNames()));
             }
@@ -167,12 +159,12 @@ public class CouchDbDataContextTest extends TestCase {
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                callback.insertInto(TEST_DATABASE_NAME).value("foo", "bar").value("greeting", "hello").execute();
-                callback.insertInto(TEST_DATABASE_NAME).value("foo", "baz").value("greeting", "hi").execute();
+                callback.insertInto(getDatabaseName()).value("foo", "bar").value("greeting", "hello").execute();
+                callback.insertInto(getDatabaseName()).value("foo", "baz").value("greeting", "hi").execute();
             }
         });
 
-        DataSet ds = dc.query().from(TEST_DATABASE_NAME).select("_id", "foo", "greeting").execute();
+        DataSet ds = dc.query().from(getDatabaseName()).select("_id", "foo", "greeting").execute();
         assertTrue(ds.next());
         assertNotNull(ds.getRow().getValue(0));
         assertEquals("bar", ds.getRow().getValue(1));
@@ -187,13 +179,13 @@ public class CouchDbDataContextTest extends TestCase {
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                callback.update(TEST_DATABASE_NAME).value("greeting", "howdy").where("foo").isEquals("baz").execute();
+                callback.update(getDatabaseName()).value("greeting", "howdy").where("foo").isEquals("baz").execute();
 
-                callback.update(TEST_DATABASE_NAME).value("foo", "foo").where("foo").isEquals("bar").execute();
+                callback.update(getDatabaseName()).value("foo", "foo").where("foo").isEquals("bar").execute();
             }
         });
 
-        ds = dc.query().from(TEST_DATABASE_NAME).select("_id", "foo", "greeting").execute();
+        ds = dc.query().from(getDatabaseName()).select("_id", "foo", "greeting").execute();
         assertTrue(ds.next());
         assertNotNull(ds.getRow().getValue(0));
         assertEquals("foo", ds.getRow().getValue(1));
@@ -207,7 +199,8 @@ public class CouchDbDataContextTest extends TestCase {
     }
 
     public void testBasicQuery() throws Exception {
-        if (!serverAvailable) {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
             return;
         }
 
@@ -232,21 +225,21 @@ public class CouchDbDataContextTest extends TestCase {
 
         // verify schema and execute query
         Schema schema = dc.getMainSchema();
-        assertEquals("[eobjects_metamodel_test]", Arrays.toString(schema.getTableNames()));
+        assertEquals("[" + getDatabaseName() + "]", Arrays.toString(schema.getTableNames()));
 
         assertEquals("[_id, _rev, age, gender, name]",
-                Arrays.toString(schema.getTableByName(TEST_DATABASE_NAME).getColumnNames()));
-        Column idColumn = schema.getTableByName(TEST_DATABASE_NAME).getColumnByName("_id");
+                Arrays.toString(schema.getTableByName(getDatabaseName()).getColumnNames()));
+        Column idColumn = schema.getTableByName(getDatabaseName()).getColumnByName("_id");
         assertEquals("Column[name=_id,columnNumber=0,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]",
                 idColumn.toString());
         assertTrue(idColumn.isPrimaryKey());
 
         assertEquals("Column[name=_rev,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]",
-                schema.getTableByName(TEST_DATABASE_NAME).getColumnByName("_rev").toString());
+                schema.getTableByName(getDatabaseName()).getColumnByName("_rev").toString());
 
         DataSet ds;
 
-        ds = dc.query().from(TEST_DATABASE_NAME).select("name").and("age").execute();
+        ds = dc.query().from(getDatabaseName()).select("name").and("age").execute();
         assertTrue(ds.next());
         assertEquals("Row[values=[John Doe, 30]]", ds.getRow().toString());
         assertTrue(ds.next());
@@ -254,7 +247,7 @@ public class CouchDbDataContextTest extends TestCase {
         assertFalse(ds.next());
         ds.close();
 
-        ds = dc.query().from(TEST_DATABASE_NAME).select("name").and("gender").where("age").isNull().execute();
+        ds = dc.query().from(getDatabaseName()).select("name").and("gender").where("age").isNull().execute();
         assertTrue(ds.next());
         assertEquals("Row[values=[Jane Doe, F]]", ds.getRow().toString());
         assertFalse(ds.next());
@@ -262,7 +255,8 @@ public class CouchDbDataContextTest extends TestCase {
     }
 
     public void testFirstRowAndLastRow() throws Exception {
-        if (!serverAvailable) {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
             return;
         }
 
@@ -285,8 +279,8 @@ public class CouchDbDataContextTest extends TestCase {
         SimpleTableDef tableDef = CouchDbDataContext.detectTable(connector);
         CouchDbDataContext dc = new CouchDbDataContext(couchDbInstance, tableDef);
 
-        DataSet ds1 = dc.query().from(TEST_DATABASE_NAME).select("name").and("age").firstRow(2).execute();
-        DataSet ds2 = dc.query().from(TEST_DATABASE_NAME).select("name").and("age").maxRows(1).execute();
+        DataSet ds1 = dc.query().from(getDatabaseName()).select("name").and("age").firstRow(2).execute();
+        DataSet ds2 = dc.query().from(getDatabaseName()).select("name").and("age").maxRows(1).execute();
 
         assertTrue("Class: " + ds1.getClass().getName(), ds1 instanceof CouchDbDataSet);
         assertTrue("Class: " + ds2.getClass().getName(), ds2 instanceof CouchDbDataSet);
@@ -308,13 +302,14 @@ public class CouchDbDataContextTest extends TestCase {
     }
 
     public void testInsert() throws Exception {
-        if (!serverAvailable) {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
             return;
         }
 
         // create datacontext using predefined table def
         CouchDbDataContext dc = new CouchDbDataContext(httpClient, predefinedTableDef);
-        Table table = dc.getTableByQualifiedLabel(TEST_DATABASE_NAME);
+        Table table = dc.getTableByQualifiedLabel(getDatabaseName());
         assertNotNull(table);
 
         assertEquals("[_id, _rev, name, gender, age]", Arrays.toString(table.getColumnNames()));
@@ -322,7 +317,7 @@ public class CouchDbDataContextTest extends TestCase {
         DataSet ds;
 
         // assert not rows in DB
-        ds = dc.query().from(TEST_DATABASE_NAME).selectCount().execute();
+        ds = dc.query().from(getDatabaseName()).selectCount().execute();
         assertTrue(ds.next());
         assertEquals(0, ((Number) ds.getRow().getValue(0)).intValue());
         assertFalse(ds.next());
@@ -331,19 +326,19 @@ public class CouchDbDataContextTest extends TestCase {
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                callback.insertInto(TEST_DATABASE_NAME).value("name", "foo").value("gender", 'M').execute();
-                callback.insertInto(TEST_DATABASE_NAME).value("name", "bar").value("age", 32).execute();
+                callback.insertInto(getDatabaseName()).value("name", "foo").value("gender", 'M').execute();
+                callback.insertInto(getDatabaseName()).value("name", "bar").value("age", 32).execute();
             }
         });
 
         // now count should be 2
-        ds = dc.query().from(TEST_DATABASE_NAME).selectCount().execute();
+        ds = dc.query().from(getDatabaseName()).selectCount().execute();
         assertTrue(ds.next());
         assertEquals(2, ((Number) ds.getRow().getValue(0)).intValue());
         assertFalse(ds.next());
         ds.close();
 
-        ds = dc.query().from(TEST_DATABASE_NAME).select("name", "gender", "age").execute();
+        ds = dc.query().from(getDatabaseName()).select("name", "gender", "age").execute();
         assertTrue(ds.next());
         assertEquals("Row[values=[foo, M, null]]", ds.getRow().toString());
         assertTrue(ds.next());
