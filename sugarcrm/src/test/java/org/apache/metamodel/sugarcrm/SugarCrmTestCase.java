@@ -41,18 +41,24 @@ public abstract class SugarCrmTestCase extends TestCase {
 
         Properties properties = new Properties();
         File file = new File(getPropertyFilePath());
-        _configured = file.exists();
-        if (_configured) {
+        if (file.exists()) {
             properties.load(new FileReader(file));
-            _username = properties.getProperty("username");
-            _password = properties.getProperty("password");
-            _numberOfAccounts = Integer.parseInt(properties.getProperty("number_of_accounts"));
+            _username = properties.getProperty("sugarcrm.username");
+            _password = properties.getProperty("sugarcrm.password");
+            String numberOfAccountsPropertyValue = properties.getProperty("sugarcrm.numberOfAccounts");
+            if (numberOfAccountsPropertyValue != null && !numberOfAccountsPropertyValue.isEmpty()) {
+                _numberOfAccounts = Integer.parseInt(numberOfAccountsPropertyValue);
+            }
+            
+            _configured = (_username != null && !_username.isEmpty());
+        } else {
+            _configured = false;
         }
     }
 
     private String getPropertyFilePath() {
         String userHome = System.getProperty("user.home");
-        return userHome + "/sugarcrm-credentials.properties";
+        return userHome + "/metamodel-integrationtest-configuration.properties";
     }
     
     public int getNumberOfAccounts() {

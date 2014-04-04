@@ -27,15 +27,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.codehaus.jackson.JsonNode;
-import org.ektorp.CouchDbConnector;
-import org.ektorp.CouchDbInstance;
-import org.ektorp.StreamingViewResult;
-import org.ektorp.ViewQuery;
-import org.ektorp.ViewResult.Row;
-import org.ektorp.http.HttpClient;
-import org.ektorp.http.StdHttpClient;
-import org.ektorp.impl.StdCouchDbInstance;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.QueryPostprocessDataContext;
@@ -51,11 +42,25 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.codehaus.jackson.JsonNode;
+import org.ektorp.CouchDbConnector;
+import org.ektorp.CouchDbInstance;
+import org.ektorp.DbAccessException;
+import org.ektorp.StreamingViewResult;
+import org.ektorp.ViewQuery;
+import org.ektorp.ViewResult.Row;
+import org.ektorp.http.HttpClient;
+import org.ektorp.http.StdHttpClient;
+import org.ektorp.impl.StdCouchDbInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DataContext implementation for CouchDB
  */
 public class CouchDbDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
+    
+    private static final Logger logger = LoggerFactory.getLogger(CouchDbDataContext.class);
 
     public static final int DEFAULT_PORT = 5984;
 
@@ -118,7 +123,7 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
                 .limit(1000));
         try {
             final Iterator<Row> rowIterator = streamingView.iterator();
-            while (rowIterator.hasNext()) {
+            while (safeHasNext(rowIterator)) {
                 Row row = rowIterator.next();
                 JsonNode doc = row.getDocAsNode();
 
@@ -182,6 +187,15 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
 
         final SimpleTableDef tableDef = new SimpleTableDef(connector.getDatabaseName(), columnNames, columnTypes);
         return tableDef;
+    }
+
+    private static boolean safeHasNext(Iterator<Row> rowIterator) {
+        try {
+            return rowIterator.hasNext();
+        } catch (DbAccessException e) {
+            logger.warn("Failed to move to next row while detecting table", e);
+            return false;
+        }
     }
 
     public CouchDbInstance getCouchDbInstance() {

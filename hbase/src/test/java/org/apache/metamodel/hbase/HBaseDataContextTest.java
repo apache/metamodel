@@ -20,8 +20,6 @@ package org.apache.metamodel.hbase;
 
 import java.util.Arrays;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
@@ -33,23 +31,31 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
 
-public class HBaseDataContextTest extends TestCase {
+public class HBaseDataContextTest extends HBaseTestCase {
 
     private static final String EXAMPLE_TABLE_NAME = "table_for_junit";
-
-    private final String hostname = HBaseConfiguration.DEFAULT_ZOOKEEPER_HOSTNAME;
-    private final int port = HBaseConfiguration.DEFAULT_ZOOKEEPER_PORT;
 
     private HBaseDataContext _dataContext;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        _dataContext = new HBaseDataContext(new HBaseConfiguration(hostname, port, ColumnType.VARCHAR));
-        createTableNatively();
+        if (isConfigured()) {
+            final String zookeeperHostname = getZookeeperHostname();
+            final int zookeeperPort = getZookeeperPort();
+            final HBaseConfiguration configuration = new HBaseConfiguration(zookeeperHostname, zookeeperPort,
+                    ColumnType.VARCHAR);
+            _dataContext = new HBaseDataContext(configuration);
+            createTableNatively();
+        }
     }
 
     public void testCreateInsertQueryAndDrop() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
         // test the schema exploration
         final Table table = _dataContext.getDefaultSchema().getTableByName(EXAMPLE_TABLE_NAME);
         assertNotNull(table);
@@ -80,8 +86,8 @@ public class HBaseDataContextTest extends TestCase {
         final ColumnType[] columnTypes = new ColumnType[] { ColumnType.MAP, ColumnType.VARCHAR, ColumnType.VARCHAR };
         final SimpleTableDef[] tableDefinitions = new SimpleTableDef[] { new SimpleTableDef(EXAMPLE_TABLE_NAME,
                 columnNames, columnTypes) };
-        _dataContext = new HBaseDataContext(new HBaseConfiguration("SCH", hostname, port, tableDefinitions,
-                ColumnType.VARCHAR));
+        _dataContext = new HBaseDataContext(new HBaseConfiguration("SCH", getZookeeperHostname(), getZookeeperPort(),
+                tableDefinitions, ColumnType.VARCHAR));
 
         final DataSet dataSet2 = _dataContext.query().from(EXAMPLE_TABLE_NAME).select("foo", "bar:hi", "bar:hey")
                 .execute();
@@ -131,8 +137,6 @@ public class HBaseDataContextTest extends TestCase {
         } finally {
             dataSet5.close();
         }
-
-        // TODO: Check if really GET was used instead of SCAN
     }
 
     private void insertRecordsNatively() throws Exception {
