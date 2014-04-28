@@ -1,14 +1,13 @@
-(work in progress)
+Apache MetaModel 4.1.0-incubating
 
+ * [METAMODEL-13] - Added support for Apache HBase via the new module "MetaModel-hbase"
  * [METAMODEL-41] - Added a parser for SimpleTableDef objects (SimpleTableDefParser). It parses statements similar to CREATE TABLE statements, although without the "CREATE TABLE" prefix. For example: foo (bar INTEGER, baz VARCHAR)
- * [METAMODEL-13] - Added support for Apache HBase via the new module "MetaModel-hbase"!
  * [METAMODEL-11] - New module "MetaModel-spring" which adds a convenient FactoryBean to produce various types of DataContext objects based on externalizable parameters, for Spring framework users.
  * [METAMODEL-32] - Fixed thread-safety issue in Excel module when tables (sheets) metadata is updated.
  * [METAMODEL-47] - Fixed issue in Excel of loading schema if query is fired based on metadata from a previous DataContext instance.
  * [METAMODEL-35] - Improved query rewriting for DB2 when paged queries contain ORDER BY clause.
  * [METAMODEL-44] - Added an optional method for QueryPostprocessDataContext implementations to do a row-lookup by primary key value.
  * [METAMODEL-43] - Made CSV datastores skip empty lines in file instead of treating them of rows with null values.
- * [METAMODEL-35] - Improved query rewriting for DB2 when paged queries contain ORDER BY clause.
  * [METAMODEL-39] - Added pooling of active/used Connections and PreparedStatements in JDBC compiled queries.
  * [METAMODEL-34] - Updated LICENSE file to not include bundled dependencies' licenses.
  * [METAMODEL-33] - Ensured that Apache Rat plugin for Maven is properly activated.
