@@ -32,11 +32,11 @@
 		<url>https://git-wip-us.apache.org/repos/asf?p=incubator-metamodel.git</url>
 		<connection>scm:git:http://git-wip-us.apache.org/repos/asf/incubator-metamodel.git</connection>
 		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-metamodel.git</developerConnection>
-		<tag>MetaModel-4.1.0-RC1-incubating</tag>
+		<tag>HEAD</tag>
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
 	<artifactId>MetaModel</artifactId>
-	<version>4.1.0-RC1-incubating</version>
+	<version>4.1.0-incubating-SNAPSHOT</version>
 	<name>MetaModel</name>
 	<description>MetaModel is a library that encapsulates the differences and enhances 
 		the capabilities of different datastores. Rich querying abilities are
