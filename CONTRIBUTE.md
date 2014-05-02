@@ -9,7 +9,7 @@ This guide will help you get started with Apache MetaModel's development environ
 If you're looking for a relevant issue to work on, we suggest you to do the following:
 
 * Join the @dev mailing list (send a mail to dev-subscribe@metamodel.incubator.apache.org, then afterwards communicate via dev@metamodel.incubator.apache.org).
-* Check the issues in JIRA with the 'starter' label: https://issues.apache.org/jira/browse/METAMODEL-17?jql=project%20%3D%20METAMODEL%20AND%20labels%20%3D%20starter
+* Check the issues in JIRA with the 'starter' label: https://issues.apache.org/jira/issues/?jql=project%20%3D%20METAMODEL%20AND%20labels%20%3D%20starter
 * If you have something else on your mind, make yourself heard on the @dev mailing list.
 
 
