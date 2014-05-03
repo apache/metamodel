@@ -45,18 +45,21 @@ import org.apache.metamodel.util.SimpleTableDef;
 import org.codehaus.jackson.JsonNode;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.CouchDbInstance;
+import org.ektorp.DbAccessException;
 import org.ektorp.StreamingViewResult;
 import org.ektorp.ViewQuery;
 import org.ektorp.ViewResult.Row;
 import org.ektorp.http.HttpClient;
 import org.ektorp.http.StdHttpClient;
 import org.ektorp.impl.StdCouchDbInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DataContext implementation for CouchDB
  */
 public class CouchDbDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(CouchDbDataContext.class);
 
     public static final int DEFAULT_PORT = 5984;
@@ -116,8 +119,8 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
     public static SimpleTableDef detectTable(CouchDbConnector connector) {
         final SortedMap<String, Set<ColumnType>> columnsAndTypes = new TreeMap<String, Set<ColumnType>>();
 
-        final StreamingViewResult streamingView = connector.queryForStreamingView(new ViewQuery().allDocs().includeDocs(true)
-                .limit(1000));
+        final StreamingViewResult streamingView = connector.queryForStreamingView(new ViewQuery().allDocs()
+                .includeDocs(true).limit(1000));
         try {
             final Iterator<Row> rowIterator = streamingView.iterator();
             while (safeHasNext(rowIterator)) {

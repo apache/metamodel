@@ -335,6 +335,7 @@
 							<exclude>NOTICE.txt</exclude>
 							<exclude>LICENSE.txt</exclude>
 							<exclude>KEYS</exclude>
+							<exclude>*.md</exclude>
 							<exclude>example-metamodel-integrationtest-configuration.properties</exclude>
 							<exclude>**/.gitignore/**</exclude>
 							<exclude>.git/**</exclude>
