@@ -9,8 +9,7 @@
 	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
 	OF ANY KIND, either express or implied. See the License for the specific 
 	language governing permissions and limitations under the License. -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -37,7 +36,7 @@
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
 	<artifactId>MetaModel</artifactId>
-	<version>4.0.1-incubating-SNAPSHOT</version>
+	<version>4.1.0-incubating-SNAPSHOT</version>
 	<name>MetaModel</name>
 	<description>MetaModel is a library that encapsulates the differences and enhances 
 		the capabilities of different datastores. Rich querying abilities are
@@ -305,7 +304,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
@@ -318,8 +317,7 @@
 					<artifactId>apache-rat-plugin</artifactId>
 					<configuration>
 						<licenses>
-							<license
-								implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
+							<license implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
 								<licenseFamilyCategory>ASL20</licenseFamilyCategory>
 								<licenseFamilyName>Apache Software License, 2.0</licenseFamilyName>
 								<notes>Single licensed ASL v2.0</notes>
@@ -337,6 +335,7 @@
 							<exclude>NOTICE.txt</exclude>
 							<exclude>LICENSE.txt</exclude>
 							<exclude>KEYS</exclude>
+							<exclude>example-metamodel-integrationtest-configuration.properties</exclude>
 							<exclude>**/.gitignore/**</exclude>
 							<exclude>.git/**</exclude>
 							<exclude>**/src/test/resources/**</exclude>

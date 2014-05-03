@@ -56,6 +56,8 @@ import org.ektorp.impl.StdCouchDbInstance;
  * DataContext implementation for CouchDB
  */
 public class CouchDbDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
+    
+    private static final Logger logger = LoggerFactory.getLogger(CouchDbDataContext.class);
 
     public static final int DEFAULT_PORT = 5984;
 
@@ -118,7 +120,7 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
                 .limit(1000));
         try {
             final Iterator<Row> rowIterator = streamingView.iterator();
-            while (rowIterator.hasNext()) {
+            while (safeHasNext(rowIterator)) {
                 Row row = rowIterator.next();
                 JsonNode doc = row.getDocAsNode();
 
@@ -182,6 +184,15 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
 
         final SimpleTableDef tableDef = new SimpleTableDef(connector.getDatabaseName(), columnNames, columnTypes);
         return tableDef;
+    }
+
+    private static boolean safeHasNext(Iterator<Row> rowIterator) {
+        try {
+            return rowIterator.hasNext();
+        } catch (DbAccessException e) {
+            logger.warn("Failed to move to next row while detecting table", e);
+            return false;
+        }
     }
 
     public CouchDbInstance getCouchDbInstance() {

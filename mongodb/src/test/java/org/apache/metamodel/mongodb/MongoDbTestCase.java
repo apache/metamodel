@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.salesforce;
+package org.apache.metamodel.mongodb;
 
 import java.io.File;
 import java.io.FileReader;
@@ -24,16 +24,16 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
-/**
- * Abstract test case which consults an external .properties file for SFDC
- * credentials to execute the tests.
- */
-public abstract class SalesforceTestCase extends TestCase {
+public abstract class MongoDbTestCase extends TestCase {
 
-    private String _username;
-    private String _password;
-    private String _securityToken;
+    private static final String DEFAULT_TEST_COLLECTION_NAME = "my_collection";
+    private static final String DEFAULT_TEST_DATABASE_NAME = "metamodel_test";
+
+    private String _hostname;
+    private String _collectionName;
     private boolean _configured;
+
+    private String _databaseName;
 
     @Override
     protected void setUp() throws Exception {
@@ -43,11 +43,24 @@ public abstract class SalesforceTestCase extends TestCase {
         File file = new File(getPropertyFilePath());
         if (file.exists()) {
             properties.load(new FileReader(file));
-            _username = properties.getProperty("salesforce.username");
-            _password = properties.getProperty("salesforce.password");
-            _securityToken = properties.getProperty("salesforce.securityToken");
+            _hostname = properties.getProperty("mongodb.hostname");
             
-            _configured = (_username != null && !_username.isEmpty());
+            _databaseName = properties.getProperty("mongodb.databaseName");
+            if (_databaseName == null || _databaseName.isEmpty()) {
+                _databaseName = DEFAULT_TEST_DATABASE_NAME;
+            }
+            
+            _collectionName = properties.getProperty("mongodb.collectionName");
+            if (_collectionName == null || _collectionName.isEmpty()) {
+                _collectionName = DEFAULT_TEST_COLLECTION_NAME;
+            }
+
+            _configured = (_hostname != null && !_hostname.isEmpty());
+
+            if (_configured) {
+                System.out.println("Loaded MongoDB configuration. Hostname=" + _hostname + ", Collection="
+                        + _collectionName);
+            }
         } else {
             _configured = false;
         }
@@ -59,23 +72,23 @@ public abstract class SalesforceTestCase extends TestCase {
     }
 
     protected String getInvalidConfigurationMessage() {
-        return "!!! WARN !!! Salesforce module ignored\r\n" + "Please configure salesforce credentials locally ("
+        return "!!! WARN !!! MongoDB module ignored\r\n" + "Please configure mongodb connection locally ("
                 + getPropertyFilePath() + "), to run integration tests";
     }
+    
+    public String getDatabaseName() {
+        return _databaseName;
+    }
 
+    public String getCollectionName() {
+        return _collectionName;
+    }
+
+    public String getHostname() {
+        return _hostname;
+    }
+    
     public boolean isConfigured() {
         return _configured;
-    }
-
-    public String getUsername() {
-        return _username;
-    }
-
-    public String getPassword() {
-        return _password;
-    }
-
-    public String getSecurityToken() {
-        return _securityToken;
     }
 }
