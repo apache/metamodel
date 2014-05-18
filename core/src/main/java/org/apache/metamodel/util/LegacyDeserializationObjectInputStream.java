@@ -34,7 +34,7 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
     public LegacyDeserializationObjectInputStream(InputStream in) throws IOException, SecurityException {
         super(in);
     }
-    
+
     @Override
     protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
         String className = desc.getName();

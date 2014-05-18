@@ -1,6 +1,7 @@
 Apache MetaModel 4.1.0-incubating
 
  * [METAMODEL-13] - Added support for Apache HBase via the new module "MetaModel-hbase"
+ * [METAMODEL-54] - ColumnType converted from enum to interface to allow for further specialization in modules
  * [METAMODEL-41] - Added a parser for SimpleTableDef objects (SimpleTableDefParser). It parses statements similar to CREATE TABLE statements, although without the "CREATE TABLE" prefix. For example: foo (bar INTEGER, baz VARCHAR)
  * [METAMODEL-11] - New module "MetaModel-spring" which adds a convenient FactoryBean to produce various types of DataContext objects based on externalizable parameters, for Spring framework users.
  * [METAMODEL-32] - Fixed thread-safety issue in Excel module when tables (sheets) metadata is updated.
