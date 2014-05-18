@@ -51,7 +51,10 @@ import org.apache.metamodel.jdbc.dialects.PostgresqlQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.SQLServerQueryRewriter;
 import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.ColumnTypeImpl;
 import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.SuperColumnType;
 import org.apache.metamodel.schema.TableType;
 import org.apache.metamodel.util.FileHelper;
 import org.slf4j.Logger;
@@ -64,7 +67,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
 
     public static final String SYSTEM_PROPERTY_BATCH_UPDATES = "metamodel.jdbc.batch.updates";
     public static final String SYSTEM_PROPERTY_CONVERT_LOBS = "metamodel.jdbc.convert.lobs";
-    
+
     public static final String SYSTEM_PROPERTY_COMPILED_QUERY_POOL_MAX_SIZE = "metamodel.jdbc.compiledquery.pool.max.size";
     public static final String SYSTEM_PROPERTY_COMPILED_QUERY_POOL_MIN_EVICTABLE_IDLE_TIME_MILLIS = "metamodel.jdbc.compiledquery.pool.idle.timeout";
     public static final String SYSTEM_PROPERTY_COMPILED_QUERY_POOL_TIME_BETWEEN_EVICTION_RUNS_MILLIS = "metamodel.jdbc.compiledquery.pool.eviction.period.millis";
@@ -76,6 +79,11 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     public static final String DATABASE_PRODUCT_SQLSERVER = "Microsoft SQL Server";
     public static final String DATABASE_PRODUCT_DB2 = "DB2";
     public static final String DATABASE_PRODUCT_DB2_PREFIX = "DB2/";
+
+    public static final ColumnType COLUMN_TYPE_CLOB_AS_STRING = new ColumnTypeImpl("CLOB",
+            SuperColumnType.LITERAL_TYPE, String.class, true);
+    public static final ColumnType COLUMN_TYPE_BLOB_AS_BYTES = new ColumnTypeImpl("BLOB", SuperColumnType.BINARY_TYPE,
+            byte[].class, true);
 
     private static final Logger logger = LoggerFactory.getLogger(JdbcDataContext.class);
 
@@ -748,7 +756,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     public void executeUpdate(final UpdateScript update) {
         final JdbcUpdateCallback updateCallback;
 
-        if (_supportsBatchUpdates && update instanceof BatchUpdateScript) { 
+        if (_supportsBatchUpdates && update instanceof BatchUpdateScript) {
             updateCallback = new JdbcBatchUpdateCallback(this);
         } else {
             updateCallback = new JdbcSimpleUpdateCallback(this);

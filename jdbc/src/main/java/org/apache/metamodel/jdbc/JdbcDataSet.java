@@ -41,8 +41,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * DataSet implementation that wraps a JDBC resultset.
- * 
- * @author Kasper Sørensen
  */
 final class JdbcDataSet extends AbstractDataSet {
 
@@ -163,22 +161,22 @@ final class JdbcDataSet extends AbstractDataSet {
                         return _resultSet.getTimestamp(columnIndex);
                     } else if (type == ColumnType.BLOB) {
                         final Blob blob = _resultSet.getBlob(columnIndex);
-                        if (isLobConversionEnabled()) {
-                            final InputStream inputStream = blob.getBinaryStream();
-                            final byte[] bytes = FileHelper.readAsBytes(inputStream);
-                            return bytes;
-                        }
                         return blob;
+                    } else if (type == JdbcDataContext.COLUMN_TYPE_BLOB_AS_BYTES) {
+                        final Blob blob = _resultSet.getBlob(columnIndex);
+                        final InputStream inputStream = blob.getBinaryStream();
+                        final byte[] bytes = FileHelper.readAsBytes(inputStream);
+                        return bytes;
                     } else if (type.isBinary()) {
                         return _resultSet.getBytes(columnIndex);
                     } else if (type == ColumnType.CLOB || type == ColumnType.NCLOB) {
                         final Clob clob = _resultSet.getClob(columnIndex);
-                        if (isLobConversionEnabled()) {
-                            final Reader reader = clob.getCharacterStream();
-                            final String result = FileHelper.readAsString(reader);
-                            return result;
-                        }
                         return clob;
+                    } else if (type == JdbcDataContext.COLUMN_TYPE_CLOB_AS_STRING) {
+                        final Clob clob = _resultSet.getClob(columnIndex);
+                        final Reader reader = clob.getCharacterStream();
+                        final String result = FileHelper.readAsString(reader);
+                        return result;
                     } else if (type.isBoolean()) {
                         return _resultSet.getBoolean(columnIndex);
                     }
@@ -189,11 +187,6 @@ final class JdbcDataSet extends AbstractDataSet {
             }
         }
         return _resultSet.getObject(columnIndex);
-    }
-
-    private boolean isLobConversionEnabled() {
-        final String systemProperty = System.getProperty(JdbcDataContext.SYSTEM_PROPERTY_CONVERT_LOBS);
-        return "true".equals(systemProperty);
     }
 
     /**

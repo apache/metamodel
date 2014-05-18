@@ -42,6 +42,9 @@ import org.apache.metamodel.util.FormatHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Various internal utility methods for the JDBC module of MetaModel.
+ */
 public final class JdbcUtils {
 
 	private static final Logger logger = LoggerFactory
