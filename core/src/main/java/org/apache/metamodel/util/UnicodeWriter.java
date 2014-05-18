@@ -37,8 +37,8 @@ import java.io.Writer;
  * For optimum performance, it is recommended that you wrap all instances of
  * <code>UnicodeWriter</code> with a <code>java.io.BufferedWriter</code>.
  * 
- * This file is a redistribution of Rubert Futrell from FifeSoft UnicodeWriter
- * (also LGPL licensed).
+ * This file is an adaption of Rubert Futrell from FifeSoft UnicodeWriter (BSD
+ * licensed).
  * 
  * <pre>
  * UnicodeWriter.java - Writes Unicode output with the proper BOM.
@@ -52,20 +52,15 @@ import java.io.Writer;
  */
 public class UnicodeWriter extends Writer {
 
-    public static final byte[] UTF8_BOM = new byte[] { (byte) 0xEF,
-            (byte) 0xBB, (byte) 0xBF };
+    public static final byte[] UTF8_BOM = new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
 
-    public static final byte[] UTF16LE_BOM = new byte[] { (byte) 0xFF,
-            (byte) 0xFE };
+    public static final byte[] UTF16LE_BOM = new byte[] { (byte) 0xFF, (byte) 0xFE };
 
-    public static final byte[] UTF16BE_BOM = new byte[] { (byte) 0xFE,
-            (byte) 0xFF };
+    public static final byte[] UTF16BE_BOM = new byte[] { (byte) 0xFE, (byte) 0xFF };
 
-    public static final byte[] UTF32LE_BOM = new byte[] { (byte) 0xFF,
-            (byte) 0xFE, (byte) 0x00, (byte) 0x00 };
+    public static final byte[] UTF32LE_BOM = new byte[] { (byte) 0xFF, (byte) 0xFE, (byte) 0x00, (byte) 0x00 };
 
-    public static final byte[] UTF32BE_BOM = new byte[] { (byte) 0x00,
-            (byte) 0x00, (byte) 0xFE, (byte) 0xFF };
+    public static final byte[] UTF32BE_BOM = new byte[] { (byte) 0x00, (byte) 0x00, (byte) 0xFE, (byte) 0xFF };
 
     /**
      * The writer actually doing the writing.
@@ -85,8 +80,7 @@ public class UnicodeWriter extends Writer {
      * @throws IOException
      *             If an IO exception occurs.
      */
-    public UnicodeWriter(String fileName, String encoding)
-            throws UnsupportedEncodingException, IOException {
+    public UnicodeWriter(String fileName, String encoding) throws UnsupportedEncodingException, IOException {
         this(new FileOutputStream(fileName), encoding);
     }
 
@@ -103,8 +97,7 @@ public class UnicodeWriter extends Writer {
      * @throws IOException
      *             If an IO exception occurs.
      */
-    public UnicodeWriter(File file, String encoding)
-            throws UnsupportedEncodingException, IOException {
+    public UnicodeWriter(File file, String encoding) throws UnsupportedEncodingException, IOException {
         this(new FileOutputStream(file), encoding);
     }
 
@@ -120,8 +113,7 @@ public class UnicodeWriter extends Writer {
      * @throws IOException
      *             If an IO exception occurs.
      */
-    public UnicodeWriter(OutputStream outputStream, String encoding)
-            throws UnsupportedEncodingException, IOException {
+    public UnicodeWriter(OutputStream outputStream, String encoding) throws UnsupportedEncodingException, IOException {
         writer = createWriter(outputStream, encoding);
     }
 
@@ -160,26 +152,25 @@ public class UnicodeWriter extends Writer {
      * @throws IOException
      *             If an I/O error occurs while writing a BOM.
      */
-    private OutputStreamWriter createWriter(OutputStream outputStream,
-            String encoding) throws UnsupportedEncodingException, IOException {
-        OutputStreamWriter writer = new OutputStreamWriter(outputStream,
-                encoding);
+    private OutputStreamWriter createWriter(OutputStream outputStream, String encoding)
+            throws UnsupportedEncodingException, IOException {
+        OutputStreamWriter writer = new OutputStreamWriter(outputStream, encoding);
+
+        encoding = encoding.replaceAll("-", "").toUpperCase();
 
         // Write the proper BOM if they specified a Unicode encoding.
         // NOTE: Creating an OutputStreamWriter with encoding "UTF-16"
         // DOES write out the BOM; "UTF-16LE", "UTF-16BE", "UTF-32", "UTF-32LE"
         // and "UTF-32BE" don't.
-        if ("UTF-8".equalsIgnoreCase(encoding)) {
+        if ("UTF8".equals(encoding)) {
             outputStream.write(UTF8_BOM, 0, UTF8_BOM.length);
-        } else if ("UTF-16LE".equalsIgnoreCase(encoding)) {
+        } else if ("UTF16LE".equals(encoding)) {
             outputStream.write(UTF16LE_BOM, 0, UTF16LE_BOM.length);
-        } else if (/* "UTF-16".equalsIgnoreCase(encoding) || */
-        "UTF-16BE".equalsIgnoreCase(encoding)) {
+        } else if ("UTF16BE".equals(encoding)) {
             outputStream.write(UTF16BE_BOM, 0, UTF16BE_BOM.length);
-        } else if ("UTF-32LE".equalsIgnoreCase(encoding)) {
+        } else if ("UTF32LE".equals(encoding)) {
             outputStream.write(UTF32LE_BOM, 0, UTF32LE_BOM.length);
-        } else if ("UTF-32".equalsIgnoreCase(encoding)
-                || "UTF-32BE".equalsIgnoreCase(encoding)) {
+        } else if ("UTF32".equals(encoding) || "UTF32BE".equals(encoding)) {
             outputStream.write(UTF32BE_BOM, 0, UTF32BE_BOM.length);
         }
 
