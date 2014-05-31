@@ -16,19 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel;
+package org.apache.metamodel.jdbc.integrationtests;
 
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.table.TableModel;
 
-import junit.framework.TestCase;
-
+import org.apache.metamodel.BatchUpdateScript;
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.insert.RowInsertionBuilder;
@@ -54,32 +55,24 @@ import org.junit.Ignore;
  * 
  * @see http://pgfoundry.org/projects/dbsamples/
  */
-public class PostgresqlTest extends TestCase {
+public class PostgresqlTest extends AbstractJdbIntegrationTest {
 
-    private static final String CONNECTION_STRING = "jdbc:postgresql://localhost/dellstore2";
-    private static final String USERNAME = "eobjects";
-    private static final String PASSWORD = "eobjects";
-    private Connection _connection;
+    private static final String PROPERTY_LONGRUNNINGTESTS = "jdbc.postgresql.longrunningtests";
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        Class.forName("org.postgresql.Driver");
-        _connection = DriverManager.getConnection(CONNECTION_STRING, USERNAME, PASSWORD);
+    protected String getPropertyPrefix() {
+        return "postgresql";
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        _connection.close();
-    }
-    
     public void testInterpretationOfNull() throws Exception {
-        JdbcTestTemplates.interpretationOfNulls(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+        JdbcTestTemplates.interpretationOfNulls(getConnection());
     }
 
     private JdbcDataContext createLimitAndOffsetTestData() {
-        final JdbcDataContext dc = new JdbcDataContext(_connection);
+        final JdbcDataContext dc = new JdbcDataContext(getConnection());
 
         if (dc.getTableByQualifiedLabel("test_table") != null) {
             dc.executeUpdate(new UpdateScript() {
@@ -107,6 +100,10 @@ public class PostgresqlTest extends TestCase {
     }
 
     public void testLimit() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
         JdbcDataContext dc = createLimitAndOffsetTestData();
         Schema schema = dc.getDefaultSchema();
         Table productsTable = schema.getTableByName("test_table");
@@ -121,6 +118,10 @@ public class PostgresqlTest extends TestCase {
     }
 
     public void testOffset() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
         JdbcDataContext dc = createLimitAndOffsetTestData();
         Schema schema = dc.getDefaultSchema();
         Table productsTable = schema.getTableByName("test_table");
@@ -135,6 +136,9 @@ public class PostgresqlTest extends TestCase {
     }
 
     public void testLimitAndOffset() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
         JdbcDataContext dc = createLimitAndOffsetTestData();
         Schema schema = dc.getDefaultSchema();
         Table productsTable = schema.getTableByName("test_table");
@@ -148,13 +152,18 @@ public class PostgresqlTest extends TestCase {
     }
 
     public void testQuotedInsertSyntax() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+        final Connection connection = getConnection();
+
         try {
-            _connection.createStatement().execute("DROP TABLE my_table");
+            connection.createStatement().execute("DROP TABLE my_table");
         } catch (Exception e) {
             // do nothing
         }
 
-        JdbcDataContext dc = new JdbcDataContext(_connection);
+        JdbcDataContext dc = new JdbcDataContext(connection);
         final Schema schema = dc.getDefaultSchema();
 
         // create table
@@ -212,13 +221,19 @@ public class PostgresqlTest extends TestCase {
     }
 
     public void testInsertOfDifferentTypes() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        final Connection connection = getConnection();
+
         try {
-            _connection.createStatement().execute("DROP TABLE my_table");
+            connection.createStatement().execute("DROP TABLE my_table");
         } catch (Exception e) {
             // do nothing
         }
 
-        JdbcDataContext dc = new JdbcDataContext(_connection);
+        JdbcDataContext dc = new JdbcDataContext(connection);
         final Schema schema = dc.getDefaultSchema();
 
         dc.executeUpdate(new UpdateScript() {
@@ -293,7 +308,11 @@ public class PostgresqlTest extends TestCase {
      * @see http://eobjects.org/trac/ticket/829
      */
     public void testBoolean() throws Exception {
-        JdbcDataContext dc = new JdbcDataContext(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcDataContext dc = new JdbcDataContext(getConnection());
 
         final Schema schema = dc.getDefaultSchema();
 
@@ -327,7 +346,11 @@ public class PostgresqlTest extends TestCase {
     }
 
     public void testBlob() throws Exception {
-        JdbcDataContext dc = new JdbcDataContext(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcDataContext dc = new JdbcDataContext(getConnection());
         final Schema schema = dc.getDefaultSchema();
 
         dc.executeUpdate(new UpdateScript() {
@@ -386,7 +409,11 @@ public class PostgresqlTest extends TestCase {
     }
 
     public void testCreateTableAndWriteRecords() throws Exception {
-        JdbcDataContext dc = new JdbcDataContext(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcDataContext dc = new JdbcDataContext(getConnection());
         final Schema schema = dc.getDefaultSchema();
         try {
             dc.executeUpdate(new UpdateScript() {
@@ -448,7 +475,11 @@ public class PostgresqlTest extends TestCase {
     }
 
     public void testCreateTableInsertValueFloatForIntColumn() throws Exception {
-        JdbcDataContext dc = new JdbcDataContext(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcDataContext dc = new JdbcDataContext(getConnection());
         final Schema schema = dc.getDefaultSchema();
         try {
             dc.executeUpdate(new UpdateScript() {
@@ -497,10 +528,14 @@ public class PostgresqlTest extends TestCase {
     }
 
     public void testInsertFailureForStringValueForIntegerColumn() throws Exception {
-        JdbcDataContext dc = new JdbcDataContext(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcDataContext dc = new JdbcDataContext(getConnection());
         final Schema schema = dc.getDefaultSchema();
         try {
-            dc.executeUpdate(new UpdateScript() {
+            dc.executeUpdate(new BatchUpdateScript() {
                 @Override
                 public void run(UpdateCallback cb) {
                     Table table = cb.createTable(schema, "my_table").withColumn("id").ofType(ColumnType.INTEGER)
@@ -522,9 +557,10 @@ public class PostgresqlTest extends TestCase {
             });
 
         } catch (Exception e) {
+            String message = e.getMessage().replaceAll("\n", " ");
             assertEquals(
                     "Could not execute batch: INSERT INTO \"public\".\"my_table\" (\"person name\",age) VALUES ('John Doe','42'): Batch entry 0 INSERT INTO \"public\".\"my_table\" (\"person name\",age) VALUES ('John Doe','42') was aborted.  Call getNextException to see the cause.",
-                    e.getMessage());
+                    message);
         } finally {
             dc.refreshSchemas();
             if (dc.getTableByQualifiedLabel("my_table") != null) {
@@ -539,18 +575,30 @@ public class PostgresqlTest extends TestCase {
     }
 
     public void testDatabaseProductName() throws Exception {
-        String databaseProductName = _connection.getMetaData().getDatabaseProductName();
+        if (!isConfigured()) {
+            return;
+        }
+
+        String databaseProductName = getConnection().getMetaData().getDatabaseProductName();
         assertEquals(JdbcDataContext.DATABASE_PRODUCT_POSTGRESQL, databaseProductName);
     }
 
     public void testGetDefaultSchema() throws Exception {
-        DataContext dc = new JdbcDataContext(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+
+        DataContext dc = new JdbcDataContext(getConnection());
         Schema schema = dc.getDefaultSchema();
         assertEquals("public", schema.getName());
     }
 
     public void testGetSchema() throws Exception {
-        DataContext dc = new JdbcDataContext(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+
+        DataContext dc = new JdbcDataContext(getConnection());
         Schema[] schemas = dc.getSchemas();
         assertTrue(schemas.length >= 3);
 
@@ -622,7 +670,11 @@ public class PostgresqlTest extends TestCase {
     }
 
     public void testExecuteQueryInPublicSchema() throws Exception {
-        DataContext dc = new JdbcDataContext(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+
+        DataContext dc = new JdbcDataContext(getConnection());
         Query q = new Query();
         Schema schema = dc.getSchemaByName("public");
         Table productsTable = schema.getTableByName("products");
@@ -684,12 +736,24 @@ public class PostgresqlTest extends TestCase {
     }
 
     public void testWhiteSpaceColumns() throws Exception {
-        DatabaseMetaData metaData = _connection.getMetaData();
+        if (!isConfigured()) {
+            return;
+        }
+
+        DatabaseMetaData metaData = getConnection().getMetaData();
         assertEquals("\"", metaData.getIdentifierQuoteString());
     }
 
     public void testCreateTableAndInsert1MRecords() throws Exception {
-        JdbcDataContext dc = new JdbcDataContext(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+
+        if (!"true".equalsIgnoreCase(getProperties().getProperty(PROPERTY_LONGRUNNINGTESTS))) {
+            return;
+        }
+
+        JdbcDataContext dc = new JdbcDataContext(getConnection());
         final Schema schema = dc.getDefaultSchema();
         try {
             dc.executeUpdate(new UpdateScript() {
@@ -734,7 +798,11 @@ public class PostgresqlTest extends TestCase {
     }
 
     public void testCharOfSizeOne() throws Exception {
-        JdbcTestTemplates.meaningOfOneSizeChar(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcTestTemplates.meaningOfOneSizeChar(getConnection());
     }
 
     /**
@@ -743,7 +811,15 @@ public class PostgresqlTest extends TestCase {
      */
     @Ignore
     public void testSplitHugeQueryExecute146() throws Exception {
-        DataContext dc = new JdbcDataContext(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+
+        if (!"true".equalsIgnoreCase(getProperties().getProperty(PROPERTY_LONGRUNNINGTESTS))) {
+            return;
+        }
+
+        DataContext dc = new JdbcDataContext(getConnection());
         Query q = new Query();
         Schema schema = dc.getSchemaByName("public");
         Table productsTable = schema.getTableByName("products");
