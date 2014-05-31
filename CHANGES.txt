@@ -15,6 +15,7 @@ Apache MetaModel 4.1.0-incubating
  * [METAMODEL-33] - Ensured that Apache Rat plugin for Maven is properly activated.
  * [METAMODEL-37] - Removed old site sources from project.
  * [METAMODEL-3] - Improved writing of Byte-Order-Mark (BOM) for various encoding spelling variants 
+ * [METAMODEL-59] - Fixed a bug related to handling of date/time literals in MS SQL queries
 
 Apache MetaModel 4.0.0-incubating
 

@@ -22,11 +22,16 @@ import junit.framework.TestCase;
 
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.SQLServerQueryRewriter;
+import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.util.TimeComparator;
 
 public class SQLServerQueryRewriterTest extends TestCase {
 
@@ -63,5 +68,23 @@ public class SQLServerQueryRewriterTest extends TestCase {
 		assertEquals(
 				"SELECT TOP 20 MY_SCHEMA.\"foo\".\"bar\" FROM MY_SCHEMA.\"foo\"",
 				qr.rewriteQuery(q));
+	}
+	
+	public void testRewriteFilterItem() {
+
+		MutableColumn timestampColumn = new MutableColumn("timestamp");
+		timestampColumn.setType(ColumnType.TIMESTAMP);
+		timestampColumn.setNativeType("DATETIME");
+		Query q = new Query()
+				.from(table)
+				.select(column)
+				.select(timestampColumn)
+				.where(new FilterItem(new SelectItem(timestampColumn),
+						OperatorType.LESS_THAN, TimeComparator.toDate("2014-06-28 14:06:00")));
+
+		assertEquals(
+				"SELECT MY_SCHEMA.\"foo\".\"bar\", timestamp FROM MY_SCHEMA.\"foo\" WHERE timestamp < CAST('2014-06-28 14:06:00' AS DATETIME)",
+				qr.rewriteQuery(q));
+
 	}
 }

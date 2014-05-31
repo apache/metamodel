@@ -18,39 +18,86 @@
  */
 package org.apache.metamodel.jdbc.dialects;
 
+import java.text.DateFormat;
+import java.util.Date;
+
 import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectClause;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.util.DateUtils;
 
 public class SQLServerQueryRewriter extends DefaultQueryRewriter {
 
-	public SQLServerQueryRewriter(JdbcDataContext dataContext) {
-		super(dataContext);
-	}
+    public SQLServerQueryRewriter(JdbcDataContext dataContext) {
+        super(dataContext);
+    }
 
-	@Override
-	public boolean isMaxRowsSupported() {
-		return true;
-	}
+    @Override
+    public boolean isMaxRowsSupported() {
+        return true;
+    }
 
-	/**
-	 * SQL server expects the fully qualified column name, including schema, in
-	 * select items.
-	 */
-	@Override
-	public boolean isSchemaIncludedInColumnPaths() {
-		return true;
-	}
+    /**
+     * SQL server expects the fully qualified column name, including schema, in
+     * select items.
+     */
+    @Override
+    public boolean isSchemaIncludedInColumnPaths() {
+        return true;
+    }
 
-	@Override
-	protected String rewriteSelectClause(Query query, SelectClause selectClause) {
-		String result = super.rewriteSelectClause(query, selectClause);
+    @Override
+    protected String rewriteSelectClause(Query query, SelectClause selectClause) {
+        String result = super.rewriteSelectClause(query, selectClause);
 
-		Integer maxRows = query.getMaxRows();
-		if (maxRows != null) {
-			result = "SELECT TOP " + maxRows + " " + result.substring(7);
-		}
+        Integer maxRows = query.getMaxRows();
+        if (maxRows != null) {
+            result = "SELECT TOP " + maxRows + " " + result.substring(7);
+        }
 
-		return result;
-	}
+        return result;
+    }
+
+    @Override
+    public String rewriteFilterItem(FilterItem item) {
+        if (item.isCompoundFilter()) {
+            return super.rewriteFilterItem(item);
+        }
+
+        final SelectItem selectItem = item.getSelectItem();
+        final Object operand = item.getOperand();
+        final OperatorType operator = item.getOperator();
+
+        if (selectItem == null || operand == null || operator == null) {
+            return super.rewriteFilterItem(item);
+        }
+
+        final Column column = selectItem.getColumn();
+        if (column == null) {
+            return super.rewriteFilterItem(item);
+        }
+
+        if (operand instanceof Date) {
+            final String nativeType = column.getNativeType();
+            if ("TIMESTAMP".equalsIgnoreCase(nativeType) || "DATETIME".equalsIgnoreCase(nativeType)) {
+                final StringBuilder sb = new StringBuilder();
+                sb.append(selectItem.getSameQueryAlias(true));
+
+                FilterItem.appendOperator(sb, operand, operator);
+
+                final Date date = (Date) operand;
+
+                final DateFormat format = DateUtils.createDateFormat("yyyy-MM-dd HH:mm:ss");
+                final String dateTimeValue = "CAST('" + format.format(date) + "' AS DATETIME)";
+
+                sb.append(dateTimeValue);
+                return sb.toString();
+            }
+        }
+        return super.rewriteFilterItem(item);
+    }
 }
