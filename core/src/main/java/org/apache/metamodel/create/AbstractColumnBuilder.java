@@ -51,6 +51,7 @@ abstract class AbstractColumnBuilder<T extends ColumnBuilder<?>> implements Colu
         _column.setNativeType(column.getNativeType());
         _column.setType(column.getType());
         _column.setNullable(column.isNullable());
+        _column.setPrimaryKey(column.isPrimaryKey());
         return getReturnObject();
     }
 

@@ -56,14 +56,11 @@ public class AbstractCreateTableBuilderTest extends TestCase {
 
         assertEquals("tablename", table.getName());
         assertEquals(3, table.getColumnCount());
-        assertEquals(
-                "Column[name=foo,columnNumber=0,type=VARCHAR,nullable=true,nativeType=vch,columnSize=1234]",
+        assertEquals("Column[name=foo,columnNumber=0,type=VARCHAR,nullable=true,nativeType=vch,columnSize=1234]",
                 table.getColumns()[0].toString());
-        assertEquals(
-                "Column[name=bar,columnNumber=1,type=null,nullable=null,nativeType=null,columnSize=null]",
+        assertEquals("Column[name=bar,columnNumber=1,type=null,nullable=null,nativeType=null,columnSize=null]",
                 table.getColumns()[1].toString());
-        assertEquals(
-                "Column[name=baz,columnNumber=2,type=null,nullable=false,nativeType=null,columnSize=null]",
+        assertEquals("Column[name=baz,columnNumber=2,type=null,nullable=false,nativeType=null,columnSize=null]",
                 table.getColumns()[2].toString());
 
         assertEquals("CREATE TABLE schema.tablename (foo VARCHAR(1234) PRIMARY KEY,bar,baz NOT NULL)", builder.toSql());
@@ -86,7 +83,7 @@ public class AbstractCreateTableBuilderTest extends TestCase {
 
         MutableTable likeTable = new MutableTable("blablablabla");
         likeTable.addColumn(new MutableColumn("foo", ColumnType.VARCHAR, likeTable, 0, 1234, "vch", true, null, false,
-                null));
+                null).setPrimaryKey(true));
         likeTable.addColumn(new MutableColumn("bar"));
         likeTable.addColumn(new MutableColumn("baz"));
 
@@ -97,14 +94,13 @@ public class AbstractCreateTableBuilderTest extends TestCase {
 
         assertEquals("tablename", table.getName());
         assertEquals(3, table.getColumnCount());
-        assertEquals(
-                "Column[name=foo,columnNumber=0,type=VARCHAR,nullable=true,nativeType=vch,columnSize=1234]",
+        assertEquals("Column[name=foo,columnNumber=0,type=VARCHAR,nullable=true,nativeType=vch,columnSize=1234]",
                 table.getColumns()[0].toString());
-        assertEquals(
-                "Column[name=bar,columnNumber=1,type=null,nullable=null,nativeType=null,columnSize=null]",
+        assertTrue(table.getColumns()[0].isPrimaryKey());
+
+        assertEquals("Column[name=bar,columnNumber=1,type=null,nullable=null,nativeType=null,columnSize=null]",
                 table.getColumns()[1].toString());
-        assertEquals(
-                "Column[name=baz,columnNumber=2,type=null,nullable=null,nativeType=null,columnSize=null]",
+        assertEquals("Column[name=baz,columnNumber=2,type=null,nullable=null,nativeType=null,columnSize=null]",
                 table.getColumns()[2].toString());
     }
 }
