@@ -56,7 +56,11 @@ public class SQLServerQueryRewriter extends DefaultQueryRewriter {
 
         Integer maxRows = query.getMaxRows();
         if (maxRows != null) {
-            result = "SELECT TOP " + maxRows + " " + result.substring(7);
+            if (query.getSelectClause().isDistinct()) {
+                result = "SELECT DISTINCT TOP " + maxRows + " " + result.substring("SELECT DISTINCT ".length());
+            } else {
+                result = "SELECT TOP " + maxRows + " " + result.substring("SELECT ".length());
+            }
         }
 
         return result;
