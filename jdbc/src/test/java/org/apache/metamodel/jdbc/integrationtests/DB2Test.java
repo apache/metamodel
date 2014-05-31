@@ -16,13 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel;
+package org.apache.metamodel.jdbc.integrationtests;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.Arrays;
-
-import junit.framework.TestCase;
 
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.jdbc.JdbcDataContext;
@@ -35,36 +31,27 @@ import org.apache.metamodel.schema.Table;
  * DB2 integration test. This is a read-only integration test, meant to be
  * modified for whatever server is available (even within Human Inference).
  */
-public class DB2Test extends TestCase {
-
-    private static final String URL = "jdbc:db2://TODO:50000/TODO";
-
-    private static final String USERNAME = "TODO";
-    private static final String PASSWORD = "TODO";
-    private Connection _connection;
-
+public class DB2Test extends AbstractJdbIntegrationTest {
+    
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        Class.forName("com.ibm.db2.jcc.DB2Driver");
-        _connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+    protected String getPropertyPrefix() {
+        return "db2";
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        _connection.close();
-    }
-    
-    
     public void testInterpretationOfNull() throws Exception {
-        JdbcTestTemplates.interpretationOfNulls(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+        JdbcTestTemplates.interpretationOfNulls(getConnection());
     }
 
     public void testDefaultSchema() throws Exception {
-        JdbcDataContext dc = new JdbcDataContext(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+        JdbcDataContext dc = new JdbcDataContext(getConnection());
         Schema schema = dc.getDefaultSchema();
-        assertEquals(USERNAME.toUpperCase(), schema.getName());
+        assertEquals(getUsername().toUpperCase(), schema.getName());
 
         Table countryTable = schema.getTableByName("COUNTRY");
         assertNotNull(countryTable);
@@ -77,7 +64,10 @@ public class DB2Test extends TestCase {
     }
 
     public void testMaxRowsOnly() throws Exception {
-        JdbcDataContext dc = new JdbcDataContext(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+        JdbcDataContext dc = new JdbcDataContext(getConnection());
         Schema schema = dc.getDefaultSchema();
         String[] tableNames = schema.getTableNames();
         System.out.println("Tables: " + Arrays.toString(tableNames));
@@ -99,7 +89,10 @@ public class DB2Test extends TestCase {
     }
 
     public void testMaxRowsAndOffset() throws Exception {
-        JdbcDataContext dc = new JdbcDataContext(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+        JdbcDataContext dc = new JdbcDataContext(getConnection());
         Schema schema = dc.getDefaultSchema();
         String[] tableNames = schema.getTableNames();
         System.out.println("Tables: " + Arrays.toString(tableNames));

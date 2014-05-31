@@ -16,17 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel;
+package org.apache.metamodel.jdbc.integrationtests;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 
 import javax.swing.table.TableModel;
-
-import junit.framework.TestCase;
 
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
@@ -48,33 +44,21 @@ import org.apache.metamodel.schema.Table;
  * @see http://www.firebirdsql.org/manual/qsg10-connecting.html
  * @see http://www.firebirdsql.org/index.php?op=files&id=jaybird
  */
-public class FirebirdTest extends TestCase {
+public class FirebirdTest extends AbstractJdbIntegrationTest {
 
-	private static final String CONNECTION_STRING = "jdbc:firebirdsql:127.0.0.1:employee.fdb";
-	private static final String USERNAME = "SYSDBA";
-	private static final String PASSWORD = "eobjects";
-	private Connection _connection;
-	private DataContext _dataContext;
-
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		Class.forName("org.firebirdsql.jdbc.FBDriver");
-		_connection = DriverManager.getConnection(CONNECTION_STRING, USERNAME, PASSWORD);
-		_connection.setReadOnly(true);
-		_dataContext = new JdbcDataContext(_connection);
-	}
-
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		_connection.close();
-	}
+    @Override
+    protected String getPropertyPrefix() {
+        return "firebird";
+    }
 
 	public void testGetSchemas() throws Exception {
-		Schema[] schemas = _dataContext.getSchemas();
+	    if (!isConfigured()) {
+	        return;
+	    }
+		JdbcDataContext dataContext = getDataContext();
+        Schema[] schemas = dataContext.getSchemas();
 		assertEquals(1, schemas.length);
-		Schema schema = _dataContext.getDefaultSchema();
+		Schema schema = dataContext.getDefaultSchema();
 		assertEquals("{JdbcTable[name=COUNTRY,type=TABLE,remarks=<null>],"
 				+ "JdbcTable[name=CUSTOMER,type=TABLE,remarks=<null>],"
 				+ "JdbcTable[name=DEPARTMENT,type=TABLE,remarks=<null>],"
@@ -108,7 +92,11 @@ public class FirebirdTest extends TestCase {
 	}
 
 	public void testExecuteQuery() throws Exception {
-		Schema schema = _dataContext.getDefaultSchema();
+	    if (!isConfigured()) {
+            return;
+        }
+		JdbcDataContext dataContext = getDataContext();
+        Schema schema = dataContext.getDefaultSchema();
 		Table departmentTable = schema.getTableByName("DEPARTMENT");
 		Table employeeTable = schema.getTableByName("EMPLOYEE");
 		Query q = new Query().from(new FromItem(JoinType.INNER, departmentTable.getRelationships(employeeTable)[0]));
@@ -118,7 +106,7 @@ public class FirebirdTest extends TestCase {
 				"SELECT \"DEPARTMENT\".\"DEPARTMENT\", \"EMPLOYEE\".\"HIRE_DATE\" AS hire-date FROM \"EMPLOYEE\" INNER JOIN \"DEPARTMENT\" ON \"EMPLOYEE\".\"EMP_NO\" = \"DEPARTMENT\".\"MNGR_NO\"",
 				q.toString());
 
-		DataSet data = _dataContext.executeQuery(q);
+		DataSet data = dataContext.executeQuery(q);
 		assertNotNull(data);
 
 		TableModel tableModel = new DataSetTableModel(data);

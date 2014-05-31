@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
 
+import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.util.FileHelper;
 
 import junit.framework.TestCase;
@@ -112,6 +113,10 @@ public abstract class AbstractJdbIntegrationTest extends TestCase {
         }
         
         return _connection;
+    }
+    
+    protected JdbcDataContext getDataContext() {
+        return new JdbcDataContext(getConnection());
     }
 
     private String getPropertyFilePath() {

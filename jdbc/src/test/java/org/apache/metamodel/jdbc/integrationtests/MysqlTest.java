@@ -16,11 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel;
+package org.apache.metamodel.jdbc.integrationtests;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
@@ -28,8 +26,9 @@ import java.util.List;
 
 import javax.swing.table.TableModel;
 
-import junit.framework.TestCase;
-
+import org.apache.metamodel.DataContext;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.jdbc.JdbcDataContext;
@@ -52,33 +51,38 @@ import org.apache.metamodel.schema.TableType;
  * 
  * @see http://dev.mysql.com/doc/sakila/en/sakila.html#sakila-installation
  */
-public class MysqlTest extends TestCase {
+public class MysqlTest extends AbstractJdbIntegrationTest {
 
-	private static final String CONNECTION_STRING = "jdbc:mysql://localhost/sakila?defaultFetchSize=" + Integer.MIN_VALUE;
-	private static final String USERNAME = "eobjects";
-	private static final String PASSWORD = "eobjects";
-	private Connection _connection;
-
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		Class.forName("com.mysql.jdbc.Driver");
-		_connection = DriverManager.getConnection(CONNECTION_STRING, USERNAME, PASSWORD);
-	}
-	
+    @Override
+    protected String getPropertyPrefix() {
+        return "mysql";
+    }
+    
     public void testInterpretationOfNull() throws Exception {
-        JdbcTestTemplates.interpretationOfNulls(_connection);
+        if (!isConfigured()) {
+            return;
+        }
+        
+        JdbcTestTemplates.interpretationOfNulls(getConnection());
     }
 
 	public void testDatabaseProductName() throws Exception {
-		String databaseProductName = _connection.getMetaData().getDatabaseProductName();
+	    if (!isConfigured()) {
+            return;
+        }
+        
+		String databaseProductName = getConnection().getMetaData().getDatabaseProductName();
 		assertEquals(JdbcDataContext.DATABASE_PRODUCT_MYSQL, databaseProductName);
 	}
 
 	public void testAutomaticConversionWhenInsertingString() throws Exception {
-		assertNotNull(_connection);
+	    if (!isConfigured()) {
+            return;
+        }
+        
+		assertNotNull(getConnection());
 
-		Statement st = _connection.createStatement();
+		Statement st = getConnection().createStatement();
 		try {
 			// clean up, if nescesary
 			st.execute("DROP TABLE test_table");
@@ -87,9 +91,9 @@ public class MysqlTest extends TestCase {
 			// do nothing
 		}
 
-		assertFalse(_connection.isReadOnly());
+		assertFalse(getConnection().isReadOnly());
 
-		JdbcDataContext dc = new JdbcDataContext(_connection);
+		JdbcDataContext dc = new JdbcDataContext(getConnection());
 		final Schema schema = dc.getDefaultSchema();
 		assertEquals("sakila", schema.getName());
 
@@ -126,12 +130,19 @@ public class MysqlTest extends TestCase {
 	}
 	
 	public void testCharOfSizeOne() throws Exception {
-		JdbcTestTemplates.meaningOfOneSizeChar(_connection);
+	    if (!isConfigured()) {
+            return;
+        }
+        
+		JdbcTestTemplates.meaningOfOneSizeChar(getConnection());
 	}
 
 	public void testAlternativeConnectionString() throws Exception {
-		_connection = DriverManager.getConnection("jdbc:mysql://localhost", USERNAME, PASSWORD);
-		DataContext dc = new JdbcDataContext(_connection, TableType.DEFAULT_TABLE_TYPES, "sakila");
+	    if (!isConfigured()) {
+            return;
+        }
+        
+		DataContext dc = new JdbcDataContext(getConnection(), TableType.DEFAULT_TABLE_TYPES, "sakila");
 		Schema[] schemas = dc.getSchemas();
 		assertEquals("[Schema[name=mysql], Schema[name=performance_schema], Schema[name=portal], "
 				+ "Schema[name=sakila], Schema[name=world]]", Arrays.toString(schemas));
@@ -144,28 +155,34 @@ public class MysqlTest extends TestCase {
 		assertEquals(1000, tableModel.getRowCount());
 	}
 
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		_connection.close();
-	}
-
 	public void testGetCatalogNames() throws Exception {
-		JdbcDataContext strategy = new JdbcDataContext(_connection);
-		assertTrue(strategy.getQueryRewriter() instanceof MysqlQueryRewriter);
-		String[] catalogNames = strategy.getCatalogNames();
+	    if (!isConfigured()) {
+            return;
+        }
+        
+		JdbcDataContext dataContext = new JdbcDataContext(getConnection());
+		assertTrue(dataContext.getQueryRewriter() instanceof MysqlQueryRewriter);
+		String[] catalogNames = dataContext.getCatalogNames();
 		assertEquals("[information_schema, mysql, performance_schema, portal, sakila, world]",
 				Arrays.toString(catalogNames));
 	}
 
 	public void testGetDefaultSchema() throws Exception {
-		DataContext dc = new JdbcDataContext(_connection);
+	    if (!isConfigured()) {
+            return;
+        }
+        
+		DataContext dc = new JdbcDataContext(getConnection());
 		Schema schema = dc.getDefaultSchema();
 		assertEquals("sakila", schema.getName());
 	}
 
 	public void testExecuteQuery() throws Exception {
-		DataContext dc = new JdbcDataContext(_connection);
+	    if (!isConfigured()) {
+            return;
+        }
+        
+		DataContext dc = new JdbcDataContext(getConnection());
 		Schema schema = dc.getDefaultSchema();
 		Table actorTable = schema.getTableByName("actor");
 		assertEquals(
@@ -226,14 +243,22 @@ public class MysqlTest extends TestCase {
 
 	// Test to query the film table (caused troubles in DataCleaner)
 	public void testFilmQuery() throws Exception {
-		DataContext dc = new JdbcDataContext(_connection);
+	    if (!isConfigured()) {
+            return;
+        }
+        
+		DataContext dc = new JdbcDataContext(getConnection());
 		Table table = dc.getDefaultSchema().getTableByName("film");
 		Query q = new Query().select(table.getColumns()).from(table).setMaxRows(400);
 		dc.executeQuery(q);
 	}
 
 	public void testGetSchema() throws Exception {
-		DataContext dc = new JdbcDataContext(_connection);
+	    if (!isConfigured()) {
+            return;
+        }
+        
+		DataContext dc = new JdbcDataContext(getConnection());
 		Schema[] schemas = dc.getSchemas();
 		assertEquals(5, schemas.length);
 		Schema schema = dc.getDefaultSchema();
@@ -273,7 +298,7 @@ public class MysqlTest extends TestCase {
 				"[Relationship[primaryTable=language,primaryColumns=[language_id],foreignTable=film,foreignColumns=[language_id]], Relationship[primaryTable=language,primaryColumns=[language_id],foreignTable=film,foreignColumns=[original_language_id]], Relationship[primaryTable=film,primaryColumns=[film_id],foreignTable=film_actor,foreignColumns=[film_id]], Relationship[primaryTable=film,primaryColumns=[film_id],foreignTable=film_category,foreignColumns=[film_id]], Relationship[primaryTable=film,primaryColumns=[film_id],foreignTable=inventory,foreignColumns=[film_id]]]",
 				Arrays.toString(filmTable.getRelationships()));
 
-		dc = new JdbcDataContext(_connection, TableType.DEFAULT_TABLE_TYPES, "sakila");
+		dc = new JdbcDataContext(getConnection(), TableType.DEFAULT_TABLE_TYPES, "sakila");
 		schemas = dc.getSchemas();
 		assertEquals(6, schemas.length);
 		assertEquals("[Table[name=actor,type=TABLE,remarks=], " + "Table[name=address,type=TABLE,remarks=], "
@@ -305,7 +330,11 @@ public class MysqlTest extends TestCase {
 	}
 
 	public void testSplitQuery() throws Exception {
-		DataContext dc = new JdbcDataContext(_connection, TableType.DEFAULT_TABLE_TYPES, "sakila");
+	    if (!isConfigured()) {
+            return;
+        }
+        
+		DataContext dc = new JdbcDataContext(getConnection(), TableType.DEFAULT_TABLE_TYPES, "sakila");
 		Schema schema = dc.getSchemaByName("sakila");
 		Table staffListTable = schema.getTableByName("staff_list");
 		assertNotNull(staffListTable);
@@ -337,7 +366,11 @@ public class MysqlTest extends TestCase {
 	}
 
 	public void testQueryWithSingleQuote() throws Exception {
-		DataContext dc = new JdbcDataContext(_connection, TableType.DEFAULT_TABLE_TYPES, "sakila");
+	    if (!isConfigured()) {
+            return;
+        }
+        
+		DataContext dc = new JdbcDataContext(getConnection(), TableType.DEFAULT_TABLE_TYPES, "sakila");
 		Query q = dc.query().from("category").selectCount().where("name").eq("kasper's horror movies").toQuery();
 		DataSet ds = dc.executeQuery(q);
 		assertTrue(ds.next());
@@ -346,7 +379,11 @@ public class MysqlTest extends TestCase {
 	}
 
 	public void testWhiteSpaceColumns() throws Exception {
-		DatabaseMetaData metaData = _connection.getMetaData();
+	    if (!isConfigured()) {
+            return;
+        }
+        
+		DatabaseMetaData metaData = getConnection().getMetaData();
 		assertEquals("`", metaData.getIdentifierQuoteString());
 	}
 }
