@@ -253,11 +253,27 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         assertFalse(ds.next());
         ds.close();
 
+        ds = dc.query().from(getDatabaseName()).select("_id").where("name").eq("Jane Doe").execute();
+        assertTrue(ds.next());
+        Object pkValue = ds.getRow().getValue(0);
+        assertFalse(ds.next());
+        ds.close();
+
         // test primary key lookup query
-        ds = dc.query().from(getDatabaseName()).select("name").and("gender").where("_id")
-                .eq("jane_doe_some_unique_test_id").execute();
+        ds = dc.query().from(getDatabaseName()).select("name").and("gender").where("_id").eq(pkValue).execute();
         assertTrue(ds.next());
         assertEquals("Row[values=[Jane Doe, F]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        // test primary key null
+        ds = dc.query().from(getDatabaseName()).select("name").and("gender").where("_id").isNull().execute();
+        assertFalse(ds.next());
+        ds.close();
+
+        // test primary key not found
+        ds = dc.query().from(getDatabaseName()).select("name").and("gender").where("_id").eq("this id does not exist")
+                .execute();
         assertFalse(ds.next());
         ds.close();
     }

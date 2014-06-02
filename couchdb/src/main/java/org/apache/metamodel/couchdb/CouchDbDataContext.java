@@ -249,11 +249,18 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
     @Override
     protected org.apache.metamodel.data.Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems,
             Column primaryKeyColumn, Object keyValue) {
+        if (keyValue == null) {
+            return null;
+        }
+
         final String databaseName = table.getName();
         final CouchDbConnector connector = _couchDbInstance.createConnector(databaseName, false);
 
-        final String keyString = (String) keyValue;
+        final String keyString = keyValue.toString();
         final JsonNode node = connector.find(JsonNode.class, keyString);
+        if (node == null) {
+            return null;
+        }
 
         return CouchDbUtils.jsonNodeToMetaModelRow(node, new SimpleDataSetHeader(selectItems));
     }
