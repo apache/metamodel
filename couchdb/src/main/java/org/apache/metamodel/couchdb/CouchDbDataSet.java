@@ -19,16 +19,14 @@
 package org.apache.metamodel.couchdb;
 
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.ektorp.StreamingViewResult;
 import org.apache.metamodel.data.AbstractDataSet;
+import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
+import org.codehaus.jackson.JsonNode;
+import org.ektorp.StreamingViewResult;
 
 /**
  * DataSet implementation for couch db.
@@ -54,59 +52,11 @@ final class CouchDbDataSet extends AbstractDataSet {
 
         final org.ektorp.ViewResult.Row row = _iterator.next();
         final JsonNode node = row.getDocAsNode();
-        final int size = getHeader().size();
-        final Object[] values = new Object[size];
-        for (int i = 0; i < size; i++) {
-            final String key = getHeader().getSelectItem(i).getColumn().getName();
-            final JsonNode valueNode = node.get(key);
-            final Object value;
-            if (valueNode == null || valueNode.isNull()) {
-                value = null;
-            } else if (valueNode.isTextual()) {
-                value = valueNode.asText();
-            } else if (valueNode.isArray()) {
-                value = toList(valueNode);
-            } else if (valueNode.isObject()) {
-                value = toMap(valueNode);
-            } else if (valueNode.isBoolean()) {
-                value = valueNode.asBoolean();
-            } else if (valueNode.isInt()) {
-                value = valueNode.asInt();
-            } else if (valueNode.isLong()) {
-                value = valueNode.asLong();
-            } else if (valueNode.isDouble()) {
-                value = valueNode.asDouble();
-            } else {
-                value = valueNode;
-            }
-            values[i] = value;
-        }
 
-        _row = new DefaultRow(getHeader(), values);
+        final DataSetHeader header = getHeader();
+        _row = (DefaultRow) CouchDbUtils.jsonNodeToMetaModelRow(node, header);
 
         return true;
-    }
-
-    private Map<String, Object> toMap(JsonNode valueNode) {
-        if (valueNode == null) {
-            return null;
-        }
-        try {
-            return new ObjectMapper().reader(Map.class).readValue(valueNode);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private Object toList(JsonNode valueNode) {
-        if (valueNode == null) {
-            return null;
-        }
-        try {
-            return new ObjectMapper().reader(List.class).readValue(valueNode);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     @Override

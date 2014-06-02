@@ -252,6 +252,14 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         assertEquals("Row[values=[Jane Doe, F]]", ds.getRow().toString());
         assertFalse(ds.next());
         ds.close();
+
+        // test primary key lookup query
+        ds = dc.query().from(getDatabaseName()).select("name").and("gender").where("_id")
+                .eq("jane_doe_some_unique_test_id").execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[Jane Doe, F]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
     }
 
     public void testFirstRowAndLastRow() throws Exception {

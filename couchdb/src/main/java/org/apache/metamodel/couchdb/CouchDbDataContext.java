@@ -33,6 +33,7 @@ import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
@@ -243,6 +244,18 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
         return materializeMainSchemaTable(table, columns, 1, maxRows);
+    }
+
+    @Override
+    protected org.apache.metamodel.data.Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems,
+            Column primaryKeyColumn, Object keyValue) {
+        final String databaseName = table.getName();
+        final CouchDbConnector connector = _couchDbInstance.createConnector(databaseName, false);
+
+        final String keyString = (String) keyValue;
+        final JsonNode node = connector.find(JsonNode.class, keyString);
+
+        return CouchDbUtils.jsonNodeToMetaModelRow(node, new SimpleDataSetHeader(selectItems));
     }
 
     @Override

@@ -9,6 +9,7 @@ Apache MetaModel 4.1.0-incubating
  * [METAMODEL-47] - Fixed issue in Excel of loading schema if query is fired based on metadata from a previous DataContext instance.
  * [METAMODEL-35] - Improved query rewriting for DB2 when paged queries contain ORDER BY clause.
  * [METAMODEL-44] - Added an optional method for QueryPostprocessDataContext implementations to do a row-lookup by primary key value.
+ * [METAMODEL-46] - Improved row-lookup by primary key (ID) in CouchDB
  * [METAMODEL-43] - Made CSV datastores skip empty lines in file instead of treating them of rows with null values.
  * [METAMODEL-39] - Added pooling of active/used Connections and PreparedStatements in JDBC compiled queries.
  * [METAMODEL-58] - Fixed a bug related to using CreateTable class and primary keys not getting created.
