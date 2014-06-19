@@ -19,10 +19,12 @@
 package org.apache.metamodel.csv;
 
 import java.io.File;
-
-import org.apache.metamodel.data.DataSet;
+import java.util.Arrays;
 
 import junit.framework.TestCase;
+
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.schema.Table;
 
 public class SingleLineCsvDataSetTest extends TestCase {
 
@@ -45,5 +47,21 @@ public class SingleLineCsvDataSetTest extends TestCase {
         assertEquals("Row[values=[17, bob]]", dataSet.getRow().toString());
 
         dataSet.close();
+    }
+
+    public void testMalformedLineParsing() throws Exception {
+        CsvConfiguration configuration = new CsvConfiguration(1, false, false);
+        CsvDataContext dc = new CsvDataContext(new File("src/test/resources/csv_malformed_line.txt"), configuration);
+
+        Table table = dc.getDefaultSchema().getTable(0);
+        DataSet ds = dc.query().from(table).selectAll().execute();
+        assertTrue(ds.next());
+        assertEquals("[foo, bar, baz]", Arrays.toString(ds.getRow().getValues()));
+        assertTrue(ds.next());
+        assertEquals("[\", null, null]", Arrays.toString(ds.getRow().getValues()));
+        assertTrue(ds.next());
+        assertEquals("[hello, there, world]", Arrays.toString(ds.getRow().getValues()));
+        assertFalse(ds.next());
+        ds.close();
     }
 }

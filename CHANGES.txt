@@ -20,6 +20,7 @@ Apache MetaModel 4.1.0-incubating
  * [METAMODEL-59] - Fixed a bug related to handling of date/time literals in MS SQL Server queries.
  * [METAMODEL-60] - Fixed a bug related to DISTINCT and TOP keywords in MS SQL Server queries.
  * [METAMODEL-45] - Improved and standardized way of handling integration test connection information towards external databases.
+ * [METAMODEL-62] - Fixed a bug related to fault-tolerant handling of malformed CSV lines when reading CSVs in single-line mode
 
 Apache MetaModel 4.0.0-incubating
 

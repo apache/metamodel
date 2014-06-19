@@ -25,6 +25,8 @@ import org.apache.metamodel.data.AbstractRow;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Style;
 import org.apache.metamodel.schema.Column;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVParser;
 
@@ -35,6 +37,8 @@ final class SingleLineCsvRow extends AbstractRow {
 
     private static final long serialVersionUID = 1L;
 
+    private static final Logger logger = LoggerFactory.getLogger(SingleLineCsvRow.class);
+    
     private final SingleLineCsvDataSet _dataSet;
     private final String _line;
     private final int _columnsInTable;
@@ -54,13 +58,7 @@ final class SingleLineCsvRow extends AbstractRow {
 
     private String[] getValuesInternal() {
         if (_values == null) {
-            final CSVParser parser = _dataSet.getCsvParser();
-            final String[] csvValues;
-            try {
-                csvValues = parser.parseLine(_line);
-            } catch (IOException e) {
-                throw new MetaModelException("Failed to parse CSV line no. " + _rowNumber + ": " + _line);
-            }
+            final String[] csvValues = parseLine();
 
             if (_failOnInconsistentRowLength) {
                 if (_columnsInTable != csvValues.length) {
@@ -81,7 +79,7 @@ final class SingleLineCsvRow extends AbstractRow {
                 if (columnNumber < csvValues.length) {
                     rowValues[i] = csvValues[columnNumber];
                 } else {
-                    // Ticket #125: Missing values should be enterpreted as
+                    // Ticket #125: Missing values should be interpreted as
                     // null.
                     rowValues[i] = null;
                 }
@@ -90,6 +88,22 @@ final class SingleLineCsvRow extends AbstractRow {
             _values = rowValues;
         }
         return _values;
+    }
+
+    private String[] parseLine() {
+        try {
+            final CSVParser parser = _dataSet.getCsvParser();
+            return parser.parseLine(_line);
+        } catch (IOException e) {
+            if (_failOnInconsistentRowLength) {
+                throw new MetaModelException("Failed to parse CSV line no. " + _rowNumber + ": " + _line, e);
+            } else {
+                logger.warn("Encountered unparseable line no. {}, returning line as a single value with trailing nulls: {}", _rowNumber, _line);
+                String[] csvValues = new String[_columnsInTable];
+                csvValues[0] = _line;
+                return csvValues;
+            }
+        }
     }
 
     @Override
