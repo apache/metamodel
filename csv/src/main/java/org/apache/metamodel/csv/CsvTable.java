@@ -123,7 +123,7 @@ final class CsvTable extends AbstractTable {
             } else {
                 columnName = columnNames[i];
             }
-            Column column = new MutableColumn(columnName, ColumnType.VARCHAR, this, i, null, null, nullable, null,
+            Column column = new MutableColumn(columnName, ColumnType.STRING, this, i, null, null, nullable, null,
                     false, null);
             columns[i] = column;
         }

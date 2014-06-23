@@ -44,317 +44,293 @@ import org.w3c.dom.Element;
 
 public class XmlDomDataContextTest extends TestCase {
 
-	public void testGetFromUrl() throws Exception {
-		// Retrieve the eobjects.org news rss
-		URL url = new URL("http://eobjects.org/trac/blog?format=rss");
+    public void testGetFromUrl() throws Exception {
+        // Retrieve the eobjects.org news rss
+        URL url = new URL("http://eobjects.org/trac/blog?format=rss");
 
-		try {
-			XmlDomDataContext dataContext = new XmlDomDataContext(url, true);
+        try {
+            XmlDomDataContext dataContext = new XmlDomDataContext(url, true);
 
-			Schema schema = dataContext.getDefaultSchema();
-			assertEquals("blog?format=rss", schema.getName());
-			
-			assertNotNull(schema.getTableByName("rss"));
-			assertNotNull(schema.getTableByName("channel_title"));
-			assertNotNull(schema.getTableByName("channel_link"));
-			assertNotNull(schema.getTableByName("channel_item"));
-			assertNotNull(schema.getTableByName("channel_item_category"));
-		} catch (IllegalArgumentException e) {
-			// If the network is not accessible omit the test
-			if (!(e.getCause() instanceof UnknownHostException)) {
-				throw e;
-			}
-		}
-	}
+            Schema schema = dataContext.getDefaultSchema();
+            assertEquals("blog?format=rss", schema.getName());
 
-	public void testGetSchemas() throws Exception {
-		File file = new File("src/test/resources/xml_input_eobjects.xml");
-		XmlDomDataContext dataContext = new XmlDomDataContext(file, false);
+            assertNotNull(schema.getTableByName("rss"));
+            assertNotNull(schema.getTableByName("channel_title"));
+            assertNotNull(schema.getTableByName("channel_link"));
+            assertNotNull(schema.getTableByName("channel_item"));
+            assertNotNull(schema.getTableByName("channel_item_category"));
+        } catch (IllegalArgumentException e) {
+            // If the network is not accessible omit the test
+            if (!(e.getCause() instanceof UnknownHostException)) {
+                throw e;
+            }
+        }
+    }
 
-		assertEquals("xml_input_eobjects.xml", dataContext.getDefaultSchema()
-				.getName());
-		assertEquals(2, dataContext.getSchemaNames().length);
+    public void testGetSchemas() throws Exception {
+        File file = new File("src/test/resources/xml_input_eobjects.xml");
+        XmlDomDataContext dataContext = new XmlDomDataContext(file, false);
 
-		Schema schema = dataContext.getSchemaByName("xml_input_eobjects.xml");
-		assertEquals("Schema[name=xml_input_eobjects.xml]", schema.toString());
+        assertEquals("xml_input_eobjects.xml", dataContext.getDefaultSchema().getName());
+        assertEquals(2, dataContext.getSchemaNames().length);
 
-		Table[] tables = schema.getTables();
-		assertEquals(5, schema.getTableCount());
-		assertEquals(
-				"[Table[name=eobjects.dk,type=TABLE,remarks=null], "
-						+ "Table[name=contributors_person,type=TABLE,remarks=null], "
-						+ "Table[name=contributors_person_name,type=TABLE,remarks=null], "
-						+ "Table[name=contributors_person_address,type=TABLE,remarks=null], "
-						+ "Table[name=projects_project,type=TABLE,remarks=null]]",
-				Arrays.toString(tables));
+        Schema schema = dataContext.getSchemaByName("xml_input_eobjects.xml");
+        assertEquals("Schema[name=xml_input_eobjects.xml]", schema.toString());
 
-		Table table = schema.getTableByName("eobjects.dk");
-		assertEquals(2, table.getColumnCount());
-		assertEquals(
-				"[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
-						+ "Column[name=website,columnNumber=2,type=VARCHAR,nullable=true,nativeType=XML Attribute,columnSize=null]]",
-				Arrays.toString(table.getColumns()));
+        Table[] tables = schema.getTables();
+        assertEquals(5, schema.getTableCount());
+        assertEquals("[Table[name=eobjects.dk,type=TABLE,remarks=null], "
+                + "Table[name=contributors_person,type=TABLE,remarks=null], "
+                + "Table[name=contributors_person_name,type=TABLE,remarks=null], "
+                + "Table[name=contributors_person_address,type=TABLE,remarks=null], "
+                + "Table[name=projects_project,type=TABLE,remarks=null]]", Arrays.toString(tables));
 
-		table = schema.getTableByName("contributors_person");
-		assertEquals(1, table.getColumnCount());
-		assertEquals(
-				"[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null]]",
-				Arrays.toString(table.getColumns()));
+        Table table = schema.getTableByName("eobjects.dk");
+        assertEquals(2, table.getColumnCount());
+        assertEquals(
+                "[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
+                        + "Column[name=website,columnNumber=2,type=STRING,nullable=true,nativeType=XML Attribute,columnSize=null]]",
+                Arrays.toString(table.getColumns()));
 
-		table = schema.getTableByName("contributors_person_name");
-		assertEquals(3, table.getColumnCount());
-		assertEquals(
-				"[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
-						+ "Column[name=contributors_person_id,columnNumber=1,type=INTEGER,nullable=false,nativeType=Auto-generated foreign key,columnSize=null], "
-						+ "Column[name=name,columnNumber=2,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null]]",
-				Arrays.toString(table.getColumns()));
-		assertEquals(
-				"[Relationship[primaryTable=contributors_person,primaryColumns=[id],"
-						+ "foreignTable=contributors_person_name,foreignColumns=[contributors_person_id]]]",
-				Arrays.toString(table.getRelationships()));
+        table = schema.getTableByName("contributors_person");
+        assertEquals(1, table.getColumnCount());
+        assertEquals(
+                "[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null]]",
+                Arrays.toString(table.getColumns()));
 
-		table = schema.getTableByName("contributors_person_address");
-		assertEquals(3, table.getColumnCount());
-		assertEquals(
-				"[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
-						+ "Column[name=contributors_person_id,columnNumber=1,type=INTEGER,nullable=false,nativeType=Auto-generated foreign key,columnSize=null], "
-						+ "Column[name=address,columnNumber=2,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null]]",
-				Arrays.toString(table.getColumns()));
-		assertEquals(
-				"[Relationship[primaryTable=contributors_person,primaryColumns=[id],"
-						+ "foreignTable=contributors_person_address,foreignColumns=[contributors_person_id]]]",
-				Arrays.toString(table.getRelationships()));
+        table = schema.getTableByName("contributors_person_name");
+        assertEquals(3, table.getColumnCount());
+        assertEquals(
+                "[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
+                        + "Column[name=contributors_person_id,columnNumber=1,type=INTEGER,nullable=false,nativeType=Auto-generated foreign key,columnSize=null], "
+                        + "Column[name=name,columnNumber=2,type=STRING,nullable=true,nativeType=XML Text,columnSize=null]]",
+                Arrays.toString(table.getColumns()));
+        assertEquals("[Relationship[primaryTable=contributors_person,primaryColumns=[id],"
+                + "foreignTable=contributors_person_name,foreignColumns=[contributors_person_id]]]",
+                Arrays.toString(table.getRelationships()));
 
-		table = schema.getTableByName("projects_project");
-		assertEquals(3, table.getColumnCount());
-		assertEquals(
-				"[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
-						+ "Column[name=project,columnNumber=1,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null], "
-						+ "Column[name=name,columnNumber=2,type=VARCHAR,nullable=true,nativeType=XML Attribute,columnSize=null]]",
-				Arrays.toString(table.getColumns()));
+        table = schema.getTableByName("contributors_person_address");
+        assertEquals(3, table.getColumnCount());
+        assertEquals(
+                "[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
+                        + "Column[name=contributors_person_id,columnNumber=1,type=INTEGER,nullable=false,nativeType=Auto-generated foreign key,columnSize=null], "
+                        + "Column[name=address,columnNumber=2,type=STRING,nullable=true,nativeType=XML Text,columnSize=null]]",
+                Arrays.toString(table.getColumns()));
+        assertEquals("[Relationship[primaryTable=contributors_person,primaryColumns=[id],"
+                + "foreignTable=contributors_person_address,foreignColumns=[contributors_person_id]]]",
+                Arrays.toString(table.getRelationships()));
 
-		dataContext.autoFlattenTables();
-		table = schema.getTableByName("contributors_person");
-		assertEquals(2, table.getColumnCount());
-		assertEquals(
-				"[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
-						+ "Column[name=name,columnNumber=1,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null]]",
-				Arrays.toString(table.getColumns()));
-	}
+        table = schema.getTableByName("projects_project");
+        assertEquals(3, table.getColumnCount());
+        assertEquals(
+                "[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
+                        + "Column[name=project,columnNumber=1,type=STRING,nullable=true,nativeType=XML Text,columnSize=null], "
+                        + "Column[name=name,columnNumber=2,type=STRING,nullable=true,nativeType=XML Attribute,columnSize=null]]",
+                Arrays.toString(table.getColumns()));
 
-	public void testExecuteQuery() throws Exception {
-		File file = new File("src/test/resources/xml_input_eobjects.xml");
-		DataContext dc = new XmlDomDataContext(file, false);
-		Schema schema = dc.getDefaultSchema();
-		Table table = schema.getTableByName("projects_project");
-		Query q = new Query().select(table.getColumns()).from(table, "p");
-		assertEquals(
-				"SELECT p.id, p.project, p.name FROM xml_input_eobjects.xml.projects_project p",
-				q.toString());
-		DataSet data = dc.executeQuery(q);
-		TableModel tableModel = new DataSetTableModel(data);
-		assertEquals(3, tableModel.getColumnCount());
-		assertEquals(2, tableModel.getRowCount());
+        dataContext.autoFlattenTables();
+        table = schema.getTableByName("contributors_person");
+        assertEquals(2, table.getColumnCount());
+        assertEquals(
+                "[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
+                        + "Column[name=name,columnNumber=1,type=STRING,nullable=true,nativeType=XML Text,columnSize=null]]",
+                Arrays.toString(table.getColumns()));
+    }
 
-		// ID
-		assertEquals(1, tableModel.getValueAt(0, 0));
-		assertEquals(2, tableModel.getValueAt(1, 0));
+    public void testExecuteQuery() throws Exception {
+        File file = new File("src/test/resources/xml_input_eobjects.xml");
+        DataContext dc = new XmlDomDataContext(file, false);
+        Schema schema = dc.getDefaultSchema();
+        Table table = schema.getTableByName("projects_project");
+        Query q = new Query().select(table.getColumns()).from(table, "p");
+        assertEquals("SELECT p.id, p.project, p.name FROM xml_input_eobjects.xml.projects_project p", q.toString());
+        DataSet data = dc.executeQuery(q);
+        TableModel tableModel = new DataSetTableModel(data);
+        assertEquals(3, tableModel.getColumnCount());
+        assertEquals(2, tableModel.getRowCount());
 
-		// Project (text content)
-		assertEquals("Some description", tableModel.getValueAt(0, 1));
-		assertNull(tableModel.getValueAt(1, 1));
+        // ID
+        assertEquals(1, tableModel.getValueAt(0, 0));
+        assertEquals(2, tableModel.getValueAt(1, 0));
 
-		// Name
-		assertEquals("datacleaner", tableModel.getValueAt(0, 2));
-		assertEquals("MetaModel", tableModel.getValueAt(1, 2));
+        // Project (text content)
+        assertEquals("Some description", tableModel.getValueAt(0, 1));
+        assertNull(tableModel.getValueAt(1, 1));
 
-		// Make a new query that joins the normalized tables together
-		table = schema.getTableByName("contributors_person_address");
-		Relationship relationShip = table.getRelationships()[0];
-		q = new Query().select(relationShip.getPrimaryTable().getColumns())
-				.select(relationShip.getForeignTable().getColumns())
-				.from(new FromItem(JoinType.INNER, relationShip));
+        // Name
+        assertEquals("datacleaner", tableModel.getValueAt(0, 2));
+        assertEquals("MetaModel", tableModel.getValueAt(1, 2));
 
-		assertEquals(
-				"SELECT contributors_person.id, contributors_person_address.id, "
-						+ "contributors_person_address.contributors_person_id, contributors_person_address.address "
-						+ "FROM xml_input_eobjects.xml.contributors_person INNER JOIN xml_input_eobjects.xml.contributors_person_address "
-						+ "ON contributors_person.id = contributors_person_address.contributors_person_id",
-				q.toString());
+        // Make a new query that joins the normalized tables together
+        table = schema.getTableByName("contributors_person_address");
+        Relationship relationShip = table.getRelationships()[0];
+        q = new Query().select(relationShip.getPrimaryTable().getColumns())
+                .select(relationShip.getForeignTable().getColumns()).from(new FromItem(JoinType.INNER, relationShip));
 
-		data = dc.executeQuery(q);
-		tableModel = new DataSetTableModel(data);
-		assertEquals(4, tableModel.getColumnCount());
-		assertEquals(4, tableModel.getRowCount());
+        assertEquals(
+                "SELECT contributors_person.id, contributors_person_address.id, "
+                        + "contributors_person_address.contributors_person_id, contributors_person_address.address "
+                        + "FROM xml_input_eobjects.xml.contributors_person INNER JOIN xml_input_eobjects.xml.contributors_person_address "
+                        + "ON contributors_person.id = contributors_person_address.contributors_person_id",
+                q.toString());
 
-		assertEquals("1", tableModel.getValueAt(0, 0).toString());
-		assertEquals("1", tableModel.getValueAt(0, 1).toString());
-		assertEquals("1", tableModel.getValueAt(0, 2).toString());
-		assertEquals("My address", tableModel.getValueAt(0, 3).toString());
+        data = dc.executeQuery(q);
+        tableModel = new DataSetTableModel(data);
+        assertEquals(4, tableModel.getColumnCount());
+        assertEquals(4, tableModel.getRowCount());
 
-		assertEquals("1", tableModel.getValueAt(1, 0).toString());
-		assertEquals("2", tableModel.getValueAt(1, 1).toString());
-		assertEquals("1", tableModel.getValueAt(1, 2).toString());
-		assertEquals("Another address", tableModel.getValueAt(1, 3).toString());
+        assertEquals("1", tableModel.getValueAt(0, 0).toString());
+        assertEquals("1", tableModel.getValueAt(0, 1).toString());
+        assertEquals("1", tableModel.getValueAt(0, 2).toString());
+        assertEquals("My address", tableModel.getValueAt(0, 3).toString());
 
-		assertEquals("1", tableModel.getValueAt(2, 0).toString());
-		assertEquals("3", tableModel.getValueAt(2, 1).toString());
-		assertEquals("1", tableModel.getValueAt(2, 2).toString());
-		assertEquals("A third address", tableModel.getValueAt(2, 3).toString());
+        assertEquals("1", tableModel.getValueAt(1, 0).toString());
+        assertEquals("2", tableModel.getValueAt(1, 1).toString());
+        assertEquals("1", tableModel.getValueAt(1, 2).toString());
+        assertEquals("Another address", tableModel.getValueAt(1, 3).toString());
 
-		assertEquals("2", tableModel.getValueAt(3, 0).toString());
-		assertEquals("4", tableModel.getValueAt(3, 1).toString());
-		assertEquals("2", tableModel.getValueAt(3, 2).toString());
-		assertEquals("Asbjorns address", tableModel.getValueAt(3, 3).toString());
-	}
+        assertEquals("1", tableModel.getValueAt(2, 0).toString());
+        assertEquals("3", tableModel.getValueAt(2, 1).toString());
+        assertEquals("1", tableModel.getValueAt(2, 2).toString());
+        assertEquals("A third address", tableModel.getValueAt(2, 3).toString());
 
-	public void testGetTextContent() throws Exception {
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		dbf.setIgnoringComments(true);
-		DocumentBuilder db = dbf.newDocumentBuilder();
-		Document document = db.parse(new File(
-				"src/test/resources/xml_input_simple.xml"));
-		Element rootElement = document.getDocumentElement();
-		Element[] childElements = XmlDomDataContext
-				.getChildElements(rootElement);
-		assertEquals("w00p", XmlDomDataContext.getTextContent(childElements[0]));
-		assertNull(XmlDomDataContext.getTextContent(childElements[1]));
-		assertNull(XmlDomDataContext.getTextContent(childElements[2]));
-		assertNull(XmlDomDataContext.getTextContent(rootElement));
+        assertEquals("2", tableModel.getValueAt(3, 0).toString());
+        assertEquals("4", tableModel.getValueAt(3, 1).toString());
+        assertEquals("2", tableModel.getValueAt(3, 2).toString());
+        assertEquals("Asbjorns address", tableModel.getValueAt(3, 3).toString());
+    }
 
-		XmlDomDataContext strategy = new XmlDomDataContext("foobarSchema",
-				document, true);
-		Schema schema = strategy.getSchemaByName("foobarSchema");
-		assertEquals("Schema[name=foobarSchema]", schema.toString());
-		assertEquals("[Table[name=child,type=TABLE,remarks=null]]",
-				Arrays.toString(schema.getTables()));
-		Table table = schema.getTables()[0];
-		assertEquals(
-				"[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
-						+ "Column[name=child,columnNumber=1,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null]]",
-				Arrays.toString(table.getColumns()));
-	}
+    public void testGetTextContent() throws Exception {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setIgnoringComments(true);
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document document = db.parse(new File("src/test/resources/xml_input_simple.xml"));
+        Element rootElement = document.getDocumentElement();
+        Element[] childElements = XmlDomDataContext.getChildElements(rootElement);
+        assertEquals("w00p", XmlDomDataContext.getTextContent(childElements[0]));
+        assertNull(XmlDomDataContext.getTextContent(childElements[1]));
+        assertNull(XmlDomDataContext.getTextContent(childElements[2]));
+        assertNull(XmlDomDataContext.getTextContent(rootElement));
 
-	public void testFlattenTables() throws Exception {
-		File file = new File("src/test/resources/xml_input_flatten_tables.xml");
-		XmlDomDataContext dc = new XmlDomDataContext(file, false);
-		Schema schema = dc.getDefaultSchema();
-		assertEquals("[Table[name=dependency,type=TABLE,remarks=null], "
-				+ "Table[name=dependency_groupId,type=TABLE,remarks=null], "
-				+ "Table[name=dependency_artifactId,type=TABLE,remarks=null], "
-				+ "Table[name=dependency_version,type=TABLE,remarks=null], "
-				+ "Table[name=dependency_scope,type=TABLE,remarks=null]]",
-				Arrays.toString(schema.getTables()));
-		Table dependencyTable = schema.getTableByName("dependency");
-		assertEquals(
-				"[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null]]",
-				Arrays.toString(dependencyTable.getColumns()));
-		List<Object[]> dependencyData = dc.materializeMainSchemaTable(
-				dependencyTable, dependencyTable.getColumns(), -1)
-				.toObjectArrays();
-		assertEquals(11, dependencyData.size());
-		assertEquals("[1]", Arrays.toString(dependencyData.get(0)));
-		assertEquals("[11]", Arrays.toString(dependencyData.get(10)));
+        XmlDomDataContext strategy = new XmlDomDataContext("foobarSchema", document, true);
+        Schema schema = strategy.getSchemaByName("foobarSchema");
+        assertEquals("Schema[name=foobarSchema]", schema.toString());
+        assertEquals("[Table[name=child,type=TABLE,remarks=null]]", Arrays.toString(schema.getTables()));
+        Table table = schema.getTables()[0];
+        assertEquals(
+                "[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
+                        + "Column[name=child,columnNumber=1,type=STRING,nullable=true,nativeType=XML Text,columnSize=null]]",
+                Arrays.toString(table.getColumns()));
+    }
 
-		Relationship relationship = schema.getTableByName("dependency_groupId")
-				.getRelationships()[0];
-		assertEquals(
-				"Relationship[primaryTable=dependency,primaryColumns=[id],foreignTable=dependency_groupId,foreignColumns=[dependency_id]]",
-				relationship.toString());
+    public void testFlattenTables() throws Exception {
+        File file = new File("src/test/resources/xml_input_flatten_tables.xml");
+        XmlDomDataContext dc = new XmlDomDataContext(file, false);
+        Schema schema = dc.getDefaultSchema();
+        assertEquals("[Table[name=dependency,type=TABLE,remarks=null], "
+                + "Table[name=dependency_groupId,type=TABLE,remarks=null], "
+                + "Table[name=dependency_artifactId,type=TABLE,remarks=null], "
+                + "Table[name=dependency_version,type=TABLE,remarks=null], "
+                + "Table[name=dependency_scope,type=TABLE,remarks=null]]", Arrays.toString(schema.getTables()));
+        Table dependencyTable = schema.getTableByName("dependency");
+        assertEquals(
+                "[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null]]",
+                Arrays.toString(dependencyTable.getColumns()));
+        List<Object[]> dependencyData = dc
+                .materializeMainSchemaTable(dependencyTable, dependencyTable.getColumns(), -1).toObjectArrays();
+        assertEquals(11, dependencyData.size());
+        assertEquals("[1]", Arrays.toString(dependencyData.get(0)));
+        assertEquals("[11]", Arrays.toString(dependencyData.get(10)));
 
-		dc.flattenTables(relationship);
+        Relationship relationship = schema.getTableByName("dependency_groupId").getRelationships()[0];
+        assertEquals(
+                "Relationship[primaryTable=dependency,primaryColumns=[id],foreignTable=dependency_groupId,foreignColumns=[dependency_id]]",
+                relationship.toString());
 
-		assertEquals("[Table[name=dependency,type=TABLE,remarks=null], "
-				+ "Table[name=dependency_artifactId,type=TABLE,remarks=null], "
-				+ "Table[name=dependency_version,type=TABLE,remarks=null], "
-				+ "Table[name=dependency_scope,type=TABLE,remarks=null]]",
-				Arrays.toString(schema.getTables()));
+        dc.flattenTables(relationship);
 
-		assertEquals(
-				"[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
-						+ "Column[name=groupId,columnNumber=1,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null]]",
-				Arrays.toString(dependencyTable.getColumns()));
+        assertEquals("[Table[name=dependency,type=TABLE,remarks=null], "
+                + "Table[name=dependency_artifactId,type=TABLE,remarks=null], "
+                + "Table[name=dependency_version,type=TABLE,remarks=null], "
+                + "Table[name=dependency_scope,type=TABLE,remarks=null]]", Arrays.toString(schema.getTables()));
 
-		dependencyData = dc.materializeMainSchemaTable(dependencyTable,
-				dependencyTable.getColumns(), -1).toObjectArrays();
-		assertEquals(11, dependencyData.size());
-		assertEquals("[1, joda-time]", Arrays.toString(dependencyData.get(0)));
-		assertEquals("[11, mysql]", Arrays.toString(dependencyData.get(10)));
+        assertEquals(
+                "[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
+                        + "Column[name=groupId,columnNumber=1,type=STRING,nullable=true,nativeType=XML Text,columnSize=null]]",
+                Arrays.toString(dependencyTable.getColumns()));
 
-		dc.autoFlattenTables();
+        dependencyData = dc.materializeMainSchemaTable(dependencyTable, dependencyTable.getColumns(), -1)
+                .toObjectArrays();
+        assertEquals(11, dependencyData.size());
+        assertEquals("[1, joda-time]", Arrays.toString(dependencyData.get(0)));
+        assertEquals("[11, mysql]", Arrays.toString(dependencyData.get(10)));
 
-		assertEquals("[Table[name=dependency,type=TABLE,remarks=null]]",
-				Arrays.toString(schema.getTables()));
-		assertEquals(
-				"[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
-						+ "Column[name=groupId,columnNumber=1,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null], "
-						+ "Column[name=artifactId,columnNumber=2,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null], "
-						+ "Column[name=version,columnNumber=3,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null], "
-						+ "Column[name=scope,columnNumber=4,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null]]",
-				Arrays.toString(dependencyTable.getColumns()));
+        dc.autoFlattenTables();
 
-		dependencyData = dc.materializeMainSchemaTable(dependencyTable,
-				dependencyTable.getColumns(), -1).toObjectArrays();
-		assertEquals(11, dependencyData.size());
-		assertEquals("[1, joda-time, joda-time, 1.5.2, compile]",
-				Arrays.toString(dependencyData.get(0)));
-		assertEquals("[11, mysql, mysql-connector-java, 5.1.6, test]",
-				Arrays.toString(dependencyData.get(10)));
-	}
+        assertEquals("[Table[name=dependency,type=TABLE,remarks=null]]", Arrays.toString(schema.getTables()));
+        assertEquals(
+                "[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
+                        + "Column[name=groupId,columnNumber=1,type=STRING,nullable=true,nativeType=XML Text,columnSize=null], "
+                        + "Column[name=artifactId,columnNumber=2,type=STRING,nullable=true,nativeType=XML Text,columnSize=null], "
+                        + "Column[name=version,columnNumber=3,type=STRING,nullable=true,nativeType=XML Text,columnSize=null], "
+                        + "Column[name=scope,columnNumber=4,type=STRING,nullable=true,nativeType=XML Text,columnSize=null]]",
+                Arrays.toString(dependencyTable.getColumns()));
 
-	public void testParsePom() throws Exception {
-		XmlDomDataContext dc = new XmlDomDataContext(new File(
-				"src/test/resources/xml_input_pom.xml"));
-		Schema schema = dc.getDefaultSchema();
+        dependencyData = dc.materializeMainSchemaTable(dependencyTable, dependencyTable.getColumns(), -1)
+                .toObjectArrays();
+        assertEquals(11, dependencyData.size());
+        assertEquals("[1, joda-time, joda-time, 1.5.2, compile]", Arrays.toString(dependencyData.get(0)));
+        assertEquals("[11, mysql, mysql-connector-java, 5.1.6, test]", Arrays.toString(dependencyData.get(10)));
+    }
 
-		Table table = schema.getTableByName("dependencies_dependency");
-		assertEquals(
-				"[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
-						+ "Column[name=groupId,columnNumber=1,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null], "
-						+ "Column[name=artifactId,columnNumber=2,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null], "
-						+ "Column[name=version,columnNumber=3,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null], "
-						+ "Column[name=scope,columnNumber=4,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null]]",
-				Arrays.toString(table.getColumns()));
+    public void testParsePom() throws Exception {
+        XmlDomDataContext dc = new XmlDomDataContext(new File("src/test/resources/xml_input_pom.xml"));
+        Schema schema = dc.getDefaultSchema();
 
-		table = schema.getTableByName("inceptionYear");
-		assertEquals(
-				"[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
-						+ "Column[name=inceptionYear,columnNumber=1,type=VARCHAR,nullable=true,nativeType=XML Text,columnSize=null]]",
-				Arrays.toString(table.getColumns()));
+        Table table = schema.getTableByName("dependencies_dependency");
+        assertEquals(
+                "[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
+                        + "Column[name=groupId,columnNumber=1,type=STRING,nullable=true,nativeType=XML Text,columnSize=null], "
+                        + "Column[name=artifactId,columnNumber=2,type=STRING,nullable=true,nativeType=XML Text,columnSize=null], "
+                        + "Column[name=version,columnNumber=3,type=STRING,nullable=true,nativeType=XML Text,columnSize=null], "
+                        + "Column[name=scope,columnNumber=4,type=STRING,nullable=true,nativeType=XML Text,columnSize=null]]",
+                Arrays.toString(table.getColumns()));
 
-		// first read
-		DataSet data = dc.executeQuery(new Query()
-				.select(table.getColumnByName("inceptionYear")).from(table)
-				.setMaxRows(1));
-		assertTrue(data.next());
-		assertEquals("2007", data.getRow().getValue(0));
-		assertFalse(data.next());
+        table = schema.getTableByName("inceptionYear");
+        assertEquals(
+                "[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=Auto-generated primary key,columnSize=null], "
+                        + "Column[name=inceptionYear,columnNumber=1,type=STRING,nullable=true,nativeType=XML Text,columnSize=null]]",
+                Arrays.toString(table.getColumns()));
 
-		// repeated read
-		data = dc.query().from(table).select("inceptionYear").execute();
-		assertTrue(data.next());
-		assertEquals("2007", data.getRow().getValue(0));
-		assertFalse(data.next());
-	}
+        // first read
+        DataSet data = dc.executeQuery(new Query().select(table.getColumnByName("inceptionYear")).from(table)
+                .setMaxRows(1));
+        assertTrue(data.next());
+        assertEquals("2007", data.getRow().getValue(0));
+        assertFalse(data.next());
 
-	public void testAutoflattenTicket229() throws Exception {
-		DataContext dc = new XmlDomDataContext(new File(
-				"src/test/resources/xml_input_ticket_229.xml"));
-		Schema schema = dc.getDefaultSchema();
-		assertNotNull(schema);
+        // repeated read
+        data = dc.query().from(table).select("inceptionYear").execute();
+        assertTrue(data.next());
+        assertEquals("2007", data.getRow().getValue(0));
+        assertFalse(data.next());
+    }
 
-		assertEquals(
-				"[VirtualBox, Machine, Machine_ExtraData_ExtraDataItem, Machine_Hardware_Boot_Order, "
-						+ "Machine_Hardware_Display, Machine_Hardware_RemoteDisplay, Machine_Hardware_BIOS_Logo, "
-						+ "Machine_Hardware_DVDDrive, Machine_Hardware_USBController, Machine_Hardware_SATAController, "
-						+ "Machine_Hardware_Network_Adapter, Machine_Hardware_UART_Port, Machine_Hardware_LPT_Port, "
-						+ "Machine_Hardware_AudioAdapter, Machine_Hardware_SharedFolders_SharedFolder, "
-						+ "Machine_Hardware_Guest, Machine_HardDiskAttachments_HardDiskAttachment]",
-				Arrays.toString(schema.getTableNames()));
-		assertEquals(
-				"[id, OSType, lastStateChange, name, uuid, enabled, enabled, RAMSize, enabled, enabled, mode, value, "
-						+ "enabled, type, enabled, mode]",
-				Arrays.toString(schema.getTableByName("Machine")
-						.getColumnNames()));
-	}
+    public void testAutoflattenTicket229() throws Exception {
+        DataContext dc = new XmlDomDataContext(new File("src/test/resources/xml_input_ticket_229.xml"));
+        Schema schema = dc.getDefaultSchema();
+        assertNotNull(schema);
+
+        assertEquals("[VirtualBox, Machine, Machine_ExtraData_ExtraDataItem, Machine_Hardware_Boot_Order, "
+                + "Machine_Hardware_Display, Machine_Hardware_RemoteDisplay, Machine_Hardware_BIOS_Logo, "
+                + "Machine_Hardware_DVDDrive, Machine_Hardware_USBController, Machine_Hardware_SATAController, "
+                + "Machine_Hardware_Network_Adapter, Machine_Hardware_UART_Port, Machine_Hardware_LPT_Port, "
+                + "Machine_Hardware_AudioAdapter, Machine_Hardware_SharedFolders_SharedFolder, "
+                + "Machine_Hardware_Guest, Machine_HardDiskAttachments_HardDiskAttachment]",
+                Arrays.toString(schema.getTableNames()));
+        assertEquals(
+                "[id, OSType, lastStateChange, name, uuid, enabled, enabled, RAMSize, enabled, enabled, mode, value, "
+                        + "enabled, type, enabled, mode]",
+                Arrays.toString(schema.getTableByName("Machine").getColumnNames()));
+    }
 }

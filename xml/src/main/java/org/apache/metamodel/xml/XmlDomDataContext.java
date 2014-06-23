@@ -355,7 +355,7 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
                 MutableColumn column = (MutableColumn) table.getColumnByName(name);
                 if (column == null) {
                     logger.info("Creating column: {}.{}", tableName, name);
-                    column = new MutableColumn(name, ColumnType.VARCHAR, table, table.getColumnCount(), true);
+                    column = new MutableColumn(name, ColumnType.STRING, table, table.getColumnCount(), true);
                     column.setNativeType(NATIVE_TYPE_ATTRIBUTE);
                     table.addColumn(column);
                 }
@@ -412,7 +412,7 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
         }
         if (column == null && preferredColumnName != null) {
             logger.info("Creating text content column for table: " + table.getName());
-            column = new MutableColumn(preferredColumnName + TEXT_CONTENT_TEMP_SUFFIX, ColumnType.VARCHAR, table,
+            column = new MutableColumn(preferredColumnName + TEXT_CONTENT_TEMP_SUFFIX, ColumnType.STRING, table,
                     table.getColumnCount(), true);
             column.setNativeType(NATIVE_TYPE_TEXT);
             table.addColumn(column);

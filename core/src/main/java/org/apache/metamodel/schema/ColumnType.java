@@ -106,6 +106,7 @@ public interface ColumnType extends HasName, Serializable {
      */
     public static final ColumnType LIST = new ColumnTypeImpl("LIST", OTHER_TYPE, List.class);
     public static final ColumnType MAP = new ColumnTypeImpl("MAP", OTHER_TYPE, Map.class);
+    public static final ColumnType STRING = new ColumnTypeImpl("STRING", LITERAL_TYPE);
 
     public Comparator<Object> getComparator();
 

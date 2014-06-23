@@ -137,7 +137,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             }
 
             for (int j = offset; j < row.getLastCellNum(); j++) {
-                Column column = new MutableColumn(sequence.next(), ColumnType.VARCHAR, table, j, true);
+                Column column = new MutableColumn(sequence.next(), ColumnType.STRING, table, j, true);
                 table.addColumn(column);
             }
         } else {

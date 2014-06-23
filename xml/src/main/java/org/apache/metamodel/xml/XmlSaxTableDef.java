@@ -81,8 +81,6 @@ import org.apache.metamodel.schema.Table;
  * <li>Employee gender: "/root/organization/employees/employee/gender"</li>
  * <li>Employee organization index: "index(/root/organization)"</li>
  * </ul>
- * 
- * @author Kasper Sørensen
  */
 public final class XmlSaxTableDef implements Serializable {
 

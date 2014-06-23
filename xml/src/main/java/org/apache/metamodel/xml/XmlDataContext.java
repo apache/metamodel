@@ -27,8 +27,6 @@ import org.xml.sax.InputSource;
 /**
  * DataContext implementation for XML files.
  * 
- * @author Kasper Sørensen
- * 
  * @deprecated use {@link XmlDomDataContext} or {@link XmlSaxDataContext}
  *             instead.
  */

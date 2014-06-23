@@ -144,7 +144,7 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
         if (columnNames != null) {
             for (int i = 0; i < columnNames.length; i++) {
                 final String columnName = columnNames[i];
-                final MutableColumn column = new MutableColumn(columnName, ColumnType.VARCHAR, table, i, true);
+                final MutableColumn column = new MutableColumn(columnName, ColumnType.STRING, table, i, true);
                 column.setColumnSize(_configuration.getValueWidth(i));
                 table.addColumn(column);
             }

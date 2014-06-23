@@ -60,8 +60,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * The DataContext requires the user to specify a set of (simplified) XPaths to
  * define which elements are row delimitors and which elements or attributes are
  * value/column definitions.
- * 
- * @author Kasper Sørensen
  */
 public class XmlSaxDataContext extends QueryPostprocessDataContext {
 
@@ -126,19 +124,20 @@ public class XmlSaxDataContext extends QueryPostprocessDataContext {
 
         for (XmlSaxTableDef tableDef : _tableDefs) {
             final String rowXpath = tableDef.getRowXpath();
-            final MutableTable table = new MutableTable(getTableName(tableDef)).setSchema(schema)
-                    .setRemarks("XPath: " + rowXpath);
+            final MutableTable table = new MutableTable(getTableName(tableDef)).setSchema(schema).setRemarks(
+                    "XPath: " + rowXpath);
 
-            final MutableColumn rowIndexColumn = new MutableColumn(COLUMN_NAME_ROW_ID, ColumnType.INTEGER).setColumnNumber(0)
-                    .setNullable(false).setTable(table).setRemarks("Row/tag index (0-based)");
+            final MutableColumn rowIndexColumn = new MutableColumn(COLUMN_NAME_ROW_ID, ColumnType.INTEGER)
+                    .setColumnNumber(0).setNullable(false).setTable(table).setRemarks("Row/tag index (0-based)");
             table.addColumn(rowIndexColumn);
 
             for (String valueXpath : tableDef.getValueXpaths()) {
-                final MutableColumn column = new MutableColumn(getName(tableDef, valueXpath)).setRemarks("XPath: " + valueXpath);
+                final MutableColumn column = new MutableColumn(getName(tableDef, valueXpath)).setRemarks("XPath: "
+                        + valueXpath);
                 if (valueXpath.startsWith("index(") && valueXpath.endsWith(")")) {
                     column.setType(ColumnType.INTEGER);
                 } else {
-                    column.setType(ColumnType.VARCHAR);
+                    column.setType(ColumnType.STRING);
                 }
                 column.setTable(table);
                 table.addColumn(column);
@@ -226,7 +225,8 @@ public class XmlSaxDataContext extends QueryPostprocessDataContext {
                 SAXParserFactory saxFactory = SAXParserFactory.newInstance();
                 SAXParser saxParser = saxFactory.newSAXParser();
                 XMLReader xmlReader = saxParser.getXMLReader();
-                xmlReader.setContentHandler(new XmlSaxContentHandler(tableDef.getRowXpath(), rowPublisher, valueXpaths));
+                xmlReader
+                        .setContentHandler(new XmlSaxContentHandler(tableDef.getRowXpath(), rowPublisher, valueXpaths));
                 try {
                     xmlReader.parse(_inputSourceRef.get());
                 } catch (XmlStopParsingException e) {

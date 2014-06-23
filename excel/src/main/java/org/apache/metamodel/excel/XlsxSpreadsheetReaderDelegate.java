@@ -177,7 +177,7 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
                 if (columnName == null) {
                     columnName = "[Column " + (columnNumber + 1) + "]";
                 }
-                table.addColumn(new MutableColumn(columnName, ColumnType.VARCHAR, table, columnNumber, true));
+                table.addColumn(new MutableColumn(columnName, ColumnType.STRING, table, columnNumber, true));
             }
             columnNumber++;
         }
