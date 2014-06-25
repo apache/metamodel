@@ -2,6 +2,7 @@ Apache MetaModel 4.1.0-incubating
 
  * [METAMODEL-13] - Added support for Apache HBase via the new module "MetaModel-hbase"
  * [METAMODEL-54] - ColumnType converted from enum to interface to allow for further specialization in modules.
+ * [METAMODEL-57] - Changed the column type VARCHAR into STRING for the modules: CSV, Fixedwidth, Excel and XML.
  * [METAMODEL-56] - Made separate column types for converted JDBC LOBs - "CLOB as String" and "BLOB as bytes".
  * [METAMODEL-41] - Added a parser for SimpleTableDef objects (SimpleTableDefParser). It parses statements similar to CREATE TABLE statements, although without the "CREATE TABLE" prefix. For example: foo (bar INTEGER, baz VARCHAR).
  * [METAMODEL-11] - New module "MetaModel-spring" which adds a convenient FactoryBean to produce various types of DataContext objects based on externalizable parameters, for Spring framework users.
