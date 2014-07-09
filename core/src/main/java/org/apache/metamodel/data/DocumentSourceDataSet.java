@@ -16,35 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.json;
+package org.apache.metamodel.data;
 
-import java.util.Map;
-
-import org.apache.metamodel.data.AbstractDataSet;
-import org.apache.metamodel.data.DataSetHeader;
-import org.apache.metamodel.data.Row;
-import org.apache.metamodel.schema.builder.DocumentConverter;
+import org.apache.metamodel.convert.DocumentConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class JsonDataSet extends AbstractDataSet {
+/**
+ * A {@link DataSet} that uses a {@link DocumentSource} as it's source.
+ */
+public class DocumentSourceDataSet extends AbstractDataSet {
 
-    private static final Logger logger = LoggerFactory.getLogger(JsonDataSet.class);
+    private static final Logger logger = LoggerFactory.getLogger(DocumentSourceDataSet.class);
 
-    private final JsonDocumentSource _jsonDocumentSource;
+    private final DocumentSource _documentSource;
     private final DocumentConverter _converter;
-    private volatile Map<String, ?> _map;
+    private volatile Document _document;
 
-    public JsonDataSet(DataSetHeader header, JsonDocumentSource jsonDocumentSource, DocumentConverter converter) {
+    public DocumentSourceDataSet(DataSetHeader header, DocumentSource documentSource, DocumentConverter converter) {
         super(header);
-        _jsonDocumentSource = jsonDocumentSource;
+        _documentSource = documentSource;
         _converter = converter;
     }
 
     @Override
     public boolean next() {
-        _map = _jsonDocumentSource.next();
-        if (_map == null) {
+        _document = _documentSource.next();
+        if (_document == null) {
             return false;
         }
         return true;
@@ -52,20 +50,20 @@ final class JsonDataSet extends AbstractDataSet {
 
     @Override
     public Row getRow() {
-        if (_map == null) {
+        if (_document == null) {
             return null;
         }
         final DataSetHeader header = getHeader();
-        return _converter.convert(_map, header);
+        return _converter.convert(_document, header);
     }
 
     @Override
     public void close() {
         super.close();
         try {
-            _jsonDocumentSource.close();
+            _documentSource.close();
         } catch (Exception e) {
-            logger.warn("Failed to close JSON parser", e);
+            logger.warn("Failed to close DocumentSource: {}", _document, e);
         }
     }
 }

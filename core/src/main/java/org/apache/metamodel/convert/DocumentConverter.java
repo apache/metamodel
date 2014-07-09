@@ -16,36 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.schema.builder;
+package org.apache.metamodel.convert;
 
+import java.util.Map;
+
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Document;
-import org.apache.metamodel.data.DocumentSource;
-import org.apache.metamodel.util.LazyRef;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.schema.builder.SchemaBuilder;
 
 /**
- * A {@link DocumentSource} that is lazy loaded. Using this as a wrapper around
- * another source may save resources, since a {@link DocumentSource} is not
- * always invoked and thus the initial creation and closing of the source can
- * sometimes be avoided.
+ * Object responsible for converting a document ( {@link Map}) into a
+ * {@link Row} for a {@link DataSet} that is based on a {@link SchemaBuilder}.
  */
-public class LazyDocumentSource implements DocumentSource {
+public interface DocumentConverter {
 
-    private final LazyRef<DocumentSource> _lazyRef;
-
-    public LazyDocumentSource(LazyRef<DocumentSource> lazyRef) {
-        _lazyRef = lazyRef;
-    }
-
-    @Override
-    public Document next() {
-        return _lazyRef.get().next();
-    }
-
-    @Override
-    public void close() {
-        if (_lazyRef.isFetched()) {
-            _lazyRef.get().close();
-        }
-    }
-
+    /**
+     * Converts a {@link Document} into a row with the given
+     * {@link DataSetHeader}.
+     * 
+     * @param document
+     * @param header
+     * @return
+     */
+    public Row convert(Document document, DataSetHeader header);
 }

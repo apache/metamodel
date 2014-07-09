@@ -16,45 +16,40 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.schema.builder;
+package org.apache.metamodel.couchdb;
 
 import org.apache.metamodel.convert.DocumentConverter;
-import org.apache.metamodel.data.Document;
-import org.apache.metamodel.data.DocumentSource;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.util.Resource;
-import org.apache.metamodel.util.ResourceUtils;
+import org.apache.metamodel.schema.builder.DocumentSourceProvider;
+import org.apache.metamodel.schema.builder.SimpleTableDefSchemaBuilder;
+import org.apache.metamodel.util.SimpleTableDef;
 
-/**
- * {@link InferentialSchemaBuilder} that produces a single table.
- */
-public class SingleTableInferentialSchemaBuilder extends InferentialSchemaBuilder {
-
-    private final String _tableName;
-
-    public SingleTableInferentialSchemaBuilder(Resource resource) {
-        this(ResourceUtils.getParentName(resource), resource.getName());
-    }
-
-    public SingleTableInferentialSchemaBuilder(String schemaName, String tableName) {
-        super(schemaName);
-        _tableName = tableName;
+public class CouchDbSimpleTableDefSchemaBuilder extends SimpleTableDefSchemaBuilder {
+    
+    public CouchDbSimpleTableDefSchemaBuilder(SimpleTableDef[] tableDefs) {
+        super(CouchDbDataContext.SCHEMA_NAME, tableDefs);
     }
 
     @Override
     public void offerSources(DocumentSourceProvider documentSourceProvider) {
-        final DocumentSource documentSource = documentSourceProvider.getMixedDocumentSourceForSampling();
-        getTableBuilder(_tableName).offerSource(documentSource);
+
     }
 
     @Override
-    protected String determineTable(Document document) {
-        return _tableName;
+    public MutableSchema build() {
+        MutableSchema schema = super.build();
+        MutableTable[] tables = schema.getTables();
+        for (MutableTable table : tables) {
+            CouchDbTableCreationBuilder.addMandatoryColumns(table);
+        }
+        return schema;
     }
 
     @Override
     public DocumentConverter getDocumentConverter(Table table) {
-        return new ColumnNameAsKeysRowConverter();
+        return new CouchDbDocumentConverter();
     }
 
 }

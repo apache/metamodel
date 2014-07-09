@@ -20,8 +20,10 @@ package org.apache.metamodel.schema.builder;
 
 import java.util.Map;
 
+import org.apache.metamodel.convert.DocumentConverter;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.Document;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
@@ -52,8 +54,13 @@ public class SingleMapColumnSchemaBuilder implements SchemaBuilder, DocumentConv
     }
 
     @Override
-    public void offerSource(DocumentSource documentSource) {
+    public void offerSources(DocumentSourceProvider documentSourceProvider) {
         // do nothing
+    }
+    
+    @Override
+    public String getSchemaName() {
+        return _schemaName;
     }
 
     @Override
@@ -71,10 +78,10 @@ public class SingleMapColumnSchemaBuilder implements SchemaBuilder, DocumentConv
     }
 
     @Override
-    public Row convert(Map<String, ?> document, DataSetHeader header) {
+    public Row convert(Document document, DataSetHeader header) {
         assert header.size() == 1;
         Object[] values = new Object[1];
-        values[0] = document;
+        values[0] = document.getValues();
         return new DefaultRow(header, values);
     }
 

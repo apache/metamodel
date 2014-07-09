@@ -18,22 +18,28 @@
  */
 package org.apache.metamodel.schema.builder;
 
-import java.io.Closeable;
-import java.util.Map;
+import org.apache.metamodel.data.Document;
+import org.apache.metamodel.data.DocumentSource;
 
 /**
- * A source of documents to be used for building/detecting a schema or table.
+ * A provider of {@link DocumentSource}s for building schemas
  */
-public interface DocumentSource extends Closeable {
+public interface DocumentSourceProvider {
 
     /**
-     * Gets the next sample from the source, or returns null if there are no
-     * more documents available.
+     * Gets a {@link DocumentSource} containing documents of mixed origin and
+     * type.
      * 
      * @return
      */
-    public Map<String, ?> next();
-    
-    @Override
-    public void close();
+    public DocumentSource getMixedDocumentSourceForSampling();
+
+    /**
+     * Gets a {@link DocumentSource} for a particular source collection. See
+     * {@link Document#getSourceCollectionName()}.
+     * 
+     * @param sourceCollectionName
+     * @return
+     */
+    public DocumentSource getDocumentSourceForTable(String sourceCollectionName);
 }

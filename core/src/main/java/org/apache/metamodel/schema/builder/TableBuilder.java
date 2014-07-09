@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.schema.builder;
 
+import org.apache.metamodel.data.DocumentSource;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Table;

@@ -18,12 +18,13 @@
  */
 package org.apache.metamodel.schema.builder;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.metamodel.data.Document;
+import org.apache.metamodel.data.DocumentSource;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 
@@ -38,28 +39,53 @@ public abstract class InferentialSchemaBuilder implements SchemaBuilder {
     }
 
     @Override
-    public void offerSource(DocumentSource documentSource) {
-        while (true) {
-            Map<String, ?> map = documentSource.next();
-            if (map == null) {
-                return;
+    public void offerSources(DocumentSourceProvider documentSourceProvider) {
+        final DocumentSource documentSource = documentSourceProvider.getMixedDocumentSourceForSampling();
+        try {
+            while (true) {
+                final Document document = documentSource.next();
+                if (document == null) {
+                    break;
+                }
+                final String tableName = determineTable(document);
+                addObservation(tableName, document);
             }
-            String tableName = determineTable(map);
-            addObservation(tableName, map);
+        } finally {
+            documentSource.close();
         }
+    }
+
+    protected void offerDocumentSource(DocumentSource documentSource) {
+        try {
+            while (true) {
+                final Document document = documentSource.next();
+                if (document == null) {
+                    break;
+                }
+                final String tableName = determineTable(document);
+                addObservation(tableName, document);
+            }
+        } finally {
+            documentSource.close();
+        }
+    }
+
+    @Override
+    public String getSchemaName() {
+        return _schemaName;
     }
 
     /**
      * Determines which table a particular document should be mapped to.
      * 
-     * @param map
+     * @param document
      * @return
      */
-    protected abstract String determineTable(Map<String, ?> map);
+    protected abstract String determineTable(Document document);
 
-    public void addObservation(String table, Map<String, ?> values) {
+    public void addObservation(String table, Document document) {
         final InferentialTableBuilder tableBuilder = getTableBuilder(table);
-        tableBuilder.addObservation(values);
+        tableBuilder.addObservation(document);
     }
 
     public InferentialTableBuilder getTableBuilder(String table) {
@@ -82,11 +108,15 @@ public abstract class InferentialSchemaBuilder implements SchemaBuilder {
         final Set<String> tableNames = new TreeSet<String>(_tableBuilders.keySet());
 
         for (final String tableName : tableNames) {
-            final MutableTable table = getTableBuilder(tableName).buildTable();
+            final MutableTable table = buildTable(getTableBuilder(tableName));
             table.setSchema(schema);
             schema.addTable(table);
         }
 
         return schema;
+    }
+
+    protected MutableTable buildTable(InferentialTableBuilder tableBuilder) {
+        return tableBuilder.buildTable();
     }
 }

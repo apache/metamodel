@@ -16,26 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.schema.builder;
+package org.apache.metamodel.data;
 
-import java.util.Map;
+import java.io.Closeable;
 
-import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.data.DataSetHeader;
-import org.apache.metamodel.data.Row;
 
 /**
- * Object responsible for converting a document ( {@link Map}) into a
- * {@link Row} for a {@link DataSet} that is based on a {@link SchemaBuilder}.
+ * A source of documents to be used for building/detecting a schema or table.
  */
-public interface DocumentConverter {
+public interface DocumentSource extends Closeable {
 
     /**
-     * Converts a document into a row with the given {@link DataSetHeader}.
+     * Gets the next sample from the source, or returns null if there are no
+     * more documents available.
      * 
-     * @param document
-     * @param header
      * @return
      */
-    public Row convert(Map<String, ?> document, DataSetHeader header);
+    public Document next();
+
+    @Override
+    public void close();
 }

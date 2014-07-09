@@ -22,7 +22,8 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.schema.builder.DocumentSource;
+import org.apache.metamodel.data.Document;
+import org.apache.metamodel.data.DocumentSource;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
 import org.slf4j.Logger;
@@ -34,14 +35,16 @@ import org.slf4j.LoggerFactory;
 final class JsonDocumentSource implements DocumentSource {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonDocumentSource.class);
-    
-    private final JsonParser _parser;
 
-    public JsonDocumentSource(JsonParser parser) {
+    private final JsonParser _parser;
+    private final String _sourceCollectionName;
+
+    public JsonDocumentSource(JsonParser parser, String sourceCollectionName) {
         _parser = parser;
+        _sourceCollectionName = sourceCollectionName;
     }
 
-    public Map<String, ?> next() {
+    public Document next() {
         while (true) {
             final JsonToken token = getNextToken();
             if (token == null) {
@@ -49,7 +52,8 @@ final class JsonDocumentSource implements DocumentSource {
             }
 
             if (token == JsonToken.START_OBJECT) {
-                return readValue();
+                Map<String, ?> value = readValue();
+                return new Document(_sourceCollectionName, value, value);
             }
         }
     }

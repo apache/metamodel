@@ -135,22 +135,45 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
             return;
         }
 
+        final String databaseName = getDatabaseName();
+
+        {
+            // insert a document to provide data to do inferential schema
+            // detection
+            final CouchDbConnector connector = couchDbInstance.createConnector(databaseName, false);
+            final Map<String, Object> map = new HashMap<String, Object>();
+            map.put("foo", "bar");
+            map.put("bar", "baz");
+            map.put("baz", 1234);
+            connector.addToBulkBuffer(map);
+            connector.flushBulkBuffer();
+        }
+
         final CouchDbDataContext dc = new CouchDbDataContext(couchDbInstance);
+        Table table = dc.getDefaultSchema().getTableByName(databaseName);
+        assertNotNull(table);
+        assertEquals("[Column[name=_id,columnNumber=0,type=VARCHAR,nullable=false,nativeType=null,columnSize=null], "
+                + "Column[name=_rev,columnNumber=1,type=VARCHAR,nullable=false,nativeType=null,columnSize=null], "
+                + "Column[name=bar,columnNumber=2,type=VARCHAR,nullable=null,nativeType=null,columnSize=null], "
+                + "Column[name=baz,columnNumber=3,type=INTEGER,nullable=null,nativeType=null,columnSize=null], "
+                + "Column[name=foo,columnNumber=4,type=VARCHAR,nullable=null,nativeType=null,columnSize=null]]",
+                Arrays.toString(table.getColumns()));
 
         // first delete the manually created database!
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                callback.dropTable(getDatabaseName()).execute();
+                callback.dropTable(databaseName).execute();
             }
         });
 
-        assertNull(dc.getDefaultSchema().getTableByName(getDatabaseName()));
+        table = dc.getDefaultSchema().getTableByName(databaseName);
+        assertNull(table);
 
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                Table table = callback.createTable(dc.getDefaultSchema(), getDatabaseName()).withColumn("foo")
+                Table table = callback.createTable(dc.getDefaultSchema(), databaseName).withColumn("foo")
                         .ofType(ColumnType.VARCHAR).withColumn("greeting").ofType(ColumnType.VARCHAR).execute();
                 assertEquals("[_id, _rev, foo, greeting]", Arrays.toString(table.getColumnNames()));
             }
@@ -159,12 +182,12 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                callback.insertInto(getDatabaseName()).value("foo", "bar").value("greeting", "hello").execute();
-                callback.insertInto(getDatabaseName()).value("foo", "baz").value("greeting", "hi").execute();
+                callback.insertInto(databaseName).value("foo", "bar").value("greeting", "hello").execute();
+                callback.insertInto(databaseName).value("foo", "baz").value("greeting", "hi").execute();
             }
         });
 
-        DataSet ds = dc.query().from(getDatabaseName()).select("_id", "foo", "greeting").execute();
+        DataSet ds = dc.query().from(databaseName).select("_id", "foo", "greeting").execute();
         assertTrue(ds.next());
         assertNotNull(ds.getRow().getValue(0));
         assertEquals("bar", ds.getRow().getValue(1));
@@ -179,13 +202,13 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                callback.update(getDatabaseName()).value("greeting", "howdy").where("foo").isEquals("baz").execute();
+                callback.update(databaseName).value("greeting", "howdy").where("foo").isEquals("baz").execute();
 
-                callback.update(getDatabaseName()).value("foo", "foo").where("foo").isEquals("bar").execute();
+                callback.update(databaseName).value("foo", "foo").where("foo").isEquals("bar").execute();
             }
         });
 
-        ds = dc.query().from(getDatabaseName()).select("_id", "foo", "greeting").execute();
+        ds = dc.query().from(databaseName).select("_id", "foo", "greeting").execute();
         assertTrue(ds.next());
         assertNotNull(ds.getRow().getValue(0));
         assertEquals("foo", ds.getRow().getValue(1));
@@ -220,8 +243,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         }
 
         // create datacontext using detected schema
-        SimpleTableDef tableDef = CouchDbDataContext.detectTable(connector);
-        CouchDbDataContext dc = new CouchDbDataContext(couchDbInstance, tableDef);
+        CouchDbDataContext dc = new CouchDbDataContext(couchDbInstance, getDatabaseName());
 
         // verify schema and execute query
         Schema schema = dc.getMainSchema();
@@ -230,11 +252,11 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         assertEquals("[_id, _rev, age, gender, name]",
                 Arrays.toString(schema.getTableByName(getDatabaseName()).getColumnNames()));
         Column idColumn = schema.getTableByName(getDatabaseName()).getColumnByName("_id");
-        assertEquals("Column[name=_id,columnNumber=0,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]",
+        assertEquals("Column[name=_id,columnNumber=0,type=VARCHAR,nullable=false,nativeType=null,columnSize=null]",
                 idColumn.toString());
         assertTrue(idColumn.isPrimaryKey());
 
-        assertEquals("Column[name=_rev,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]",
+        assertEquals("Column[name=_rev,columnNumber=1,type=VARCHAR,nullable=false,nativeType=null,columnSize=null]",
                 schema.getTableByName(getDatabaseName()).getColumnByName("_rev").toString());
 
         DataSet ds;
@@ -300,11 +322,11 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         }
 
         // create datacontext using detected schema
-        SimpleTableDef tableDef = CouchDbDataContext.detectTable(connector);
-        CouchDbDataContext dc = new CouchDbDataContext(couchDbInstance, tableDef);
+        final String databaseName = getDatabaseName();
+        final CouchDbDataContext dc = new CouchDbDataContext(couchDbInstance, databaseName);
 
-        DataSet ds1 = dc.query().from(getDatabaseName()).select("name").and("age").firstRow(2).execute();
-        DataSet ds2 = dc.query().from(getDatabaseName()).select("name").and("age").maxRows(1).execute();
+        final DataSet ds1 = dc.query().from(databaseName).select("name").and("age").firstRow(2).execute();
+        final DataSet ds2 = dc.query().from(databaseName).select("name").and("age").maxRows(1).execute();
 
         assertTrue("Class: " + ds1.getClass().getName(), ds1 instanceof CouchDbDataSet);
         assertTrue("Class: " + ds2.getClass().getName(), ds2 instanceof CouchDbDataSet);

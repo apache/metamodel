@@ -18,14 +18,7 @@
  */
 package org.apache.metamodel.couchdb;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
@@ -33,45 +26,39 @@ import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DocumentSource;
 import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.schema.MutableSchema;
-import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.builder.DocumentSourceProvider;
 import org.apache.metamodel.schema.builder.SchemaBuilder;
-import org.apache.metamodel.schema.builder.SimpleTableDefSchemaBuilder;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.codehaus.jackson.JsonNode;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.CouchDbInstance;
-import org.ektorp.DbAccessException;
 import org.ektorp.StreamingViewResult;
 import org.ektorp.ViewQuery;
-import org.ektorp.ViewResult.Row;
 import org.ektorp.http.HttpClient;
 import org.ektorp.http.StdHttpClient;
 import org.ektorp.impl.StdCouchDbInstance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * DataContext implementation for CouchDB
  */
-public class CouchDbDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
+public class CouchDbDataContext extends QueryPostprocessDataContext implements UpdateableDataContext,
+        DocumentSourceProvider {
 
-    private static final Logger logger = LoggerFactory.getLogger(CouchDbDataContext.class);
+    public static final String SCHEMA_NAME = "CouchDB";
 
     public static final int DEFAULT_PORT = 5984;
 
     public static final String FIELD_ID = "_id";
     public static final String FIELD_REV = "_rev";
 
-    private static final String SCHEMA_NAME = "CouchDB";
-
+    // the instance represents a handle to the whole couchdb cluster
     private final CouchDbInstance _couchDbInstance;
     private final SchemaBuilder _schemaBuilder;
 
@@ -92,113 +79,18 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     public CouchDbDataContext(CouchDbInstance couchDbInstance) {
-        this(couchDbInstance, detectSchema(couchDbInstance));
+        _couchDbInstance = couchDbInstance;
+        _schemaBuilder = new CouchDbInferentialSchemaBuilder();
+    }
+
+    public CouchDbDataContext(CouchDbInstance couchDbInstance, String... databaseNames) {
+        _couchDbInstance = couchDbInstance;
+        _schemaBuilder = new CouchDbInferentialSchemaBuilder(databaseNames);
     }
 
     public CouchDbDataContext(CouchDbInstance couchDbInstance, SimpleTableDef... tableDefs) {
-        // the instance represents a handle to the whole couchdb cluster
         _couchDbInstance = couchDbInstance;
-        _schemaBuilder = new SimpleTableDefSchemaBuilder(SCHEMA_NAME, tableDefs);
-    }
-
-    public static SimpleTableDef[] detectSchema(CouchDbInstance couchDbInstance) {
-        final List<SimpleTableDef> tableDefs = new ArrayList<SimpleTableDef>();
-        final List<String> databaseNames = couchDbInstance.getAllDatabases();
-        for (final String databaseName : databaseNames) {
-
-            if (databaseName.startsWith("_")) {
-                // don't add system tables
-                continue;
-            }
-
-            CouchDbConnector connector = couchDbInstance.createConnector(databaseName, false);
-
-            SimpleTableDef tableDef = detectTable(connector);
-            tableDefs.add(tableDef);
-        }
-        return tableDefs.toArray(new SimpleTableDef[tableDefs.size()]);
-    }
-
-    public static SimpleTableDef detectTable(CouchDbConnector connector) {
-        final SortedMap<String, Set<ColumnType>> columnsAndTypes = new TreeMap<String, Set<ColumnType>>();
-
-        final StreamingViewResult streamingView = connector.queryForStreamingView(new ViewQuery().allDocs()
-                .includeDocs(true).limit(1000));
-        try {
-            final Iterator<Row> rowIterator = streamingView.iterator();
-            while (safeHasNext(rowIterator)) {
-                Row row = rowIterator.next();
-                JsonNode doc = row.getDocAsNode();
-
-                final Iterator<Entry<String, JsonNode>> fieldIterator = doc.getFields();
-                while (fieldIterator.hasNext()) {
-                    Entry<String, JsonNode> entry = fieldIterator.next();
-                    String key = entry.getKey();
-
-                    Set<ColumnType> types = columnsAndTypes.get(key);
-
-                    if (types == null) {
-                        types = new HashSet<ColumnType>();
-                        columnsAndTypes.put(key, types);
-                    }
-
-                    JsonNode value = entry.getValue();
-                    if (value == null || value.isNull()) {
-                        // do nothing
-                    } else if (value.isTextual()) {
-                        types.add(ColumnType.VARCHAR);
-                    } else if (value.isArray()) {
-                        types.add(ColumnType.LIST);
-                    } else if (value.isObject()) {
-                        types.add(ColumnType.MAP);
-                    } else if (value.isBoolean()) {
-                        types.add(ColumnType.BOOLEAN);
-                    } else if (value.isInt()) {
-                        types.add(ColumnType.INTEGER);
-                    } else if (value.isLong()) {
-                        types.add(ColumnType.BIGINT);
-                    } else if (value.isDouble()) {
-                        types.add(ColumnType.DOUBLE);
-                    }
-                }
-
-            }
-        } finally {
-            streamingView.close();
-        }
-
-        final String[] columnNames = new String[columnsAndTypes.size()];
-        final ColumnType[] columnTypes = new ColumnType[columnsAndTypes.size()];
-
-        int i = 0;
-        for (Entry<String, Set<ColumnType>> columnAndTypes : columnsAndTypes.entrySet()) {
-            final String columnName = columnAndTypes.getKey();
-            final Set<ColumnType> columnTypeSet = columnAndTypes.getValue();
-            final ColumnType columnType;
-            if (columnTypeSet.isEmpty()) {
-                columnType = ColumnType.OTHER;
-            } else if (columnTypeSet.size() == 1) {
-                columnType = columnTypeSet.iterator().next();
-            } else {
-                // TODO: Select best type?
-                columnType = ColumnType.OTHER;
-            }
-            columnNames[i] = columnName;
-            columnTypes[i] = columnType;
-            i++;
-        }
-
-        final SimpleTableDef tableDef = new SimpleTableDef(connector.getDatabaseName(), columnNames, columnTypes);
-        return tableDef;
-    }
-
-    private static boolean safeHasNext(Iterator<Row> rowIterator) {
-        try {
-            return rowIterator.hasNext();
-        } catch (DbAccessException e) {
-            logger.warn("Failed to move to next row while detecting table", e);
-            return false;
-        }
+        _schemaBuilder = new CouchDbSimpleTableDefSchemaBuilder(tableDefs);
     }
 
     public CouchDbInstance getCouchDbInstance() {
@@ -207,17 +99,13 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
 
     @Override
     protected Schema getMainSchema() throws MetaModelException {
-        final MutableSchema schema = _schemaBuilder.build();
-        final MutableTable[] tables = schema.getTables();
-        for (MutableTable table : tables) {
-            CouchDbTableCreationBuilder.addMandatoryColumns(table);
-        }
-        return schema;
+        _schemaBuilder.offerSources(this);
+        return _schemaBuilder.build();
     }
 
     @Override
     protected String getMainSchemaName() throws MetaModelException {
-        return SCHEMA_NAME;
+        return _schemaBuilder.getSchemaName();
     }
 
     @Override
@@ -285,5 +173,15 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
         } finally {
             callback.close();
         }
+    }
+
+    @Override
+    public DocumentSource getMixedDocumentSourceForSampling() {
+        return new CouchDbSamplingDocumentSource(_couchDbInstance);
+    }
+
+    @Override
+    public DocumentSource getDocumentSourceForTable(String sourceCollectionName) {
+        return new CouchDbDatabaseDocumentSource(_couchDbInstance, sourceCollectionName, -1);
     }
 }

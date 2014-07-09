@@ -18,21 +18,30 @@
  */
 package org.apache.metamodel.schema.builder;
 
-import java.util.Map;
-
+import org.apache.metamodel.convert.DocumentConverter;
+import org.apache.metamodel.data.Document;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.Resource;
 import org.apache.metamodel.util.ResourceUtils;
 
 /**
- * {@link InferentialSchemaBuilder} that produces multiple table .
+ * {@link InferentialSchemaBuilder} that produces multiple tables based on a
+ * discriminator column - a column that contains the table name.
  */
 public class MultiTableInferentialSchemaBuilder extends InferentialSchemaBuilder {
 
     private final String _discriminatorColumn;
 
+    public MultiTableInferentialSchemaBuilder(Resource resource) {
+        this(ResourceUtils.getParentName(resource));
+    }
+
     public MultiTableInferentialSchemaBuilder(Resource resource, String discriminatorColumn) {
         this(ResourceUtils.getParentName(resource), discriminatorColumn);
+    }
+
+    public MultiTableInferentialSchemaBuilder(String schemaName) {
+        this(schemaName, null);
     }
 
     public MultiTableInferentialSchemaBuilder(String schemaName, String discriminatorColumn) {
@@ -40,14 +49,23 @@ public class MultiTableInferentialSchemaBuilder extends InferentialSchemaBuilder
         _discriminatorColumn = discriminatorColumn;
     }
 
-
     @Override
-    protected String determineTable(Map<String, ?> map) {
-        Object value = map.get(_discriminatorColumn);
-        if (value == null) {
+    protected String determineTable(Document document) {
+        final String tableName;
+        if (_discriminatorColumn == null) {
+            tableName = document.getSourceCollectionName();
+        } else {
+            final Object value = document.getValues().get(_discriminatorColumn);
+            if (value == null) {
+                tableName = null;
+            } else {
+                tableName = value.toString();
+            }
+        }
+        if (tableName == null) {
             return "(other)";
         }
-        return value.toString();
+        return tableName;
     }
 
     @Override

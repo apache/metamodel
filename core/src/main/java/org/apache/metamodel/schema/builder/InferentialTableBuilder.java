@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.metamodel.data.Document;
+import org.apache.metamodel.data.DocumentSource;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableTable;
 
@@ -45,8 +47,9 @@ public class InferentialTableBuilder implements TableBuilder {
         _observationCounter = new AtomicInteger();
     }
 
-    public void addObservation(Map<String, ?> values) {
+    public void addObservation(Document document) {
         _observationCounter.incrementAndGet();
+        final Map<String, ?> values = document.getValues();
         final Set<? extends Entry<?, ?>> entries = values.entrySet();
         for (final Entry<?, ?> entry : entries) {
             final Object key = entry.getKey();
@@ -77,7 +80,7 @@ public class InferentialTableBuilder implements TableBuilder {
         final Set<String> columnNames = new TreeSet<String>(_columnBuilders.keySet());
 
         final MutableTable table = new MutableTable(_tableName);
-        int columnNumber = 1;
+        int columnNumber = 0;
         for (final String columnName : columnNames) {
             final InferentialColumnBuilder columnBuilder = getColumnBuilder(columnName);
             final MutableColumn column = columnBuilder.build();
@@ -112,7 +115,7 @@ public class InferentialTableBuilder implements TableBuilder {
     @Override
     public void offerSource(DocumentSource documentSource) {
         while (getObservationCount() < MAX_SAMPLE_SIZE) {
-            Map<String, ?> map = documentSource.next();
+            Document map = documentSource.next();
             if (map == null) {
                 return;
             }

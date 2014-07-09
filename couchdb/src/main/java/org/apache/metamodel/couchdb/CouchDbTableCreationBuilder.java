@@ -18,7 +18,6 @@
  */
 package org.apache.metamodel.couchdb;
 
-import org.ektorp.CouchDbInstance;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.create.AbstractTableCreationBuilder;
 import org.apache.metamodel.schema.ColumnType;
@@ -27,6 +26,7 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.ektorp.CouchDbInstance;
 
 final class CouchDbTableCreationBuilder extends AbstractTableCreationBuilder<CouchDbUpdateCallback> {
 
@@ -65,10 +65,17 @@ final class CouchDbTableCreationBuilder extends AbstractTableCreationBuilder<Cou
                 table.addColumn(0, idColumn);
             }
             idColumn.setPrimaryKey(true);
+            idColumn.setNullable(false);
         }
 
-        if (table.getColumnByName(CouchDbDataContext.FIELD_REV) == null) {
-            table.addColumn(1, new MutableColumn(CouchDbDataContext.FIELD_REV, ColumnType.VARCHAR, table, 1, false));
+        // add or correct _rev column
+        {
+            MutableColumn revColumn = (MutableColumn) table.getColumnByName(CouchDbDataContext.FIELD_REV);
+            if (revColumn == null) {
+                revColumn = new MutableColumn(CouchDbDataContext.FIELD_REV, ColumnType.VARCHAR, table, 1, false);
+                table.addColumn(1, revColumn);
+            }
+            revColumn.setNullable(false);
         }
     }
 

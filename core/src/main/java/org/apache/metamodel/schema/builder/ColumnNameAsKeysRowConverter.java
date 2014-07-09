@@ -20,8 +20,10 @@ package org.apache.metamodel.schema.builder;
 
 import java.util.Map;
 
+import org.apache.metamodel.convert.DocumentConverter;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.Document;
 import org.apache.metamodel.data.Row;
 
 /**
@@ -31,13 +33,18 @@ import org.apache.metamodel.data.Row;
 public class ColumnNameAsKeysRowConverter implements DocumentConverter {
     
     @Override
-    public Row convert(Map<String, ?> document, DataSetHeader header) {
+    public Row convert(Document document, DataSetHeader header) {
         final Object[] values = new Object[header.size()];
         for (int i = 0; i < values.length; i++) {
             final String columnName = header.getSelectItem(i).getColumn().getName();
-            values[i] = document.get(columnName);
+            values[i] = get(document, columnName);
         }
         return new DefaultRow(header, values);
+    }
+
+    protected Object get(Document document, String columnName) {
+        final Map<String, ?> map = document.getValues();
+        return map.get(columnName);
     }
 
 }

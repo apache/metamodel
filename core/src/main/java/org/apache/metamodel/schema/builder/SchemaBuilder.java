@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.schema.builder;
 
+import org.apache.metamodel.convert.DocumentConverter;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
@@ -28,14 +29,14 @@ import org.apache.metamodel.schema.Table;
 public interface SchemaBuilder {
 
     /**
-     * Offers a {@link DocumentSource} to the {@link SchemaBuilder}. The
-     * {@link SchemaBuilder} may consume the source to build/detect a schema
-     * based on the observed documents in the source. It may also choose to
+     * Offers a {@link DocumentSourceProvider} to the {@link SchemaBuilder}. The
+     * {@link SchemaBuilder} may consume the sources to build/detect a schema
+     * based on the observed documents in the sources. It may also choose to
      * ignore the source, if the it does not need it.
      * 
-     * @param documentSource
+     * @param documentSourceProvider
      */
-    public void offerSource(DocumentSource documentSource);
+    public void offerSources(DocumentSourceProvider documentSourceProvider);
 
     /**
      * Builds the {@link Schema}
@@ -50,4 +51,11 @@ public interface SchemaBuilder {
      * @return
      */
     public DocumentConverter getDocumentConverter(Table table);
+
+    /**
+     * Gets the name of the schema that is built / will be built.
+     * 
+     * @return
+     */
+    public String getSchemaName();
 }

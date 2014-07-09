@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.couchdb;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -26,11 +27,27 @@ import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.ektorp.DbAccessException;
 
 /**
  * Convenience and utility methods for MetaModel's CouchDB adaptor
  */
 final class CouchDbUtils {
+
+    /**
+     * Safely calls hasNext on a row iterator
+     * 
+     * @param rowIterator
+     * @return
+     */
+    public static boolean safeHasNext(Iterator<?> rowIterator) {
+        try {
+            return rowIterator.hasNext();
+        } catch (DbAccessException e) {
+            return false;
+        }
+    }
+
     /**
      * Converts {@link JsonNode} to MetaModel {@link Row}.
      * 

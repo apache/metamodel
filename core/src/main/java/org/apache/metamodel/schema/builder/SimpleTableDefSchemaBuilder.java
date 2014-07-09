@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.schema.builder;
 
+import org.apache.metamodel.convert.DocumentConverter;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Table;
@@ -38,8 +39,13 @@ public class SimpleTableDefSchemaBuilder implements SchemaBuilder {
     }
 
     @Override
-    public void offerSource(DocumentSource documentSource) {
+    public void offerSources(DocumentSourceProvider documentSource) {
         // do nothing
+    }
+    
+    @Override
+    public String getSchemaName() {
+        return _schemaName;
     }
 
     @Override

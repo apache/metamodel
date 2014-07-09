@@ -25,24 +25,24 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.convert.DocumentConverter;
 import org.apache.metamodel.data.CachingDataSetHeader;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
+import org.apache.metamodel.data.DocumentSource;
+import org.apache.metamodel.data.DocumentSourceDataSet;
 import org.apache.metamodel.data.MaxRowsDataSet;
+import org.apache.metamodel.data.MaxRowsDocumentSource;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.schema.builder.DocumentConverter;
-import org.apache.metamodel.schema.builder.DocumentSource;
-import org.apache.metamodel.schema.builder.LazyDocumentSource;
+import org.apache.metamodel.schema.builder.DocumentSourceProvider;
 import org.apache.metamodel.schema.builder.SchemaBuilder;
 import org.apache.metamodel.schema.builder.SingleTableInferentialSchemaBuilder;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
-import org.apache.metamodel.util.LazyRef;
 import org.apache.metamodel.util.Resource;
-import org.apache.metamodel.util.ResourceUtils;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.MappingJsonFactory;
 import org.slf4j.Logger;
@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * {@link DataContext} implementation that works on JSON files or
  * {@link Resource}s.
  */
-public class JsonDataContext extends QueryPostprocessDataContext {
+public class JsonDataContext extends QueryPostprocessDataContext implements DocumentSourceProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JsonDataContext.class);
 
@@ -74,35 +74,23 @@ public class JsonDataContext extends QueryPostprocessDataContext {
 
     @Override
     protected Schema getMainSchema() throws MetaModelException {
-        final LazyDocumentSource documentSource = new LazyDocumentSource(new LazyRef<DocumentSource>() {
-            @Override
-            protected DocumentSource fetch() throws Throwable {
-                final JsonDocumentSource jsonDocumentIterator = createJsonDocumentIterator();
-                return jsonDocumentIterator;
-            }
-        });
-        try {
-            _schemaBuilder.offerSource(documentSource);
-            return _schemaBuilder.build();
-        } finally {
-            documentSource.close();
-        }
+        _schemaBuilder.offerSources(this);
+        return _schemaBuilder.build();
     }
 
     @Override
     protected String getMainSchemaName() throws MetaModelException {
-        return ResourceUtils.getParentName(_resource);
+        return _schemaBuilder.getSchemaName();
     }
 
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-
         final DocumentConverter documentConverter = _schemaBuilder.getDocumentConverter(table);
         final SelectItem[] selectItems = MetaModelHelper.createSelectItems(columns);
         final DataSetHeader header = new CachingDataSetHeader(selectItems);
-        final JsonDocumentSource documentSource = createJsonDocumentIterator();
+        final DocumentSource documentSource = getDocumentSourceForTable(table.getName());
 
-        DataSet dataSet = new JsonDataSet(header, documentSource, documentConverter);
+        DataSet dataSet = new DocumentSourceDataSet(header, documentSource, documentConverter);
 
         if (maxRows > 0) {
             dataSet = new MaxRowsDataSet(dataSet, maxRows);
@@ -111,17 +99,28 @@ public class JsonDataContext extends QueryPostprocessDataContext {
         return dataSet;
     }
 
-    private JsonDocumentSource createJsonDocumentIterator() {
+    private DocumentSource createDocumentSource() {
         final InputStream inputStream = _resource.read();
         try {
             final MappingJsonFactory jsonFactory = new MappingJsonFactory();
             final JsonParser parser = jsonFactory.createJsonParser(inputStream);
             logger.debug("Created JSON parser for resource: {}", _resource);
 
-            return new JsonDocumentSource(parser);
+            return new JsonDocumentSource(parser, _resource.getName());
         } catch (Exception e) {
             FileHelper.safeClose(inputStream);
             throw new MetaModelException("Unexpected error while creating JSON parser", e);
         }
+    }
+
+    @Override
+    public DocumentSource getMixedDocumentSourceForSampling() {
+        return new MaxRowsDocumentSource(createDocumentSource(), 1000);
+    }
+
+    @Override
+    public DocumentSource getDocumentSourceForTable(String sourceCollectionName) {
+        // only a single source collection - returning that
+        return createDocumentSource();
     }
 }
