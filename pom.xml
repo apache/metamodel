@@ -52,6 +52,7 @@
 		<module>fixedwidth</module>
 		<module>excel</module>
 		<module>csv</module>
+		<module>json</module>
 		<module>xml</module>
 		<module>jdbc</module>
 		<module>hbase</module>

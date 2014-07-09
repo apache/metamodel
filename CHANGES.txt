@@ -1,5 +1,6 @@
 Apache MetaModel 4.2.0-incubating
 
+ * [METAMODEL-38] - New module 'json' for handling json files (containing JSON arrays of documents or line-delimited JSON documents)
  * [METAMODEL-54] - ColumnType converted from enum to interface to allow for further specialization in modules.
  * [METAMODEL-57] - Changed the column type VARCHAR into STRING for the modules: CSV, Fixedwidth, Excel and XML.
  * [METAMODEL-56] - Made separate column types for converted JDBC LOBs - "CLOB as String" and "BLOB as bytes".
