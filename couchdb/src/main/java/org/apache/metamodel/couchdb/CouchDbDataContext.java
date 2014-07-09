@@ -42,6 +42,8 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.builder.SchemaBuilder;
+import org.apache.metamodel.schema.builder.SimpleTableDefSchemaBuilder;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.codehaus.jackson.JsonNode;
 import org.ektorp.CouchDbConnector;
@@ -71,7 +73,7 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
     private static final String SCHEMA_NAME = "CouchDB";
 
     private final CouchDbInstance _couchDbInstance;
-    private final SimpleTableDef[] _tableDefs;
+    private final SchemaBuilder _schemaBuilder;
 
     public CouchDbDataContext(StdHttpClient.Builder httpClientBuilder, SimpleTableDef... tableDefs) {
         this(httpClientBuilder.build(), tableDefs);
@@ -96,7 +98,7 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
     public CouchDbDataContext(CouchDbInstance couchDbInstance, SimpleTableDef... tableDefs) {
         // the instance represents a handle to the whole couchdb cluster
         _couchDbInstance = couchDbInstance;
-        _tableDefs = tableDefs;
+        _schemaBuilder = new SimpleTableDefSchemaBuilder(SCHEMA_NAME, tableDefs);
     }
 
     public static SimpleTableDef[] detectSchema(CouchDbInstance couchDbInstance) {
@@ -205,11 +207,10 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
 
     @Override
     protected Schema getMainSchema() throws MetaModelException {
-        final MutableSchema schema = new MutableSchema(SCHEMA_NAME);
-        for (final SimpleTableDef tableDef : _tableDefs) {
-            final MutableTable table = tableDef.toTable().setSchema(schema);
+        final MutableSchema schema = _schemaBuilder.build();
+        final MutableTable[] tables = schema.getTables();
+        for (MutableTable table : tables) {
             CouchDbTableCreationBuilder.addMandatoryColumns(table);
-            schema.addTable(table);
         }
         return schema;
     }
