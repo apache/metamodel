@@ -56,13 +56,40 @@ public class CsvDataContextTest extends TestCase {
     private final CsvConfiguration semicolonConfiguration = new CsvConfiguration(
             CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, "UTF-8", ';', '\'', CsvConfiguration.DEFAULT_ESCAPE_CHAR);
 
-    public void testEmptyFile() throws Exception {
-        DataContext dc = new CsvDataContext(new File("src/test/resources/empty_file.csv"));
+    public void testEmptyFileTableCreation() throws Exception {
+        final File file = new File("target/empty_file.csv");
+        FileHelper.copy(new File("src/test/resources/empty_file.csv"), file);
+
+        final CsvDataContext dc = new CsvDataContext(file);
         assertEquals(1, dc.getDefaultSchema().getTableCount());
 
-        Table table = dc.getDefaultSchema().getTables()[0];
-        assertEquals("empty_file.csv", table.getName());
-        assertEquals(0, table.getColumnCount());
+        final Table table1 = dc.getDefaultSchema().getTables()[0];
+        assertEquals("empty_file.csv", table1.getName());
+        assertEquals(0, table1.getColumnCount());
+
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.dropTable(dc.getDefaultSchema().getTable(0)).execute();
+                callback.createTable(dc.getDefaultSchema(), "newtable1").withColumn("foo").withColumn("bar").execute();
+            }
+        });
+
+        assertEquals("\"foo\",\"bar\"", FileHelper.readFileAsString(file));
+
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                // fire additional create table statements
+                callback.createTable(dc.getDefaultSchema(), "newtable2").withColumn("foo").withColumn("bar").execute();
+                callback.createTable(dc.getDefaultSchema(), "newtable3").withColumn("bar").withColumn("baz").execute();
+            }
+        });
+
+        assertEquals("\"bar\",\"baz\"", FileHelper.readFileAsString(file));
+        
+        // still the table count should only be 1
+        assertEquals(1, dc.getDefaultSchema().getTableCount());
     }
 
     public void testAppendToFileWithoutLineBreak() throws Exception {
