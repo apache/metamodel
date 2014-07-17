@@ -38,7 +38,12 @@ final class CsvCreateTableBuilder extends AbstractTableCreationBuilder<CsvUpdate
 
         MutableTable table = getTable();
         String[] columnNames = table.getColumnNames();
-        csvUpdateCallback.writeRow(columnNames, false);
+
+        CsvDataContext csvDataContext = (CsvDataContext) csvUpdateCallback.getDataContext();
+
+        if (csvDataContext.getConfiguration().getColumnNameLineNumber() != CsvConfiguration.NO_COLUMN_NAME_LINE) {
+            csvUpdateCallback.writeRow(columnNames, false);
+        }
 
         CsvSchema schema = (CsvSchema) table.getSchema();
         CsvTable csvTable = new CsvTable(schema, table.getName(), table.getColumnNames());

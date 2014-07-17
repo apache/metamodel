@@ -56,15 +56,51 @@ public class CsvDataContextTest extends TestCase {
     private final CsvConfiguration semicolonConfiguration = new CsvConfiguration(
             CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, "UTF-8", ';', '\'', CsvConfiguration.DEFAULT_ESCAPE_CHAR);
 
+    public void testEmptyFileNoColumnHeaderLine() throws Exception {
+        final File file = new File("target/testEmptyFileNoColumnHeaderLine.csv");
+        FileHelper.copy(new File("src/test/resources/empty_file.csv"), file);
+        
+        CsvConfiguration csvConfiguration = new CsvConfiguration(CsvConfiguration.NO_COLUMN_NAME_LINE,
+                FileHelper.DEFAULT_ENCODING, CsvConfiguration.DEFAULT_SEPARATOR_CHAR, CsvConfiguration.NOT_A_CHAR,
+                CsvConfiguration.DEFAULT_ESCAPE_CHAR);
+        final CsvDataContext dc = new CsvDataContext(file, csvConfiguration);
+        assertEquals(1, dc.getDefaultSchema().getTableCount());
+
+        dc.executeUpdate(new UpdateScript() {
+
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.createTable(dc.getDefaultSchema(), "new_table").withColumn("COL_1").withColumn("COL_2")
+                        .execute();
+                callback.insertInto("new_table").value(0, "1").value(1, 2).execute();
+            }
+        });
+        
+        CsvDataContext dc1 = new CsvDataContext(file, csvConfiguration);
+
+        Table[] tables = dc1.getDefaultSchema().getTables();
+        assertEquals(1, tables.length);
+        
+        Table table = tables[0];
+        assertEquals("testEmptyFileNoColumnHeaderLine.csv", table.getName());
+        assertEquals(2, table.getColumnCount());
+        
+        DataSet ds = dc1.query().from(table).selectAll().execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[1, 2]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+    }
+
     public void testEmptyFileTableCreation() throws Exception {
-        final File file = new File("target/empty_file.csv");
+        final File file = new File("target/testEmptyFileNoColumnHeaderLine.csv");
         FileHelper.copy(new File("src/test/resources/empty_file.csv"), file);
 
         final CsvDataContext dc = new CsvDataContext(file);
         assertEquals(1, dc.getDefaultSchema().getTableCount());
 
         final Table table1 = dc.getDefaultSchema().getTables()[0];
-        assertEquals("empty_file.csv", table1.getName());
+        assertEquals("testEmptyFileNoColumnHeaderLine.csv", table1.getName());
         assertEquals(0, table1.getColumnCount());
 
         dc.executeUpdate(new UpdateScript() {
@@ -87,7 +123,7 @@ public class CsvDataContextTest extends TestCase {
         });
 
         assertEquals("\"bar\",\"baz\"", FileHelper.readFileAsString(file));
-        
+
         // still the table count should only be 1
         assertEquals(1, dc.getDefaultSchema().getTableCount());
     }
