@@ -11,6 +11,7 @@ Apache MetaModel 4.2.0-incubating
  * [METAMODEL-60] - Fixed a bug related to DISTINCT and TOP keywords in MS SQL Server queries.
  * [METAMODEL-45] - Improved and standardized way of handling integration test connection information towards external databases.
  * [METAMODEL-62] - Fixed a bug related to fault-tolerant handling of malformed CSV lines when reading CSVs in single-line mode
+ * [METAMODEL-68] - Made it possible to create a CSV table without a header line in the file, if the user configures it.
 
 Apache MetaModel 4.1.0-incubating
 
