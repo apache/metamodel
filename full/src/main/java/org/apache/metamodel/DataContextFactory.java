@@ -35,6 +35,7 @@ import org.apache.metamodel.excel.ExcelDataContext;
 import org.apache.metamodel.fixedwidth.FixedWidthConfiguration;
 import org.apache.metamodel.fixedwidth.FixedWidthDataContext;
 import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.json.JsonDataContext;
 import org.apache.metamodel.mongodb.MongoDbDataContext;
 import org.apache.metamodel.openoffice.OpenOfficeDataContext;
 import org.apache.metamodel.salesforce.SalesforceDataContext;
@@ -134,6 +135,16 @@ public class DataContextFactory {
      */
     public static UpdateableDataContext createCsvDataContext(File file) {
         return createCsvDataContext(file, DEFAULT_CSV_SEPARATOR_CHAR, DEFAULT_CSV_QUOTE_CHAR);
+    }
+
+    /**
+     * Creates a DataContext based on a JSON file
+     * 
+     * @param file
+     * @return
+     */
+    public static DataContext createJsonDataContext(File file) {
+        return new JsonDataContext(file);
     }
 
     /**
