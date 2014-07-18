@@ -24,12 +24,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.metamodel.data.Document;
 import org.apache.metamodel.data.DocumentSource;
-import org.codehaus.jackson.JsonNode;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.CouchDbInstance;
 import org.ektorp.StreamingViewResult;
 import org.ektorp.ViewQuery;
 import org.ektorp.ViewResult.Row;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * {@link DocumentSource} implementation that goes with the

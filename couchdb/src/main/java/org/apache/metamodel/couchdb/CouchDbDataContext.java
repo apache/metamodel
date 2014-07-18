@@ -36,7 +36,6 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.builder.DocumentSourceProvider;
 import org.apache.metamodel.schema.builder.SchemaBuilder;
 import org.apache.metamodel.util.SimpleTableDef;
-import org.codehaus.jackson.JsonNode;
 import org.ektorp.CouchDbConnector;
 import org.ektorp.CouchDbInstance;
 import org.ektorp.StreamingViewResult;
@@ -44,6 +43,8 @@ import org.ektorp.ViewQuery;
 import org.ektorp.http.HttpClient;
 import org.ektorp.http.StdHttpClient;
 import org.ektorp.impl.StdCouchDbInstance;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * DataContext implementation for CouchDB

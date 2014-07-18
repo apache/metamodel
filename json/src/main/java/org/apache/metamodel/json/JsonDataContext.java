@@ -43,10 +43,11 @@ import org.apache.metamodel.schema.builder.SingleTableInferentialSchemaBuilder;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Resource;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.map.MappingJsonFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.MappingJsonFactory;
 
 /**
  * {@link DataContext} implementation that works on JSON files or
@@ -103,7 +104,7 @@ public class JsonDataContext extends QueryPostprocessDataContext implements Docu
         final InputStream inputStream = _resource.read();
         try {
             final MappingJsonFactory jsonFactory = new MappingJsonFactory();
-            final JsonParser parser = jsonFactory.createJsonParser(inputStream);
+            final JsonParser parser = jsonFactory.createParser(inputStream);
             logger.debug("Created JSON parser for resource: {}", _resource);
 
             return new JsonDocumentSource(parser, _resource.getName());

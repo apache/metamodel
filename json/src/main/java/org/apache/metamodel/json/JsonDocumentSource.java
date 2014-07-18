@@ -24,10 +24,11 @@ import java.util.Map;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.Document;
 import org.apache.metamodel.data.DocumentSource;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 
 /**
  * Utility class that provides an easy way of iterating documents in a JSON file

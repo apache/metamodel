@@ -25,8 +25,9 @@ import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
-import org.codehaus.jackson.JsonNode;
 import org.ektorp.StreamingViewResult;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * DataSet implementation for couch db.
