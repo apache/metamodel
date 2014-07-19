@@ -7,6 +7,7 @@ Apache MetaModel 4.2.0-incubating
  * [METAMODEL-46] - Improved row-lookup by primary key (ID) in CouchDB
  * [METAMODEL-58] - Fixed a bug related to using CreateTable class and primary keys not getting created.
  * [METAMODEL-3]  - Improved writing of Byte-Order-Mark (BOM) for various encoding spelling variants.
+ * [METAMODEL-70] - Made the build compatible with both JDK versions 6 and 7.
  * [METAMODEL-59] - Fixed a bug related to handling of date/time literals in MS SQL Server queries.
  * [METAMODEL-60] - Fixed a bug related to DISTINCT and TOP keywords in MS SQL Server queries.
  * [METAMODEL-45] - Improved and standardized way of handling integration test connection information towards external databases.

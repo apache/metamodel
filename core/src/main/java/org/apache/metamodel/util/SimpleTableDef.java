@@ -160,7 +160,7 @@ public class SimpleTableDef implements Serializable, HasName {
 
     @Override
     public String toString() {
-        return "SimpleDbTableDef[name=" + _name + ",columnNames=" + Arrays.toString(_columnNames) + ",columnTypes="
+        return "SimpleTableDef[name=" + _name + ",columnNames=" + Arrays.toString(_columnNames) + ",columnTypes="
                 + Arrays.toString(_columnTypes) + "]";
     }
 

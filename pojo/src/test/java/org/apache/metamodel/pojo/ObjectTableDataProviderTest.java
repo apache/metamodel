@@ -30,7 +30,7 @@ public class ObjectTableDataProviderTest extends TestCase {
 
         SimpleTableDef tableDef = tableDataProvider.getTableDef();
         assertEquals(
-                "SimpleDbTableDef[name=FoobarBean,columnNames=[col1, col2, col3],columnTypes=[VARCHAR, INTEGER, BOOLEAN]]",
+                "SimpleTableDef[name=FoobarBean,columnNames=[col1, col2, col3],columnTypes=[VARCHAR, INTEGER, BOOLEAN]]",
                 tableDef.toString());
     }
 }

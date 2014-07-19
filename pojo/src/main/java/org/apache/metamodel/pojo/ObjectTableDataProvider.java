@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -80,8 +81,7 @@ public final class ObjectTableDataProvider<E> implements TableDataProvider<E> {
     }
 
     private SimpleTableDef createTableDef() {
-        final List<String> columnNames = new ArrayList<String>();
-        final List<ColumnType> columnTypes = new ArrayList<ColumnType>();
+        final Map<String,ColumnType> columns = new LinkedHashMap<String, ColumnType>();
 
         final Method[] methods = _class.getMethods();
         for (final Method method : methods) {
@@ -93,17 +93,27 @@ public final class ObjectTableDataProvider<E> implements TableDataProvider<E> {
                         final String columnName = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
 
                         _fieldTypes.put(columnName, returnType);
-                        columnNames.add(columnName);
-                        columnTypes.add(ColumnTypeImpl.convertColumnType(returnType));
+                        final ColumnType columnType = ColumnTypeImpl.convertColumnType(returnType);
+                        columns.put(columnName, columnType);
                     }
                 }
             }
         }
 
-        final int size = columnNames.size();
+        final int size = columns.size();
+        final String[] columnNames= new String[size];
+        final ColumnType[] columnTypes = new ColumnType[size];
+        
+        final Set<Entry<String, ColumnType>> entrySet = columns.entrySet();
+        int i= 0;
+        for (Entry<String, ColumnType> entry : entrySet) {
+            columnNames[i] = entry.getKey();
+            columnTypes[i] = entry.getValue();
+            i++;
+        }
 
-        return new SimpleTableDef(_tableName, columnNames.toArray(new String[size]),
-                columnTypes.toArray(new ColumnType[size]));
+        return new SimpleTableDef(_tableName, columnNames,
+                columnTypes);
     }
 
     @Override
