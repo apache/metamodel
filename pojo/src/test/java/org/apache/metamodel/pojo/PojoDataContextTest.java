@@ -63,8 +63,10 @@ public class PojoDataContextTest extends TestCase {
 
         DataSet dataSet = dc.query().from("persons").innerJoin("titles").on("name", "name").selectAll().execute();
 
+        assertEquals("[persons.age, persons.name, titles.name, titles.title]",
+                Arrays.toString(dataSet.getSelectItems()));
         assertTrue(dataSet.next());
-        assertEquals("Row[values=[Elvis Presley, 42, Elvis Presley, The King]]", dataSet.getRow().toString());
+        assertEquals("Row[values=[42, Elvis Presley, Elvis Presley, The King]]", dataSet.getRow().toString());
         assertFalse(dataSet.next());
     }
 

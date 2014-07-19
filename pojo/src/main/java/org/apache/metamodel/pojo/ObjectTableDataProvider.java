@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.ColumnTypeImpl;
@@ -81,7 +82,7 @@ public final class ObjectTableDataProvider<E> implements TableDataProvider<E> {
     }
 
     private SimpleTableDef createTableDef() {
-        final Map<String,ColumnType> columns = new LinkedHashMap<String, ColumnType>();
+        final Map<String,ColumnType> columns = new TreeMap<String, ColumnType>();
 
         final Method[] methods = _class.getMethods();
         for (final Method method : methods) {
