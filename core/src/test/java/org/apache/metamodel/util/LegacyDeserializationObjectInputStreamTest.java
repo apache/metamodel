@@ -19,6 +19,8 @@
 package org.apache.metamodel.util;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Column;
@@ -28,36 +30,40 @@ import junit.framework.TestCase;
 
 public class LegacyDeserializationObjectInputStreamTest extends TestCase {
 
-    /**
-     * Method initially used (with org.eobjects codebase) to generate the test
-     * input file:
-     * 
-     * <pre>
-     * public void testCreateOldSchema() throws Exception {
-     *     MutableSchema schema = new MutableSchema(&quot;myschema&quot;);
-     *     MutableTable table = new MutableTable(&quot;mytable&quot;, TableType.TABLE, schema);
-     *     schema.addTable(table);
-     * 
-     *     table.addColumn(new MutableColumn(&quot;mycol1&quot;, ColumnType.INTEGER, table, 0, 16, &quot;int&quot;, false, &quot;my remark 1&quot;, false,
-     *             &quot;\&quot;&quot;));
-     *     table.addColumn(new MutableColumn(&quot;mycol1&quot;, ColumnType.VARCHAR, table, 1, 255, &quot;text&quot;, true, &quot;my remark 2&quot;, true,
-     *             null));
-     * 
-     *     Query q = new Query();
-     *     q.from(table);
-     *     q.select(table.getColumn(0));
-     *     q.where(table.getColumn(1), OperatorType.EQUALS_TO, &quot;foo&quot;);
-     * 
-     *     FileOutputStream out = new FileOutputStream(&quot;src/test/resources/metamodel-3.4-query-and-schema.ser&quot;);
-     *     new ObjectOutputStream(out).writeObject(q);
-     *     out.close();
-     * }
-     * </pre>
-     */
-    public void testDeserializeOldQueryAndSchema() throws Exception {
+    public void testCreateSerializeAndDeserializeOldSchemaAndQuery() throws Exception {
+        final String filename = "target/metamodel-3.4-query-and-schema.ser";
+
+        // create the example serialized object
+        {
+            final org.eobjects.metamodel.schema.MutableSchema schema = new org.eobjects.metamodel.schema.MutableSchema(
+                    "myschema");
+            final org.eobjects.metamodel.schema.MutableTable table = new org.eobjects.metamodel.schema.MutableTable(
+                    "mytable", org.eobjects.metamodel.schema.TableType.TABLE, schema);
+            schema.addTable(table);
+
+            table.addColumn(new org.eobjects.metamodel.schema.MutableColumn("mycol1",
+                    org.eobjects.metamodel.schema.ColumnType.INTEGER, table, 0, 16, "int", false, "my remark 1", false,
+                    "\""));
+            table.addColumn(new org.eobjects.metamodel.schema.MutableColumn("mycol1",
+                    org.eobjects.metamodel.schema.ColumnType.VARCHAR, table, 1, 255, "text", true, "my remark 2", true,
+                    null));
+
+            final org.eobjects.metamodel.query.Query q = new org.eobjects.metamodel.query.Query();
+            q.from(table);
+            q.select(table.getColumn(0));
+            q.where(table.getColumn(1), org.eobjects.metamodel.query.OperatorType.EQUALS_TO, "foo");
+
+            final FileOutputStream out = new FileOutputStream(filename);
+            try {
+                new ObjectOutputStream(out).writeObject(q);
+            } finally {
+                out.close();
+            }
+        }
+
         final Object obj;
         {
-            final FileInputStream in = new FileInputStream("src/test/resources/metamodel-3.4-query-and-schema.ser");
+            final FileInputStream in = new FileInputStream(filename);
             try {
                 final LegacyDeserializationObjectInputStream ois = new LegacyDeserializationObjectInputStream(in);
                 obj = ois.readObject();
@@ -66,18 +72,19 @@ public class LegacyDeserializationObjectInputStreamTest extends TestCase {
                 in.close();
             }
         }
-        
+
         assertTrue(obj instanceof Query);
-        
+
         final Query q = (Query) obj;
         final Table table = q.getFromClause().getItem(0).getTable();
         final Column[] columns = table.getColumns();
 
         assertEquals("Table[name=mytable,type=TABLE,remarks=null]", table.toString());
-        assertEquals("Column[name=mycol1,columnNumber=0,type=INTEGER,nullable=false,nativeType=int,columnSize=16]", columns[0].toString());
-        assertEquals("Column[name=mycol1,columnNumber=1,type=VARCHAR,nullable=true,nativeType=text,columnSize=255]", columns[1].toString());
-        
+        assertEquals("Column[name=mycol1,columnNumber=0,type=INTEGER,nullable=false,nativeType=int,columnSize=16]",
+                columns[0].toString());
+        assertEquals("Column[name=mycol1,columnNumber=1,type=VARCHAR,nullable=true,nativeType=text,columnSize=255]",
+                columns[1].toString());
+
         assertEquals("SELECT mytable.\"mycol1\" FROM myschema.mytable WHERE mytable.mycol1 = 'foo'", q.toSql());
     }
-
 }

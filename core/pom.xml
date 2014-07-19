@@ -46,5 +46,11 @@ under the License.
 			<artifactId>easymock</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>
+			org.eobjects.metamodel</groupId>
+		<artifactId>MetaModel-core</artifactId>
+		<version>3.4.11</version>
+		</dependency>
 	</dependencies>
 </project>
