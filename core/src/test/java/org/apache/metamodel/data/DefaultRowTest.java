@@ -26,6 +26,8 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 
 import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.LegacyDeserializationObjectInputStream;
@@ -37,18 +39,18 @@ public class DefaultRowTest extends TestCase {
     private SelectItem[] items = new SelectItem[] { new SelectItem(new MutableColumn("foo")),
             new SelectItem(new MutableColumn("bar")) };
     private Object[] values = new Object[] { "foo", "bar" };
-    
+
     public void testSerializeAndDeserialize() throws Exception {
         DefaultRow row = new DefaultRow(new SimpleDataSetHeader(items), values);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
         oos.writeObject(row);
         oos.close();
-        
+
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         ObjectInputStream ois = new ObjectInputStream(bais);
         Object deserialized = ois.readObject();
-        
+
         assertEquals("Row[values=[foo, bar]]", deserialized.toString());
         assertEquals(row, deserialized);
     }
@@ -78,6 +80,13 @@ public class DefaultRowTest extends TestCase {
 
         assertEquals(Style.NO_STYLE, row.getStyle(0));
         assertEquals(Style.NO_STYLE, row.getStyle(1));
+
+        Column column = selectItems[0].getColumn();
+        assertNotNull(column);
+        
+        // the columns used to create the object did not have column types assigned.
+        ColumnType type = column.getType();
+        assertNull(type);
     }
 
     public void testGetValueOfColumn() throws Exception {

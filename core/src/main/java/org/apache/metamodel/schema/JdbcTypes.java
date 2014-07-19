@@ -24,7 +24,7 @@ package org.apache.metamodel.schema;
  * additional types (confirmed by JavaTypesTest). It is being used to convert
  * JDBC types to ColumnType enumerations.
  */
-final class JdbcTypes {
+public final class JdbcTypes {
 
 	// Prevent instantiation
 	private JdbcTypes() {

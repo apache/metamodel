@@ -14,6 +14,7 @@ Apache MetaModel 4.2.0-incubating
  * [METAMODEL-62] - Fixed a bug related to fault-tolerant handling of malformed CSV lines when reading CSVs in single-line mode
  * [METAMODEL-68] - Made it possible to create a CSV table without a header line in the file, if the user configures it.
  * [METAMODEL-67] - Upgraded Jackson (JSON library) dependency from org.codehaus namespace to the newer com.fasterxml namespace.
+ * [METAMODEL-69] - Fixed issue with deserialization of ColumnType into the new interface instead of the old enum.
 
 Apache MetaModel 4.1.0-incubating
 
