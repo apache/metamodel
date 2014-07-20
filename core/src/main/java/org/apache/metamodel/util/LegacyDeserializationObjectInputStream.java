@@ -235,7 +235,7 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
     @Override
     protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
         final String className = desc.getName();
-        if (className.startsWith("org.apache.metamodel") || className.startsWith("[Lorg.apache.metamodel")) {
+        if (className.startsWith("org.eobjects.metamodel") || className.startsWith("[Lorg.eobjects.metamodel")) {
             final String newClassName;
             if (OLD_CLASS_NAME_COLUMN_TYPE.equals(className)) {
                 // since ColumnType was changed from enum to interface, there's
