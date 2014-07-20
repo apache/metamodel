@@ -226,7 +226,7 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
         }
     }
 
-    private static final String OLD_CLASS_NAME_COLUMN_TYPE = "org.apache.metamodel.schema.ColumnType";
+    private static final String OLD_CLASS_NAME_COLUMN_TYPE = "org.eobjects.metamodel.schema.ColumnType";
 
     public LegacyDeserializationObjectInputStream(InputStream in) throws IOException, SecurityException {
         super(in);
