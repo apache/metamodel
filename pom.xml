@@ -346,6 +346,7 @@
 							<exclude>**/.project</exclude>
 							<exclude>**/.classpath</exclude>
 							<exclude>**/.settings/**</exclude>
+							<exclude>**/.travis.yml</exclude>
 							<exclude>**/target/**</exclude>
 							<exclude>DEPENDENCIES</exclude>
 							<exclude>DISCLAIMER</exclude>
