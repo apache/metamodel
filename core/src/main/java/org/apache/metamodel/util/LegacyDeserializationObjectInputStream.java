@@ -47,7 +47,7 @@ import org.apache.metamodel.schema.SuperColumnType;
  * A specialized {@link ObjectInputStream} for MetaModel which can be used or
  * extended if it is needed to deserialize legacy MetaModel objects. This is
  * needed since the namespace of MetaModel was changed from
- * org.eobjects.metamodel to org.apache.metamodel.
+ * org.apache.metamodel to org.apache.metamodel.
  */
 public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
 
@@ -226,7 +226,7 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
         }
     }
 
-    private static final String OLD_CLASS_NAME_COLUMN_TYPE = "org.eobjects.metamodel.schema.ColumnType";
+    private static final String OLD_CLASS_NAME_COLUMN_TYPE = "org.apache.metamodel.schema.ColumnType";
 
     public LegacyDeserializationObjectInputStream(InputStream in) throws IOException, SecurityException {
         super(in);
@@ -235,7 +235,7 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
     @Override
     protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
         final String className = desc.getName();
-        if (className.startsWith("org.eobjects.metamodel") || className.startsWith("[Lorg.eobjects.metamodel")) {
+        if (className.startsWith("org.apache.metamodel") || className.startsWith("[Lorg.apache.metamodel")) {
             final String newClassName;
             if (OLD_CLASS_NAME_COLUMN_TYPE.equals(className)) {
                 // since ColumnType was changed from enum to interface, there's

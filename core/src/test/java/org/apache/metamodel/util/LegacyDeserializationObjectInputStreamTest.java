@@ -35,23 +35,23 @@ public class LegacyDeserializationObjectInputStreamTest extends TestCase {
 
         // create the example serialized object
         {
-            final org.eobjects.metamodel.schema.MutableSchema schema = new org.eobjects.metamodel.schema.MutableSchema(
+            final org.apache.metamodel.schema.MutableSchema schema = new org.apache.metamodel.schema.MutableSchema(
                     "myschema");
-            final org.eobjects.metamodel.schema.MutableTable table = new org.eobjects.metamodel.schema.MutableTable(
-                    "mytable", org.eobjects.metamodel.schema.TableType.TABLE, schema);
+            final org.apache.metamodel.schema.MutableTable table = new org.apache.metamodel.schema.MutableTable(
+                    "mytable", org.apache.metamodel.schema.TableType.TABLE, schema);
             schema.addTable(table);
 
-            table.addColumn(new org.eobjects.metamodel.schema.MutableColumn("mycol1",
-                    org.eobjects.metamodel.schema.ColumnType.INTEGER, table, 0, 16, "int", false, "my remark 1", false,
+            table.addColumn(new org.apache.metamodel.schema.MutableColumn("mycol1",
+                    org.apache.metamodel.schema.ColumnType.INTEGER, table, 0, 16, "int", false, "my remark 1", false,
                     "\""));
-            table.addColumn(new org.eobjects.metamodel.schema.MutableColumn("mycol1",
-                    org.eobjects.metamodel.schema.ColumnType.VARCHAR, table, 1, 255, "text", true, "my remark 2", true,
+            table.addColumn(new org.apache.metamodel.schema.MutableColumn("mycol1",
+                    org.apache.metamodel.schema.ColumnType.VARCHAR, table, 1, 255, "text", true, "my remark 2", true,
                     null));
 
-            final org.eobjects.metamodel.query.Query q = new org.eobjects.metamodel.query.Query();
+            final org.apache.metamodel.query.Query q = new org.apache.metamodel.query.Query();
             q.from(table);
             q.select(table.getColumn(0));
-            q.where(table.getColumn(1), org.eobjects.metamodel.query.OperatorType.EQUALS_TO, "foo");
+            q.where(table.getColumn(1), org.apache.metamodel.query.OperatorType.EQUALS_TO, "foo");
 
             final FileOutputStream out = new FileOutputStream(filename);
             try {
