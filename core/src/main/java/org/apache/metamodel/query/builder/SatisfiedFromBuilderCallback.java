@@ -71,6 +71,13 @@ abstract class SatisfiedFromBuilderCallback extends BaseObject implements Satisf
         GroupedQueryBuilder queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
         return new SatisfiedSelectBuilderImpl(queryBuilder);
     }
+    
+    @Override
+    public SatisfiedQueryBuilder<?> select(FunctionType functionType, String columnName) {
+        GroupedQueryBuilderImpl queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
+        Column column = queryBuilder.findColumn(columnName);
+        return select(functionType, column);
+    }
 
     @Override
     public FunctionSelectBuilder<?> select(FunctionType functionType, Column column) {

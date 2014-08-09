@@ -25,8 +25,6 @@ import org.apache.metamodel.schema.Table;
 /**
  * Represents a builder where the FROM part is satisfied, ie. a SELECT clause is
  * now buildable.
- * 
- * @author Kasper Sørensen
  */
 public interface SatisfiedFromBuilder {
 
@@ -37,6 +35,8 @@ public interface SatisfiedFromBuilder {
     public TableFromBuilder and(String tableName);
 
     public ColumnSelectBuilder<?> select(Column column);
+    
+    public SatisfiedQueryBuilder<?> select(FunctionType functionType, String columnName);
 
     public FunctionSelectBuilder<?> select(FunctionType functionType, Column column);
 

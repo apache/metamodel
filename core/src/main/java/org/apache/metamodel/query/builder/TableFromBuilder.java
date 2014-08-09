@@ -36,4 +36,5 @@ public interface TableFromBuilder extends
 	public JoinFromBuilder rightJoin(String tableName);
 
 	public TableFromBuilder as(String alias);
+
 }

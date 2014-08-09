@@ -69,6 +69,68 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
                 .execute());
     }
 
+    public void testApplyFunctionToNullValues() throws Exception {
+        QueryPostprocessDataContext dataContext = new QueryPostprocessDataContext() {
+            @Override
+            public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+                if (table == table1) {
+                    Column[] columns1 = table1.getColumns();
+                    SelectItem[] selectItems = new SelectItem[columns1.length];
+                    for (int i = 0; i < selectItems.length; i++) {
+                        SelectItem selectItem = new SelectItem(columns1[i]);
+                        selectItems[i] = selectItem;
+                    }
+                    List<Object[]> data = new ArrayList<Object[]>();
+                    data.add(new Object[] { 1, "no nulls", 1 });
+                    data.add(new Object[] { 2, "onlynull", null });
+                    data.add(new Object[] { 3, "mixed", null });
+                    data.add(new Object[] { 4, "mixed", 2 });
+                    if (maxRows != -1) {
+                        for (int i = data.size() - 1; i >= maxRows; i--) {
+                            data.remove(i);
+                        }
+                    }
+                    return createDataSet(selectItems, data);
+                }
+                throw new IllegalArgumentException("This test only accepts table1 and table2");
+            }
+
+            @Override
+            protected String getMainSchemaName() throws MetaModelException {
+                return schema.getName();
+            }
+
+            @Override
+            protected Schema getMainSchema() throws MetaModelException {
+                return schema;
+            }
+        };
+
+        DataSet dataSet = dataContext.query().from(TABLE_CONTRIBUTOR)
+                .select(FunctionType.SUM, COLUMN_CONTRIBUTOR_COUNTRY).select(COLUMN_CONTRIBUTOR_NAME)
+                .groupBy(COLUMN_CONTRIBUTOR_NAME).execute();
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[1.0, no nulls]]", dataSet.getRow().toString());
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[2.0, mixed]]", dataSet.getRow().toString());
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[0.0, onlynull]]", dataSet.getRow().toString());
+        assertFalse(dataSet.next());
+        dataSet.close();
+    }
+
+    public void testGroupByNulls() throws Exception {
+        MockDataContext dc = new MockDataContext("sch", "tab", null);
+        Table table = dc.getDefaultSchema().getTables()[0];
+        DataSet dataSet = dc.query().from(table).select(FunctionType.SUM, "foo").select("baz").groupBy("baz").execute();
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[7.0, world]]", dataSet.getRow().toString());
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[3.0, null]]", dataSet.getRow().toString());
+        assertFalse(dataSet.next());
+        dataSet.close();
+    }
+
     public void testAggregateQueryWhereClauseExcludingAll() throws Exception {
         MockDataContext dc = new MockDataContext("sch", "tab", "1");
         assertSingleRowResult("Row[values=[0]]",
@@ -880,7 +942,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
             }
 
             @Override
-            protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn, Object keyValue) {
+            protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems,
+                    Column primaryKeyColumn, Object keyValue) {
                 assertEquals("foo", keyValue);
                 return new DefaultRow(new SimpleDataSetHeader(selectItems), new Object[] { "hello world" });
             }
