@@ -84,7 +84,9 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
                     data.add(new Object[] { 1, "no nulls", 1 });
                     data.add(new Object[] { 2, "onlynull", null });
                     data.add(new Object[] { 3, "mixed", null });
-                    data.add(new Object[] { 4, "mixed", 2 });
+                    data.add(new Object[] { 4, "mixed", "" });
+                    data.add(new Object[] { 5, "mixed", 2 });
+                    data.add(new Object[] { 6, "mixed", " \n \t " });
                     if (maxRows != -1) {
                         for (int i = data.size() - 1; i >= maxRows; i--) {
                             data.remove(i);
@@ -108,11 +110,11 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
 
         DataSet dataSet = dataContext.query().from(TABLE_CONTRIBUTOR)
                 .select(FunctionType.SUM, COLUMN_CONTRIBUTOR_COUNTRY).select(COLUMN_CONTRIBUTOR_NAME)
-                .groupBy(COLUMN_CONTRIBUTOR_NAME).execute();
-        assertTrue(dataSet.next());
-        assertEquals("Row[values=[1.0, no nulls]]", dataSet.getRow().toString());
+                .groupBy(COLUMN_CONTRIBUTOR_NAME).orderBy(COLUMN_CONTRIBUTOR_NAME).execute();
         assertTrue(dataSet.next());
         assertEquals("Row[values=[2.0, mixed]]", dataSet.getRow().toString());
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[1.0, no nulls]]", dataSet.getRow().toString());
         assertTrue(dataSet.next());
         assertEquals("Row[values=[0.0, onlynull]]", dataSet.getRow().toString());
         assertFalse(dataSet.next());

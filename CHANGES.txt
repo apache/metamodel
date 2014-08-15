@@ -1,3 +1,7 @@
+Apache MetaModel 4.2.1-incubating
+
+ * [METAMODEL-74] - Fixed bug related to skipping blank values when applying an aggregate function (SUM, AVG etc.)
+
 Apache MetaModel 4.2.0-incubating
 
  * [METAMODEL-38] - New module 'json' for handling json files (containing JSON arrays of documents or line-delimited JSON documents)

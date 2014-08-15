@@ -22,8 +22,6 @@ package org.apache.metamodel.util;
  * Interface for aggregate builders which allows for an iterative approach to
  * evaluating aggregates.
  * 
- * @author Kasper Sørensen
- * 
  * @param <E>
  *            the aggregate result type
  */

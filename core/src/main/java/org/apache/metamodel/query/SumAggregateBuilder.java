@@ -18,28 +18,23 @@
  */
 package org.apache.metamodel.query;
 
-import org.apache.metamodel.util.AggregateBuilder;
-import org.apache.metamodel.util.NumberComparator;
+import org.apache.metamodel.util.AbstractNumberAggregateBuilder;
 
-final class SumAggregateBuilder implements AggregateBuilder<Double> {
+/**
+ * Aggregate builder for the {@link FunctionType#SUM} function
+ */
+final class SumAggregateBuilder extends AbstractNumberAggregateBuilder<Double> {
 
-	private double sum;
+    private double sum;
 
-	@Override
-	public void add(Object o) {
-		if (o == null) {
-			return;
-		}
-		Number number = NumberComparator.toNumber(o);
-		if (number == null) {
-			throw new IllegalArgumentException("Could not convert to number: " + o);
-		}
-		sum += number.doubleValue();
-	}
+    @Override
+    protected void add(Number number) {
+        sum += number.doubleValue();
+    }
 
-	@Override
-	public Double getAggregate() {
-		return sum;
-	}
+    @Override
+    public Double getAggregate() {
+        return sum;
+    }
 
 }

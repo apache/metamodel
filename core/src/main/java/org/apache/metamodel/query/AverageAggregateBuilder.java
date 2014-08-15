@@ -18,24 +18,18 @@
  */
 package org.apache.metamodel.query;
 
-import org.apache.metamodel.util.AggregateBuilder;
-import org.apache.metamodel.util.NumberComparator;
+import org.apache.metamodel.util.AbstractNumberAggregateBuilder;
 
-final class AverageAggregateBuilder implements AggregateBuilder<Double> {
+/**
+ * Aggregate builder for the {@link FunctionType#AVG} function
+ */
+final class AverageAggregateBuilder extends AbstractNumberAggregateBuilder<Double> {
 
 	public double _average;
 	public int _numValues;
-
+	
 	@Override
-	public void add(Object o) {
-		if (o == null) {
-			return;
-		}
-		Number number = NumberComparator.toNumber(o);
-		if (number == null) {
-			throw new IllegalArgumentException("Could not convert to number: "
-					+ o);
-		}
+	protected void add(Number number) {
 		double total = _average * _numValues + number.doubleValue();
 		_numValues++;
 		_average = total / _numValues;
