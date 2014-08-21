@@ -45,20 +45,19 @@ import org.w3c.dom.Element;
 public class XmlDomDataContextTest extends TestCase {
 
     public void testGetFromUrl() throws Exception {
-        // Retrieve the eobjects.org news rss
-        URL url = new URL("http://eobjects.org/trac/blog?format=rss");
+        // Retrieve a news rss
+        URL url = new URL("http://projects.apache.org/feeds/rss.xml");
 
         try {
             XmlDomDataContext dataContext = new XmlDomDataContext(url, true);
 
             Schema schema = dataContext.getDefaultSchema();
-            assertEquals("blog?format=rss", schema.getName());
+            assertEquals("rss.xml", schema.getName());
 
             assertNotNull(schema.getTableByName("rss"));
             assertNotNull(schema.getTableByName("channel_title"));
             assertNotNull(schema.getTableByName("channel_link"));
             assertNotNull(schema.getTableByName("channel_item"));
-            assertNotNull(schema.getTableByName("channel_item_category"));
         } catch (IllegalArgumentException e) {
             // If the network is not accessible omit the test
             if (!(e.getCause() instanceof UnknownHostException)) {
