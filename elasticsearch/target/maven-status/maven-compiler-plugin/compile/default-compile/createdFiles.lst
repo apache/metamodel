@@ -1,0 +1,4 @@
+org/apache/metamodel/elasticsearch/ElasticSearchMetaDataParser.class
+org/apache/metamodel/elasticsearch/ElasticSearchDataSet.class
+org/apache/metamodel/elasticsearch/ElasticSearchMetaData.class
+org/apache/metamodel/elasticsearch/ElasticSearchDataContext.class

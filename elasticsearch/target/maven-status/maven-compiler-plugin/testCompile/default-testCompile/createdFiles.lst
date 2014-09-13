@@ -1,0 +1,3 @@
+org/apache/metamodel/elasticsearch/utils/EmbeddedElasticsearchServer.class
+org/apache/metamodel/elasticsearch/ElasticSearchDataContextTest.class
+org/apache/metamodel/elasticsearch/ElasticSearchMetaDataParserTest.class

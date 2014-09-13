@@ -1,0 +1,45 @@
+
+*****************************************************
+Summary
+-------
+Generated at: 2014-09-13T17:01:51+02:00
+Notes: 0
+Binaries: 0
+Archives: 0
+Standards: 8
+
+Apache Licensed: 8
+Generated Documents: 0
+
+JavaDocs are generated and so license header is optional
+Generated files do not required license headers
+
+0 Unknown Licenses
+
+*******************************
+
+Unapproved licenses:
+
+
+*******************************
+
+Archives:
+
+*****************************************************
+  Files with Apache License headers will be marked AL
+  Binary files (which do not require AL headers) will be marked B
+  Compressed archives will be marked A
+  Notices, licenses etc will be marked N
+  AL    /Users/alberto/Projects/incubator-metamodel/elasticsearch/pom.xml
+  AL    /Users/alberto/Projects/incubator-metamodel/elasticsearch/src/main/java/org/apache/metamodel/elasticsearch/ElasticSearchDataContext.java
+  AL    /Users/alberto/Projects/incubator-metamodel/elasticsearch/src/main/java/org/apache/metamodel/elasticsearch/ElasticSearchDataSet.java
+  AL    /Users/alberto/Projects/incubator-metamodel/elasticsearch/src/main/java/org/apache/metamodel/elasticsearch/ElasticSearchMetaData.java
+  AL    /Users/alberto/Projects/incubator-metamodel/elasticsearch/src/main/java/org/apache/metamodel/elasticsearch/ElasticSearchMetaDataParser.java
+  AL    /Users/alberto/Projects/incubator-metamodel/elasticsearch/src/test/java/org/apache/metamodel/elasticsearch/ElasticSearchDataContextTest.java
+  AL    /Users/alberto/Projects/incubator-metamodel/elasticsearch/src/test/java/org/apache/metamodel/elasticsearch/ElasticSearchMetaDataParserTest.java
+  AL    /Users/alberto/Projects/incubator-metamodel/elasticsearch/src/test/java/org/apache/metamodel/elasticsearch/utils/EmbeddedElasticsearchServer.java
+ 
+ *****************************************************
+ Printing headers for files without AL header...
+ 
+ 
