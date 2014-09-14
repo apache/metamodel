@@ -21,6 +21,7 @@ package org.apache.metamodel.elasticsearch;
 import junit.framework.TestCase;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.FilteredDataSet;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -91,8 +92,7 @@ public class ElasticSearchDataContextTest extends TestCase {
 
         final DataContext dataContext = new ElasticSearchDataContext(getClient());
         DataSet ds = dataContext.query().from("tweet1").select("user").and("message").where("user").isEquals("user4").execute();
-        assertEquals(ElasticSearchDataSet.class, ds.getClass());
-        assertFalse(((ElasticSearchDataSet) ds).isQueryPostProcessed());
+        assertEquals(FilteredDataSet.class, ds.getClass());
 
         try {
             assertTrue(ds.next());

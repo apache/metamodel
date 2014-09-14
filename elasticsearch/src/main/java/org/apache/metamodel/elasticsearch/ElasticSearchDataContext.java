@@ -124,9 +124,15 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
 
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int i) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        SearchResponse response = elasticSearchClient.
+                prepareSearch(typeAndIndexes.get(table.getName())).
+                setTypes(table.getName()).
+                execute().actionGet();
+
+        return new ElasticSearchDataSet(response, columns, false);
     }
 
+    /*
     @Override
     public DataSet executeQuery(Query query) {
         // Check for queries containing only simple selects and where clauses,
@@ -199,7 +205,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
 
         return new ElasticSearchDataSet(response, columns, queryPostProcessed);
 
-    }
+    } */
 
 
     /*protected BasicDBObject createElasticSearchQuery(Table table, List<FilterItem> whereItems) {
