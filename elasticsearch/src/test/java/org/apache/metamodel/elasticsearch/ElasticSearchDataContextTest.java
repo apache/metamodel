@@ -36,6 +36,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import javax.swing.table.TableModel;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
@@ -150,6 +151,19 @@ public class ElasticSearchDataContextTest extends TestCase {
                 Arrays.toString(data.getSelectItems()));
 
         String[] expectations = new String[] { "Row[values=[female, 20, 17, 5, 5]]", "Row[values=[male, 19, 17, 4, 1]]" };
+
+        assertTrue(data.next());
+        assertTrue(Arrays.asList(expectations).contains(data.getRow().toString()));
+        assertTrue(data.next());
+        assertTrue(Arrays.asList(expectations).contains(data.getRow().toString()));
+        assertFalse(data.next());
+    }
+
+    public void testFilterOnNumberColumn() {
+        Table table = dataContext.getDefaultSchema().getTableByName(bulkIndexType);
+        Query q = dataContext.query().from(table).select("user").where("message").greaterThan(7).toQuery();
+        DataSet data = dataContext.executeQuery(q);
+        String[] expectations = new String[] { "Row[values=[user8]]", "Row[values=[user9]]" };
 
         assertTrue(data.next());
         assertTrue(Arrays.asList(expectations).contains(data.getRow().toString()));
