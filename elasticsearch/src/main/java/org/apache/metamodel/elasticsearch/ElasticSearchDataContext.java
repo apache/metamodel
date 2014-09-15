@@ -38,6 +38,7 @@ import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.hppc.ObjectLookupContainer;
 import org.elasticsearch.common.hppc.cursors.ObjectCursor;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,11 +126,16 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
 
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-        SearchResponse response = elasticSearchClient.
-                    prepareSearch(typeAndIndexes.get(table.getName())).
-                    setTypes(table.getName()).
-                    execute().actionGet();
+        SearchRequestBuilder requestBuilder = elasticSearchClient.
+                prepareSearch(typeAndIndexes.get(table.getName())).
+                setTypes(table.getName());
+        if (limitMaxRowsIsSet(maxRows)) requestBuilder.setSize(maxRows);
+        SearchResponse response = requestBuilder.execute().actionGet();
         return new ElasticSearchDataSet(response, columns, false);
+    }
+
+    private boolean limitMaxRowsIsSet(int maxRows) {
+        return (maxRows != -1);
     }
 
 /*  TODO: Implements executeQuery method using ElasticSearch API to improve the performance
