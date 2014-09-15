@@ -37,14 +37,13 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 public class ElasticSearchDataContextTest extends TestCase {
 
     private EmbeddedElasticsearchServer embeddedElasticsearchServer;
-    private String indexName = "twitter";
-    private String indexType1 = "tweet1";
-    private String indexType2 = "tweet2";
+    private Client client;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         embeddedElasticsearchServer = new EmbeddedElasticsearchServer();
+        client = embeddedElasticsearchServer.getClient();
     }
 
     @Override
@@ -58,7 +57,11 @@ public class ElasticSearchDataContextTest extends TestCase {
     }
 
     public void testSimpleQuery() throws Exception {
-        indexOneDocumentPerIndex(getClient());
+        String indexName = "twitter";
+        String indexType1 = "tweet1";
+        String indexType2 = "tweet2";
+        indexOneDocumentPerIndex(indexName, indexType1, 1);
+        indexOneDocumentPerIndex(indexName, indexType2, 1);
         // Waiting for indexing the data....
         Thread.sleep(2000);
 
@@ -105,6 +108,9 @@ public class ElasticSearchDataContextTest extends TestCase {
     }
 
     private void indexTenDocumentsPerIndex(Client client) {
+        String indexName = "twitter";
+        String indexType1 = "tweet1";
+        String indexType2 = "tweet2";
         BulkRequestBuilder bulkRequest = client.prepareBulk();
 
         try {
@@ -123,16 +129,12 @@ public class ElasticSearchDataContextTest extends TestCase {
 
     }
 
-    private void indexOneDocumentPerIndex(Client client) {
+    private void indexOneDocumentPerIndex(String indexName, String indexType, int id) {
         try {
-        client.prepareIndex(indexName, indexType1, "1")
-                .setSource(buildJsonObject(1))
+        client.prepareIndex(indexName, indexType)
+                .setSource(buildJsonObject(id))
                 .execute()
                 .actionGet();
-        client.prepareIndex(indexName, indexType2, "1")
-                    .setSource(buildJsonObject(1))
-                    .execute()
-                    .actionGet();
         } catch (Exception ex) {
             System.out.println("Exception indexing documents!!!!!");
         }
