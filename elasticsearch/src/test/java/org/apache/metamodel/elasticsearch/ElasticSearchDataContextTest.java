@@ -89,7 +89,9 @@ public class ElasticSearchDataContextTest extends TestCase {
     }
 
     public void testQueryWithEqualsWhereClause() throws Exception {
-        indexTenDocumentsPerIndex(getClient());
+        String indexName = "twitter";
+        String indexType = "tweet1";
+        indexBulkDocuments(indexName, indexType, 10);
         // Waiting for indexing the data....
         Thread.sleep(2000);
 
@@ -107,21 +109,14 @@ public class ElasticSearchDataContextTest extends TestCase {
         }
     }
 
-    private void indexTenDocumentsPerIndex(Client client) {
-        String indexName = "twitter";
-        String indexType1 = "tweet1";
-        String indexType2 = "tweet2";
+    private void indexBulkDocuments(String indexName, String indexType, int numberOfDocuments) {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
 
         try {
-        for (int i = 0; i < 10; i++) {
-            bulkRequest.add(client.prepareIndex(indexName, indexType1, new Integer(i).toString())
+        for (int i = 0; i < numberOfDocuments; i++) {
+            bulkRequest.add(client.prepareIndex(indexName, indexType, new Integer(i).toString())
                     .setSource(buildJsonObject(i)));
         }
-        for (int i = 0; i < 10; i++) {
-                bulkRequest.add(client.prepareIndex(indexName, indexType2, new Integer(i).toString())
-                        .setSource(buildJsonObject(i)));
-            }
         bulkRequest.execute().actionGet();
         } catch (Exception ex) {
            System.out.println("Exception indexing documents!!!!!");
