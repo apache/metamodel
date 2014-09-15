@@ -40,12 +40,19 @@ public class ElasticSearchDataContextTest extends TestCase {
 
     private EmbeddedElasticsearchServer embeddedElasticsearchServer;
     private Client client;
+    String indexName = "twitter";
+    String indexType1 = "tweet1";
+    String indexType2 = "tweet2";
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         embeddedElasticsearchServer = new EmbeddedElasticsearchServer();
         client = embeddedElasticsearchServer.getClient();
+        indexOneDocumentPerIndex(indexName, indexType1, 1);
+        indexOneDocumentPerIndex(indexName, indexType2, 1);
+        // Waiting for indexing the data....
+        Thread.sleep(2000);
     }
 
     @Override
@@ -59,14 +66,6 @@ public class ElasticSearchDataContextTest extends TestCase {
     }
 
     public void testSimpleQuery() throws Exception {
-        String indexName = "twitter";
-        String indexType1 = "tweet1";
-        String indexType2 = "tweet2";
-        indexOneDocumentPerIndex(indexName, indexType1, 1);
-        indexOneDocumentPerIndex(indexName, indexType2, 1);
-        // Waiting for indexing the data....
-        Thread.sleep(2000);
-
         final DataContext dataContext = new ElasticSearchDataContext(client);
 
         assertEquals("[tweet1, tweet2]", Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
