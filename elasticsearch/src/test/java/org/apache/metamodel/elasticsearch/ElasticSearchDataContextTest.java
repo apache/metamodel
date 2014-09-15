@@ -20,6 +20,7 @@ package org.apache.metamodel.elasticsearch;
 
 import junit.framework.TestCase;
 import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.FilteredDataSet;
 import org.apache.metamodel.schema.ColumnType;
@@ -28,6 +29,7 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.apache.metamodel.elasticsearch.utils.EmbeddedElasticsearchServer;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -65,7 +67,7 @@ public class ElasticSearchDataContextTest extends TestCase {
         // Waiting for indexing the data....
         Thread.sleep(2000);
 
-        final DataContext dataContext = new ElasticSearchDataContext(getClient());
+        final DataContext dataContext = new ElasticSearchDataContext(client);
 
         assertEquals("[tweet1, tweet2]", Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
 
@@ -95,7 +97,7 @@ public class ElasticSearchDataContextTest extends TestCase {
         // Waiting for indexing the data....
         Thread.sleep(2000);
 
-        final DataContext dataContext = new ElasticSearchDataContext(getClient());
+        final DataContext dataContext = new ElasticSearchDataContext(client);
         DataSet ds = dataContext.query().from("tweet1").select("user").and("message").where("user").isEquals("user4").execute();
         assertEquals(FilteredDataSet.class, ds.getClass());
 
@@ -107,6 +109,19 @@ public class ElasticSearchDataContextTest extends TestCase {
         } finally {
             ds.close();
         }
+    }
+
+    public void testQueryForANonExistingTable() throws Exception {
+        boolean thrown = false;
+        final DataContext dataContext = new ElasticSearchDataContext(client);
+        try {
+            dataContext.query().from("nonExistingTable").select("user").and("message").execute();
+        } catch(IllegalArgumentException IAex) {
+            thrown = true;
+        } finally {
+            //ds.close();
+        }
+        assertTrue(thrown);
     }
 
     private void indexBulkDocuments(String indexName, String indexType, int numberOfDocuments) {

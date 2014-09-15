@@ -42,6 +42,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.*;
 
 public class ElasticSearchDataContext extends QueryPostprocessDataContext
@@ -125,10 +126,9 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int i) {
         SearchResponse response = elasticSearchClient.
-                prepareSearch(typeAndIndexes.get(table.getName())).
-                setTypes(table.getName()).
-                execute().actionGet();
-
+                    prepareSearch(typeAndIndexes.get(table.getName())).
+                    setTypes(table.getName()).
+                    execute().actionGet();
         return new ElasticSearchDataSet(response, columns, false);
     }
 
