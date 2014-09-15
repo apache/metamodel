@@ -21,6 +21,7 @@ package org.apache.metamodel.elasticsearch;
 import junit.framework.TestCase;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.data.FilteredDataSet;
 import org.apache.metamodel.elasticsearch.utils.EmbeddedElasticsearchServer;
 import org.apache.metamodel.query.FunctionType;
@@ -32,6 +33,7 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
+import javax.swing.table.TableModel;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -154,6 +156,15 @@ public class ElasticSearchDataContextTest extends TestCase {
         assertTrue(data.next());
         assertTrue(Arrays.asList(expectations).contains(data.getRow().toString()));
         assertFalse(data.next());
+    }
+
+    public void testMaxRows() throws Exception {
+        Table table = dataContext.getDefaultSchema().getTableByName(peopleIndexType);
+        Query query = new Query().from(table).select(table.getColumns()).setMaxRows(5);
+        DataSet dataSet = dataContext.executeQuery(query);
+
+        TableModel tableModel = new DataSetTableModel(dataSet);
+        assertEquals(5, tableModel.getRowCount());
     }
 
     public void testQueryForANonExistingTable() throws Exception {

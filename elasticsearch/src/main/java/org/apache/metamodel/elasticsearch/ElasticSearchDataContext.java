@@ -124,7 +124,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int i) {
+    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
         SearchResponse response = elasticSearchClient.
                     prepareSearch(typeAndIndexes.get(table.getName())).
                     setTypes(table.getName()).
