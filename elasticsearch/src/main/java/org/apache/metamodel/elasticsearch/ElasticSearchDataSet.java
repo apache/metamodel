@@ -35,7 +35,7 @@ final class ElasticSearchDataSet extends AbstractDataSet {
     private static final Logger logger = LoggerFactory
             .getLogger(ElasticSearchDataSet.class);
 
-    private static int readCount = 0;
+    private int readCount = 0;
 
     private final SearchHit[] _cursor;
     private final boolean _queryPostProcessed;

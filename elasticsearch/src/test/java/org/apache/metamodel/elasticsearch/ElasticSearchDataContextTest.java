@@ -20,16 +20,14 @@ package org.apache.metamodel.elasticsearch;
 
 import junit.framework.TestCase;
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.FilteredDataSet;
+import org.apache.metamodel.elasticsearch.utils.EmbeddedElasticsearchServer;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.apache.metamodel.elasticsearch.utils.EmbeddedElasticsearchServer;
-import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -40,9 +38,12 @@ public class ElasticSearchDataContextTest extends TestCase {
 
     private EmbeddedElasticsearchServer embeddedElasticsearchServer;
     private Client client;
+    DataContext dataContext;
     String indexName = "twitter";
     String indexType1 = "tweet1";
     String indexType2 = "tweet2";
+    String bulkIndexName = "bulktwitter";
+    String bulkIndexType = "bulktype";
 
     @Override
     protected void setUp() throws Exception {
@@ -51,8 +52,10 @@ public class ElasticSearchDataContextTest extends TestCase {
         client = embeddedElasticsearchServer.getClient();
         indexOneDocumentPerIndex(indexName, indexType1, 1);
         indexOneDocumentPerIndex(indexName, indexType2, 1);
+        indexBulkDocuments(bulkIndexName, bulkIndexType, 10);
         // Waiting for indexing the data....
         Thread.sleep(2000);
+        dataContext = new ElasticSearchDataContext(client);
     }
 
     @Override
@@ -61,14 +64,8 @@ public class ElasticSearchDataContextTest extends TestCase {
         embeddedElasticsearchServer.shutdown();
     }
 
-    protected Client getClient() {
-        return embeddedElasticsearchServer.getClient();
-    }
-
     public void testSimpleQuery() throws Exception {
-        final DataContext dataContext = new ElasticSearchDataContext(client);
-
-        assertEquals("[tweet1, tweet2]", Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
+        assertEquals("[bulktype, tweet1, tweet2]", Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
 
         Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
 
@@ -85,19 +82,12 @@ public class ElasticSearchDataContextTest extends TestCase {
             assertEquals("Row[values=[user1, 1]]",
                     ds.getRow().toString());
         } finally {
-            ds.close();
+            //ds.close();
         }
     }
 
-    public void testQueryWithEqualsWhereClause() throws Exception {
-        String indexName = "twitter";
-        String indexType = "tweet1";
-        indexBulkDocuments(indexName, indexType, 10);
-        // Waiting for indexing the data....
-        Thread.sleep(2000);
-
-        final DataContext dataContext = new ElasticSearchDataContext(client);
-        DataSet ds = dataContext.query().from(indexType).select("user").and("message").where("user").isEquals("user4").execute();
+    public void testWhereColumnEqualsValues() throws Exception {
+        DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user").isEquals("user4").execute();
         assertEquals(FilteredDataSet.class, ds.getClass());
 
         try {
@@ -110,9 +100,22 @@ public class ElasticSearchDataContextTest extends TestCase {
         }
     }
 
+    public void testWhereColumnInValues() throws Exception {
+        DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user").in("user4").execute();
+        assertEquals(FilteredDataSet.class, ds.getClass());
+
+        try {
+            assertTrue(ds.next());
+            assertEquals("Row[values=[user4, 4]]",
+                    ds.getRow().toString());
+            assertFalse(ds.next());
+        } finally {
+            //ds.close();
+        }
+    }
+
     public void testQueryForANonExistingTable() throws Exception {
         boolean thrown = false;
-        final DataContext dataContext = new ElasticSearchDataContext(client);
         try {
             dataContext.query().from("nonExistingTable").select("user").and("message").execute();
         } catch(IllegalArgumentException IAex) {
@@ -128,7 +131,6 @@ public class ElasticSearchDataContextTest extends TestCase {
         String indexType1 = "tweet1";
         indexOneDocumentPerIndex(indexName, indexType1, 1);
         boolean thrown = false;
-        final DataContext dataContext = new ElasticSearchDataContext(client);
         try {
             dataContext.query().from(indexType1).select("nonExistingField").execute();
         } catch(IllegalArgumentException IAex) {
@@ -138,6 +140,8 @@ public class ElasticSearchDataContextTest extends TestCase {
         }
         assertTrue(thrown);
     }
+
+
 
     private void indexBulkDocuments(String indexName, String indexType, int numberOfDocuments) {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
