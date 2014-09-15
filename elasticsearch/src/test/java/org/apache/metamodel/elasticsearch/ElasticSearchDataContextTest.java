@@ -77,7 +77,7 @@ public class ElasticSearchDataContextTest extends TestCase {
         assertEquals(ColumnType.DATE, table.getColumnByName("postDate").getType());
         assertEquals(ColumnType.BIGINT, table.getColumnByName("message").getType());
 
-        DataSet ds = dataContext.query().from("tweet1").select("user").and("message").execute();
+        DataSet ds = dataContext.query().from(indexType1).select("user").and("message").execute();
         assertEquals(ElasticSearchDataSet.class, ds.getClass());
         assertFalse(((ElasticSearchDataSet) ds).isQueryPostProcessed());
 
@@ -98,7 +98,7 @@ public class ElasticSearchDataContextTest extends TestCase {
         Thread.sleep(2000);
 
         final DataContext dataContext = new ElasticSearchDataContext(client);
-        DataSet ds = dataContext.query().from("tweet1").select("user").and("message").where("user").isEquals("user4").execute();
+        DataSet ds = dataContext.query().from(indexType).select("user").and("message").where("user").isEquals("user4").execute();
         assertEquals(FilteredDataSet.class, ds.getClass());
 
         try {
@@ -116,6 +116,22 @@ public class ElasticSearchDataContextTest extends TestCase {
         final DataContext dataContext = new ElasticSearchDataContext(client);
         try {
             dataContext.query().from("nonExistingTable").select("user").and("message").execute();
+        } catch(IllegalArgumentException IAex) {
+            thrown = true;
+        } finally {
+            //ds.close();
+        }
+        assertTrue(thrown);
+    }
+
+    public void testQueryForAnExistingTableAndNonExistingField() throws Exception {
+        String indexName = "twitter";
+        String indexType1 = "tweet1";
+        indexOneDocumentPerIndex(indexName, indexType1, 1);
+        boolean thrown = false;
+        final DataContext dataContext = new ElasticSearchDataContext(client);
+        try {
+            dataContext.query().from(indexType1).select("nonExistingField").execute();
         } catch(IllegalArgumentException IAex) {
             thrown = true;
         } finally {
