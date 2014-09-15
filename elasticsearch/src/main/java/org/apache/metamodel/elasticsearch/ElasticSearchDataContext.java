@@ -132,12 +132,11 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
         return new ElasticSearchDataSet(response, columns, false);
     }
 
-    /*
+/*  TODO: Implements executeQuery method using ElasticSearch API to improve the performance
     @Override
     public DataSet executeQuery(Query query) {
         // Check for queries containing only simple selects and where clauses,
         // or if it is a COUNT(*) query.
-
         // if from clause only contains a main schema table
         List<FromItem> fromItems = query.getFromClause().getItems();
         if (fromItems.size() == 1 && fromItems.get(0).getTable() != null && fromItems.get(0).getTable().getSchema() == schema) {
@@ -204,22 +203,5 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
         SearchResponse response = requestBuilder.execute().actionGet();
 
         return new ElasticSearchDataSet(response, columns, queryPostProcessed);
-
-    } */
-
-
-    /*protected BasicDBObject createElasticSearchQuery(Table table, List<FilterItem> whereItems) {
-        assert _schema == table.getSchema();
-
-        final BasicDBObject query = new BasicDBObject();
-        if (whereItems != null && !whereItems.isEmpty()) {
-            for (FilterItem item : whereItems) {
-                convertToCursorObject(query, item);
-            }
-        }
-
-        return query;
     }*/
-
-
 }
