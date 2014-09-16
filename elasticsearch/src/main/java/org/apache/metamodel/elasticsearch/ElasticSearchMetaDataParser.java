@@ -60,7 +60,7 @@ public class ElasticSearchMetaDataParser {
                             break;
             case "date" : columnType = ColumnType.DATE;
                 break;
-            case "string" : columnType = ColumnType.VARCHAR;
+            case "string" : columnType = ColumnType.STRING;
                 break;
             case "float" : columnType = ColumnType.FLOAT;
                 break;

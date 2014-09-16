@@ -39,6 +39,6 @@ public class ElasticSearchMetaDataParserTest extends TestCase {
         assertEquals(columnTypes[0], ColumnType.BIGINT);
         assertEquals(columnTypes[1], ColumnType.DATE);
         assertEquals(columnTypes[2], ColumnType.DATE);
-        assertEquals(columnTypes[3], ColumnType.VARCHAR);
+        assertEquals(columnTypes[3], ColumnType.STRING);
     }
 }

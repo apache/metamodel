@@ -87,7 +87,7 @@ public class ElasticSearchDataContextTest extends TestCase {
 
         Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
 
-        assertEquals(ColumnType.VARCHAR, table.getColumnByName("user").getType());
+        assertEquals(ColumnType.STRING, table.getColumnByName("user").getType());
         assertEquals(ColumnType.DATE, table.getColumnByName("postDate").getType());
         assertEquals(ColumnType.BIGINT, table.getColumnByName("message").getType());
 
