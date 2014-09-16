@@ -44,8 +44,8 @@ import java.util.*;
 
 public class ElasticSearchDataContext extends QueryPostprocessDataContext
         implements DataContext {
-
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
+    private static final String ES_CLUSTER_NAME = "cluster.name";
 
     private final Client elasticSearchClient;
     private final SimpleTableDef[] tableDefs;
@@ -117,7 +117,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
 
     @Override
     protected String getMainSchemaName() throws MetaModelException {
-        return "ElasticSearchSchema";
+        return  elasticSearchClient.settings().get(ES_CLUSTER_NAME);
     }
 
     @Override

@@ -184,7 +184,6 @@ public class ElasticSearchDataContextTest extends TestCase {
     public void testCountQuery() throws Exception {
         Table table = dataContext.getDefaultSchema().getTableByName(bulkIndexType);
         Query q = new Query().selectCount().from(table);
-        assertEquals("SELECT COUNT(*) FROM ElasticSearchSchema.bulktype", q.toString());
 
         List<Object[]> data = dataContext.executeQuery(q).toObjectArrays();
         assertEquals(1, data.size());
