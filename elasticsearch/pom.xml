@@ -51,13 +51,6 @@ under the License.
             <artifactId>MetaModel-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.metamodel</groupId>
-            <artifactId>MetaModel-full</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-
         <!-- elasticsearch -->
         <dependency>
             <groupId>org.elasticsearch</groupId>

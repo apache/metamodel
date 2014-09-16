@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import javax.sql.DataSource;
 
+import org.apache.metamodel.elasticsearch.ElasticSearchDataContext;
 import org.ektorp.http.StdHttpClient.Builder;
 import org.apache.metamodel.couchdb.CouchDbDataContext;
 import org.apache.metamodel.csv.CsvConfiguration;
@@ -44,6 +45,7 @@ import org.apache.metamodel.sugarcrm.SugarCrmDataContext;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.apache.metamodel.xml.XmlDomDataContext;
+import org.elasticsearch.client.Client;
 import org.xml.sax.InputSource;
 
 import com.mongodb.DB;
@@ -634,5 +636,15 @@ public class DataContextFactory {
             return new CouchDbDataContext(httpClientBuilder);
         }
         return new CouchDbDataContext(httpClientBuilder, tableDefs);
+    }
+
+    /**
+     * Creates a new ElasticSearch datacontext.
+     * @param client
+     *       The ElasticSearch client
+     * @return a DataContext object that matches the request
+     */
+    public static QueryPostprocessDataContext createElasticSearchDataContext(Client client) {
+        return new ElasticSearchDataContext(client);
     }
 }
