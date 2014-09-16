@@ -23,12 +23,10 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.FilterItem;
-import org.apache.metamodel.query.FromItem;
-import org.apache.metamodel.query.Query;
-import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.*;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
+import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -38,12 +36,10 @@ import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.hppc.ObjectLookupContainer;
 import org.elasticsearch.common.hppc.cursors.ObjectCursor;
-import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.*;
 
 public class ElasticSearchDataContext extends QueryPostprocessDataContext
@@ -134,11 +130,22 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
         return new ElasticSearchDataSet(response, columns, false);
     }
 
+    @Override
+    protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
+        CountResponse response = elasticSearchClient.prepareCount(typeAndIndexes.get(table.getName()))
+                .setQuery(QueryBuilders.termQuery("_type", table.getName()))
+                .execute()
+                .actionGet();
+        return response.getCount();
+    }
+
     private boolean limitMaxRowsIsSet(int maxRows) {
         return (maxRows != -1);
     }
 
-/*  TODO: Implements executeQuery method using ElasticSearch API to improve the performance
+
+
+/*  TODO: Implement corner cases of WHERE, GROUPBY... items that we can support natively.
     @Override
     public DataSet executeQuery(Query query) {
         // Check for queries containing only simple selects and where clauses,
