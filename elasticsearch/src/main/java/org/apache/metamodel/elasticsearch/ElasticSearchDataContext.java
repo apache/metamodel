@@ -50,7 +50,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
     private final Client elasticSearchClient;
     private final SimpleTableDef[] tableDefs;
     private Schema schema;
-    private static HashMap<String,String> typeAndIndexes = new HashMap<>();
+    private HashMap<String,String> typeAndIndexes = new HashMap<>();
 
     public ElasticSearchDataContext(Client client, SimpleTableDef... tableDefs) {
         this.elasticSearchClient = client;
@@ -76,7 +76,6 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
             ObjectLookupContainer types = mappings.keys();
             for (Object type: types) {
                 String typeName = ((ObjectCursor) type).value.toString();
-                typeAndIndexes.put(typeName, indexName);
                 try {
                     SimpleTableDef table = detectTable(client, indexName, typeName);
                     result.add(table);
@@ -123,7 +122,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
         SearchRequestBuilder requestBuilder = elasticSearchClient.
-                prepareSearch(typeAndIndexes.get(table.getName())).
+                prepareSearch(getIndexNameForIndexType(table.getName())).
                 setTypes(table.getName());
         if (limitMaxRowsIsSet(maxRows)) requestBuilder.setSize(maxRows);
         SearchResponse response = requestBuilder.execute().actionGet();
@@ -132,7 +131,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
 
     @Override
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
-        CountResponse response = elasticSearchClient.prepareCount(typeAndIndexes.get(table.getName()))
+        CountResponse response = elasticSearchClient.prepareCount(getIndexNameForIndexType(table.getName()))
                 .setQuery(QueryBuilders.termQuery("_type", table.getName()))
                 .execute()
                 .actionGet();
@@ -141,6 +140,45 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
 
     private boolean limitMaxRowsIsSet(int maxRows) {
         return (maxRows != -1);
+    }
+
+    private String getIndexNameForIndexType(String indexType) {
+        String indexName = typeAndIndexes.get(indexType);
+        if (indexName==null)
+            indexName = fetchIndexNameFromES(indexType);
+        return indexName;
+    }
+
+    private String fetchIndexNameFromES(String indexType) {
+        String theIndexName = "";
+        boolean indexNameFound = false;
+        List<String> indexNames = getIndexNamesFromES();
+        for (String indexName : indexNames) {
+            if (!indexNameFound) {
+                ClusterState cs = elasticSearchClient.admin().cluster().prepareState().setIndices(indexName).execute().actionGet().getState();
+                IndexMetaData imd = cs.getMetaData().index(indexName);
+                ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
+                ObjectLookupContainer indexTypes = mappings.keys();
+                for (Object type: indexTypes) {
+                    String typeName = ((ObjectCursor) type).value.toString();
+                    if (typeName.equals(indexType)) {
+                        theIndexName = indexName;
+                        typeAndIndexes.put(typeName, indexName);
+                        indexNameFound = true;
+                    }
+                }
+            }
+        }
+        return theIndexName;
+    }
+
+    private List<String> getIndexNamesFromES() {
+        List<String> indexNames = new ArrayList<>();
+        ClusterStateResponse clusterStateResponse = elasticSearchClient.admin().cluster().prepareState().execute().actionGet();
+        ImmutableOpenMap<String,IndexMetaData> indexes = clusterStateResponse.getState().getMetaData().getIndices();
+        for (ObjectCursor<String> typeCursor : indexes.keys())
+            indexNames.add(typeCursor.value);
+        return indexNames;
     }
 
 
