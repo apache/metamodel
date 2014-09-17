@@ -93,7 +93,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
         Map<String, Object> mp = mappingMetaData.getSourceAsMap();
         Iterator it = mp.entrySet().iterator();
         Map.Entry pair = (Map.Entry)it.next();
-        ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(pair.getValue().toString());
+        ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(pair.getValue());
         return new SimpleTableDef(typeName, metaData.getColumnNames(), metaData.getColumnTypes());
     }
 

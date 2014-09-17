@@ -23,8 +23,8 @@ import org.apache.metamodel.schema.ColumnType;
 
 public class ElasticSearchMetaDataParser {
 
-    public static ElasticSearchMetaData parse(String metaDataInfo) {
-        String plainMetaDataInfo = removeFirstAndLastCharacter(metaDataInfo);
+    public static ElasticSearchMetaData parse(Object metaDataInfo) {
+        String plainMetaDataInfo = removeFirstAndLastCharacter((String) metaDataInfo);
         String metaDataWithoutDateFormats = removeDateFormats(plainMetaDataInfo);
         String[] metaDataFields = metaDataWithoutDateFormats.split(",");
         String[] fieldNames = new String[metaDataFields.length];
