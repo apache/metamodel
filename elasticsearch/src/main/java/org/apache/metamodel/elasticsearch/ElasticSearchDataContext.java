@@ -49,12 +49,10 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
 
     private final Client elasticSearchClient;
     private final SimpleTableDef[] tableDefs;
-    private Schema schema;
     private HashMap<String,String> typeAndIndexes = new HashMap();
 
     public ElasticSearchDataContext(Client client, SimpleTableDef... tableDefs) {
         this.elasticSearchClient = client;
-        this.schema = null;
         this.tableDefs = tableDefs;
     }
 
@@ -102,17 +100,12 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
 
     @Override
     protected Schema getMainSchema() throws MetaModelException {
-        if (schema == null) {
-            MutableSchema theSchema = new MutableSchema(getMainSchemaName());
-            for (SimpleTableDef tableDef: tableDefs) {
-                MutableTable table = tableDef.toTable().setSchema(theSchema);
-
-                theSchema.addTable(table);
-            }
-
-            schema = theSchema;
-        }
-        return schema;
+       MutableSchema theSchema = new MutableSchema(getMainSchemaName());
+       for (SimpleTableDef tableDef: tableDefs) {
+          MutableTable table = tableDef.toTable().setSchema(theSchema);
+          theSchema.addTable(table);
+          }
+       return theSchema;
     }
 
     @Override
