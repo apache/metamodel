@@ -73,9 +73,9 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
             ClusterState cs = client.admin().cluster().prepareState().setIndices(indexName).execute().actionGet().getState();
             IndexMetaData imd = cs.getMetaData().index(indexName);
             ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
-            ObjectLookupContainer types = mappings.keys();
-            for (Object type: types) {
-                String typeName = ((ObjectCursor) type).value.toString();
+            ObjectLookupContainer indexTypes = mappings.keys();
+            for (Object indexType: indexTypes) {
+                String typeName = ((ObjectCursor) indexType).value.toString();
                 try {
                     SimpleTableDef table = detectTable(client, indexName, typeName);
                     result.add(table);
