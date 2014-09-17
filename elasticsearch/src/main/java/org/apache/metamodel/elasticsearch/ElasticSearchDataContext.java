@@ -79,7 +79,9 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
                 try {
                     SimpleTableDef table = detectTable(client, indexName, typeName);
                     result.add(table);
-                } catch(Exception e) {}
+                } catch(Exception e) {
+                    logger.error("Unexpected error during detectSchema for table: "+typeName, e);
+                }
             }
 
         }
