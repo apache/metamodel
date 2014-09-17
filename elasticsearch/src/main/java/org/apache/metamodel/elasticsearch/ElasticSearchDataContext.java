@@ -77,7 +77,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
             for (Object indexType: indexTypes) {
                 String typeName = ((ObjectCursor) indexType).value.toString();
                 try {
-                    SimpleTableDef table = detectTable(client, indexName, typeName);
+                    SimpleTableDef table = detectTable(cs, indexName, typeName);
                     result.add(table);
                 } catch(Exception e) {
                     logger.error("Unexpected error during detectSchema for table: "+typeName, e);
@@ -89,8 +89,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
         return tableDefArray;
     }
 
-    public static SimpleTableDef detectTable(Client client, String indexName, String typeName) throws Exception {
-        ClusterState cs = client.admin().cluster().prepareState().setIndices(indexName).execute().actionGet().getState();
+    public static SimpleTableDef detectTable(ClusterState cs, String indexName, String typeName) throws Exception {
         IndexMetaData imd = cs.getMetaData().index(indexName);
         MappingMetaData mappingMetaData = imd.mapping(typeName);
         Map<String, Object> mp = mappingMetaData.getSourceAsMap();
