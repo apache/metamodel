@@ -55,19 +55,18 @@ public class ElasticSearchMetaDataParser {
     private static ColumnType getColumnTypeFromMetaDataField(String metaDataField) {
         ColumnType columnType = null;
         String metaDataFieldType = getMetaDataFieldTypeFromMetaDataField(metaDataField);
-        switch (metaDataFieldType) {
-            case "long" : columnType = ColumnType.BIGINT;
-                            break;
-            case "date" : columnType = ColumnType.DATE;
-                break;
-            case "string" : columnType = ColumnType.STRING;
-                break;
-            case "float" : columnType = ColumnType.FLOAT;
-                break;
-            case "boolean" : columnType = ColumnType.BOOLEAN;
-                break;
-            case "default" : return ColumnType.VARCHAR;
-        }
+        if (metaDataFieldType.equals("long"))
+            columnType = ColumnType.BIGINT;
+          else if (metaDataFieldType.equals("date"))
+            columnType = ColumnType.DATE;
+            else if (metaDataFieldType.equals("string"))
+                columnType = ColumnType.STRING;
+                else if (metaDataFieldType.equals("float"))
+                    columnType = ColumnType.FLOAT;
+                    else if (metaDataFieldType.equals("boolean"))
+                        columnType = ColumnType.FLOAT;
+                      else
+                         columnType = ColumnType.STRING;
         return columnType;
     }
 

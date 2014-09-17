@@ -50,7 +50,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
     private final Client elasticSearchClient;
     private final SimpleTableDef[] tableDefs;
     private Schema schema;
-    private HashMap<String,String> typeAndIndexes = new HashMap<>();
+    private HashMap<String,String> typeAndIndexes = new HashMap();
 
     public ElasticSearchDataContext(Client client, SimpleTableDef... tableDefs) {
         this.elasticSearchClient = client;
@@ -63,12 +63,12 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
     }
 
     public static SimpleTableDef[] detectSchema(Client client) {
-        List<String> indexNames = new ArrayList<>();
+        List<String> indexNames = new ArrayList();
         ClusterStateResponse clusterStateResponse = client.admin().cluster().prepareState().execute().actionGet();
         ImmutableOpenMap<String,IndexMetaData> indexes = clusterStateResponse.getState().getMetaData().getIndices();
         for (ObjectCursor<String> typeCursor : indexes.keys())
             indexNames.add(typeCursor.value);
-        List<SimpleTableDef> result = new ArrayList<>();
+        List<SimpleTableDef> result = new ArrayList();
         for (String indexName : indexNames) {
             ClusterState cs = client.admin().cluster().prepareState().setIndices(indexName).execute().actionGet().getState();
             IndexMetaData imd = cs.getMetaData().index(indexName);
@@ -174,7 +174,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
     }
 
     private List<String> getIndexNamesFromES() {
-        List<String> indexNames = new ArrayList<>();
+        List<String> indexNames = new ArrayList();
         ClusterStateResponse clusterStateResponse = elasticSearchClient.admin().cluster().prepareState().execute().actionGet();
         ImmutableOpenMap<String,IndexMetaData> indexes = clusterStateResponse.getState().getMetaData().getIndices();
         for (ObjectCursor<String> typeCursor : indexes.keys())
