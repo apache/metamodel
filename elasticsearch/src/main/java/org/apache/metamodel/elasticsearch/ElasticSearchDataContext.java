@@ -42,6 +42,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+/**
+ * DataContext implementation for ElasticSearch analytics engine.
+ *
+ * Since ElasticSearch has indexes and types a virtual schema will be used in this
+ * DataContext where the tables will be the types. We will also maintain a hashmap that
+ * will contain the index/type relationship. This implementation supports either automatic
+ * discovery of a schema or manual specification of a schema, through the {@link SimpleTableDef} class.
+ *
+ * @author Alberto Rodriguez
+ */
 public class ElasticSearchDataContext extends QueryPostprocessDataContext
         implements DataContext {
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
@@ -51,15 +61,46 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
     private final SimpleTableDef[] tableDefs;
     private HashMap<String,String> typeAndIndexes = new HashMap();
 
+    /**
+     * Constructs a {@link ElasticSearchDataContext}. This constructor accepts a
+     * custom array of {@link SimpleTableDef}s which allows the user to define
+     * his own view on the indexes in the engine.
+     *
+     * @param client
+     *            the ElasticSearch client
+     * @param tableDefs
+     *            an array of {@link SimpleTableDef}s, which define the table
+     *            and column model of the elasticsearch indexes.
+     */
     public ElasticSearchDataContext(Client client, SimpleTableDef... tableDefs) {
         this.elasticSearchClient = client;
         this.tableDefs = tableDefs;
     }
 
+    /**
+     * Constructs a {@link ElasticSearchDataContext} and automatically detects the
+     * schema structure/view on all indexes (see {@link #detectSchema(Client)}).
+     *
+     * @param client
+     *            the ElasticSearch client
+     */
     public ElasticSearchDataContext(Client client) {
         this(client, detectSchema(client));
     }
 
+
+    /**
+     * Performs an analysis of the available indexes in an ElasticSearch cluster {@link Client}
+     * instance and detects the elasticsearch types structure based on the metadata provided by
+     * the ElasticSearch java client.
+     *
+     * @see #detectTable(ClusterState, String, String)
+     *
+     * @param client
+     *            the client to inspect
+     * @return a mutable schema instance, useful for further fine tuning by the
+     *         user.
+     */
     public static SimpleTableDef[] detectSchema(Client client) {
         List<String> indexNames = new ArrayList();
         ClusterStateResponse clusterStateResponse = client.admin().cluster().prepareState().execute().actionGet();
@@ -87,6 +128,19 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext
         return tableDefArray;
     }
 
+    /**
+     * Performs an analysis of an available index type in an ElasticSearch {@link Client}
+     * client and tries to detect the index structure based on the metadata provided
+     * by the java client.
+     *
+     * @param cs
+     *            the ElasticSearch cluster
+     * @param indexName
+     *            the name of the index
+     * @param typeName
+     *            the name of the index type
+     * @return a table definition for ElasticSearch.
+     */
     public static SimpleTableDef detectTable(ClusterState cs, String indexName, String typeName) throws Exception {
         IndexMetaData imd = cs.getMetaData().index(indexName);
         MappingMetaData mappingMetaData = imd.mapping(typeName);
