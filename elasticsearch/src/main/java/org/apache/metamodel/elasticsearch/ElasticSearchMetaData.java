@@ -20,10 +20,24 @@ package org.apache.metamodel.elasticsearch;
 
 import org.apache.metamodel.schema.ColumnType;
 
+/**
+ * MetaData representation of an ElasticSearch index type.
+ *
+ * We will map the elasticsearch fields to columns and their
+ * types to {@link ColumnType}s.
+ *
+ * @author Alberto Rodriguez
+ */
 public class ElasticSearchMetaData {
     private String[] columnNames;
     private ColumnType[] columnTypes;
 
+    /**
+     * Constructs a {@link ElasticSearchMetaData}.
+     *
+     * @param names
+     * @param types
+     */
     public ElasticSearchMetaData(String[] names, ColumnType[] types) {
         this.columnNames = names;
         this.columnTypes = types;
