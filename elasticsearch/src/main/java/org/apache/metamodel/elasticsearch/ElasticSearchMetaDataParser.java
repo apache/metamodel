@@ -21,10 +21,25 @@ package org.apache.metamodel.elasticsearch;
 
 import org.apache.metamodel.schema.ColumnType;
 
+/**
+ * Parser that transforms the ElasticSearch metadata response (json-like format)
+ * into an ElasticSearchMetaData object.
+ *
+ *
+ * @author Alberto Rodriguez
+ */
 public class ElasticSearchMetaDataParser {
-
+    /**
+     * Parses the ElasticSearch meta data info into an ElasticSearchMetaData object. This
+     * method makes much easier to create the ElasticSearch schema.
+     *
+     * @param metaDataInfo
+     *    ElasticSearch metadata info in a json-like format
+     * @return
+     *    An ElasticSearchMetaData object
+     */
     public static ElasticSearchMetaData parse(Object metaDataInfo) {
-        String plainMetaDataInfo = removeFirstAndLastCharacter((String) metaDataInfo);
+        String plainMetaDataInfo = removeFirstAndLastCharacter(metaDataInfo.toString());
         String metaDataWithoutDateFormats = removeDateFormats(plainMetaDataInfo);
         String[] metaDataFields = metaDataWithoutDateFormats.split(",");
         String[] fieldNames = new String[metaDataFields.length];
@@ -57,16 +72,16 @@ public class ElasticSearchMetaDataParser {
         String metaDataFieldType = getMetaDataFieldTypeFromMetaDataField(metaDataField);
         if (metaDataFieldType.equals("long"))
             columnType = ColumnType.BIGINT;
-          else if (metaDataFieldType.equals("date"))
+        else if (metaDataFieldType.equals("date"))
             columnType = ColumnType.DATE;
-            else if (metaDataFieldType.equals("string"))
-                columnType = ColumnType.STRING;
-                else if (metaDataFieldType.equals("float"))
-                    columnType = ColumnType.FLOAT;
-                    else if (metaDataFieldType.equals("boolean"))
-                        columnType = ColumnType.FLOAT;
-                      else
-                         columnType = ColumnType.STRING;
+        else if (metaDataFieldType.equals("string"))
+            columnType = ColumnType.STRING;
+        else if (metaDataFieldType.equals("float"))
+            columnType = ColumnType.FLOAT;
+        else if (metaDataFieldType.equals("boolean"))
+            columnType = ColumnType.FLOAT;
+        else
+            columnType = ColumnType.STRING;
         return columnType;
     }
 

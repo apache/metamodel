@@ -145,11 +145,11 @@ under the License.
 			<artifactId>MetaModel-xml</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-        <dependency>
-            <groupId>org.apache.metamodel</groupId>
-            <artifactId>MetaModel-elasticsearch</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+                <dependency>
+                        <groupId>org.apache.metamodel</groupId>
+                        <artifactId>MetaModel-elasticsearch</artifactId>
+                        <version>${project.version}</version>
+                </dependency>
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
