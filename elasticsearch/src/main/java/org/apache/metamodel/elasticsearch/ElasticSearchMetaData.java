@@ -29,8 +29,9 @@ import org.apache.metamodel.schema.ColumnType;
  * @author Alberto Rodriguez
  */
 public class ElasticSearchMetaData {
-    private String[] columnNames;
-    private ColumnType[] columnTypes;
+    
+    private final String[] columnNames;
+    private final ColumnType[] columnTypes;
 
     /**
      * Constructs a {@link ElasticSearchMetaData}.

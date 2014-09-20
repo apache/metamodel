@@ -32,8 +32,7 @@ import java.util.Map;
 
 final class ElasticSearchDataSet extends AbstractDataSet {
 
-    private static final Logger logger = LoggerFactory
-            .getLogger(ElasticSearchDataSet.class);
+    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataSet.class);
 
     private int readCount = 0;
 
@@ -43,8 +42,7 @@ final class ElasticSearchDataSet extends AbstractDataSet {
     private boolean _closed;
     private volatile SearchHit _dbObject;
 
-    public ElasticSearchDataSet(SearchResponse cursor, Column[] columns,
-                          boolean queryPostProcessed) {
+    public ElasticSearchDataSet(SearchResponse cursor, Column[] columns, boolean queryPostProcessed) {
         super(columns);
         _cursor = cursor.getHits().hits();
         _queryPostProcessed = queryPostProcessed;
@@ -58,7 +56,7 @@ final class ElasticSearchDataSet extends AbstractDataSet {
     @Override
     public void close() {
         super.close();
-        //_cursor.close();
+        // _cursor.close();
         _closed = true;
     }
 
@@ -66,16 +64,14 @@ final class ElasticSearchDataSet extends AbstractDataSet {
     protected void finalize() throws Throwable {
         super.finalize();
         if (!_closed) {
-            logger.warn(
-                    "finalize() invoked, but DataSet is not closed. Invoking close() on {}",
-                    this);
+            logger.warn("finalize() invoked, but DataSet is not closed. Invoking close() on {}", this);
             close();
         }
     }
 
     @Override
     public boolean next() {
-        if (readCount<_cursor.length) {
+        if (readCount < _cursor.length) {
             _dbObject = _cursor[readCount];
             readCount++;
             return true;
