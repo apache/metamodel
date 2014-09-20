@@ -28,6 +28,7 @@ import org.apache.metamodel.schema.ColumnType;
  * @author Alberto Rodriguez
  */
 public class ElasticSearchMetaDataParser {
+    
     /**
      * Parses the ElasticSearch meta data info into an ElasticSearchMetaData
      * object. This method makes much easier to create the ElasticSearch schema.

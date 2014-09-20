@@ -44,6 +44,15 @@ import java.util.*;
 
 /**
  * DataContext implementation for ElasticSearch analytics engine.
+ * 
+ * ElasticSearch has a data storage structure hierarchy that briefly goes like this:
+ * <ul>
+ * <li>Index</li>
+ * <li>Document type (short: Type) (within an index)</li>
+ * <li>Documents (of a particular type)</li>
+ * </ul>
+ * 
+ * TODO: Describe how this is mapped to a schema/table model in MetaModel.
  *
  * Since ElasticSearch has indexes and types a virtual schema will be used in
  * this DataContext where the tables will be the types. We will also maintain a
@@ -54,7 +63,7 @@ import java.util.*;
  * @author Alberto Rodriguez
  */
 public class ElasticSearchDataContext extends QueryPostprocessDataContext implements DataContext {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
     private static final String ES_CLUSTER_NAME = "cluster.name";
 
@@ -103,22 +112,25 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *         user.
      */
     public static SimpleTableDef[] detectSchema(Client client) {
-        List<String> indexNames = new ArrayList<String>();
-        ClusterStateResponse clusterStateResponse = client.admin().cluster().prepareState().execute().actionGet();
-        ImmutableOpenMap<String, IndexMetaData> indexes = clusterStateResponse.getState().getMetaData().getIndices();
-        for (ObjectCursor<String> typeCursor : indexes.keys())
+        final List<String> indexNames = new ArrayList<String>();
+        final ClusterStateResponse clusterStateResponse = client.admin().cluster().prepareState().execute().actionGet();
+        final ImmutableOpenMap<String, IndexMetaData> indexes = clusterStateResponse.getState().getMetaData()
+                .getIndices();
+        
+        for (ObjectCursor<String> typeCursor : indexes.keys()) {
             indexNames.add(typeCursor.value);
-        List<SimpleTableDef> result = new ArrayList<SimpleTableDef>();
-        for (String indexName : indexNames) {
-            ClusterState cs = client.admin().cluster().prepareState().setIndices(indexName).execute().actionGet()
+        }
+        final List<SimpleTableDef> result = new ArrayList<SimpleTableDef>();
+        for (final String indexName : indexNames) {
+            final ClusterState cs = client.admin().cluster().prepareState().setIndices(indexName).execute().actionGet()
                     .getState();
-            IndexMetaData imd = cs.getMetaData().index(indexName);
-            ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
+            final IndexMetaData imd = cs.getMetaData().index(indexName);
+            final ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
             final ObjectLookupContainer<String> indexTypes = mappings.keys();
-            for (Object indexType : indexTypes) {
-                String typeName = ((ObjectCursor<?>) indexType).value.toString();
+            for (final Object indexType : indexTypes) {
+                final String typeName = ((ObjectCursor<?>) indexType).value.toString();
                 try {
-                    SimpleTableDef table = detectTable(cs, indexName, typeName);
+                    final SimpleTableDef table = detectTable(cs, indexName, typeName);
                     result.add(table);
                 } catch (Exception e) {
                     logger.error("Unexpected error during detectSchema for table: " + typeName, e);
@@ -126,7 +138,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
             }
 
         }
-        SimpleTableDef[] tableDefArray = (SimpleTableDef[]) result.toArray(new SimpleTableDef[result.size()]);
+        final SimpleTableDef[] tableDefArray = (SimpleTableDef[]) result.toArray(new SimpleTableDef[result.size()]);
         return tableDefArray;
     }
 
@@ -144,20 +156,20 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      * @return a table definition for ElasticSearch.
      */
     public static SimpleTableDef detectTable(ClusterState cs, String indexName, String typeName) throws Exception {
-        IndexMetaData imd = cs.getMetaData().index(indexName);
-        MappingMetaData mappingMetaData = imd.mapping(typeName);
-        Map<String, Object> mp = mappingMetaData.getSourceAsMap();
-        Iterator<Map.Entry<String, Object>> it = mp.entrySet().iterator();
-        Map.Entry<String, Object> pair = it.next();
-        ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(pair.getValue());
+        final IndexMetaData imd = cs.getMetaData().index(indexName);
+        final MappingMetaData mappingMetaData = imd.mapping(typeName);
+        final Map<String, Object> mp = mappingMetaData.getSourceAsMap();
+        final Iterator<Map.Entry<String, Object>> it = mp.entrySet().iterator();
+        final Map.Entry<String, Object> pair = it.next();
+        final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(pair.getValue());
         return new SimpleTableDef(typeName, metaData.getColumnNames(), metaData.getColumnTypes());
     }
 
     @Override
     protected Schema getMainSchema() throws MetaModelException {
-        MutableSchema theSchema = new MutableSchema(getMainSchemaName());
-        for (SimpleTableDef tableDef : tableDefs) {
-            MutableTable table = tableDef.toTable().setSchema(theSchema);
+        final MutableSchema theSchema = new MutableSchema(getMainSchemaName());
+        for (final SimpleTableDef tableDef : tableDefs) {
+            final MutableTable table = tableDef.toTable().setSchema(theSchema);
             theSchema.addTable(table);
         }
         return theSchema;
@@ -170,17 +182,18 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-        SearchRequestBuilder requestBuilder = elasticSearchClient.prepareSearch(
+        final SearchRequestBuilder requestBuilder = elasticSearchClient.prepareSearch(
                 getIndexNameForIndexType(table.getName())).setTypes(table.getName());
-        if (limitMaxRowsIsSet(maxRows))
+        if (limitMaxRowsIsSet(maxRows)) {
             requestBuilder.setSize(maxRows);
-        SearchResponse response = requestBuilder.execute().actionGet();
+        }
+        final SearchResponse response = requestBuilder.execute().actionGet();
         return new ElasticSearchDataSet(response, columns, false);
     }
 
     @Override
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
-        CountResponse response = elasticSearchClient.prepareCount(getIndexNameForIndexType(table.getName()))
+        final CountResponse response = elasticSearchClient.prepareCount(getIndexNameForIndexType(table.getName()))
                 .setQuery(QueryBuilders.termQuery("_type", table.getName())).execute().actionGet();
         return response.getCount();
     }
@@ -207,7 +220,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
                 final IndexMetaData imd = cs.getMetaData().index(indexName);
                 final ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
                 final ObjectLookupContainer<String> indexTypes = mappings.keys();
-                for (Object type : indexTypes) {
+                for (final Object type : indexTypes) {
                     final String typeName = ((ObjectCursor<?>) type).value.toString();
                     if (typeName.equals(indexType)) {
                         theIndexName = indexName;
@@ -222,10 +235,11 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     private List<String> getIndexNamesFromES() {
         final List<String> indexNames = new ArrayList<String>();
-        final ClusterStateResponse clusterStateResponse = elasticSearchClient.admin().cluster().prepareState().execute()
-                .actionGet();
-        final ImmutableOpenMap<String, IndexMetaData> indexes = clusterStateResponse.getState().getMetaData().getIndices();
-        for (ObjectCursor<String> typeCursor : indexes.keys()) {
+        final ClusterStateResponse clusterStateResponse = elasticSearchClient.admin().cluster().prepareState()
+                .execute().actionGet();
+        final ImmutableOpenMap<String, IndexMetaData> indexes = clusterStateResponse.getState().getMetaData()
+                .getIndices();
+        for (final ObjectCursor<String> typeCursor : indexes.keys()) {
             indexNames.add(typeCursor.value);
         }
         return indexNames;
