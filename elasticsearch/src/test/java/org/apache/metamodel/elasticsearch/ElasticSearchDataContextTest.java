@@ -19,6 +19,7 @@
 package org.apache.metamodel.elasticsearch;
 
 import junit.framework.TestCase;
+
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
@@ -34,6 +35,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
 import javax.swing.table.TableModel;
+
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -83,7 +85,8 @@ public class ElasticSearchDataContextTest extends TestCase {
     }
 
     public void testSimpleQuery() throws Exception {
-        assertEquals("[peopletype, bulktype, tweet1, tweet2]", Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
+        assertEquals("[peopletype, bulktype, tweet1, tweet2]",
+                Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
 
         Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
 
@@ -97,21 +100,20 @@ public class ElasticSearchDataContextTest extends TestCase {
 
         try {
             assertTrue(ds.next());
-            assertEquals("Row[values=[user1, 1]]",
-                    ds.getRow().toString());
+            assertEquals("Row[values=[user1, 1]]", ds.getRow().toString());
         } finally {
-            //ds.close();
+            // ds.close();
         }
     }
 
     public void testWhereColumnEqualsValues() throws Exception {
-        DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user").isEquals("user4").execute();
+        DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
+                .isEquals("user4").execute();
         assertEquals(FilteredDataSet.class, ds.getClass());
 
         try {
             assertTrue(ds.next());
-            assertEquals("Row[values=[user4, 4]]",
-                    ds.getRow().toString());
+            assertEquals("Row[values=[user4, 4]]", ds.getRow().toString());
             assertFalse(ds.next());
         } finally {
             ds.close();
@@ -119,16 +121,19 @@ public class ElasticSearchDataContextTest extends TestCase {
     }
 
     public void testWhereColumnInValues() throws Exception {
-        DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user").in("user4", "user5").execute();
-        assertEquals(FilteredDataSet.class, ds.getClass());
+        DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
+                .in("user4", "user5").orderBy("message").execute();
 
         try {
             assertTrue(ds.next());
-            assertEquals("Row[values=[user4, 4]]",
-                    ds.getRow().toString());
+            
+            String row1 = ds.getRow().toString();
+            assertEquals("Row[values=[user4, 4]]", row1);
             assertTrue(ds.next());
-            assertEquals("Row[values=[user5, 5]]",
-                    ds.getRow().toString());
+            
+            String row2 = ds.getRow().toString();
+            assertEquals("Row[values=[user5, 5]]", row2);
+            
             assertFalse(ds.next());
         } finally {
             ds.close();
@@ -144,7 +149,7 @@ public class ElasticSearchDataContextTest extends TestCase {
         q.select(new SelectItem(table.getColumnByName("gender")),
                 new SelectItem(FunctionType.MAX, table.getColumnByName("age")),
                 new SelectItem(FunctionType.MIN, table.getColumnByName("age")), new SelectItem(FunctionType.COUNT, "*",
-                "total"), new SelectItem(FunctionType.MIN, table.getColumnByName("id")).setAlias("firstId"));
+                        "total"), new SelectItem(FunctionType.MIN, table.getColumnByName("id")).setAlias("firstId"));
         DataSet data = dataContext.executeQuery(q);
         assertEquals(
                 "[peopletype.gender, MAX(peopletype.age), MIN(peopletype.age), COUNT(*) AS total, MIN(peopletype.id) AS firstId]",
@@ -196,10 +201,10 @@ public class ElasticSearchDataContextTest extends TestCase {
         boolean thrown = false;
         try {
             dataContext.query().from("nonExistingTable").select("user").and("message").execute();
-        } catch(IllegalArgumentException IAex) {
+        } catch (IllegalArgumentException IAex) {
             thrown = true;
         } finally {
-            //ds.close();
+            // ds.close();
         }
         assertTrue(thrown);
     }
@@ -209,37 +214,32 @@ public class ElasticSearchDataContextTest extends TestCase {
         boolean thrown = false;
         try {
             dataContext.query().from(indexType1).select("nonExistingField").execute();
-        } catch(IllegalArgumentException IAex) {
+        } catch (IllegalArgumentException IAex) {
             thrown = true;
         } finally {
-            //ds.close();
+            // ds.close();
         }
         assertTrue(thrown);
     }
-
-
 
     private void indexBulkDocuments(String indexName, String indexType, int numberOfDocuments) {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
 
         try {
-        for (int i = 0; i < numberOfDocuments; i++) {
-            bulkRequest.add(client.prepareIndex(indexName, indexType, new Integer(i).toString())
-                    .setSource(buildTweeterJson(i)));
-        }
-        bulkRequest.execute().actionGet();
+            for (int i = 0; i < numberOfDocuments; i++) {
+                bulkRequest.add(client.prepareIndex(indexName, indexType, new Integer(i).toString()).setSource(
+                        buildTweeterJson(i)));
+            }
+            bulkRequest.execute().actionGet();
         } catch (Exception ex) {
-           System.out.println("Exception indexing documents!!!!!");
+            System.out.println("Exception indexing documents!!!!!");
         }
 
     }
 
     private void indexOneTweeterDocumentPerIndex(String indexType, int id) {
         try {
-        client.prepareIndex(indexName, indexType)
-                .setSource(buildTweeterJson(id))
-                .execute()
-                .actionGet();
+            client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id)).execute().actionGet();
         } catch (Exception ex) {
             System.out.println("Exception indexing documents!!!!!");
         }
@@ -247,9 +247,7 @@ public class ElasticSearchDataContextTest extends TestCase {
 
     private void indexOnePeopleDocument(String gender, int age, int id) {
         try {
-            client.prepareIndex(peopleIndexName, peopleIndexType)
-                    .setSource(buildPeopleJson(gender, age, id))
-                    .execute()
+            client.prepareIndex(peopleIndexName, peopleIndexType).setSource(buildPeopleJson(gender, age, id)).execute()
                     .actionGet();
         } catch (Exception ex) {
             System.out.println("Exception indexing documents!!!!!");
@@ -257,18 +255,12 @@ public class ElasticSearchDataContextTest extends TestCase {
     }
 
     private XContentBuilder buildTweeterJson(int elementId) throws Exception {
-        return jsonBuilder().startObject().field("user", "user" + elementId)
-                .field("postDate", new Date())
-                .field("message", elementId)
-                .endObject();
+        return jsonBuilder().startObject().field("user", "user" + elementId).field("postDate", new Date())
+                .field("message", elementId).endObject();
     }
 
     private XContentBuilder buildPeopleJson(String gender, int age, int elementId) throws Exception {
-        return jsonBuilder().startObject().field("gender", gender)
-                .field("age", age)
-                .field("id", elementId)
-                .endObject();
+        return jsonBuilder().startObject().field("gender", gender).field("age", age).field("id", elementId).endObject();
     }
-
 
 }
