@@ -55,6 +55,7 @@
 		<module>json</module>
 		<module>xml</module>
 		<module>jdbc</module>
+		<module>elasticsearch</module>
 		<module>hbase</module>
 		<module>mongodb</module>
 		<module>couchdb</module>
@@ -348,6 +349,9 @@
 							<exclude>**/.settings/**</exclude>
 							<exclude>**/.travis.yml</exclude>
 							<exclude>**/target/**</exclude>
+                                                        <exclude>**/*.iml/**</exclude>
+							<exclude>**/*.iws/**</exclude>
+							<exclude>**/*.ipr/**</exclude>
 							<exclude>DEPENDENCIES</exclude>
 							<exclude>DISCLAIMER</exclude>
 						</excludes>
