@@ -71,8 +71,6 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
 
-    private static final String ES_CLUSTER_NAME = "cluster.name";
-
     private final Client elasticSearchClient;
     private final SimpleTableDef[] tableDefs;
     private final String indexName;
@@ -186,7 +184,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     @Override
     protected String getMainSchemaName() throws MetaModelException {
-        return elasticSearchClient.settings().get(ES_CLUSTER_NAME);
+        return indexName;
     }
 
     @Override
