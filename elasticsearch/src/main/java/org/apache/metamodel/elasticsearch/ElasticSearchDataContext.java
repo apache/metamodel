@@ -18,14 +18,24 @@
  */
 package org.apache.metamodel.elasticsearch;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.FilterItem;
-import org.apache.metamodel.schema.*;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
-import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -40,36 +50,32 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-
 /**
  * DataContext implementation for ElasticSearch analytics engine.
  * 
- * ElasticSearch has a data storage structure hierarchy that briefly goes like this:
+ * ElasticSearch has a data storage structure hierarchy that briefly goes like
+ * this:
  * <ul>
  * <li>Index</li>
  * <li>Document type (short: Type) (within an index)</li>
  * <li>Documents (of a particular type)</li>
  * </ul>
  * 
- * TODO: Describe how this is mapped to a schema/table model in MetaModel.
- *
- * Since ElasticSearch has indexes and types a virtual schema will be used in
- * this DataContext where the tables will be the types. We will also maintain a
- * hashmap that will contain the index/type relationship. This implementation
- * supports either automatic discovery of a schema or manual specification of a
- * schema, through the {@link SimpleTableDef} class.
- *
- * @author Alberto Rodriguez
+ * When instantiating this DataContext, an index name is provided. Within this
+ * index, each document type is represented as a table.
+ * 
+ * This implementation supports either automatic discovery of a schema or manual
+ * specification of a schema, through the {@link SimpleTableDef} class.
  */
 public class ElasticSearchDataContext extends QueryPostprocessDataContext implements DataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
+
     private static final String ES_CLUSTER_NAME = "cluster.name";
 
     private final Client elasticSearchClient;
     private final SimpleTableDef[] tableDefs;
-    private HashMap<String, String> typeAndIndexes = new HashMap<String, String>();
+    private final String indexName;
 
     /**
      * Constructs a {@link ElasticSearchDataContext}. This constructor accepts a
@@ -78,12 +84,15 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *
      * @param client
      *            the ElasticSearch client
+     * @param indexName
+     *            the name of the ElasticSearch index to represent
      * @param tableDefs
      *            an array of {@link SimpleTableDef}s, which define the table
-     *            and column model of the elasticsearch indexes.
+     *            and column model of the ElasticSearch index.
      */
-    public ElasticSearchDataContext(Client client, SimpleTableDef... tableDefs) {
+    public ElasticSearchDataContext(Client client, String indexName, SimpleTableDef... tableDefs) {
         this.elasticSearchClient = client;
+        this.indexName = indexName;
         this.tableDefs = tableDefs;
     }
 
@@ -94,9 +103,11 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *
      * @param client
      *            the ElasticSearch client
+     * @param indexName
+     *            the name of the ElasticSearch index to represent
      */
-    public ElasticSearchDataContext(Client client) {
-        this(client, detectSchema(client));
+    public ElasticSearchDataContext(Client client, String indexName) {
+        this(client, indexName, detectSchema(client, indexName));
     }
 
     /**
@@ -108,37 +119,35 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *
      * @param client
      *            the client to inspect
+     * @param indexName2
      * @return a mutable schema instance, useful for further fine tuning by the
      *         user.
      */
-    public static SimpleTableDef[] detectSchema(Client client) {
-        final List<String> indexNames = new ArrayList<String>();
-        final ClusterStateResponse clusterStateResponse = client.admin().cluster().prepareState().execute().actionGet();
-        final ImmutableOpenMap<String, IndexMetaData> indexes = clusterStateResponse.getState().getMetaData()
-                .getIndices();
-        
-        for (ObjectCursor<String> typeCursor : indexes.keys()) {
-            indexNames.add(typeCursor.value);
-        }
-        final List<SimpleTableDef> result = new ArrayList<SimpleTableDef>();
-        for (final String indexName : indexNames) {
-            final ClusterState cs = client.admin().cluster().prepareState().setIndices(indexName).execute().actionGet()
-                    .getState();
-            final IndexMetaData imd = cs.getMetaData().index(indexName);
-            final ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
-            final ObjectLookupContainer<String> indexTypes = mappings.keys();
-            for (final Object indexType : indexTypes) {
-                final String typeName = ((ObjectCursor<?>) indexType).value.toString();
-                try {
-                    final SimpleTableDef table = detectTable(cs, indexName, typeName);
-                    result.add(table);
-                } catch (Exception e) {
-                    logger.error("Unexpected error during detectSchema for table: " + typeName, e);
-                }
-            }
+    public static SimpleTableDef[] detectSchema(Client client, String indexName) {
+        final ClusterState cs = client.admin().cluster().prepareState().setIndices(indexName).execute().actionGet()
+                .getState();
+        final IndexMetaData imd = cs.getMetaData().index(indexName);
+        final ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
+        final ObjectLookupContainer<String> documentTypes = mappings.keys();
 
+        final List<SimpleTableDef> result = new ArrayList<SimpleTableDef>();
+        for (final Object documentTypeCursor : documentTypes) {
+            final String documentType = ((ObjectCursor<?>) documentTypeCursor).value.toString();
+            try {
+                final SimpleTableDef table = detectTable(cs, indexName, documentType);
+                result.add(table);
+            } catch (Exception e) {
+                logger.error("Unexpected error during detectTable for document type: {}", documentType, e);
+            }
         }
         final SimpleTableDef[] tableDefArray = (SimpleTableDef[]) result.toArray(new SimpleTableDef[result.size()]);
+        Arrays.sort(tableDefArray, new Comparator<SimpleTableDef>() {
+            @Override
+            public int compare(SimpleTableDef o1, SimpleTableDef o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+
         return tableDefArray;
     }
 
@@ -151,18 +160,18 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *            the ElasticSearch cluster
      * @param indexName
      *            the name of the index
-     * @param typeName
+     * @param documentType
      *            the name of the index type
      * @return a table definition for ElasticSearch.
      */
-    public static SimpleTableDef detectTable(ClusterState cs, String indexName, String typeName) throws Exception {
+    public static SimpleTableDef detectTable(ClusterState cs, String indexName, String documentType) throws Exception {
         final IndexMetaData imd = cs.getMetaData().index(indexName);
-        final MappingMetaData mappingMetaData = imd.mapping(typeName);
+        final MappingMetaData mappingMetaData = imd.mapping(documentType);
         final Map<String, Object> mp = mappingMetaData.getSourceAsMap();
         final Iterator<Map.Entry<String, Object>> it = mp.entrySet().iterator();
         final Map.Entry<String, Object> pair = it.next();
         final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(pair.getValue());
-        return new SimpleTableDef(typeName, metaData.getColumnNames(), metaData.getColumnTypes());
+        return new SimpleTableDef(documentType, metaData.getColumnNames(), metaData.getColumnTypes());
     }
 
     @Override
@@ -182,8 +191,8 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-        final SearchRequestBuilder requestBuilder = elasticSearchClient.prepareSearch(
-                getIndexNameForIndexType(table.getName())).setTypes(table.getName());
+        final String documentType = table.getName();
+        final SearchRequestBuilder requestBuilder = elasticSearchClient.prepareSearch(indexName).setTypes(documentType);
         if (limitMaxRowsIsSet(maxRows)) {
             requestBuilder.setSize(maxRows);
         }
@@ -193,127 +202,17 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     @Override
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
-        final CountResponse response = elasticSearchClient.prepareCount(getIndexNameForIndexType(table.getName()))
-                .setQuery(QueryBuilders.termQuery("_type", table.getName())).execute().actionGet();
+        if (!whereItems.isEmpty()) {
+            // not supported - will have to be done by counting client-side
+            return null;
+        }
+        String documentType = table.getName();
+        final CountResponse response = elasticSearchClient.prepareCount(indexName)
+                .setQuery(QueryBuilders.termQuery("_type", documentType)).execute().actionGet();
         return response.getCount();
     }
 
     private boolean limitMaxRowsIsSet(int maxRows) {
         return (maxRows != -1);
     }
-
-    private String getIndexNameForIndexType(String indexType) {
-        String indexName = typeAndIndexes.get(indexType);
-        if (indexName == null)
-            indexName = fetchIndexNameFromES(indexType);
-        return indexName;
-    }
-
-    private String fetchIndexNameFromES(String indexType) {
-        String theIndexName = "";
-        boolean indexNameFound = false;
-        final List<String> indexNames = getIndexNamesFromES();
-        for (String indexName : indexNames) {
-            if (!indexNameFound) {
-                final ClusterState cs = elasticSearchClient.admin().cluster().prepareState().setIndices(indexName)
-                        .execute().actionGet().getState();
-                final IndexMetaData imd = cs.getMetaData().index(indexName);
-                final ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
-                final ObjectLookupContainer<String> indexTypes = mappings.keys();
-                for (final Object type : indexTypes) {
-                    final String typeName = ((ObjectCursor<?>) type).value.toString();
-                    if (typeName.equals(indexType)) {
-                        theIndexName = indexName;
-                        typeAndIndexes.put(typeName, indexName);
-                        indexNameFound = true;
-                    }
-                }
-            }
-        }
-        return theIndexName;
-    }
-
-    private List<String> getIndexNamesFromES() {
-        final List<String> indexNames = new ArrayList<String>();
-        final ClusterStateResponse clusterStateResponse = elasticSearchClient.admin().cluster().prepareState()
-                .execute().actionGet();
-        final ImmutableOpenMap<String, IndexMetaData> indexes = clusterStateResponse.getState().getMetaData()
-                .getIndices();
-        for (final ObjectCursor<String> typeCursor : indexes.keys()) {
-            indexNames.add(typeCursor.value);
-        }
-        return indexNames;
-    }
-
-    /*
-     * TODO: Implement corner cases of WHERE, GROUPBY... items that we can
-     * support natively.
-     * 
-     * @Override public DataSet executeQuery(Query query) { // Check for queries
-     * containing only simple selects and where clauses, // or if it is a
-     * COUNT(*) query. // if from clause only contains a main schema table
-     * List<FromItem> fromItems = query.getFromClause().getItems(); if
-     * (fromItems.size() == 1 && fromItems.get(0).getTable() != null &&
-     * fromItems.get(0).getTable().getSchema() == schema) { final Table table =
-     * fromItems.get(0).getTable();
-     * 
-     * // if GROUP BY, HAVING and ORDER BY clauses are not specified if
-     * (query.getGroupByClause().isEmpty() && query.getHavingClause().isEmpty()
-     * && query.getOrderByClause().isEmpty()) {
-     * 
-     * final List<FilterItem> whereItems = query.getWhereClause().getItems();
-     * 
-     * // if all of the select items are "pure" column selection boolean
-     * allSelectItemsAreColumns = true; List<SelectItem> selectItems =
-     * query.getSelectClause().getItems();
-     * 
-     * // if it is a // "SELECT [columns] FROM [table] WHERE [conditions]" //
-     * query. for (SelectItem selectItem : selectItems) { if
-     * (selectItem.getFunction() != null || selectItem.getColumn() == null) {
-     * allSelectItemsAreColumns = false; break; } }
-     * 
-     * if (allSelectItemsAreColumns) { logger.debug(
-     * "Query can be expressed in full ElasticSearch, no post processing needed."
-     * );
-     * 
-     * // prepare for a non-post-processed query Column[] columns = new
-     * Column[selectItems.size()]; for (int i = 0; i < columns.length; i++) {
-     * columns[i] = selectItems.get(i).getColumn(); }
-     * 
-     * int firstRow = (query.getFirstRow() == null ? 1 : query.getFirstRow());
-     * int maxRows = (query.getMaxRows() == null ? -1 : query.getMaxRows());
-     * 
-     * final DataSet dataSet = materializeMainSchemaTableInternal(table,
-     * columns, whereItems, firstRow, maxRows, false); return dataSet; } } }
-     * logger
-     * .debug("Query will be simplified for ElasticSearch and post processed.");
-     * return super.executeQuery(query); }
-     * 
-     * private DataSet materializeMainSchemaTableInternal(Table table, Column[]
-     * columns, List<FilterItem> whereItems, int firstRow, int maxRows, boolean
-     * queryPostProcessed) { //final SearchRequestBuilder collection =
-     * elasticSearchClient
-     * .prepareSearch(typeAndIndexes.get(table.getName())).setTypes
-     * (table.getName()); ClusterStateResponse clusterStateResponse =
-     * elasticSearchClient
-     * .admin().cluster().prepareState().execute().actionGet();
-     * ImmutableOpenMap<String,IndexMetaData> indexes =
-     * clusterStateResponse.getState().getMetaData().getIndices(); //final
-     * SearchRequestBuilder collection =
-     * elasticSearchClient.prepareSearch("twitter").setTypes("tweet1");
-     * SearchRequestBuilder requestBuilder =
-     * elasticSearchClient.prepareSearch();
-     * 
-     * if (whereItems != null && !whereItems.isEmpty()) { for (FilterItem item :
-     * whereItems) { String operandWithIndexName =
-     * item.getSelectItem().toString(); int operandNameIndexStart =
-     * operandWithIndexName.indexOf(".")+1; String operandWithoutIndexName =
-     * operandWithIndexName.substring(operandNameIndexStart);
-     * requestBuilder.setQuery(QueryBuilders.termQuery(operandWithoutIndexName,
-     * item.getOperand())); } }
-     * 
-     * SearchResponse response = requestBuilder.execute().actionGet();
-     * 
-     * return new ElasticSearchDataSet(response, columns, queryPostProcessed); }
-     */
 }
