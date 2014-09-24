@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.elasticsearch;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -36,6 +37,8 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.elasticsearch.Version;
+import org.elasticsearch.action.admin.cluster.state.ClusterStateRequestBuilder;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -122,8 +125,27 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *         user.
      */
     public static SimpleTableDef[] detectSchema(Client client, String indexName) {
-        final ClusterState cs = client.admin().cluster().prepareState().setIndices(indexName).execute().actionGet()
-                .getState();
+        final ClusterState cs;
+        final ClusterStateRequestBuilder clusterStateRequestBuilder = client.admin().cluster().prepareState();
+
+        // different methods here to set the index name, so we have to use
+        // reflection :-/
+        try {
+            final byte majorVersion = Version.CURRENT.major;
+            final Object methodArgument = new String[] { indexName };
+            if (majorVersion == 0) {
+                final Method method = ClusterStateRequestBuilder.class.getMethod("setFilterIndices", String[].class);
+                method.invoke(clusterStateRequestBuilder, methodArgument);
+            } else {
+                final Method method = ClusterStateRequestBuilder.class.getMethod("setIndices", String[].class);
+                method.invoke(clusterStateRequestBuilder, methodArgument);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to set index name on ClusterStateRequestBuilder, version {}", Version.CURRENT, e);
+            throw new MetaModelException("Failed to create request for index information needed to detect schema", e);
+        }
+        cs = clusterStateRequestBuilder.execute().actionGet().getState();
+
         final IndexMetaData imd = cs.getMetaData().index(indexName);
         final ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
         final ObjectLookupContainer<String> documentTypes = mappings.keys();

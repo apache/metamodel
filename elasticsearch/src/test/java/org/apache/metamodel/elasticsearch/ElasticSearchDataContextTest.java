@@ -159,17 +159,16 @@ public class ElasticSearchDataContextTest {
                 new SelectItem(FunctionType.MAX, table.getColumnByName("age")),
                 new SelectItem(FunctionType.MIN, table.getColumnByName("age")), new SelectItem(FunctionType.COUNT, "*",
                         "total"), new SelectItem(FunctionType.MIN, table.getColumnByName("id")).setAlias("firstId"));
+        q.orderBy("gender");
         DataSet data = dataContext.executeQuery(q);
         assertEquals(
                 "[peopletype.gender, MAX(peopletype.age), MIN(peopletype.age), COUNT(*) AS total, MIN(peopletype.id) AS firstId]",
                 Arrays.toString(data.getSelectItems()));
 
-        String[] expectations = new String[] { "Row[values=[female, 20, 17, 5, 5]]", "Row[values=[male, 19, 17, 4, 1]]" };
-
         assertTrue(data.next());
-        assertTrue(Arrays.asList(expectations).contains(data.getRow().toString()));
+        assertEquals("Row[values=[female, 20, 17, 5, 5]]", data.getRow().toString());
         assertTrue(data.next());
-        assertTrue(Arrays.asList(expectations).contains(data.getRow().toString()));
+        assertEquals("Row[values=[male, 19, 17, 4, 1]]", data.getRow().toString());
         assertFalse(data.next());
     }
 
