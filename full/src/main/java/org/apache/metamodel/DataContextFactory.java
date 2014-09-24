@@ -642,9 +642,11 @@ public class DataContextFactory {
      * Creates a new ElasticSearch datacontext.
      * @param client
      *       The ElasticSearch client
+     * @param indexName
+     *       The ElasticSearch index name
      * @return a DataContext object that matches the request
      */
-    public static QueryPostprocessDataContext createElasticSearchDataContext(Client client) {
-        return new ElasticSearchDataContext(client);
+    public static QueryPostprocessDataContext createElasticSearchDataContext(Client client, String indexName) {
+        return new ElasticSearchDataContext(client, indexName);
     }
 }
