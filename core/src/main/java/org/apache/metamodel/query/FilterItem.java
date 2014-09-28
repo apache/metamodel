@@ -235,7 +235,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
         }
         return this;
     }
-    
+
     @Override
     public String toSql() {
         return toSql(false);
@@ -262,7 +262,8 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
                 final Object operand = appendOperator(sb, _operand, _operator);
 
                 if (operand instanceof SelectItem) {
-                    final String selectItemString = ((SelectItem) operand).getSameQueryAlias(includeSchemaInColumnPaths);
+                    final String selectItemString = ((SelectItem) operand)
+                            .getSameQueryAlias(includeSchemaInColumnPaths);
                     sb.append(selectItemString);
                 } else {
                     ColumnType columnType = _selectItem.getExpectedColumnType();
@@ -287,7 +288,6 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
         return sb.toString();
     }
 
-    @SuppressWarnings("deprecation")
     public static Object appendOperator(StringBuilder sb, Object operand, OperatorType operator) {
         switch (operator) {
         case DIFFERENT_FROM:
@@ -300,11 +300,9 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
             sb.append(" LIKE ");
             break;
         case GREATER_THAN:
-        case HIGHER_THAN:
             sb.append(" > ");
             break;
         case LESS_THAN:
-        case LOWER_THAN:
             sb.append(" < ");
             break;
         case IN:
@@ -374,16 +372,15 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
         }
     }
 
-    @SuppressWarnings("deprecation")
     private boolean compare(Object selectItemValue, Object operandValue) {
         Comparator<Object> comparator = ObjectComparator.getComparator();
         if (_operator == OperatorType.DIFFERENT_FROM) {
             return comparator.compare(selectItemValue, operandValue) != 0;
         } else if (_operator == OperatorType.EQUALS_TO) {
             return comparator.compare(selectItemValue, operandValue) == 0;
-        } else if (_operator == OperatorType.GREATER_THAN || _operator == OperatorType.HIGHER_THAN) {
+        } else if (_operator == OperatorType.GREATER_THAN) {
             return comparator.compare(selectItemValue, operandValue) > 0;
-        } else if (_operator == OperatorType.LESS_THAN || _operator == OperatorType.LOWER_THAN) {
+        } else if (_operator == OperatorType.LESS_THAN) {
             return comparator.compare(selectItemValue, operandValue) < 0;
         } else if (_operator == OperatorType.LIKE) {
             WildcardPattern matcher = new WildcardPattern((String) operandValue, '%');

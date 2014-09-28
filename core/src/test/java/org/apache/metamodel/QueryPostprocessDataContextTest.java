@@ -965,4 +965,19 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         assertEquals("Row[values=[hello world]]", result.getRow().toString());
         assertFalse(result.next());
     }
+
+    public void testQueryWithDotInTableName() throws Exception {
+        MockDataContext dc = new MockDataContext("folder", "file.csv", "foo");
+
+        Table table = dc.getDefaultSchema().getTableByName("file.csv");
+        assertNotNull(table);
+
+        Query q = dc.parseQuery("SELECT foo FROM file.csv WHERE \r\nfoo='bar'");
+        assertNotNull(q);
+
+        FilterItem item = q.getWhereClause().getItem(0);
+        assertNull(item.getExpression());
+
+        assertEquals("file.csv.foo = 'bar'", item.toSql());
+    }
 }
