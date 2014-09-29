@@ -8,8 +8,10 @@ This guide will help you get started with Apache MetaModel's development environ
 
 If you're looking for a relevant issue to work on, we suggest you to do the following:
 
-* Join the @dev mailing list (send a mail to dev-subscribe@metamodel.incubator.apache.org, then afterwards communicate via dev@metamodel.incubator.apache.org).
-* Check the issues in JIRA with the 'starter' label: https://issues.apache.org/jira/issues/?jql=project%20%3D%20METAMODEL%20AND%20labels%20%3D%20starter
+* Join the @dev mailing list
+ * To subscribe, send a mail to dev-subscribe@metamodel.incubator.apache.org
+ * Afterwards communicate to the list via dev@metamodel.incubator.apache.org
+* Check JIRA for the [issues with the 'starter' label](https://issues.apache.org/jira/issues/?jql=project%20%3D%20METAMODEL%20AND%20labels%20%3D%20starter).
 * If you have something else on your mind, make yourself heard on the @dev mailing list.
 
 ### Build the code
@@ -39,6 +41,8 @@ When submitting your patch, keep in mind that it should be easy for others to re
  * Fork our [GitHub mirror](https://github.com/apache/incubator-metamodel) and post a [Pull Request](https://github.com/apache/incubator-metamodel/pulls).
 
 ### About tests
+
+Your patches receive extra points if there's a good set of unittests with it. It's important to ensure that any non-trivial part of our project is well covered with tests.
 
 By default the build will include all self-contained tests, including some quick integration tests to embedded databases like H2, Derby, HSQLDB etc.
 
