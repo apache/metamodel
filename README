@@ -36,3 +36,8 @@ If you also want to run integration tests:
 2) Remove the 'example-' prefix from its filename
 3) Modify the file to enable properties of the integration tests that you're interested in.
 4) Re-run "mvn clean install".
+
+Contributing
+============
+
+https://github.com/apache/incubator-metamodel/blob/master/CONTRIBUTE.md
