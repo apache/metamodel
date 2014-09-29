@@ -1,9 +1,9 @@
-Apache MetaModel 4.3.0-incubating
+### Apache MetaModel 4.3.0-incubating
 
  * [METAMODEL-77] - New module 'elasticsearch' for connecting and modeling ElasticSearch indexes through MetaModel.
  * [METAMODEL-74] - Fixed bug related to skipping blank values when applying an aggregate function (SUM, AVG etc.)
 
-Apache MetaModel 4.2.0-incubating
+### Apache MetaModel 4.2.0-incubating
 
  * [METAMODEL-38] - New module 'json' for handling json files (containing JSON arrays of documents or line-delimited JSON documents)
  * [METAMODEL-54] - ColumnType converted from enum to interface to allow for further specialization in modules.
@@ -21,7 +21,7 @@ Apache MetaModel 4.2.0-incubating
  * [METAMODEL-67] - Upgraded Jackson (JSON library) dependency from org.codehaus namespace to the newer com.fasterxml namespace.
  * [METAMODEL-69] - Fixed issue with deserialization of ColumnType into the new interface instead of the old enum.
 
-Apache MetaModel 4.1.0-incubating
+### Apache MetaModel 4.1.0-incubating
 
  * [METAMODEL-13] - Added support for Apache HBase via the new module "MetaModel-hbase"
  * [METAMODEL-41] - Added a parser for SimpleTableDef objects (SimpleTableDefParser). It parses statements similar to CREATE TABLE statements, although without the "CREATE TABLE" prefix. For example: foo (bar INTEGER, baz VARCHAR)
@@ -36,7 +36,7 @@ Apache MetaModel 4.1.0-incubating
  * [METAMODEL-33] - Ensured that Apache Rat plugin for Maven is properly activated.
  * [METAMODEL-37] - Removed old site sources from project.
 
-Apache MetaModel 4.0.0-incubating
+### Apache MetaModel 4.0.0-incubating
 
  * [METAMODEL-9] - SalesforceDataSet is throwing exception for insert sql of record having date/time.
  * [METAMODEL-4] - Use folder name as schema name for file based DataContexts
