@@ -18,52 +18,55 @@
  */
 package org.apache.metamodel.elasticsearch;
 
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
+import org.elasticsearch.action.search.ClearScrollRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 final class ElasticSearchDataSet extends AbstractDataSet {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataSet.class);
 
-    private int readCount = 0;
+    private final Client _client;
+    private final AtomicBoolean _closed;
 
-    private final SearchHit[] _cursor;
-    private final boolean _queryPostProcessed;
+    private SearchResponse _searchResponse;
+    private SearchHit _currentHit;
+    private int _hitIndex = 0;
 
-    private boolean _closed;
-    private volatile SearchHit _dbObject;
-
-    public ElasticSearchDataSet(SearchResponse cursor, Column[] columns, boolean queryPostProcessed) {
+    public ElasticSearchDataSet(Client client, SearchResponse searchResponse, Column[] columns,
+            boolean queryPostProcessed) {
         super(columns);
-        _cursor = cursor.getHits().hits();
-        _queryPostProcessed = queryPostProcessed;
-        _closed = false;
-    }
-
-    public boolean isQueryPostProcessed() {
-        return _queryPostProcessed;
+        _client = client;
+        _searchResponse = searchResponse;
+        _closed = new AtomicBoolean(false);
     }
 
     @Override
     public void close() {
         super.close();
-        // _cursor.close();
-        _closed = true;
+        boolean closeNow = _closed.compareAndSet(true, false);
+        if (closeNow) {
+            ClearScrollRequestBuilder scrollRequestBuilder = new ClearScrollRequestBuilder(_client)
+                    .addScrollId(_searchResponse.getScrollId());
+            scrollRequestBuilder.execute();
+        }
     }
 
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        if (!_closed) {
+        if (!_closed.get()) {
             logger.warn("finalize() invoked, but DataSet is not closed. Invoking close() on {}", this);
             close();
         }
@@ -71,19 +74,39 @@ final class ElasticSearchDataSet extends AbstractDataSet {
 
     @Override
     public boolean next() {
-        if (readCount < _cursor.length) {
-            _dbObject = _cursor[readCount];
-            readCount++;
-            return true;
-        } else {
-            _dbObject = null;
+        final SearchHit[] hits = _searchResponse.getHits().hits();
+        if (hits.length == 0) {
+            // break condition for the scroll
+            _currentHit = null;
             return false;
         }
+
+        if (_hitIndex < hits.length) {
+            // pick the next hit within this search response
+            _currentHit = hits[_hitIndex];
+            _hitIndex++;
+            return true;
+        }
+
+        final String scrollId = _searchResponse.getScrollId();
+        if (scrollId == null) {
+            // this search response is not scrolleable - then it's the end.
+            _currentHit = null;
+            return false;
+        }
+
+        // try to scroll to the next set of hits
+        _searchResponse = _client.prepareSearchScroll(scrollId).setScroll(ElasticSearchDataContext.TIMEOUT_SCROLL)
+                .execute().actionGet();
+
+        // start over (recursively)
+        _hitIndex = 0;
+        return next();
     }
 
     @Override
     public Row getRow() {
-        if (_dbObject == null) {
+        if (_currentHit == null) {
             return null;
         }
 
@@ -91,7 +114,7 @@ final class ElasticSearchDataSet extends AbstractDataSet {
         final Object[] values = new Object[size];
         for (int i = 0; i < values.length; i++) {
             final SelectItem selectItem = getHeader().getSelectItem(i);
-            final Map<String, Object> element = _dbObject.getSource();
+            final Map<String, Object> element = _currentHit.getSource();
             final String key = selectItem.getColumn().getName();
             values[i] = element.get(key);
         }

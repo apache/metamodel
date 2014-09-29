@@ -49,6 +49,7 @@ import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.hppc.ObjectLookupContainer;
 import org.elasticsearch.common.hppc.cursors.ObjectCursor;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +74,8 @@ import org.slf4j.LoggerFactory;
 public class ElasticSearchDataContext extends QueryPostprocessDataContext implements DataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
+
+    public static final TimeValue TIMEOUT_SCROLL = TimeValue.timeValueSeconds(60);
 
     private final Client elasticSearchClient;
     private final SimpleTableDef[] tableDefs;
@@ -215,9 +218,12 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         final SearchRequestBuilder requestBuilder = elasticSearchClient.prepareSearch(indexName).setTypes(documentType);
         if (limitMaxRowsIsSet(maxRows)) {
             requestBuilder.setSize(maxRows);
+        } else {
+            requestBuilder.setScroll(TIMEOUT_SCROLL);
         }
+
         final SearchResponse response = requestBuilder.execute().actionGet();
-        return new ElasticSearchDataSet(response, columns, false);
+        return new ElasticSearchDataSet(elasticSearchClient, response, columns, false);
     }
 
     @Override

@@ -102,7 +102,6 @@ public class ElasticSearchDataContextTest {
 
         DataSet ds = dataContext.query().from(indexType1).select("user").and("message").execute();
         assertEquals(ElasticSearchDataSet.class, ds.getClass());
-        assertFalse(((ElasticSearchDataSet) ds).isQueryPostProcessed());
 
         try {
             assertTrue(ds.next());
