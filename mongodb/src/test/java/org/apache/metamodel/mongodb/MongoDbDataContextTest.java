@@ -140,7 +140,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             nestedObj.put("constant", "foobarbaz");
             dbRow.put("baz", nestedObj);
 
-            dbRow.put("list", Arrays.<Object> asList("l1", "l2", "l3", i));
+            dbRow.put("list", Arrays.<Object>asList("l1", "l2", "l3", i));
 
             col.insert(dbRow);
         }
@@ -148,7 +148,10 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         // Instantiate the actual data context
         final DataContext dataContext = new MongoDbDataContext(db);
 
-        assertEquals("[" + getCollectionName() + ", system.indexes]", Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
+        //assertEquals("[" + getCollectionName() + ", system.indexes]", Arrays.toString(dataContext.getDefaultSchema
+        // ().getTableNames()));
+        assertEquals("[system.indexes, " + getCollectionName() + "]",
+                     Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
         Table table = dataContext.getDefaultSchema().getTableByName(getCollectionName());
         assertEquals("[_id, baz, foo, id, list, name]", Arrays.toString(table.getColumnNames()));
 
@@ -159,31 +162,31 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         assertEquals(ColumnType.ROWID, table.getColumnByName("_id").getType());
 
         DataSet ds = dataContext.query().from(getCollectionName()).select("name").and("foo").and("baz").and("list")
-                .where("id").greaterThan(800).or("foo").isEquals("bar").execute();
+            .where("id").greaterThan(800).or("foo").isEquals("bar").execute();
         assertEquals(MongoDbDataSet.class, ds.getClass());
         assertFalse(((MongoDbDataSet) ds).isQueryPostProcessed());
         try {
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 0, bar, {count=0, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 0]]]",
-                    ds.getRow().toString());
+                "Row[values=[record no. 0, bar, {count=0, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 0]]]",
+                ds.getRow().toString());
 
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 5, bar, {count=5, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 5]]]",
-                    ds.getRow().toString());
+                "Row[values=[record no. 5, bar, {count=5, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 5]]]",
+                ds.getRow().toString());
 
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 10, bar, {count=10, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 10]]]",
-                    ds.getRow().toString());
+                "Row[values=[record no. 10, bar, {count=10, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 10]]]",
+                ds.getRow().toString());
 
             for (int j = 15; j < 801; j++) {
                 if (j % 5 == 0) {
                     assertTrue(ds.next());
                     assertEquals("Row[values=[record no. " + j + ", bar, {count=" + j
-                            + ", constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , " + j + "]]]", ds.getRow()
-                            .toString());
+                                 + ", constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , " + j + "]]]", ds.getRow()
+                                     .toString());
                 }
             }
 
@@ -192,42 +195,42 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             assertEquals(LinkedHashMap.class, ds.getRow().getValue(2).getClass());
 
             assertTrue("unexpected type: " + ds.getRow().getValue(3).getClass(),
-                    ds.getRow().getValue(3) instanceof List);
+                       ds.getRow().getValue(3) instanceof List);
             assertEquals(BasicDBList.class, ds.getRow().getValue(3).getClass());
 
             assertEquals(
-                    "Row[values=[record no. 801, baz, {count=801, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 801]]]",
-                    ds.getRow().toString());
+                "Row[values=[record no. 801, baz, {count=801, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 801]]]",
+                ds.getRow().toString());
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 802, baz, {count=802, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 802]]]",
-                    ds.getRow().toString());
+                "Row[values=[record no. 802, baz, {count=802, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 802]]]",
+                ds.getRow().toString());
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 803, baz, {count=803, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 803]]]",
-                    ds.getRow().toString());
+                "Row[values=[record no. 803, baz, {count=803, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 803]]]",
+                ds.getRow().toString());
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 804, baz, {count=804, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 804]]]",
-                    ds.getRow().toString());
+                "Row[values=[record no. 804, baz, {count=804, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 804]]]",
+                ds.getRow().toString());
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 805, bar, {count=805, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 805]]]",
-                    ds.getRow().toString());
+                "Row[values=[record no. 805, bar, {count=805, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 805]]]",
+                ds.getRow().toString());
 
             for (int i = 0; i < 194; i++) {
                 assertTrue(ds.next());
             }
             assertEquals(
-                    "Row[values=[record no. 999, baz, {count=999, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 999]]]",
-                    ds.getRow().toString());
+                "Row[values=[record no. 999, baz, {count=999, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 999]]]",
+                ds.getRow().toString());
             assertFalse(ds.next());
         } finally {
             ds.close();
         }
 
         ds = dataContext.query().from(getCollectionName()).select("id").and("name").where("id").in(2, 6, 8, 9)
-                .execute();
+            .execute();
         assertTrue(ds.next());
         assertEquals("Row[values=[2, record no. 2]]", ds.getRow().toString());
         assertTrue(ds.next());
@@ -240,7 +243,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         ds.close();
 
         ds = dataContext.query().from(getCollectionName()).select("id").and("name").where("foo").isEquals("bar")
-                .execute();
+            .execute();
         assertEquals(MongoDbDataSet.class, ds.getClass());
         assertFalse(((MongoDbDataSet) ds).isQueryPostProcessed());
 
@@ -248,6 +251,69 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             List<Object[]> objectArrays = ds.toObjectArrays();
             assertEquals(200, objectArrays.size());
             assertEquals("[0, record no. 0]", Arrays.toString(objectArrays.get(0)));
+        } finally {
+            ds.close();
+        }
+
+        // test GREATER_THAN_OR_EQUAL
+        ds = dataContext.query().from(getCollectionName()).select("id").and("name")
+            .where("id").greaterThanOrEquals(500)
+            .and("foo").isEquals("bar")
+            .execute();
+        assertEquals(MongoDbDataSet.class, ds.getClass());
+        assertFalse(((MongoDbDataSet) ds).isQueryPostProcessed());
+
+        try {
+            List<Object[]> objectArrays = ds.toObjectArrays();
+            assertEquals(100, objectArrays.size());
+            assertEquals("[500, record no. 500]", Arrays.toString(objectArrays.get(0)));
+        } finally {
+            ds.close();
+        }
+
+        ds = dataContext.query().from(getCollectionName()).select("id").and("name")
+            .where("id").greaterThanOrEquals(501)
+            .and("foo").isEquals("bar")
+            .execute();
+        assertEquals(MongoDbDataSet.class, ds.getClass());
+        assertFalse(((MongoDbDataSet) ds).isQueryPostProcessed());
+
+        try {
+            List<Object[]> objectArrays = ds.toObjectArrays();
+            assertEquals(99, objectArrays.size());
+            assertEquals("[505, record no. 505]", Arrays.toString(objectArrays.get(0)));
+        } finally {
+            ds.close();
+        }
+
+        // test LESS_THAN_OR_EQUAL
+
+        ds = dataContext.query().from(getCollectionName()).select("id").and("name")
+            .where("id").lessThanOrEquals(500)
+            .and("foo").isEquals("bar")
+            .execute();
+        assertEquals(MongoDbDataSet.class, ds.getClass());
+        assertFalse(((MongoDbDataSet) ds).isQueryPostProcessed());
+
+        try {
+            List<Object[]> objectArrays = ds.toObjectArrays();
+            assertEquals(101, objectArrays.size());
+            assertEquals("[500, record no. 500]", Arrays.toString(objectArrays.get(100)));
+        } finally {
+            ds.close();
+        }
+
+        ds = dataContext.query().from(getCollectionName()).select("id").and("name")
+            .where("id").lessThanOrEquals(499)
+            .and("foo").isEquals("bar")
+            .execute();
+        assertEquals(MongoDbDataSet.class, ds.getClass());
+        assertFalse(((MongoDbDataSet) ds).isQueryPostProcessed());
+
+        try {
+            List<Object[]> objectArrays = ds.toObjectArrays();
+            assertEquals(100, objectArrays.size());
+            assertEquals("[495, record no. 495]", Arrays.toString(objectArrays.get(99)));
         } finally {
             ds.close();
         }
@@ -263,7 +329,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         nestedObj.put("constant", "foobarbaz");
         dbRow.put("baz", nestedObj);
 
-        dbRow.put("list", Arrays.<Object> asList("l1", "l2", "l3", 123456));
+        dbRow.put("list", Arrays.<Object>asList("l1", "l2", "l3", 123456));
 
         col.insert(dbRow);
 
@@ -273,9 +339,10 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         assertFalse(ds.next());
 
         // do a query that we cannot push to mongo
+        // Replace column index 0 by 1
         ds = dataContext.query().from(getCollectionName())
-                .select(FunctionType.SUM, dataContext.getDefaultSchema().getTables()[0].getColumnByName("id"))
-                .where("foo").isEquals("bar").execute();
+            .select(FunctionType.SUM, dataContext.getDefaultSchema().getTables()[1].getColumnByName("id"))
+            .where("foo").isEquals("bar").execute();
         assertEquals(InMemoryDataSet.class, ds.getClass());
 
         ds.close();
@@ -306,7 +373,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             @Override
             public void run(UpdateCallback callback) {
                 Table table = callback.createTable(defaultSchema, "some_entries").withColumn("foo").withColumn("bar")
-                        .withColumn("baz").withColumn("list").execute();
+                    .withColumn("baz").withColumn("list").execute();
 
                 callback.insertInto(table).value("foo", 1).value("bar", "hello").execute();
                 callback.insertInto(table).value("foo", 2).value("bar", "world").execute();
@@ -317,7 +384,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
                 nestedObj.put("123", 456);
 
                 callback.insertInto(table).value("foo", 4).value("bar", "there").value("baz", nestedObj)
-                        .value("list", Arrays.asList(1, 2, 3)).execute();
+                    .value("list", Arrays.asList(1, 2, 3)).execute();
             }
         });
 

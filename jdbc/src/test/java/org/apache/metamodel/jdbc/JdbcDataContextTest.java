@@ -114,7 +114,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
         EasyMock.verify(ds);
 
         String assertionFailMsg = "Expected 5x true: " + con1.isClosed() + "," + con2.isClosed() + ","
-                + con3.isClosed() + "," + con4.isClosed() + "," + con5.isClosed();
+                                  + con3.isClosed() + "," + con4.isClosed() + "," + con5.isClosed();
 
         assertTrue(assertionFailMsg, con1.isClosed());
         assertTrue(assertionFailMsg, con2.isClosed());
@@ -125,8 +125,8 @@ public class JdbcDataContextTest extends JdbcTestCase {
 
     public void testExecuteQuery() throws Exception {
         Connection connection = getTestDbConnection();
-        JdbcDataContext strategy = new JdbcDataContext(connection, new TableType[] { TableType.TABLE, TableType.VIEW },
-                null);
+        JdbcDataContext strategy = new JdbcDataContext(connection, new TableType[]{TableType.TABLE, TableType.VIEW},
+                                                       null);
         Schema schema = strategy.getSchemaByName(strategy.getDefaultSchemaName());
 
         Query q = new Query();
@@ -134,27 +134,31 @@ public class JdbcDataContextTest extends JdbcTestCase {
         q.from(table, "a");
         q.select(table.getColumns());
         assertEquals(
-                "SELECT a._CUSTOMERNUMBER_, a._CUSTOMERNAME_, a._CONTACTLASTNAME_, a._CONTACTFIRSTNAME_, a._PHONE_, a._ADDRESSLINE1_, a._ADDRESSLINE2_, a._CITY_, a._STATE_, a._POSTALCODE_, a._COUNTRY_, a._SALESREPEMPLOYEENUMBER_, a._CREDITLIMIT_ FROM PUBLIC._CUSTOMERS_ a",
-                q.toString().replace('\"', '_'));
+            "SELECT a._CUSTOMERNUMBER_, a._CUSTOMERNAME_, a._CONTACTLASTNAME_, a._CONTACTFIRSTNAME_, a._PHONE_, "
+            + "a._ADDRESSLINE1_, a._ADDRESSLINE2_, a._CITY_, a._STATE_, a._POSTALCODE_, a._COUNTRY_, "
+            + "a._SALESREPEMPLOYEENUMBER_, a._CREDITLIMIT_ FROM PUBLIC._CUSTOMERS_ a",
+            q.toString().replace('\"', '_'));
         DataSet result = strategy.executeQuery(q);
         assertTrue(result.next());
         assertEquals(
-                "Row[values=[103, Atelier graphique, Schmitt, Carine, 40.32.2555, 54, rue Royale, null, Nantes, null, 44000, France, 1370, 21000.0]]",
-                result.getRow().toString());
+            "Row[values=[103, Atelier graphique, Schmitt, Carine, 40.32.2555, 54, rue Royale, null, Nantes, null, "
+            + "44000, France, 1370, 21000.0]]",
+            result.getRow().toString());
         assertTrue(result.next());
         assertTrue(result.next());
         assertTrue(result.next());
         assertTrue(result.next());
         assertEquals(
-                "Row[values=[121, Baane Mini Imports, Bergulfsen, Jonas, 07-98 9555, Erling Skakkes gate 78, null, Stavern, null, 4110, Norway, 1504, 81700.0]]",
-                result.getRow().toString());
+            "Row[values=[121, Baane Mini Imports, Bergulfsen, Jonas, 07-98 9555, Erling Skakkes gate 78, null, "
+            + "Stavern, null, 4110, Norway, 1504, 81700.0]]",
+            result.getRow().toString());
         result.close();
     }
 
     public void testExecuteQueryWithParams() throws Exception {
         Connection connection = getTestDbConnection();
         JdbcDataContext dataContext = new JdbcDataContext(connection,
-                new TableType[] { TableType.TABLE, TableType.VIEW }, null);
+                                                          new TableType[]{TableType.TABLE, TableType.VIEW}, null);
         Schema schema = dataContext.getSchemaByName(dataContext.getDefaultSchemaName());
 
         QueryParameter queryParameter = new QueryParameter();
@@ -175,20 +179,23 @@ public class JdbcDataContextTest extends JdbcTestCase {
         String compliedQueryString = compiledQuery.toSql();
 
         assertEquals(
-                "SELECT a._CUSTOMERNUMBER_, a._CUSTOMERNAME_, a._CONTACTLASTNAME_, a._CONTACTFIRSTNAME_, a._PHONE_, a._ADDRESSLINE1_, a._ADDRESSLINE2_, a._CITY_, "
-                        + "a._STATE_, a._POSTALCODE_, a._COUNTRY_, a._SALESREPEMPLOYEENUMBER_, a._CREDITLIMIT_ FROM PUBLIC._CUSTOMERS_ a WHERE a._CUSTOMERNUMBER_ = ? "
-                        + "AND a._CUSTOMERNAME_ = ?", compliedQueryString.replace('\"', '_'));
-        DataSet result1 = dataContext.executeQuery(compiledQuery, new Object[] { 103, "Atelier graphique" });
+            "SELECT a._CUSTOMERNUMBER_, a._CUSTOMERNAME_, a._CONTACTLASTNAME_, a._CONTACTFIRSTNAME_, a._PHONE_, "
+            + "a._ADDRESSLINE1_, a._ADDRESSLINE2_, a._CITY_, "
+            + "a._STATE_, a._POSTALCODE_, a._COUNTRY_, a._SALESREPEMPLOYEENUMBER_, "
+            + "a._CREDITLIMIT_ FROM PUBLIC._CUSTOMERS_ a WHERE a._CUSTOMERNUMBER_ = ? "
+            + "AND a._CUSTOMERNAME_ = ?", compliedQueryString.replace('\"', '_'));
+        DataSet result1 = dataContext.executeQuery(compiledQuery, new Object[]{103, "Atelier graphique"});
         assertTrue(result1.next());
         assertEquals(
-                "Row[values=[103, Atelier graphique, Schmitt, Carine, 40.32.2555, 54, rue Royale, null, Nantes, null, 44000, France, 1370, 21000.0]]",
-                result1.getRow().toString());
+            "Row[values=[103, Atelier graphique, Schmitt, Carine, 40.32.2555, 54, rue Royale, null, Nantes, null, "
+            + "44000, France, 1370, 21000.0]]",
+            result1.getRow().toString());
         assertFalse(result1.next());
 
         assertEquals(1, jdbcCompiledQuery.getActiveLeases());
         assertEquals(0, jdbcCompiledQuery.getIdleLeases());
 
-        DataSet result2 = dataContext.executeQuery(compiledQuery, new Object[] { 103, "Atelier graphique" });
+        DataSet result2 = dataContext.executeQuery(compiledQuery, new Object[]{103, "Atelier graphique"});
 
         assertEquals(2, jdbcCompiledQuery.getActiveLeases());
         assertEquals(0, jdbcCompiledQuery.getIdleLeases());
@@ -209,9 +216,123 @@ public class JdbcDataContextTest extends JdbcTestCase {
         assertEquals(0, jdbcCompiledQuery.getIdleLeases());
     }
 
+    public void testExecuteQueryWithComparisonGreaterThanOrEquals() throws Exception {
+        Connection connection = getTestDbConnection();
+        JdbcDataContext dataContext = new JdbcDataContext(connection,
+                                                          new TableType[]{TableType.TABLE, TableType.VIEW}, null);
+        Schema schema = dataContext.getSchemaByName(dataContext.getDefaultSchemaName());
+
+        QueryParameter queryParameter = new QueryParameter();
+
+        Query q = new Query();
+        Table table = schema.getTables()[0];
+        q.select(new SelectItem("COUNT(*)", null));
+        q.from(table, "a");
+        q.where(table.getColumnByName("CREDITLIMIT"), OperatorType.GREATER_THAN_OR_EQUAL, queryParameter);
+
+        final CompiledQuery compiledQuery = dataContext.compileQuery(q);
+
+        final JdbcCompiledQuery jdbcCompiledQuery = (JdbcCompiledQuery) compiledQuery;
+        assertEquals(0, jdbcCompiledQuery.getActiveLeases());
+        assertEquals(0, jdbcCompiledQuery.getIdleLeases());
+
+        String compliedQueryString = compiledQuery.toSql();
+
+        assertEquals(
+            "SELECT COUNT(*) FROM PUBLIC._CUSTOMERS_ a WHERE a._CREDITLIMIT_ >= ?",
+            compliedQueryString.replace('\"', '_'));
+
+        DataSet result1 = dataContext.executeQuery(compiledQuery, new Object[]{11000});
+        assertTrue(result1.next());
+        assertEquals("Row[values=[98]]", result1.getRow().toString());
+        assertFalse(result1.next());
+        result1.close();
+
+        result1 = dataContext.executeQuery(compiledQuery, new Object[]{10999});
+        assertTrue(result1.next());
+        assertEquals("Row[values=[98]]", result1.getRow().toString());
+        assertFalse(result1.next());
+        result1.close();
+
+        result1 = dataContext.executeQuery(compiledQuery, new Object[]{11001});
+        assertTrue(result1.next());
+        assertEquals("Row[values=[97]]", result1.getRow().toString());
+        assertFalse(result1.next());
+
+        assertEquals(1, jdbcCompiledQuery.getActiveLeases());
+        assertEquals(0, jdbcCompiledQuery.getIdleLeases());
+
+        result1.close();
+
+        assertEquals(0, jdbcCompiledQuery.getActiveLeases());
+        assertEquals(1, jdbcCompiledQuery.getIdleLeases());
+
+        compiledQuery.close();
+
+        assertEquals(0, jdbcCompiledQuery.getActiveLeases());
+        assertEquals(0, jdbcCompiledQuery.getIdleLeases());
+    }
+
+    public void testExecuteQueryWithComparisonLessThanOrEquals() throws Exception {
+        Connection connection = getTestDbConnection();
+        JdbcDataContext dataContext = new JdbcDataContext(connection,
+                                                          new TableType[]{TableType.TABLE, TableType.VIEW}, null);
+        Schema schema = dataContext.getSchemaByName(dataContext.getDefaultSchemaName());
+
+        QueryParameter queryParameter = new QueryParameter();
+
+        Query q = new Query();
+        Table table = schema.getTables()[0];
+        q.select(new SelectItem("COUNT(*)", null));
+        q.from(table, "a");
+        q.where(table.getColumnByName("CREDITLIMIT"), OperatorType.LESS_THAN_OR_EQUAL, queryParameter);
+
+        final CompiledQuery compiledQuery = dataContext.compileQuery(q);
+
+        final JdbcCompiledQuery jdbcCompiledQuery = (JdbcCompiledQuery) compiledQuery;
+        assertEquals(0, jdbcCompiledQuery.getActiveLeases());
+        assertEquals(0, jdbcCompiledQuery.getIdleLeases());
+
+        String compliedQueryString = compiledQuery.toSql();
+
+        assertEquals(
+            "SELECT COUNT(*) FROM PUBLIC._CUSTOMERS_ a WHERE a._CREDITLIMIT_ <= ?",
+            compliedQueryString.replace('\"', '_'));
+
+        DataSet result1 = dataContext.executeQuery(compiledQuery, new Object[]{11000});
+        assertTrue(result1.next());
+        assertEquals("Row[values=[25]]", result1.getRow().toString());
+        assertFalse(result1.next());
+        result1.close();
+
+        result1 = dataContext.executeQuery(compiledQuery, new Object[]{11001});
+        assertTrue(result1.next());
+        assertEquals("Row[values=[25]]", result1.getRow().toString());
+        assertFalse(result1.next());
+        result1.close();
+
+        result1 = dataContext.executeQuery(compiledQuery, new Object[]{10999});
+        assertTrue(result1.next());
+        assertEquals("Row[values=[24]]", result1.getRow().toString());
+        assertFalse(result1.next());
+
+        assertEquals(1, jdbcCompiledQuery.getActiveLeases());
+        assertEquals(0, jdbcCompiledQuery.getIdleLeases());
+
+        result1.close();
+
+        assertEquals(0, jdbcCompiledQuery.getActiveLeases());
+        assertEquals(1, jdbcCompiledQuery.getIdleLeases());
+
+        compiledQuery.close();
+
+        assertEquals(0, jdbcCompiledQuery.getActiveLeases());
+        assertEquals(0, jdbcCompiledQuery.getIdleLeases());
+    }
+
     public void testGetSchemaNormalTableTypes() throws Exception {
         Connection connection = getTestDbConnection();
-        JdbcDataContext dc = new JdbcDataContext(connection, new TableType[] { TableType.TABLE, TableType.VIEW }, null);
+        JdbcDataContext dc = new JdbcDataContext(connection, new TableType[]{TableType.TABLE, TableType.VIEW}, null);
         Schema[] schemas = dc.getSchemas();
 
         assertEquals(2, schemas.length);
@@ -225,32 +346,35 @@ public class JdbcDataContextTest extends JdbcTestCase {
 
     public void testParseColumns() throws Exception {
         Connection connection = getTestDbConnection();
-        JdbcDataContext dc = new JdbcDataContext(connection, new TableType[] { TableType.OTHER,
-                TableType.GLOBAL_TEMPORARY }, null);
+        JdbcDataContext dc = new JdbcDataContext(connection, new TableType[]{TableType.OTHER,
+                                                                             TableType.GLOBAL_TEMPORARY}, null);
         Schema schema = dc.getDefaultSchema();
         Table customersTable = schema.getTableByName("CUSTOMERS");
         Column[] columns = customersTable.getColumns();
         assertEquals(
-                "[Column[name=CUSTOMERNUMBER,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=0], "
-                        + "Column[name=CUSTOMERNAME,columnNumber=1,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=CONTACTLASTNAME,columnNumber=2,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=CONTACTFIRSTNAME,columnNumber=3,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=PHONE,columnNumber=4,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=ADDRESSLINE1,columnNumber=5,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=ADDRESSLINE2,columnNumber=6,type=VARCHAR,nullable=true,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=CITY,columnNumber=7,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=STATE,columnNumber=8,type=VARCHAR,nullable=true,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=POSTALCODE,columnNumber=9,type=VARCHAR,nullable=true,nativeType=VARCHAR,columnSize=15], "
-                        + "Column[name=COUNTRY,columnNumber=10,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=SALESREPEMPLOYEENUMBER,columnNumber=11,type=INTEGER,nullable=true,nativeType=INTEGER,columnSize=0], "
-                        + "Column[name=CREDITLIMIT,columnNumber=12,type=NUMERIC,nullable=true,nativeType=NUMERIC,columnSize=17]]",
-                Arrays.toString(columns));
+            "[Column[name=CUSTOMERNUMBER,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=0], "
+            + "Column[name=CUSTOMERNAME,columnNumber=1,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=CONTACTLASTNAME,columnNumber=2,type=VARCHAR,nullable=false,nativeType=VARCHAR,"
+            + "columnSize=50], "
+            + "Column[name=CONTACTFIRSTNAME,columnNumber=3,type=VARCHAR,nullable=false,nativeType=VARCHAR,"
+            + "columnSize=50], "
+            + "Column[name=PHONE,columnNumber=4,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=ADDRESSLINE1,columnNumber=5,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=ADDRESSLINE2,columnNumber=6,type=VARCHAR,nullable=true,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=CITY,columnNumber=7,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=STATE,columnNumber=8,type=VARCHAR,nullable=true,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=POSTALCODE,columnNumber=9,type=VARCHAR,nullable=true,nativeType=VARCHAR,columnSize=15], "
+            + "Column[name=COUNTRY,columnNumber=10,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=SALESREPEMPLOYEENUMBER,columnNumber=11,type=INTEGER,nullable=true,nativeType=INTEGER,"
+            + "columnSize=0], "
+            + "Column[name=CREDITLIMIT,columnNumber=12,type=NUMERIC,nullable=true,nativeType=NUMERIC,columnSize=17]]",
+            Arrays.toString(columns));
         connection.close();
     }
 
     public void testParseRelations() throws Exception {
         Connection connection = getTestDbConnection();
-        JdbcDataContext dc = new JdbcDataContext(connection, new TableType[] { TableType.TABLE }, null);
+        JdbcDataContext dc = new JdbcDataContext(connection, new TableType[]{TableType.TABLE}, null);
         Schema schema = dc.getDefaultSchema();
         Table productsTable = schema.getTableByName("PRODUCTS");
         Relationship[] relations = productsTable.getRelationships();
@@ -259,13 +383,14 @@ public class JdbcDataContextTest extends JdbcTestCase {
          * TODO: A single constraint now exists, create more ...
          */
         assertEquals(
-                "[Relationship[primaryTable=PRODUCTS,primaryColumns=[PRODUCTCODE],foreignTable=ORDERFACT,foreignColumns=[PRODUCTCODE]]]",
-                Arrays.toString(relations));
+            "[Relationship[primaryTable=PRODUCTS,primaryColumns=[PRODUCTCODE],foreignTable=ORDERFACT,"
+            + "foreignColumns=[PRODUCTCODE]]]",
+            Arrays.toString(relations));
 
         Column[] indexedColumns = productsTable.getIndexedColumns();
         assertEquals(
-                "[Column[name=PRODUCTCODE,columnNumber=0,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]]",
-                Arrays.toString(indexedColumns));
+            "[Column[name=PRODUCTCODE,columnNumber=0,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]]",
+            Arrays.toString(indexedColumns));
 
         connection.close();
     }
@@ -289,7 +414,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
         EasyMock.expect(mockCon.getAutoCommit()).andReturn(true);
 
         EasyMock.expect(mockCon.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)).andReturn(
-                mockStatement);
+            mockStatement);
 
         EasyMock.expect(mockStatement.getFetchSize()).andReturn(10);
         mockStatement.setFetchSize(EasyMock.anyInt());
@@ -297,17 +422,25 @@ public class JdbcDataContextTest extends JdbcTestCase {
         EasyMock.expectLastCall().andThrow(new SQLException("I wont allow max rows"));
 
         EasyMock.expect(
-                mockStatement
-                        .executeQuery("SELECT a.\"CUSTOMERNUMBER\", a.\"CUSTOMERNAME\", a.\"CONTACTLASTNAME\", a.\"CONTACTFIRSTNAME\", a.\"PHONE\", a.\"ADDRESSLINE1\", a.\"ADDRESSLINE2\", a.\"CITY\", a.\"STATE\", a.\"POSTALCODE\", a.\"COUNTRY\", a.\"SALESREPEMPLOYEENUMBER\", a.\"CREDITLIMIT\" FROM PUBLIC.\"CUSTOMERS\" a"))
-                .andReturn(
-                        realStatement
-                                .executeQuery("SELECT a.\"CUSTOMERNUMBER\", a.\"CUSTOMERNAME\", a.\"CONTACTLASTNAME\", a.\"CONTACTFIRSTNAME\", a.\"PHONE\", a.\"ADDRESSLINE1\", a.\"ADDRESSLINE2\", a.\"CITY\", a.\"STATE\", a.\"POSTALCODE\", a.\"COUNTRY\", a.\"SALESREPEMPLOYEENUMBER\", a.\"CREDITLIMIT\" FROM PUBLIC.\"CUSTOMERS\" a"));
+            mockStatement
+                .executeQuery(
+                    "SELECT a.\"CUSTOMERNUMBER\", a.\"CUSTOMERNAME\", a.\"CONTACTLASTNAME\", a.\"CONTACTFIRSTNAME\", "
+                    + "a.\"PHONE\", a.\"ADDRESSLINE1\", a.\"ADDRESSLINE2\", a.\"CITY\", a.\"STATE\", "
+                    + "a.\"POSTALCODE\", a.\"COUNTRY\", a.\"SALESREPEMPLOYEENUMBER\", "
+                    + "a.\"CREDITLIMIT\" FROM PUBLIC.\"CUSTOMERS\" a"))
+            .andReturn(
+                realStatement
+                    .executeQuery(
+                        "SELECT a.\"CUSTOMERNUMBER\", a.\"CUSTOMERNAME\", a.\"CONTACTLASTNAME\", "
+                        + "a.\"CONTACTFIRSTNAME\", a.\"PHONE\", a.\"ADDRESSLINE1\", a.\"ADDRESSLINE2\", a.\"CITY\", "
+                        + "a.\"STATE\", a.\"POSTALCODE\", a.\"COUNTRY\", a.\"SALESREPEMPLOYEENUMBER\", "
+                        + "a.\"CREDITLIMIT\" FROM PUBLIC.\"CUSTOMERS\" a"));
 
         mockStatement.close();
 
         EasyMock.replay(mockCon, mockStatement);
 
-        JdbcDataContext dc = new JdbcDataContext(mockCon, new TableType[] { TableType.TABLE, TableType.VIEW }, null);
+        JdbcDataContext dc = new JdbcDataContext(mockCon, new TableType[]{TableType.TABLE, TableType.VIEW}, null);
         dc.setQueryRewriter(new DefaultQueryRewriter(dc));
         Schema schema = dc.getDefaultSchema();
 
@@ -316,13 +449,16 @@ public class JdbcDataContextTest extends JdbcTestCase {
         q.from(table, "a");
         q.select(table.getColumns());
         assertEquals(
-                "SELECT a.\"CUSTOMERNUMBER\", a.\"CUSTOMERNAME\", a.\"CONTACTLASTNAME\", a.\"CONTACTFIRSTNAME\", a.\"PHONE\", a.\"ADDRESSLINE1\", a.\"ADDRESSLINE2\", a.\"CITY\", a.\"STATE\", a.\"POSTALCODE\", a.\"COUNTRY\", a.\"SALESREPEMPLOYEENUMBER\", a.\"CREDITLIMIT\" FROM PUBLIC.\"CUSTOMERS\" a",
-                q.toString());
+            "SELECT a.\"CUSTOMERNUMBER\", a.\"CUSTOMERNAME\", a.\"CONTACTLASTNAME\", a.\"CONTACTFIRSTNAME\", "
+            + "a.\"PHONE\", a.\"ADDRESSLINE1\", a.\"ADDRESSLINE2\", a.\"CITY\", a.\"STATE\", a.\"POSTALCODE\", "
+            + "a.\"COUNTRY\", a.\"SALESREPEMPLOYEENUMBER\", a.\"CREDITLIMIT\" FROM PUBLIC.\"CUSTOMERS\" a",
+            q.toString());
         DataSet result = dc.executeQuery(q);
         assertTrue(result.next());
         assertEquals(
-                "Row[values=[103, Atelier graphique, Schmitt, Carine, 40.32.2555, 54, rue Royale, null, Nantes, null, 44000, France, 1370, 21000.0]]",
-                result.getRow().toString());
+            "Row[values=[103, Atelier graphique, Schmitt, Carine, 40.32.2555, 54, rue Royale, null, Nantes, null, "
+            + "44000, France, 1370, 21000.0]]",
+            result.getRow().toString());
         assertTrue(result.next());
         assertTrue(result.next());
         assertFalse(result.next());
@@ -334,7 +470,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
     }
 
     public void testMaxRowsRewrite() throws Exception {
-        JdbcDataContext dc = new JdbcDataContext(getTestDbConnection(), new TableType[] { TableType.TABLE }, null);
+        JdbcDataContext dc = new JdbcDataContext(getTestDbConnection(), new TableType[]{TableType.TABLE}, null);
         IQueryRewriter rewriter = new DefaultQueryRewriter(dc) {
             @Override
             public String rewriteQuery(Query query) {
@@ -349,10 +485,8 @@ public class JdbcDataContextTest extends JdbcTestCase {
     }
 
     /**
-     * Executes the same query on two diffent strategies, one with database-side
-     * query execution and one with Query postprocessing
-     * 
-     * @throws Exception
+     * Executes the same query on two diffent strategies, one with database-side query execution and one with Query
+     * postprocessing
      */
     public void testCsvQueryResultComparison() throws Exception {
         Connection connection = getTestDbConnection();
@@ -381,30 +515,33 @@ public class JdbcDataContextTest extends JdbcTestCase {
         Table customersTable = schema2.getTableByName("CUSTOMERS");
         Table employeeTable = schema2.getTableByName("EMPLOYEES");
         assertEquals(
-                "[Column[name=CUSTOMERNUMBER,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=0], "
-                        + "Column[name=CUSTOMERNAME,columnNumber=1,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=CONTACTLASTNAME,columnNumber=2,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=CONTACTFIRSTNAME,columnNumber=3,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=PHONE,columnNumber=4,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=ADDRESSLINE1,columnNumber=5,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=ADDRESSLINE2,columnNumber=6,type=VARCHAR,nullable=true,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=CITY,columnNumber=7,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=STATE,columnNumber=8,type=VARCHAR,nullable=true,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=POSTALCODE,columnNumber=9,type=VARCHAR,nullable=true,nativeType=VARCHAR,columnSize=15], "
-                        + "Column[name=COUNTRY,columnNumber=10,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=SALESREPEMPLOYEENUMBER,columnNumber=11,type=INTEGER,nullable=true,nativeType=INTEGER,columnSize=0], "
-                        + "Column[name=CREDITLIMIT,columnNumber=12,type=NUMERIC,nullable=true,nativeType=NUMERIC,columnSize=17]]",
-                Arrays.toString(customersTable.getColumns()));
+            "[Column[name=CUSTOMERNUMBER,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=0], "
+            + "Column[name=CUSTOMERNAME,columnNumber=1,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=CONTACTLASTNAME,columnNumber=2,type=VARCHAR,nullable=false,nativeType=VARCHAR,"
+            + "columnSize=50], "
+            + "Column[name=CONTACTFIRSTNAME,columnNumber=3,type=VARCHAR,nullable=false,nativeType=VARCHAR,"
+            + "columnSize=50], "
+            + "Column[name=PHONE,columnNumber=4,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=ADDRESSLINE1,columnNumber=5,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=ADDRESSLINE2,columnNumber=6,type=VARCHAR,nullable=true,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=CITY,columnNumber=7,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=STATE,columnNumber=8,type=VARCHAR,nullable=true,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=POSTALCODE,columnNumber=9,type=VARCHAR,nullable=true,nativeType=VARCHAR,columnSize=15], "
+            + "Column[name=COUNTRY,columnNumber=10,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=SALESREPEMPLOYEENUMBER,columnNumber=11,type=INTEGER,nullable=true,nativeType=INTEGER,"
+            + "columnSize=0], "
+            + "Column[name=CREDITLIMIT,columnNumber=12,type=NUMERIC,nullable=true,nativeType=NUMERIC,columnSize=17]]",
+            Arrays.toString(customersTable.getColumns()));
         assertEquals(
-                "[Column[name=EMPLOYEENUMBER,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=0], "
-                        + "Column[name=LASTNAME,columnNumber=1,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=FIRSTNAME,columnNumber=2,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                        + "Column[name=EXTENSION,columnNumber=3,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=10], "
-                        + "Column[name=EMAIL,columnNumber=4,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=100], "
-                        + "Column[name=OFFICECODE,columnNumber=5,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=20], "
-                        + "Column[name=REPORTSTO,columnNumber=6,type=INTEGER,nullable=true,nativeType=INTEGER,columnSize=0], "
-                        + "Column[name=JOBTITLE,columnNumber=7,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]]",
-                Arrays.toString(employeeTable.getColumns()));
+            "[Column[name=EMPLOYEENUMBER,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=0], "
+            + "Column[name=LASTNAME,columnNumber=1,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=FIRSTNAME,columnNumber=2,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+            + "Column[name=EXTENSION,columnNumber=3,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=10], "
+            + "Column[name=EMAIL,columnNumber=4,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=100], "
+            + "Column[name=OFFICECODE,columnNumber=5,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=20], "
+            + "Column[name=REPORTSTO,columnNumber=6,type=INTEGER,nullable=true,nativeType=INTEGER,columnSize=0], "
+            + "Column[name=JOBTITLE,columnNumber=7,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]]",
+            Arrays.toString(employeeTable.getColumns()));
 
         Column employeeNumberColumn1 = customersTable.getColumnByName("SALESREPEMPLOYEENUMBER");
         Column countryColumn = customersTable.getColumnByName("COUNTRY");
@@ -419,11 +556,13 @@ public class JdbcDataContextTest extends JdbcTestCase {
         q.groupBy(countryColumn);
         q.orderBy(new OrderByItem(countrySelect));
         q.where(new FilterItem(new SelectItem(employeeNumberColumn1), OperatorType.EQUALS_TO, new SelectItem(
-                employeeNumberColumn2)));
+            employeeNumberColumn2)));
 
         assertEquals(
-                "SELECT c.\"COUNTRY\", SUM(c.\"CREDITLIMIT\") FROM PUBLIC.\"CUSTOMERS\" c, PUBLIC.\"EMPLOYEES\" o WHERE c.\"SALESREPEMPLOYEENUMBER\" = o.\"EMPLOYEENUMBER\" GROUP BY c.\"COUNTRY\" ORDER BY c.\"COUNTRY\" ASC",
-                q.toString());
+            "SELECT c.\"COUNTRY\", SUM(c.\"CREDITLIMIT\") FROM PUBLIC.\"CUSTOMERS\" c, "
+            + "PUBLIC.\"EMPLOYEES\" o WHERE c.\"SALESREPEMPLOYEENUMBER\" = o.\"EMPLOYEENUMBER\" GROUP BY c"
+            + ".\"COUNTRY\" ORDER BY c.\"COUNTRY\" ASC",
+            q.toString());
 
         DataSet data1 = dataContext1.executeQuery(q);
         assertTrue(data1.next());
@@ -453,10 +592,10 @@ public class JdbcDataContextTest extends JdbcTestCase {
         ds.setDefaultTransactionIsolation(java.sql.Connection.TRANSACTION_READ_COMMITTED);
 
         final JdbcDataContext dataContext = new JdbcDataContext(ds,
-                new TableType[] { TableType.TABLE, TableType.VIEW }, null);
+                                                                new TableType[]{TableType.TABLE, TableType.VIEW}, null);
 
         final JdbcCompiledQuery compiledQuery = (JdbcCompiledQuery) dataContext.query().from("CUSTOMERS")
-                .select("CUSTOMERNAME").where("CUSTOMERNUMBER").eq(new QueryParameter()).compile();
+            .select("CUSTOMERNAME").where("CUSTOMERNUMBER").eq(new QueryParameter()).compile();
 
         assertEquals(0, compiledQuery.getActiveLeases());
         assertEquals(0, compiledQuery.getIdleLeases());
@@ -464,8 +603,8 @@ public class JdbcDataContextTest extends JdbcTestCase {
         final String compliedQueryString = compiledQuery.toSql();
 
         assertEquals(
-                "SELECT _CUSTOMERS_._CUSTOMERNAME_ FROM PUBLIC._CUSTOMERS_ WHERE _CUSTOMERS_._CUSTOMERNUMBER_ = ?",
-                compliedQueryString.replace('\"', '_'));
+            "SELECT _CUSTOMERS_._CUSTOMERNAME_ FROM PUBLIC._CUSTOMERS_ WHERE _CUSTOMERS_._CUSTOMERNUMBER_ = ?",
+            compliedQueryString.replace('\"', '_'));
 
         assertEquals(0, compiledQuery.getActiveLeases());
         assertEquals(0, compiledQuery.getIdleLeases());
@@ -478,7 +617,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
             public void run() {
                 try {
                     for (int i = 0; i < noOfCallsPerThreads; i++) {
-                        final DataSet dataSet = dataContext.executeQuery(compiledQuery, new Object[] { 103 });
+                        final DataSet dataSet = dataContext.executeQuery(compiledQuery, new Object[]{103});
                         try {
                             assertTrue(dataSet.next());
                             Row row = dataSet.getRow();

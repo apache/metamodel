@@ -90,7 +90,7 @@ abstract class AbstractQueryFilterBuilder<B> extends GroupedQueryBuilderCallback
     public B isEquals(Boolean bool) {
         return _filterBuilder.isEquals(bool);
     }
-    
+
     @Override
     public B isEquals(Object obj) {
         return _filterBuilder.isEquals(obj);
@@ -135,7 +135,7 @@ abstract class AbstractQueryFilterBuilder<B> extends GroupedQueryBuilderCallback
     public B greaterThan(Column column) {
         return _filterBuilder.greaterThan(column);
     }
-    
+
     @Override
     public B greaterThan(Object obj) {
         return _filterBuilder.greaterThan(obj);
@@ -193,10 +193,110 @@ abstract class AbstractQueryFilterBuilder<B> extends GroupedQueryBuilderCallback
     public B lessThan(String string) {
         return _filterBuilder.lessThan(string);
     }
-    
+
     @Override
     public B lessThan(Object obj) {
         return _filterBuilder.lessThan(obj);
+    }
+
+    @Override
+    public B greaterThanOrEquals(Column column) {
+        return _filterBuilder.greaterThanOrEquals(column);
+    }
+
+    @Override
+    public B greaterThanOrEquals(Date date) {
+        return _filterBuilder.greaterThanOrEquals(date);
+    }
+
+    @Override
+    public B greaterThanOrEquals(Number number) {
+        return _filterBuilder.greaterThanOrEquals(number);
+    }
+
+    @Override
+    public B greaterThanOrEquals(String string) {
+        return _filterBuilder.greaterThanOrEquals(string);
+    }
+
+    @Override
+    public B greaterThanOrEquals(Object obj) {
+        return _filterBuilder.greaterThanOrEquals(obj);
+    }
+
+    @Override
+    public B gte(Column column) {
+        return _filterBuilder.greaterThanOrEquals(column);
+    }
+
+    @Override
+    public B gte(Date date) {
+        return _filterBuilder.greaterThanOrEquals(date);
+    }
+
+    @Override
+    public B gte(Number number) {
+        return _filterBuilder.greaterThanOrEquals(number);
+    }
+
+    @Override
+    public B gte(String string) {
+        return _filterBuilder.greaterThanOrEquals(string);
+    }
+
+    @Override
+    public B gte(Object obj) {
+        return _filterBuilder.greaterThanOrEquals(obj);
+    }
+
+    @Override
+    public B lessThanOrEquals(Column column) {
+        return _filterBuilder.lessThanOrEquals(column);
+    }
+
+    @Override
+    public B lessThanOrEquals(Date date) {
+        return _filterBuilder.lessThanOrEquals(date);
+    }
+
+    @Override
+    public B lessThanOrEquals(Number number) {
+        return _filterBuilder.lessThanOrEquals(number);
+    }
+
+    @Override
+    public B lessThanOrEquals(String string) {
+        return _filterBuilder.lessThanOrEquals(string);
+    }
+
+    @Override
+    public B lessThanOrEquals(Object obj) {
+        return _filterBuilder.lessThanOrEquals(obj);
+    }
+
+    @Override
+    public B lte(Column column) {
+        return _filterBuilder.lessThanOrEquals(column);
+    }
+
+    @Override
+    public B lte(Date date) {
+        return _filterBuilder.lessThanOrEquals(date);
+    }
+
+    @Override
+    public B lte(Number number) {
+        return _filterBuilder.lessThanOrEquals(number);
+    }
+
+    @Override
+    public B lte(String string) {
+        return _filterBuilder.lessThanOrEquals(string);
+    }
+
+    @Override
+    public B lte(Object obj) {
+        return _filterBuilder.lessThanOrEquals(obj);
     }
 
     @Override
@@ -231,15 +331,21 @@ abstract class AbstractQueryFilterBuilder<B> extends GroupedQueryBuilderCallback
 
     public B lt(Date date) {
         return lessThan(date);
-    };
+    }
+
+    ;
 
     public B lt(Number number) {
         return lessThan(number);
-    };
+    }
+
+    ;
 
     public B lt(String string) {
         return lessThan(string);
-    };
+    }
+
+    ;
 
     @Override
     public B eq(Boolean bool) {
@@ -330,15 +436,15 @@ abstract class AbstractQueryFilterBuilder<B> extends GroupedQueryBuilderCallback
     public B equals(String string) {
         return isEquals(string);
     }
-    
+
     @Override
     public B lt(Object obj) {
         return lessThan(obj);
     }
-    
+
     @Override
     public B gt(Object obj) {
         return greaterThan(obj);
     }
-    
+
 }

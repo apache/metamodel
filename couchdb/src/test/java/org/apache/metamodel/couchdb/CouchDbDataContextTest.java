@@ -64,8 +64,8 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
             }
             connector = couchDbInstance.createConnector(databaseName, true);
 
-            final String[] columnNames = new String[] { "name", "gender", "age" };
-            final ColumnType[] columnTypes = new ColumnType[] { ColumnType.VARCHAR, ColumnType.CHAR, ColumnType.INTEGER };
+            final String[] columnNames = new String[]{"name", "gender", "age"};
+            final ColumnType[] columnTypes = new ColumnType[]{ColumnType.VARCHAR, ColumnType.CHAR, ColumnType.INTEGER};
             predefinedTableDef = new SimpleTableDef(databaseName, columnNames, columnTypes);
         }
 
@@ -93,8 +93,9 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         connector = couchDbInstance.createConnector("test_table_map_and_list", true);
 
         final CouchDbDataContext dc = new CouchDbDataContext(couchDbInstance, new SimpleTableDef(
-                "test_table_map_and_list", new String[] { "id", "foo", "bar" }, new ColumnType[] { ColumnType.INTEGER,
-                        ColumnType.MAP, ColumnType.LIST }));
+            "test_table_map_and_list", new String[]{"id", "foo", "bar"}, new ColumnType[]{ColumnType.INTEGER,
+                                                                                          ColumnType.MAP,
+                                                                                          ColumnType.LIST}));
         Table table = null;
         try {
             table = dc.getTableByQualifiedLabel("test_table_map_and_list");
@@ -118,7 +119,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
             ds.close();
 
             assertEquals("Row[values=[1, {hello=[world, welt, verden], foo=bar}, [{}, {meta=model, couch=db}]]]",
-                    row.toString());
+                         row.toString());
             assertTrue(row.getValue(0) instanceof Integer);
             assertTrue(row.getValue(1) instanceof Map);
             assertTrue(row.getValue(2) instanceof List);
@@ -153,11 +154,11 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         Table table = dc.getDefaultSchema().getTableByName(databaseName);
         assertNotNull(table);
         assertEquals("[Column[name=_id,columnNumber=0,type=VARCHAR,nullable=false,nativeType=null,columnSize=null], "
-                + "Column[name=_rev,columnNumber=1,type=VARCHAR,nullable=false,nativeType=null,columnSize=null], "
-                + "Column[name=bar,columnNumber=2,type=VARCHAR,nullable=null,nativeType=null,columnSize=null], "
-                + "Column[name=baz,columnNumber=3,type=INTEGER,nullable=null,nativeType=null,columnSize=null], "
-                + "Column[name=foo,columnNumber=4,type=VARCHAR,nullable=null,nativeType=null,columnSize=null]]",
-                Arrays.toString(table.getColumns()));
+                     + "Column[name=_rev,columnNumber=1,type=VARCHAR,nullable=false,nativeType=null,columnSize=null], "
+                     + "Column[name=bar,columnNumber=2,type=VARCHAR,nullable=null,nativeType=null,columnSize=null], "
+                     + "Column[name=baz,columnNumber=3,type=INTEGER,nullable=null,nativeType=null,columnSize=null], "
+                     + "Column[name=foo,columnNumber=4,type=VARCHAR,nullable=null,nativeType=null,columnSize=null]]",
+                     Arrays.toString(table.getColumns()));
 
         // first delete the manually created database!
         dc.executeUpdate(new UpdateScript() {
@@ -174,7 +175,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
             @Override
             public void run(UpdateCallback callback) {
                 Table table = callback.createTable(dc.getDefaultSchema(), databaseName).withColumn("foo")
-                        .ofType(ColumnType.VARCHAR).withColumn("greeting").ofType(ColumnType.VARCHAR).execute();
+                    .ofType(ColumnType.VARCHAR).withColumn("greeting").ofType(ColumnType.VARCHAR).execute();
                 assertEquals("[_id, _rev, foo, greeting]", Arrays.toString(table.getColumnNames()));
             }
         });
@@ -250,14 +251,14 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         assertEquals("[" + getDatabaseName() + "]", Arrays.toString(schema.getTableNames()));
 
         assertEquals("[_id, _rev, age, gender, name]",
-                Arrays.toString(schema.getTableByName(getDatabaseName()).getColumnNames()));
+                     Arrays.toString(schema.getTableByName(getDatabaseName()).getColumnNames()));
         Column idColumn = schema.getTableByName(getDatabaseName()).getColumnByName("_id");
         assertEquals("Column[name=_id,columnNumber=0,type=VARCHAR,nullable=false,nativeType=null,columnSize=null]",
-                idColumn.toString());
+                     idColumn.toString());
         assertTrue(idColumn.isPrimaryKey());
 
         assertEquals("Column[name=_rev,columnNumber=1,type=VARCHAR,nullable=false,nativeType=null,columnSize=null]",
-                schema.getTableByName(getDatabaseName()).getColumnByName("_rev").toString());
+                     schema.getTableByName(getDatabaseName()).getColumnByName("_rev").toString());
 
         DataSet ds;
 
@@ -281,6 +282,43 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         assertFalse(ds.next());
         ds.close();
 
+        // Test greater than or equals
+        ds =
+            dc.query().from(getDatabaseName()).select("name").and("age").where("age").greaterThanOrEquals(29).execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[John Doe, 30]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        ds =
+            dc.query().from(getDatabaseName()).select("name").and("age").where("age").greaterThanOrEquals(30).execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[John Doe, 30]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        ds =
+            dc.query().from(getDatabaseName()).select("name").and("age").where("age").greaterThanOrEquals(31).execute();
+        assertFalse(ds.next());
+        ds.close();
+
+        // Test less than or equals
+        ds = dc.query().from(getDatabaseName()).select("name").and("age").where("age").lessThanOrEquals(31).execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[John Doe, 30]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        ds = dc.query().from(getDatabaseName()).select("name").and("age").where("age").lessThanOrEquals(30).execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[John Doe, 30]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        ds = dc.query().from(getDatabaseName()).select("name").and("age").where("age").lessThanOrEquals(29).execute();
+        assertFalse(ds.next());
+        ds.close();
+
         // test primary key lookup query
         ds = dc.query().from(getDatabaseName()).select("name").and("gender").where("_id").eq(pkValue).execute();
         assertTrue(ds.next());
@@ -295,7 +333,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
 
         // test primary key not found
         ds = dc.query().from(getDatabaseName()).select("name").and("gender").where("_id").eq("this id does not exist")
-                .execute();
+            .execute();
         assertFalse(ds.next());
         ds.close();
     }

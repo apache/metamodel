@@ -64,12 +64,10 @@ import com.mongodb.WriteConcern;
 
 /**
  * DataContext implementation for MongoDB.
- * 
- * Since MongoDB has no schema, a virtual schema will be used in this
- * DataContext. This implementation supports either automatic discovery of a
- * schema or manual specification of a schema, through the
- * {@link MongoDbTableDef} class.
- * 
+ *
+ * Since MongoDB has no schema, a virtual schema will be used in this DataContext. This implementation supports either
+ * automatic discovery of a schema or manual specification of a schema, through the {@link MongoDbTableDef} class.
+ *
  * @author Kasper Sørensen
  */
 public class MongoDbDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
@@ -83,12 +81,8 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     /**
      * Constructor available for backwards compatibility
-     * 
-     * @param mongoDb
-     * @param tableDefs
-     * 
-     * @deprecated use {@link #MongoDbDataContext(DB, SimpleTableDef...)}
-     *             instead
+     *
+     * @deprecated use {@link #MongoDbDataContext(DB, SimpleTableDef...)} instead
      */
     @Deprecated
     public MongoDbDataContext(DB mongoDb, MongoDbTableDef... tableDefs) {
@@ -96,17 +90,12 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     /**
-     * Constructs a {@link MongoDbDataContext}. This constructor accepts a
-     * custom array of {@link MongoDbTableDef}s which allows the user to define
-     * his own view on the collections in the database.
-     * 
-     * @param mongoDb
-     *            the mongo db connection
-     * @param tableDefs
-     *            an array of {@link MongoDbTableDef}s, which define the table
-     *            and column model of the mongo db collections. (consider using
-     *            {@link #detectSchema(DB)} or {@link #detectTable(DB, String)}
-     *            ).
+     * Constructs a {@link MongoDbDataContext}. This constructor accepts a custom array of {@link MongoDbTableDef}s
+     * which allows the user to define his own view on the collections in the database.
+     *
+     * @param mongoDb   the mongo db connection
+     * @param tableDefs an array of {@link MongoDbTableDef}s, which define the table and column model of the mongo db
+     *                  collections. (consider using {@link #detectSchema(DB)} or {@link #detectTable(DB, String)} ).
      */
     public MongoDbDataContext(DB mongoDb, SimpleTableDef... tableDefs) {
         _mongoDb = mongoDb;
@@ -115,27 +104,22 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     /**
-     * Constructs a {@link MongoDbDataContext} and automatically detects the
-     * schema structure/view on all collections (see {@link #detectSchema(DB)}).
-     * 
-     * @param mongoDb
-     *            the mongo db connection
+     * Constructs a {@link MongoDbDataContext} and automatically detects the schema structure/view on all collections
+     * (see {@link #detectSchema(DB)}).
+     *
+     * @param mongoDb the mongo db connection
      */
     public MongoDbDataContext(DB mongoDb) {
         this(mongoDb, detectSchema(mongoDb));
     }
 
     /**
-     * Performs an analysis of the available collections in a Mongo {@link DB}
-     * instance and tries to detect the table's structure based on the first
-     * 1000 documents in each collection.
-     * 
+     * Performs an analysis of the available collections in a Mongo {@link DB} instance and tries to detect the table's
+     * structure based on the first 1000 documents in each collection.
+     *
+     * @param db the mongo db to inspect
+     * @return a mutable schema instance, useful for further fine tuning by the user.
      * @see #detectTable(DB, String)
-     * 
-     * @param db
-     *            the mongo db to inspect
-     * @return a mutable schema instance, useful for further fine tuning by the
-     *         user.
      */
     public static SimpleTableDef[] detectSchema(DB db) {
         Set<String> collectionNames = db.getCollectionNames();
@@ -150,14 +134,11 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     /**
-     * Performs an analysis of an available collection in a Mongo {@link DB}
-     * instance and tries to detect the table structure based on the first 1000
-     * documents in the collection.
-     * 
-     * @param db
-     *            the mongo DB
-     * @param collectionName
-     *            the name of the collection
+     * Performs an analysis of an available collection in a Mongo {@link DB} instance and tries to detect the table
+     * structure based on the first 1000 documents in the collection.
+     *
+     * @param db             the mongo DB
+     * @param collectionName the name of the collection
      * @return a table definition for mongo db.
      */
     public static SimpleTableDef detectTable(DB db, String collectionName) {
@@ -247,7 +228,8 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     @Override
-    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn, Object keyValue) {
+    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn,
+                                               Object keyValue) {
         final DBCollection collection = _mongoDb.getCollection(table.getName());
 
         List<FilterItem> whereItems = new ArrayList<FilterItem>();
@@ -272,12 +254,12 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
         // if from clause only contains a main schema table
         List<FromItem> fromItems = query.getFromClause().getItems();
         if (fromItems.size() == 1 && fromItems.get(0).getTable() != null
-                && fromItems.get(0).getTable().getSchema() == _schema) {
+            && fromItems.get(0).getTable().getSchema() == _schema) {
             final Table table = fromItems.get(0).getTable();
 
             // if GROUP BY, HAVING and ORDER BY clauses are not specified
             if (query.getGroupByClause().isEmpty() && query.getHavingClause().isEmpty()
-                    && query.getOrderByClause().isEmpty()) {
+                && query.getOrderByClause().isEmpty()) {
 
                 final List<FilterItem> whereItems = query.getWhereClause().getItems();
 
@@ -311,11 +293,14 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                         if (!whereItem.isCompoundFilter() && selectItem != null && selectItem.getColumn() != null) {
                             final Column column = selectItem.getColumn();
                             if (column.isPrimaryKey() && whereItem.getOperator() == OperatorType.EQUALS_TO) {
-                                logger.debug("Query is a primary key lookup query. Trying executePrimaryKeyLookupQuery(...)");
+                                logger.debug(
+                                    "Query is a primary key lookup query. Trying executePrimaryKeyLookupQuery(...)");
                                 final Object operand = whereItem.getOperand();
                                 final Row row = executePrimaryKeyLookupQuery(table, selectItems, column, operand);
                                 if (row == null) {
-                                    logger.debug("DataContext did not return any primary key lookup query results. Proceeding with manual lookup.");
+                                    logger.debug(
+                                        "DataContext did not return any primary key lookup query results. Proceeding "
+                                        + "with manual lookup.");
                                 } else {
                                     final DataSetHeader header = new SimpleDataSetHeader(selectItems);
                                     return new InMemoryDataSet(header, row);
@@ -328,7 +313,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                     int maxRows = (query.getMaxRows() == null ? -1 : query.getMaxRows());
 
                     final DataSet dataSet = materializeMainSchemaTableInternal(table, columns, whereItems, firstRow,
-                            maxRows, false);
+                                                                               maxRows, false);
                     return dataSet;
                 }
             }
@@ -339,7 +324,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     private DataSet materializeMainSchemaTableInternal(Table table, Column[] columns, List<FilterItem> whereItems,
-            int firstRow, int maxRows, boolean queryPostProcessed) {
+                                                       int firstRow, int maxRows, boolean queryPostProcessed) {
         final DBCollection collection = _mongoDb.getCollection(table.getName());
 
         final DBObject query = createMongoDbQuery(table, whereItems);
@@ -401,7 +386,8 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                 }
             } else {
                 if (operatorName == null) {
-                    throw new IllegalStateException("Cannot retrieve records for a column with two EQUALS_TO operators");
+                    throw new IllegalStateException(
+                        "Cannot retrieve records for a column with two EQUALS_TO operators");
                 } else {
                     existingFilterObject.append(operatorName, operand);
                 }
@@ -412,23 +398,29 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     private String getOperatorName(FilterItem item) {
         final String operatorName;
         switch (item.getOperator()) {
-        case EQUALS_TO:
-            operatorName = null;
-            break;
-        case LESS_THAN:
-            operatorName = "$lt";
-            break;
-        case GREATER_THAN:
-            operatorName = "$gt";
-            break;
-        case DIFFERENT_FROM:
-            operatorName = "$ne";
-            break;
-        case IN:
-            operatorName = "$in";
-            break;
-        default:
-            throw new IllegalStateException("Unsupported operator type: " + item.getOperator());
+            case EQUALS_TO:
+                operatorName = null;
+                break;
+            case LESS_THAN:
+                operatorName = "$lt";
+                break;
+            case LESS_THAN_OR_EQUAL:
+                operatorName = "$lte";
+                break;
+            case GREATER_THAN:
+                operatorName = "$gt";
+                break;
+            case GREATER_THAN_OR_EQUAL:
+                operatorName = "$gte";
+                break;
+            case DIFFERENT_FROM:
+                operatorName = "$ne";
+                break;
+            case IN:
+                operatorName = "$in";
+                break;
+            default:
+                throw new IllegalStateException("Unsupported operator type: " + item.getOperator());
         }
         return operatorName;
     }
@@ -445,9 +437,6 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     /**
      * Executes an update with a specific {@link WriteConcernAdvisor}.
-     * 
-     * @param update
-     * @param writeConcernAdvisor
      */
     public void executeUpdate(UpdateScript update, WriteConcernAdvisor writeConcernAdvisor) {
         MongoDbUpdateCallback callback = new MongoDbUpdateCallback(this, writeConcernAdvisor);
@@ -460,9 +449,6 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     /**
      * Executes an update with a specific {@link WriteConcern}.
-     * 
-     * @param update
-     * @param writeConcern
      */
     public void executeUpdate(UpdateScript update, WriteConcern writeConcern) {
         executeUpdate(update, new SimpleWriteConcernAdvisor(writeConcern));
@@ -474,10 +460,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     /**
-     * Gets the {@link WriteConcernAdvisor} to use on
-     * {@link #executeUpdate(UpdateScript)} calls.
-     * 
-     * @return
+     * Gets the {@link WriteConcernAdvisor} to use on {@link #executeUpdate(UpdateScript)} calls.
      */
     public WriteConcernAdvisor getWriteConcernAdvisor() {
         if (_writeConcernAdvisor == null) {
@@ -487,10 +470,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     /**
-     * Sets a global {@link WriteConcern} advisor to use on
-     * {@link #executeUpdate(UpdateScript)}.
-     * 
-     * @param writeConcernAdvisor
+     * Sets a global {@link WriteConcern} advisor to use on {@link #executeUpdate(UpdateScript)}.
      */
     public void setWriteConcernAdvisor(WriteConcernAdvisor writeConcernAdvisor) {
         _writeConcernAdvisor = writeConcernAdvisor;
@@ -498,8 +478,6 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     /**
      * Gets the {@link DB} instance that this {@link DataContext} is backed by.
-     * 
-     * @return
      */
     public DB getMongoDb() {
         return _mongoDb;
