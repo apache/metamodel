@@ -333,10 +333,6 @@
 						</licenses>
 						<excludeSubProjects>false</excludeSubProjects>
 						<excludes>
-							<exclude>CHANGES.txt</exclude>
-							<exclude>README</exclude>
-							<exclude>NOTICE.txt</exclude>
-							<exclude>LICENSE.txt</exclude>
 							<exclude>KEYS</exclude>
 							<exclude>*.md</exclude>
 							<exclude>example-metamodel-integrationtest-configuration.properties</exclude>
@@ -349,14 +345,13 @@
 							<exclude>**/.settings/**</exclude>
 							<exclude>**/.travis.yml</exclude>
 							<exclude>**/target/**</exclude>
-                                                        <exclude>**/*.iml/**</exclude>
+                            <exclude>**/*.iml/**</exclude>
 							<exclude>**/*.iws/**</exclude>
 							<exclude>**/*.ipr/**</exclude>
 							<exclude>DEPENDENCIES</exclude>
 							<exclude>DISCLAIMER</exclude>
 						</excludes>
 					</configuration>
-
 				</plugin>
 
 			</plugins>
