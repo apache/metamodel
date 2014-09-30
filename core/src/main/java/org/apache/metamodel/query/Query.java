@@ -323,11 +323,17 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
             String rightSideCandidate = null;
             final OperatorType[] operators = OperatorType.values();
             for (OperatorType operatorCandidate : operators) {
-                final int operatorIndex = expression.indexOf(' ' + operatorCandidate.toSql() + ' ');
+                final String searchStr;
+                if (operatorCandidate.isSpaceDelimited()) {
+                    searchStr = ' ' + operatorCandidate.toSql() + ' ';
+                } else {
+                    searchStr = operatorCandidate.toSql();
+                }
+                final int operatorIndex = expression.indexOf(searchStr);
                 if (operatorIndex > 0) {
                     operator = operatorCandidate;
                     leftSide = expression.substring(0, operatorIndex).trim();
-                    rightSideCandidate = expression.substring(operatorIndex + operator.toSql().length() + 2).trim();
+                    rightSideCandidate = expression.substring(operatorIndex + searchStr.length()).trim();
                     break;
                 }
             }

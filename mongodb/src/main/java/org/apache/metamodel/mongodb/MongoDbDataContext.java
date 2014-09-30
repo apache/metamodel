@@ -409,7 +409,6 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
         }
     }
 
-    @SuppressWarnings("deprecation")
     private String getOperatorName(FilterItem item) {
         final String operatorName;
         switch (item.getOperator()) {
@@ -417,11 +416,9 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
             operatorName = null;
             break;
         case LESS_THAN:
-        case LOWER_THAN:
             operatorName = "$lt";
             break;
         case GREATER_THAN:
-        case HIGHER_THAN:
             operatorName = "$gt";
             break;
         case DIFFERENT_FROM:

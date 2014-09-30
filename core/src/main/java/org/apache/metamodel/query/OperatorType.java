@@ -25,31 +25,31 @@ package org.apache.metamodel.query;
  */
 public enum OperatorType {
 
-    EQUALS_TO("="), DIFFERENT_FROM("<>"), LIKE("LIKE"), GREATER_THAN(">"), LESS_THAN("<"), IN("IN"),
-
-    /**
-     * @deprecated use {@link #LESS_THAN} instead.
-     */
-    @Deprecated
-    LOWER_THAN("<"),
-
-    /**
-     * @deprecated use {@link #GREATER_THAN} instead.
-     */
-    @Deprecated
-    HIGHER_THAN(">");
+    EQUALS_TO("=", false), DIFFERENT_FROM("<>", false), LIKE("LIKE", true), GREATER_THAN(">", false), LESS_THAN("<",
+            false), IN("IN", true);
 
     private final String _sql;
+    private final boolean _spaceDelimited;
 
-    private OperatorType(String sql) {
+    private OperatorType(String sql, boolean spaceDelimited) {
         _sql = sql;
+        _spaceDelimited = spaceDelimited;
+    }
+
+/**
+     * Determines if this operator requires a space delimitor. Operators that are written using letters usually require space delimitation whereas sign-based operators such as "=" and "<" can be applied even without any delimitaton.
+     * 
+     * @return
+     */
+    public boolean isSpaceDelimited() {
+        return _spaceDelimited;
     }
 
     public String toSql() {
         return _sql;
     }
 
-    /**
+/**
      * Converts from SQL string literals to an OperatorType. Valid SQL values
      * are "=", "<>", "LIKE", ">" and "<".
      * 

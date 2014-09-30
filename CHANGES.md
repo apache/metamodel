@@ -2,6 +2,7 @@
 
  * [METAMODEL-77] - New module 'elasticsearch' for connecting and modeling ElasticSearch indexes through MetaModel.
  * [METAMODEL-74] - Fixed bug related to skipping blank values when applying an aggregate function (SUM, AVG etc.)
+ * [METAMODEL-76] - Query parser improved to handle filters without spaces inbetween operator and operands.
 
 ### Apache MetaModel 4.2.0-incubating
 
