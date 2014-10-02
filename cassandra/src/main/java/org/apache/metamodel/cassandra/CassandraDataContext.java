@@ -20,6 +20,8 @@ package org.apache.metamodel.cassandra;
 
 import com.datastax.driver.core.*;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
@@ -152,12 +154,16 @@ public class CassandraDataContext extends QueryPostprocessDataContext implements
 
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-        Statement statement = QueryBuilder.select().all().from(keySpaceName, table.getName());
-        /*if (limitMaxRowsIsSet(maxRows)) {
-            requestBuilder.setSize(maxRows);
-        }*/
-        final Iterator<Row> response = cassandraCluster.connect().execute(statement).iterator();
+        Select query = QueryBuilder.select().all().from(keySpaceName, table.getName());
+        if (limitMaxRowsIsSet(maxRows)) {
+            query.limit(maxRows);
+        }
+        final Iterator<Row> response = cassandraCluster.connect().execute(query).iterator();
         return new CassandraDataSet(response, columns, false);
+    }
+
+    private boolean limitMaxRowsIsSet(int maxRows) {
+        return (maxRows != -1);
     }
 
     /*
@@ -171,23 +177,18 @@ public class CassandraDataContext extends QueryPostprocessDataContext implements
         final CountResponse response = elasticSearchClient.prepareCount(indexName)
                 .setQuery(QueryBuilders.termQuery("_type", documentType)).execute().actionGet();
         return response.getCount();
-    }
-
-    private boolean limitMaxRowsIsSet(int maxRows) {
-        return (maxRows != -1);
     }*/
+
+
 
     private static ColumnType getColumnTypeFromMetaDataField(DataType.Name metaDataName) {
         switch (metaDataName) {
-            //case ASCII: ???
             case BIGINT: return ColumnType.BIGINT;
             case BLOB: return ColumnType.BLOB;
             case BOOLEAN: return ColumnType.BOOLEAN;
-            //case COUNTER: ???
             case DECIMAL: return ColumnType.DECIMAL;
             case DOUBLE: return ColumnType.DOUBLE;
             case FLOAT: return ColumnType.FLOAT;
-            //case INET: ???
             case INT: return ColumnType.INTEGER;
             case TEXT: return ColumnType.STRING;
             case TIMESTAMP: return ColumnType.TIMESTAMP;

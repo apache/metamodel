@@ -140,14 +140,14 @@ public class CassandraDataContextTest extends CassandraTestCase {
         }
     }
 
-    /*public void testMaxRows() throws Exception {
+    public void testMaxRows() throws Exception {
         Table table = dc.getDefaultSchema().getTableByName(testTableName);
         Query query = new Query().from(table).select(table.getColumns()).setMaxRows(2);
         DataSet dataSet = dc.executeQuery(query);
 
         TableModel tableModel = new DataSetTableModel(dataSet);
         assertEquals(2, tableModel.getRowCount());
-    }*/
+    }
 
     /*public void testCountQuery() throws Exception {
         Table table = dataContext.getDefaultSchema().getTableByName(bulkIndexType);
