@@ -57,6 +57,7 @@
 		<module>jdbc</module>
 		<module>elasticsearch</module>
 		<module>hbase</module>
+		<module>cassandra</module>
 		<module>mongodb</module>
 		<module>couchdb</module>
 		<module>openoffice</module>
@@ -248,7 +249,7 @@
 								<bannedDependencies>
 									<excludes>
 										<exclude>commons-logging:commons-logging</exclude>
-										<exclude>org.codehaus.jackson</exclude>
+										<exclude>org.codehaus.jackson:compile,provided</exclude>
 									</excludes>
 								</bannedDependencies>
 							</rules>
