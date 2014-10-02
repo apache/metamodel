@@ -36,9 +36,8 @@ import org.apache.metamodel.util.ObjectComparator;
 import org.apache.metamodel.util.WildcardPattern;
 
 /**
- * Represents a filter in a query that resides either within a WHERE clause or a
- * HAVING clause
- * 
+ * Represents a filter in a query that resides either within a WHERE clause or a HAVING clause
+ *
  * @see FilterClause
  * @see OperatorType
  * @see LogicalOperator
@@ -60,7 +59,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
      * Private constructor, used for cloning
      */
     private FilterItem(SelectItem selectItem, OperatorType operator, Object operand, List<FilterItem> orItems,
-            String expression, LogicalOperator logicalOperator) {
+                       String expression, LogicalOperator logicalOperator) {
         _selectItem = selectItem;
         _operator = operator;
         _operand = validateOperand(operand);
@@ -78,22 +77,16 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
     }
 
     /**
-     * Creates a single filter item based on a SelectItem, an operator and an
-     * operand.
-     * 
-     * @param selectItem
-     *            the selectItem to put constraints on, cannot be null
-     * @param operator
-     *            The operator to use. Can be OperatorType.EQUALS_TO,
-     *            OperatorType.DIFFERENT_FROM,
-     *            OperatorType.GREATER_THAN,OperatorType.LESS_THAN
-     * @param operand
-     *            The operand. Can be a constant like null or a String, a
-     *            Number, a Boolean, a Date, a Time, a DateTime. Or another
-     *            SelectItem
-     * @throws IllegalArgumentException
-     *             if the SelectItem is null or if the combination of operator
-     *             and operand does not make sense.
+     * Creates a single filter item based on a SelectItem, an operator and an operand.
+     *
+     * @param selectItem the selectItem to put constraints on, cannot be null
+     * @param operator   The operator to use. Can be OperatorType.EQUALS_TO, OperatorType.DIFFERENT_FROM,
+     *                   OperatorType.GREATER_THAN,OperatorType.LESS_THAN OperatorType.GREATER_THAN_OR_EQUAL,
+     *                   OperatorType.LESS_THAN_OR_EQUAL
+     * @param operand    The operand. Can be a constant like null or a String, a Number, a Boolean, a Date, a Time, a
+     *                   DateTime. Or another SelectItem
+     * @throws IllegalArgumentException if the SelectItem is null or if the combination of operator and operand does not
+     *                                  make sense.
      */
     public FilterItem(SelectItem selectItem, OperatorType operator, Object operand) throws IllegalArgumentException {
         this(selectItem, operator, operand, null, null, null);
@@ -105,23 +98,20 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
             ColumnType type = _selectItem.getColumn().getType();
             if (type != null) {
                 require("Can only use LIKE operator with strings", type.isLiteral()
-                        && (_operand instanceof String || _operand instanceof SelectItem));
+                                                                   && (_operand instanceof String
+                                                                       || _operand instanceof SelectItem));
             }
         }
         require("SelectItem cannot be null", _selectItem != null);
     }
 
     /**
-     * Creates a single unvalidated filter item based on a expression.
-     * Expression based filters are typically NOT datastore-neutral but are
-     * available for special "hacking" needs.
-     * 
-     * Expression based filters can only be used for JDBC based datastores since
-     * they are translated directly into SQL.
-     * 
-     * @param expression
-     *            An expression to use for the filter, for example
-     *            "YEAR(my_date) = 2008".
+     * Creates a single unvalidated filter item based on a expression. Expression based filters are typically NOT
+     * datastore-neutral but are available for special "hacking" needs.
+     *
+     * Expression based filters can only be used for JDBC based datastores since they are translated directly into SQL.
+     *
+     * @param expression An expression to use for the filter, for example "YEAR(my_date) = 2008".
      */
     public FilterItem(String expression) {
         this(null, null, null, null, expression, null);
@@ -130,25 +120,21 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
     }
 
     /**
-     * Creates a composite filter item based on other filter items. Each
-     * provided filter items will be OR'ed meaning that if one of the evaluates
-     * as true, then the composite filter will be evaluated as true
-     * 
-     * @param items
-     *            a list of items to include in the composite
+     * Creates a composite filter item based on other filter items. Each provided filter items will be OR'ed meaning
+     * that if one of the evaluates as true, then the composite filter will be evaluated as true
+     *
+     * @param items a list of items to include in the composite
      */
     public FilterItem(List<FilterItem> items) {
         this(LogicalOperator.OR, items);
     }
 
     /**
-     * Creates a compound filter item based on other filter items. Each provided
-     * filter item will be combined according to the {@link LogicalOperator}.
-     * 
-     * @param logicalOperator
-     *            the logical operator to apply
-     * @param items
-     *            a list of items to include in the composite
+     * Creates a compound filter item based on other filter items. Each provided filter item will be combined according
+     * to the {@link LogicalOperator}.
+     *
+     * @param logicalOperator the logical operator to apply
+     * @param items           a list of items to include in the composite
      */
     public FilterItem(LogicalOperator logicalOperator, List<FilterItem> items) {
         this(null, null, null, items, null, logicalOperator);
@@ -158,25 +144,21 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
     }
 
     /**
-     * Creates a compound filter item based on other filter items. Each provided
-     * filter item will be combined according to the {@link LogicalOperator}.
-     * 
-     * @param logicalOperator
-     *            the logical operator to apply
-     * @param items
-     *            an array of items to include in the composite
+     * Creates a compound filter item based on other filter items. Each provided filter item will be combined according
+     * to the {@link LogicalOperator}.
+     *
+     * @param logicalOperator the logical operator to apply
+     * @param items           an array of items to include in the composite
      */
     public FilterItem(LogicalOperator logicalOperator, FilterItem... items) {
         this(logicalOperator, Arrays.asList(items));
     }
 
     /**
-     * Creates a compound filter item based on other filter items. Each provided
-     * filter items will be OR'ed meaning that if one of the evaluates as true,
-     * then the compound filter will be evaluated as true
-     * 
-     * @param items
-     *            an array of items to include in the composite
+     * Creates a compound filter item based on other filter items. Each provided filter items will be OR'ed meaning that
+     * if one of the evaluates as true, then the compound filter will be evaluated as true
+     *
+     * @param items an array of items to include in the composite
      */
     public FilterItem(FilterItem... items) {
         this(Arrays.asList(items));
@@ -263,7 +245,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
 
                 if (operand instanceof SelectItem) {
                     final String selectItemString = ((SelectItem) operand)
-                            .getSameQueryAlias(includeSchemaInColumnPaths);
+                        .getSameQueryAlias(includeSchemaInColumnPaths);
                     sb.append(selectItemString);
                 } else {
                     ColumnType columnType = _selectItem.getExpectedColumnType();
@@ -290,34 +272,39 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
 
     public static Object appendOperator(StringBuilder sb, Object operand, OperatorType operator) {
         switch (operator) {
-        case DIFFERENT_FROM:
-            sb.append(" <> ");
-            break;
-        case EQUALS_TO:
-            sb.append(" = ");
-            break;
-        case LIKE:
-            sb.append(" LIKE ");
-            break;
-        case GREATER_THAN:
-            sb.append(" > ");
-            break;
-        case LESS_THAN:
-            sb.append(" < ");
-            break;
-        case IN:
-            sb.append(" IN ");
-            operand = CollectionUtils.toList(operand);
-            break;
-        default:
-            throw new IllegalStateException("Operator could not be determined");
+            case DIFFERENT_FROM:
+                sb.append(" <> ");
+                break;
+            case EQUALS_TO:
+                sb.append(" = ");
+                break;
+            case LIKE:
+                sb.append(" LIKE ");
+                break;
+            case GREATER_THAN:
+                sb.append(" > ");
+                break;
+            case GREATER_THAN_OR_EQUAL:
+                sb.append(" >= ");
+                break;
+            case LESS_THAN:
+                sb.append(" < ");
+                break;
+            case LESS_THAN_OR_EQUAL:
+                sb.append(" <= ");
+                break;
+            case IN:
+                sb.append(" IN ");
+                operand = CollectionUtils.toList(operand);
+                break;
+            default:
+                throw new IllegalStateException("Operator could not be determined");
         }
         return operand;
     }
 
     /**
-     * Does a "manual" evaluation, useful for CSV data and alike, where queries
-     * cannot be created.
+     * Does a "manual" evaluation, useful for CSV data and alike, where queries cannot be created.
      */
     public boolean evaluate(Row row) {
         require("Expression-based filters cannot be manually evaluated", _expression == null);
@@ -380,8 +367,12 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
             return comparator.compare(selectItemValue, operandValue) == 0;
         } else if (_operator == OperatorType.GREATER_THAN) {
             return comparator.compare(selectItemValue, operandValue) > 0;
+        } else if (_operator == OperatorType.GREATER_THAN_OR_EQUAL) {
+            return comparator.compare(selectItemValue, operandValue) >= 0;
         } else if (_operator == OperatorType.LESS_THAN) {
             return comparator.compare(selectItemValue, operandValue) < 0;
+        } else if (_operator == OperatorType.LESS_THAN_OR_EQUAL) {
+            return comparator.compare(selectItemValue, operandValue) <= 0;
         } else if (_operator == OperatorType.LIKE) {
             WildcardPattern matcher = new WildcardPattern((String) operandValue, '%');
             return matcher.matches((String) selectItemValue);
@@ -395,7 +386,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
 
     /**
      * Lazy initializes a set (for fast searching) of IN values.
-     * 
+     *
      * @return a hash set appropriate for IN clause evaluation
      */
     private Set<?> getInValues() {
@@ -470,10 +461,8 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
     }
 
     /**
-     * Gets the {@link FilterItem}s that this filter item consists of, if it is
-     * a compound filter item.
-     * 
-     * @return
+     * Gets the {@link FilterItem}s that this filter item consists of, if it is a compound filter item.
+     *
      * @deprecated use {@link #getChildItems()} instead
      */
     @Deprecated
@@ -483,8 +472,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
 
     /**
      * Gets the number of child items, if this is a compound filter item.
-     * 
-     * @return
+     *
      * @deprecated use {@link #getChildItemCount()} instead.
      */
     @Deprecated
@@ -494,8 +482,6 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
 
     /**
      * Get the number of child items, if this is a compound filter item.
-     * 
-     * @return
      */
     public int getChildItemCount() {
         if (_childItems == null) {
@@ -505,10 +491,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
     }
 
     /**
-     * Gets the {@link FilterItem}s that this filter item consists of, if it is
-     * a compound filter item.
-     * 
-     * @return
+     * Gets the {@link FilterItem}s that this filter item consists of, if it is a compound filter item.
      */
     public FilterItem[] getChildItems() {
         if (_childItems == null) {
@@ -518,10 +501,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
     }
 
     /**
-     * Determines whether this {@link FilterItem} is a compound filter or not
-     * (ie. if it has child items or not)
-     * 
-     * @return
+     * Determines whether this {@link FilterItem} is a compound filter or not (ie. if it has child items or not)
      */
     public boolean isCompoundFilter() {
         return _childItems != null;
