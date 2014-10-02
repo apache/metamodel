@@ -149,21 +149,22 @@ public class CassandraDataContextTest extends CassandraTestCase {
         assertEquals(2, tableModel.getRowCount());
     }
 
-    /*public void testCountQuery() throws Exception {
-        Table table = dataContext.getDefaultSchema().getTableByName(bulkIndexType);
+    public void testCountQuery() throws Exception {
+        Table table = dc.getDefaultSchema().getTableByName(testTableName);
         Query q = new Query().selectCount().from(table);
 
-        List<Object[]> data = dataContext.executeQuery(q).toObjectArrays();
+        List<Object[]> data = dc.executeQuery(q).toObjectArrays();
         assertEquals(1, data.size());
         Object[] row = data.get(0);
         assertEquals(1, row.length);
-        assertEquals("[10]", Arrays.toString(row));
+        assertEquals("[3]", Arrays.toString(row));
     }
+
 
     public void testQueryForANonExistingTable() throws Exception {
         boolean thrown = false;
         try {
-            dataContext.query().from("nonExistingTable").select("user").and("message").execute();
+            dc.query().from("nonExistingTable").select("user").and("message").execute();
         } catch (IllegalArgumentException IAex) {
             thrown = true;
         } finally {
@@ -172,18 +173,18 @@ public class CassandraDataContextTest extends CassandraTestCase {
         assertTrue(thrown);
     }
 
+
     public void testQueryForAnExistingTableAndNonExistingField() throws Exception {
-        indexOneTweeterDocumentPerIndex(indexType1, 1);
         boolean thrown = false;
         try {
-            dataContext.query().from(indexType1).select("nonExistingField").execute();
+            dc.query().from(testTableName).select("nonExistingField").execute();
         } catch (IllegalArgumentException IAex) {
             thrown = true;
         } finally {
             // ds.close();
         }
         assertTrue(thrown);
-    }*/
+    }
 
     private void createCassandraKeySpaceAndTable(Session session) {
         session.execute("CREATE KEYSPACE IF NOT EXISTS "+getKeyspaceName()+" WITH replication " +

@@ -26,6 +26,7 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.schema.*;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.slf4j.Logger;
@@ -166,18 +167,17 @@ public class CassandraDataContext extends QueryPostprocessDataContext implements
         return (maxRows != -1);
     }
 
-    /*
+
     @Override
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
         if (!whereItems.isEmpty()) {
             // not supported - will have to be done by counting client-side
             return null;
         }
-        String documentType = table.getName();
-        final CountResponse response = elasticSearchClient.prepareCount(indexName)
-                .setQuery(QueryBuilders.termQuery("_type", documentType)).execute().actionGet();
-        return response.getCount();
-    }*/
+        Statement statement = QueryBuilder.select().countAll().from(keySpaceName, table.getName());
+        final Row response = cassandraCluster.connect().execute(statement).one();
+        return response.getLong(0);
+    }
 
 
 

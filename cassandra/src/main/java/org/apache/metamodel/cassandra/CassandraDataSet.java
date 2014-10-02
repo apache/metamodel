@@ -21,7 +21,6 @@ package org.apache.metamodel.cassandra;
 
 
 import org.apache.metamodel.data.AbstractDataSet;
-import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.Column;
 import org.slf4j.Logger;
