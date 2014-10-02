@@ -21,7 +21,7 @@
 	<name>MetaModel module for Apache Cassandra database</name>
 
 	<properties>
-		<cassandra.driver.latest.version>2.0.1</cassandra.driver.latest.version>
+		<cassandra.driver.latest.version>2.1.1</cassandra.driver.latest.version>
 	</properties>
 
 	<dependencies>
