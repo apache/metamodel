@@ -249,7 +249,7 @@
 								<bannedDependencies>
 									<excludes>
 										<exclude>commons-logging:commons-logging</exclude>
-										<exclude>org.codehaus.jackson:compile,provided</exclude>
+										<exclude>org.codehaus.jackson</exclude>
 									</excludes>
 								</bannedDependencies>
 							</rules>
