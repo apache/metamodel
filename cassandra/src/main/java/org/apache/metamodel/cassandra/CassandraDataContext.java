@@ -180,7 +180,6 @@ public class CassandraDataContext extends QueryPostprocessDataContext implements
     }
 
 
-
     private static ColumnType getColumnTypeFromMetaDataField(DataType.Name metaDataName) {
         switch (metaDataName) {
             case BIGINT: return ColumnType.BIGINT;
@@ -194,9 +193,9 @@ public class CassandraDataContext extends QueryPostprocessDataContext implements
             case TIMESTAMP: return ColumnType.TIMESTAMP;
             case UUID: return ColumnType.STRING;
             case VARCHAR: return ColumnType.VARCHAR;
-            case VARINT: return ColumnType.STRING;
+            case VARINT: return ColumnType.BIGINT;
             case TIMEUUID: return ColumnType.STRING;
-            case LIST: return ColumnType.ARRAY;
+            case LIST: return ColumnType.LIST;
             case SET: return ColumnType.LIST;
             case MAP: return ColumnType.MAP;
             case CUSTOM: return ColumnType.OTHER;
