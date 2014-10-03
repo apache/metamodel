@@ -648,7 +648,7 @@ public class DataContextFactory {
      *       The ElasticSearch index name
      * @return a DataContext object that matches the request
      */
-    public static QueryPostprocessDataContext createElasticSearchDataContext(Client client, String indexName) {
+    public static DataContext createElasticSearchDataContext(Client client, String indexName) {
         return new ElasticSearchDataContext(client, indexName);
     }
 
@@ -660,7 +660,7 @@ public class DataContextFactory {
      *       The Cassandra key space name
      * @return a DataContext object that matches the request
      */
-    public static QueryPostprocessDataContext createCassandraDataContext(Cluster cluster, String keySpaceName) {
+    public static DataContext createCassandraDataContext(Cluster cluster, String keySpaceName) {
         return new CassandraDataContext(cluster, keySpaceName);
     }
 }
