@@ -190,14 +190,14 @@ public class CassandraDataContext extends QueryPostprocessDataContext implements
             case INT: return ColumnType.INTEGER;
             case TEXT: return ColumnType.STRING;
             case TIMESTAMP: return ColumnType.TIMESTAMP;
-            case UUID: return ColumnType.STRING;
+            case UUID: return ColumnType.UUID;
             case VARCHAR: return ColumnType.VARCHAR;
             case VARINT: return ColumnType.BIGINT;
-            case TIMEUUID: return ColumnType.STRING;
             case LIST: return ColumnType.LIST;
-            case SET: return ColumnType.LIST;
             case MAP: return ColumnType.MAP;
             case CUSTOM: return ColumnType.OTHER;
+            case INET: return ColumnType.INET;
+            case SET: return ColumnType.SET;
             default: return ColumnType.STRING;
         }
     }

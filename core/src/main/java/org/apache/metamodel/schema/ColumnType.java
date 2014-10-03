@@ -27,12 +27,15 @@ import static org.apache.metamodel.schema.SuperColumnType.TIME_TYPE;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Types;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import org.apache.metamodel.util.HasName;
 
@@ -65,6 +68,7 @@ public interface ColumnType extends HasName, Serializable {
     public static final ColumnType DOUBLE = new ColumnTypeImpl("DOUBLE", NUMBER_TYPE, Double.class);
     public static final ColumnType NUMERIC = new ColumnTypeImpl("NUMERIC", NUMBER_TYPE, Double.class);
     public static final ColumnType DECIMAL = new ColumnTypeImpl("DECIMAL", NUMBER_TYPE, Double.class);
+    public static final ColumnType UUID = new ColumnTypeImpl("UUID", NUMBER_TYPE, UUID.class);
 
     /*
      * Time based
@@ -100,12 +104,14 @@ public interface ColumnType extends HasName, Serializable {
     public static final ColumnType DATALINK = new ColumnTypeImpl("DATALINK", OTHER_TYPE);
     public static final ColumnType ROWID = new ColumnTypeImpl("ROWID", OTHER_TYPE);
     public static final ColumnType SQLXML = new ColumnTypeImpl("SQLXML", OTHER_TYPE);
+    public static final ColumnType INET = new ColumnTypeImpl("INET", OTHER_TYPE, InetAddress.class);
 
     /*
      * Additional types (added by MetaModel for non-JDBC datastores)
      */
     public static final ColumnType LIST = new ColumnTypeImpl("LIST", OTHER_TYPE, List.class);
     public static final ColumnType MAP = new ColumnTypeImpl("MAP", OTHER_TYPE, Map.class);
+    public static final ColumnType SET = new ColumnTypeImpl("SET", OTHER_TYPE, Set.class);
     public static final ColumnType STRING = new ColumnTypeImpl("STRING", LITERAL_TYPE);
     public static final ColumnType NUMBER = new ColumnTypeImpl("NUMBER", NUMBER_TYPE);
 

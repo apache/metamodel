@@ -85,7 +85,7 @@ public class CassandraDataContextTest extends CassandraTestCase {
 
         Table table = dc.getDefaultSchema().getTableByName(testTableName);
 
-        assertEquals(ColumnType.STRING, table.getColumnByName("id").getType());
+        assertEquals(ColumnType.UUID, table.getColumnByName("id").getType());
         assertEquals(ColumnType.STRING, table.getColumnByName("title").getType());
         assertEquals(ColumnType.BOOLEAN, table.getColumnByName("hit").getType());
         assertEquals(ColumnType.FLOAT, table.getColumnByName("duration").getType());

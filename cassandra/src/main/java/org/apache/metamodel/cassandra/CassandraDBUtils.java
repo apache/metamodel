@@ -25,6 +25,10 @@ import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * A utility class for Cassandra module.
  * 
@@ -61,17 +65,21 @@ public class CassandraDBUtils {
         DataType columnType = columns.getType(columnName);
         switch (columnType.getName()) {
             case BIGINT: return row.getVarint(columnName);
+            case BLOB: return row.getBytes(columnName);
             case BOOLEAN: return row.getBool(columnName);
             case DECIMAL: return row.getDecimal(columnName);
             case DOUBLE: return row.getDouble(columnName);
             case FLOAT: return row.getFloat(columnName);
-            case INET: return row.getInet(columnName);
             case INT: return row.getInt(columnName);
-            case UUID: return row.getUUID(columnName);
+            case TEXT: return row.getString(columnName);
             case TIMESTAMP: return row.getDate(columnName);
-            case LIST: return row.getList(columnName, String.class);
-            case SET: return row.getSet(columnName, String.class);
-            case MAP: return row.getMap(columnName, String.class, String.class);
+            case UUID: return row.getUUID(columnName);
+            case VARCHAR: return row.getString(columnName);
+            case VARINT: return row.getVarint(columnName);
+            case LIST: return row.getList(columnName, List.class);
+            case MAP: return row.getMap(columnName, Map.class, String.class);
+            case SET: return row.getSet(columnName, Set.class);
+            case INET: return row.getInet(columnName);
             default: return row.getString(columnName);
         }
     }
