@@ -46,7 +46,6 @@ import java.util.List;
  * This implementation supports either automatic discovery of a schema or manual
  * specification of a schema, through the {@link SimpleTableDef} class.
  *
- * @author Alberto Rodriguez
  */
 public class CassandraDataContext extends QueryPostprocessDataContext implements DataContext {
 

@@ -28,7 +28,6 @@ import org.apache.metamodel.query.SelectItem;
 /**
  * A utility class for Cassandra module.
  * 
- * @author Alberto Rodriguez
  */
 public class CassandraDBUtils {
 
