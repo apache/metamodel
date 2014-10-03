@@ -21,8 +21,19 @@ package org.apache.metamodel.cassandra;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Metadata;
 
+/**
+ * Utility test class that provides a handy way to
+ * connect to a Cassandra cluster through the
+ * {@link Cluster} class.
+ *
+ * To get a connected instance of the cluster you
+ * should call {@link #connect(String, int)}
+ * providing the node and port of your Cassandra cluster
+ * then you can get the connected instance by calling
+ * {@link #getCluster()}.
+ *
+ */
 public class CassandraSimpleClient {
-
     private Cluster cluster;
 
     public void connect(String node, int port) {
@@ -38,5 +49,4 @@ public class CassandraSimpleClient {
     public void close() {
         cluster.close();
     }
-
 }
