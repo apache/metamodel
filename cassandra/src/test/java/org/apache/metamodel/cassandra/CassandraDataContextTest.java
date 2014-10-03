@@ -112,6 +112,10 @@ public class CassandraDataContextTest extends CassandraTestCase {
     }
 
     public void testWhereColumnEqualsValues() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
         DataSet ds = dc.query().from(testTableName).select("id").and("title").where("id")
             .isEquals(firstRowId).execute();
         assertEquals(FilteredDataSet.class, ds.getClass());
@@ -126,6 +130,10 @@ public class CassandraDataContextTest extends CassandraTestCase {
     }
 
     public void testWhereColumnInValues() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
         DataSet ds = dc.query().from(testTableName).select("id").and("title").where("title")
             .in(firstRowTitle, secondRowTitle).orderBy("id").execute();
 
@@ -141,6 +149,10 @@ public class CassandraDataContextTest extends CassandraTestCase {
     }
 
     public void testMaxRows() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
         Table table = dc.getDefaultSchema().getTableByName(testTableName);
         Query query = new Query().from(table).select(table.getColumns()).setMaxRows(2);
         DataSet dataSet = dc.executeQuery(query);
@@ -150,6 +162,10 @@ public class CassandraDataContextTest extends CassandraTestCase {
     }
 
     public void testCountQuery() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
         Table table = dc.getDefaultSchema().getTableByName(testTableName);
         Query q = new Query().selectCount().from(table);
 
@@ -162,6 +178,10 @@ public class CassandraDataContextTest extends CassandraTestCase {
 
 
     public void testQueryForANonExistingTable() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
         boolean thrown = false;
         try {
             dc.query().from("nonExistingTable").select("user").and("message").execute();
@@ -175,6 +195,10 @@ public class CassandraDataContextTest extends CassandraTestCase {
 
 
     public void testQueryForAnExistingTableAndNonExistingField() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
         boolean thrown = false;
         try {
             dc.query().from(testTableName).select("nonExistingField").execute();
