@@ -20,13 +20,26 @@ package org.apache.metamodel.query;
 
 /**
  * Defines the types of operators that can be used in filters.
- * 
+ *
  * @see FilterItem
  */
 public enum OperatorType {
 
-    EQUALS_TO("=", false), DIFFERENT_FROM("<>", false), LIKE("LIKE", true), GREATER_THAN(">", false), LESS_THAN("<",
-            false), IN("IN", true);
+    EQUALS_TO("=", false),
+
+    DIFFERENT_FROM("<>", false),
+
+    LIKE("LIKE", true),
+
+    GREATER_THAN(">", false),
+
+    GREATER_THAN_OR_EQUAL(">=", false),
+
+    LESS_THAN("<", false),
+
+    LESS_THAN_OR_EQUAL("<=", false),
+
+    IN("IN", true);
 
     private final String _sql;
     private final boolean _spaceDelimited;
@@ -37,9 +50,8 @@ public enum OperatorType {
     }
 
 /**
-     * Determines if this operator requires a space delimitor. Operators that are written using letters usually require space delimitation whereas sign-based operators such as "=" and "<" can be applied even without any delimitaton.
-     * 
-     * @return
+     * Determines if this operator requires a space delimitor. Operators that are written using letters usually require
+     * space delimitation whereas sign-based operators such as "=" and "<" can be applied even without any delimitaton.
      */
     public boolean isSpaceDelimited() {
         return _spaceDelimited;
@@ -50,10 +62,9 @@ public enum OperatorType {
     }
 
 /**
-     * Converts from SQL string literals to an OperatorType. Valid SQL values
-     * are "=", "<>", "LIKE", ">" and "<".
-     * 
-     * @param sqlType
+     * Converts from SQL string literals to an OperatorType. Valid SQL values are "=", "<>", "LIKE", ">", ">=", "<" and
+     * "<=".
+     *
      * @return a OperatorType object representing the specified SQL type
      */
     public static OperatorType convertOperatorType(String sqlType) {

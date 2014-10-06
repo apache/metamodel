@@ -43,9 +43,6 @@ public abstract class AbstractFilterBuilder<B> implements FilterBuilder<B> {
 
     /**
      * Provides a way to
-     * 
-     * @param queryParameter
-     * @return
      */
     public B applyFilter(OperatorType operator, Object operand) {
         return applyFilter(new FilterItem(_selectItem, operator, operand));
@@ -283,7 +280,7 @@ public abstract class AbstractFilterBuilder<B> implements FilterBuilder<B> {
         }
         return applyFilter(new FilterItem(_selectItem, OperatorType.LESS_THAN, string));
     }
-    
+
     @Override
     public B lessThan(Object obj) {
         if (obj instanceof Number) {
@@ -297,7 +294,7 @@ public abstract class AbstractFilterBuilder<B> implements FilterBuilder<B> {
         }
         throw new UnsupportedOperationException("Argument must be a Number, Date or String. Found: " + obj);
     }
-    
+
     @Override
     public B greaterThan(Object obj) {
         if (obj instanceof Number) {
@@ -310,6 +307,148 @@ public abstract class AbstractFilterBuilder<B> implements FilterBuilder<B> {
             return greaterThan((String) obj);
         }
         throw new UnsupportedOperationException("Argument must be a Number, Date or String. Found: " + obj);
+    }
+
+    // Greater than or equals
+
+    @Override
+    public B greaterThanOrEquals(Column column) {
+        if (column == null) {
+            throw new IllegalArgumentException("column cannot be null");
+        }
+        return applyFilter(new FilterItem(_selectItem, OperatorType.GREATER_THAN_OR_EQUAL, new SelectItem(column)));
+    }
+
+    @Override
+    public B gte(Column column) {
+        return greaterThanOrEquals(column);
+    }
+
+    @Override
+    public B greaterThanOrEquals(Date date) {
+        if (date == null) {
+            throw new IllegalArgumentException("date cannot be null");
+        }
+        return applyFilter(new FilterItem(_selectItem, OperatorType.GREATER_THAN_OR_EQUAL, date));
+    }
+
+    @Override
+    public B gte(Date date) {
+        return greaterThanOrEquals(date);
+    }
+
+    @Override
+    public B greaterThanOrEquals(Number number) {
+        if (number == null) {
+            throw new IllegalArgumentException("number cannot be null");
+        }
+        return applyFilter(new FilterItem(_selectItem, OperatorType.GREATER_THAN_OR_EQUAL, number));
+    }
+
+    @Override
+    public B gte(Number number) {
+        return greaterThanOrEquals(number);
+    }
+
+    @Override
+    public B greaterThanOrEquals(String string) {
+        if (string == null) {
+            throw new IllegalArgumentException("string cannot be null");
+        }
+        return applyFilter(new FilterItem(_selectItem, OperatorType.GREATER_THAN_OR_EQUAL, string));
+    }
+
+    public B gte(String string) {
+        return greaterThanOrEquals(string);
+    }
+
+    @Override
+    public B greaterThanOrEquals(Object obj) {
+        if (obj instanceof Number) {
+            return greaterThanOrEquals((Number) obj);
+        }
+        if (obj instanceof Date) {
+            return greaterThanOrEquals((Date) obj);
+        }
+        if (obj instanceof String) {
+            return greaterThanOrEquals((String) obj);
+        }
+        throw new UnsupportedOperationException("Argument must be a Number, Date or String. Found: " + obj);
+    }
+
+    public B gte(Object obj) {
+        return greaterThanOrEquals(obj);
+    }
+
+    // Less than or equals
+
+    @Override
+    public B lessThanOrEquals(Column column) {
+        if (column == null) {
+            throw new IllegalArgumentException("column cannot be null");
+        }
+        return applyFilter(new FilterItem(_selectItem, OperatorType.LESS_THAN_OR_EQUAL, new SelectItem(column)));
+    }
+
+    @Override
+    public B lte(Column column) {
+        return lessThanOrEquals(column);
+    }
+
+    @Override
+    public B lessThanOrEquals(Date date) {
+        if (date == null) {
+            throw new IllegalArgumentException("date cannot be null");
+        }
+        return applyFilter(new FilterItem(_selectItem, OperatorType.LESS_THAN_OR_EQUAL, date));
+    }
+
+    @Override
+    public B lte(Date date) {
+        return lessThanOrEquals(date);
+    }
+
+    @Override
+    public B lessThanOrEquals(Number number) {
+        if (number == null) {
+            throw new IllegalArgumentException("number cannot be null");
+        }
+        return applyFilter(new FilterItem(_selectItem, OperatorType.LESS_THAN_OR_EQUAL, number));
+    }
+
+    @Override
+    public B lte(Number number) {
+        return lessThanOrEquals(number);
+    }
+
+    @Override
+    public B lessThanOrEquals(String string) {
+        if (string == null) {
+            throw new IllegalArgumentException("string cannot be null");
+        }
+        return applyFilter(new FilterItem(_selectItem, OperatorType.LESS_THAN_OR_EQUAL, string));
+    }
+
+    public B lte(String string) {
+        return lessThanOrEquals(string);
+    }
+
+    @Override
+    public B lessThanOrEquals(Object obj) {
+        if (obj instanceof Number) {
+            return lessThanOrEquals((Number) obj);
+        }
+        if (obj instanceof Date) {
+            return lessThanOrEquals((Date) obj);
+        }
+        if (obj instanceof String) {
+            return lessThanOrEquals((String) obj);
+        }
+        throw new UnsupportedOperationException("Argument must be a Number, Date or String. Found: " + obj);
+    }
+
+    public B lte(Object obj) {
+        return lessThanOrEquals(obj);
     }
 
     @Override
@@ -347,15 +486,15 @@ public abstract class AbstractFilterBuilder<B> implements FilterBuilder<B> {
 
     public B lt(Date date) {
         return lessThan(date);
-    };
+    }
 
     public B lt(Number number) {
         return lessThan(number);
-    };
+    }
 
     public B lt(String string) {
         return lessThan(string);
-    };
+    }
 
     @Override
     public B eq(Boolean bool) {
@@ -446,12 +585,12 @@ public abstract class AbstractFilterBuilder<B> implements FilterBuilder<B> {
     public B equals(String string) {
         return isEquals(string);
     }
-    
+
     @Override
     public B lt(Object obj) {
         return lessThan(obj);
     }
-    
+
     @Override
     public B gt(Object obj) {
         return greaterThan(obj);

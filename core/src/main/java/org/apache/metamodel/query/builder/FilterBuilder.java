@@ -25,7 +25,7 @@ import org.apache.metamodel.schema.Column;
 
 /**
  * Interface for builder callbacks that "respond" to filter condition building.
- * 
+ *
  * @param <B>
  *            the builder type to return once filter has been created.
  */
@@ -58,7 +58,7 @@ public interface FilterBuilder<B> {
 
     /**
      * Like ...
-     * 
+     *
      * (use '%' as wildcard).
      */
     public B like(String string);
@@ -87,7 +87,7 @@ public interface FilterBuilder<B> {
      * Equal to ...
      */
     public B eq(Boolean bool);
-    
+
     /**
      * Equal to ...
      */
@@ -117,7 +117,7 @@ public interface FilterBuilder<B> {
      * Equal to ...
      */
     public B isEquals(Boolean bool);
-    
+
     /**
      * Equal to ...
      */
@@ -125,7 +125,7 @@ public interface FilterBuilder<B> {
 
     /**
      * Equal to ...
-     * 
+     *
      * @deprecated use 'eq' or 'isEquals' instead.
      */
     @Deprecated
@@ -133,7 +133,7 @@ public interface FilterBuilder<B> {
 
     /**
      * Equal to ...
-     * 
+     *
      * @deprecated use 'eq' or 'isEquals' instead.
      */
     @Deprecated
@@ -141,7 +141,7 @@ public interface FilterBuilder<B> {
 
     /**
      * Equal to ...
-     * 
+     *
      * @deprecated use 'eq' or 'isEquals' instead.
      */
     @Deprecated
@@ -149,7 +149,7 @@ public interface FilterBuilder<B> {
 
     /**
      * Equal to ...
-     * 
+     *
      * @deprecated use 'eq' or 'isEquals' instead.
      */
     @Deprecated
@@ -157,7 +157,7 @@ public interface FilterBuilder<B> {
 
     /**
      * Equal to ...
-     * 
+     *
      * @deprecated use 'eq' or 'isEquals' instead.
      */
     @Deprecated
@@ -187,7 +187,7 @@ public interface FilterBuilder<B> {
      * Not equal to ...
      */
     public B differentFrom(Boolean bool);
-    
+
     /**
      * Not equal to ...
      */
@@ -217,7 +217,7 @@ public interface FilterBuilder<B> {
      * Not equal to ...
      */
     public B ne(Boolean bool);
-    
+
     /**
      * Not equal to ...
      */
@@ -225,7 +225,7 @@ public interface FilterBuilder<B> {
 
     /**
      * Greater than ...
-     * 
+     *
      * @deprecated use {@link #greaterThan(Column)} instead
      */
     @Deprecated
@@ -240,12 +240,12 @@ public interface FilterBuilder<B> {
      * Greater than ...
      */
     public B gt(Column column);
-    
+
     /**
      * Greater than ...
      */
     public B greaterThan(Object obj);
-    
+
     /**
      * Greater than ...
      */
@@ -253,7 +253,7 @@ public interface FilterBuilder<B> {
 
     /**
      * Greater than ...
-     * 
+     *
      * @deprecated use {@link #greaterThan(Date)} instead
      */
     @Deprecated
@@ -287,7 +287,7 @@ public interface FilterBuilder<B> {
 
     /**
      * Greater than ...
-     * 
+     *
      * @deprecated use {@link #greaterThan(String)} instead
      */
     @Deprecated
@@ -327,12 +327,12 @@ public interface FilterBuilder<B> {
      * Less than ...
      */
     public B lessThan(String string);
-    
+
     /**
      * Less than ...
      */
     public B lessThan(Object obj);
-    
+
     /**
      * Less than ...
      */
@@ -352,4 +352,104 @@ public interface FilterBuilder<B> {
      * Less than ...
      */
     public B lt(String string);
+
+    /**
+     * Greater than or equals...
+     */
+    public B greaterThanOrEquals(Column column);
+
+    /**
+     * Greater than or equals...
+     */
+    public B gte(Column column);
+
+    /**
+     * Greater than or equals...
+     */
+    public B greaterThanOrEquals(Date date);
+
+    /**
+     * Greater than or equals...
+     */
+    public B gte(Date date);
+
+    /**
+     * Greater than or equals...
+     */
+    public B greaterThanOrEquals(Number number);
+
+    /**
+     * Greater than or equals...
+     */
+    public B gte(Number number);
+
+    /**
+     * Greater than or equals...
+     */
+    public B greaterThanOrEquals(String string);
+
+    /**
+     * Greater than or equals...
+     */
+    public B gte(String string);
+
+    /**
+     * Greater than or equals...
+     */
+    public B greaterThanOrEquals(Object obj);
+
+    /**
+     * Greater than or equals...
+     */
+    public B gte(Object obj);
+
+    /**
+     * Less than or equals...
+     */
+    public B lessThanOrEquals(Column column);
+
+    /**
+     * Less than or equals...
+     */
+    public B lte(Column column);
+
+    /**
+     * Less than or equals...
+     */
+    public B lessThanOrEquals(Date date);
+
+    /**
+     * Less than or equals...
+     */
+    public B lte(Date date);
+
+    /**
+     * Less than or equals...
+     */
+    public B lessThanOrEquals(Number number);
+
+    /**
+     * Less than or equals...
+     */
+    public B lte(Number number);
+
+    /**
+     * Less than or equals...
+     */
+    public B lessThanOrEquals(String string);
+
+    /**
+     * Less than or equals...
+     */
+    public B lte(String string);
+
+    /**
+     * Less than or equals...
+     */
+    public B lessThanOrEquals(Object obj);
+
+    /**
+     * Less than or equals...
+     */
+    public B lte(Object obj);
 }
