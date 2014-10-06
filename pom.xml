@@ -57,6 +57,7 @@
 		<module>jdbc</module>
 		<module>elasticsearch</module>
 		<module>hbase</module>
+		<module>cassandra</module>
 		<module>mongodb</module>
 		<module>couchdb</module>
 		<module>openoffice</module>

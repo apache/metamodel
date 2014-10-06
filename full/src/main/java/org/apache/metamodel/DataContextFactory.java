@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import javax.sql.DataSource;
 
+import org.apache.metamodel.cassandra.CassandraDataContext;
 import org.apache.metamodel.elasticsearch.ElasticSearchDataContext;
 import org.ektorp.http.StdHttpClient.Builder;
 import org.apache.metamodel.couchdb.CouchDbDataContext;
@@ -48,6 +49,7 @@ import org.apache.metamodel.xml.XmlDomDataContext;
 import org.elasticsearch.client.Client;
 import org.xml.sax.InputSource;
 
+import com.datastax.driver.core.Cluster;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
 
@@ -646,7 +648,19 @@ public class DataContextFactory {
      *       The ElasticSearch index name
      * @return a DataContext object that matches the request
      */
-    public static QueryPostprocessDataContext createElasticSearchDataContext(Client client, String indexName) {
+    public static DataContext createElasticSearchDataContext(Client client, String indexName) {
         return new ElasticSearchDataContext(client, indexName);
+    }
+
+    /**
+     * Creates a new Cassandra datacontext.
+     * @param cluster
+     *       The Cassandra client
+     * @param keySpaceName
+     *       The Cassandra key space name
+     * @return a DataContext object that matches the request
+     */
+    public static DataContext createCassandraDataContext(Cluster cluster, String keySpaceName) {
+        return new CassandraDataContext(cluster, keySpaceName);
     }
 }
