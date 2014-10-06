@@ -33,8 +33,6 @@ import org.apache.metamodel.data.Row;
  * can turn them on and off. When turned off the result of
  * {@link #getProposedRow()} will be used transparently instead of throwing the
  * exception.
- * 
- * @author Kasper Sørensen
  */
 public abstract class InconsistentRowFormatException extends MetaModelException {
 

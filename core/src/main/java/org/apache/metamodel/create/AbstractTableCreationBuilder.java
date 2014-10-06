@@ -33,8 +33,6 @@ import org.slf4j.LoggerFactory;
  * Abstract {@link TableCreationBuilder} implementation, provided as convenience
  * for {@link TableCreatable} implementations. Handles all the building
  * operations, but not the commit operation.
- * 
- * @author Kasper Sørensen
  */
 public abstract class AbstractTableCreationBuilder<U extends UpdateCallback> implements TableCreationBuilder {
 

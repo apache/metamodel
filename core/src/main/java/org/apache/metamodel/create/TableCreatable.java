@@ -22,8 +22,6 @@ import org.apache.metamodel.schema.Schema;
 
 /**
  * Interface for objects that support creating new tables.
- * 
- * @author Kasper Sørensen
  */
 public interface TableCreatable {
 

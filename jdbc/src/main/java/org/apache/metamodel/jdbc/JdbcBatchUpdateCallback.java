@@ -30,8 +30,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Jdbc {@link UpdateCallback} for databases that support the JDBC Batch
  * features.
- * 
- * @author Kasper Sørensen
  */
 final class JdbcBatchUpdateCallback extends JdbcUpdateCallback {
 

@@ -26,8 +26,6 @@ import org.apache.metamodel.schema.Schema;
 
 /**
  * Schema implementation for JDBC data contexts
- * 
- * @author Kasper Sørensen
  */
 final class JdbcSchema extends MutableSchema {
 

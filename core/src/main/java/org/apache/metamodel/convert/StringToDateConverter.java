@@ -29,9 +29,6 @@ import org.apache.metamodel.util.TimeComparator;
 /**
  * A {@link TypeConverter} that converts String values (on the physical layer)
  * to interpreted {@link Date}s.
- * 
- * @author Kasper Sørensen
- * @author Ankit Kumar
  */
 public class StringToDateConverter implements TypeConverter<String, Date> {
 

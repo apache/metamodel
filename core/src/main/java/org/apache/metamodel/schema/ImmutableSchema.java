@@ -24,8 +24,6 @@ import java.util.List;
 
 /**
  * An immutable implementation of the {@link Schema} interface.
- * 
- * @author Kasper Sørensen
  */
 public final class ImmutableSchema extends AbstractSchema implements
 		Serializable {

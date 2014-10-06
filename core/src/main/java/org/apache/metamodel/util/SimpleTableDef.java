@@ -33,8 +33,6 @@ import org.apache.metamodel.schema.TableType;
  * Represents a table definition to be used in scenarios where a
  * {@link DataContext} is unable to detect/discover the table structure and
  * needs some basic input around expected table structures.
- * 
- * @author Kasper Sørensen
  */
 public class SimpleTableDef implements Serializable, HasName {
 

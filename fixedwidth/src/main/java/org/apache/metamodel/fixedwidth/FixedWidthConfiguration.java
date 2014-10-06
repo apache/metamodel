@@ -28,8 +28,6 @@ import org.apache.metamodel.util.FileHelper;
 
 /**
  * Configuration of metadata about a fixed width values datacontext.
- * 
- * @author Kasper Sørensen
  */
 public final class FixedWidthConfiguration extends BaseObject implements
 		Serializable {

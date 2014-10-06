@@ -41,8 +41,6 @@ import org.slf4j.LoggerFactory;
 /**
  * DataContext for composite datacontexts. Composite DataContexts wrap several
  * other datacontexts and makes cross-datastore querying possible.
- * 
- * @author Kasper Sørensen
  */
 public class CompositeDataContext extends AbstractDataContext {
 

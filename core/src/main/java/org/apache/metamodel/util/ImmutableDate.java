@@ -25,8 +25,6 @@ import java.util.Date;
  * A Date implementation that is immutable and has a predictable
  * (locale-indifferent) toString() method.
  * 
- * @author Kasper Sørensen
- * 
  * @deprecated MetaModel is not a Date API, use Joda time or live with
  *             java.util.Date.
  */

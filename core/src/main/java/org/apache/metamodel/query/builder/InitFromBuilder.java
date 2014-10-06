@@ -24,8 +24,6 @@ import org.apache.metamodel.schema.Table;
 /**
  * The initial interface used when building a query. A query starts by stating
  * the FROM clause.
- * 
- * @author Kasper Sørensen
  */
 public interface InitFromBuilder {
 

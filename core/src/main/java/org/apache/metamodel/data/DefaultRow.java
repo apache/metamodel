@@ -28,8 +28,6 @@ import org.apache.metamodel.query.SelectItem;
 
 /**
  * Default Row implementation. Holds values in memory.
- * 
- * @author Kasper Sørensen
  */
 public final class DefaultRow extends AbstractRow implements Row {
 

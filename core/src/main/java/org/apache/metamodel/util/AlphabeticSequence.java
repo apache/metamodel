@@ -24,8 +24,6 @@ package org.apache.metamodel.util;
  * 
  * This sequence is practical for generating column names that correspond to
  * column identifiers in spreadsheets and the like.
- * 
- * @author Kasper Sørensen
  */
 public class AlphabeticSequence {
 

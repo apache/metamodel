@@ -29,8 +29,6 @@ import org.apache.metamodel.util.Ref;
 /**
  * Delegate for spreadsheet-implementation specific operations in an
  * {@link ExcelDataContext}.
- * 
- * @author Kasper Sørensen
  */
 interface SpreadsheetReaderDelegate {
 

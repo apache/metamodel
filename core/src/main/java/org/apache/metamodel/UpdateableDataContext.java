@@ -20,8 +20,6 @@ package org.apache.metamodel;
 
 /**
  * Represents a {@link DataContext} that supports updating write-operations.
- * 
- * @author Kasper Sørensen
  */
 public interface UpdateableDataContext extends DataContext {
 

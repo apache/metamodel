@@ -69,8 +69,6 @@ import org.xml.sax.XMLReader;
 
 /**
  * Convenience/reusable methods for Excel workbook handling.
- * 
- * @author Kasper Sørensen
  */
 final class ExcelUtils {
 

@@ -23,8 +23,6 @@ import org.apache.metamodel.insert.RowInsertionBuilder;
 /**
  * An {@link Interceptor} for {@link RowInsertionBuilder}, allowing for
  * interception of "insert into table" operations before they are executed.
- * 
- * @author Kasper Sørensen
  */
 public interface RowInsertionInterceptor extends
 		Interceptor<RowInsertionBuilder> {

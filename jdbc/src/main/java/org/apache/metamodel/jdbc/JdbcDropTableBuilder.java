@@ -30,8 +30,6 @@ import org.apache.metamodel.schema.Table;
 
 /**
  * {@link TableDropBuilder} that issues an SQL DROP TABLE statement
- * 
- * @author Kasper Sørensen
  */
 final class JdbcDropTableBuilder extends AbstractTableDropBuilder implements TableDropBuilder {
 

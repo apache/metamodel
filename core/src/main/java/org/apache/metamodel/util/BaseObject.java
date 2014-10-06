@@ -31,8 +31,6 @@ import org.slf4j.LoggerFactory;
  * and equals(). Subclasses should implement the {@link #decorateIdentity(List)}
  * method to have {@link #equals(Object)} and {@link #hashCode()} automatically
  * implemented.
- * 
- * @author Kasper Sørensen
  */
 public abstract class BaseObject {
 

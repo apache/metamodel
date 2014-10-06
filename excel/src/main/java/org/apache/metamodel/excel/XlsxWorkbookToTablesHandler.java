@@ -32,8 +32,6 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * XML handler for transforming a workbook document into {@link Table}s in a
  * MetaModel {@link Schema}.
- * 
- * @author Kasper Sørensen
  */
 final class XlsxWorkbookToTablesHandler extends DefaultHandler {
 

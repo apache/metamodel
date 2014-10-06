@@ -35,8 +35,6 @@ import org.slf4j.LoggerFactory;
 /**
  * {@link CreateTableBuilder} implementation that issues a SQL CREATE TABLE
  * statement.
- * 
- * @author Kasper Sørensen
  */
 final class JdbcCreateTableBuilder extends AbstractTableCreationBuilder<JdbcUpdateCallback> {
 

@@ -28,8 +28,6 @@ import org.slf4j.LoggerFactory;
  * 
  * The immutability help ensure integrity of object-relationships. To create
  * relationsips use the <code>createRelationship</code> method.
- * 
- * @author Kasper Sørensen
  */
 public class MutableRelationship extends AbstractRelationship implements
 		Serializable, Relationship {

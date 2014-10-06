@@ -25,8 +25,6 @@ import java.io.Serializable;
  * Table and can be used as keys for relationships between tables.
  * 
  * @see Table
- * 
- * @author Kasper Sørensen
  */
 public interface Column extends Comparable<Column>, Serializable, NamedStructure {
 

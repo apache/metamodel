@@ -23,9 +23,6 @@ import org.apache.metamodel.schema.Column;
 
 /**
  * Represents a built query that has a GROUP BY clause.
- * 
- * @author Kasper Sørensen
- * 
  */
 public interface GroupedQueryBuilder extends
 		SatisfiedQueryBuilder<GroupedQueryBuilder> {

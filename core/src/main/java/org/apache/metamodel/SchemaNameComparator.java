@@ -22,8 +22,6 @@ import java.util.Comparator;
 
 /**
  * Comparator for comparing schema names.
- * 
- * @author Kasper Sørensen
  */
 class SchemaNameComparator implements Comparator<String> {
 

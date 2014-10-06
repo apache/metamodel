@@ -21,9 +21,6 @@ package org.apache.metamodel.convert;
 /**
  * A {@link TypeConverter} that converts String values (on the physical layer)
  * to interpreted Integers.
- * 
- * @author Kasper Sørensen
- * @author Ankit Kumar
  */
 public class StringToIntegerConverter implements TypeConverter<String, Integer> {
 

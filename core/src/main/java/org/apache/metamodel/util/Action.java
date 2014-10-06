@@ -23,8 +23,6 @@ package org.apache.metamodel.util;
  * that takes an argument. An {@link Action} has no return type, unlike a
  * {@link Func}.
  * 
- * @author Kasper Sørensen
- * 
  * @param <E>
  *            the argument type of the action
  */

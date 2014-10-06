@@ -49,8 +49,6 @@ import org.apache.metamodel.util.MutableRef;
 
 /**
  * Test case that tests interaction with the H2 embedded database
- * 
- * @author Kasper Sørensen
  */
 public class H2databaseTest extends TestCase {
 

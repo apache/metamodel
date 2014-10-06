@@ -23,9 +23,6 @@ import org.apache.metamodel.schema.ColumnType;
 /**
  * Parser that transforms the ElasticSearch metadata response (json-like format)
  * into an ElasticSearchMetaData object.
- *
- *
- * @author Alberto Rodriguez
  */
 public class ElasticSearchMetaDataParser {
     

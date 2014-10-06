@@ -36,8 +36,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * {@link RowUpdationBuilder} that issues an SQL UPDATE statement
- * 
- * @author Kasper Sørensen
  */
 final class JdbcUpdateBuilder extends AbstractRowUpdationBuilder {
 

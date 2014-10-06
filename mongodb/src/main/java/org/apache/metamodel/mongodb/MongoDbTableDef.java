@@ -29,8 +29,6 @@ import org.apache.metamodel.util.SimpleTableDef;
  * which collections, which columns (and their types) should be included in the
  * schema structure of a Mongo DB database.
  * 
- * @author Kasper Sørensen
- * 
  * @deprecated use {@link SimpleTableDef} instead.
  */
 @Deprecated

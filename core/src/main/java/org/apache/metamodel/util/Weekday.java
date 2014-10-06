@@ -23,8 +23,6 @@ import java.util.Calendar;
 /**
  * Provides a handy and type-safe enum around the weekdays otherwise defined as
  * int constants in java.util.Calendar.
- * 
- * @author Kasper Sørensen
  */
 public enum Weekday implements HasName {
 

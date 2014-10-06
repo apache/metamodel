@@ -28,8 +28,6 @@ import java.util.List;
 
 /**
  * Various utility methods for handling of collections and arrays.
- * 
- * @author Kasper Sørensen
  */
 public final class CollectionUtils {
 

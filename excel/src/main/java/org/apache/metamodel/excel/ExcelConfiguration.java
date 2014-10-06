@@ -27,8 +27,6 @@ import org.apache.metamodel.util.BaseObject;
  * Represents the configuration for reading/parsing Excel spreadsheets.
  * 
  * @see ExcelDataContext
- * 
- * @author Kasper Sørensen
  */
 public final class ExcelConfiguration extends BaseObject implements
 		Serializable {

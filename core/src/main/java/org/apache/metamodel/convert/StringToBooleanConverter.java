@@ -23,9 +23,6 @@ import org.apache.metamodel.util.BooleanComparator;
 /**
  * A {@link TypeConverter} that converts String values (on the physical layer)
  * to interpreted Booleans.
- * 
- * @author Kasper Sørensen
- * @author Ankit Kumar
  */
 public class StringToBooleanConverter implements TypeConverter<String, Boolean> {
 

@@ -22,8 +22,6 @@ package org.apache.metamodel.util;
  * Represents an abstract reference. This interface enables use of both regular,
  * hard references, soft references and deferred/lazy references.
  * 
- * @author Kasper Sørensen
- * 
  * @param <E>
  */
 public interface Ref<E> {

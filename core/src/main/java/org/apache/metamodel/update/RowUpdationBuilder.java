@@ -26,8 +26,6 @@ import org.apache.metamodel.schema.Table;
 
 /**
  * Builder object for row update on a {@link Table}.
- * 
- * @author Kasper Sørensen
  */
 public interface RowUpdationBuilder extends RowBuilder<RowUpdationBuilder>, WhereClauseBuilder<RowUpdationBuilder> {
 

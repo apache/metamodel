@@ -23,8 +23,6 @@ import org.apache.metamodel.update.RowUpdationBuilder;
 /**
  * An {@link Interceptor} for {@link RowUpdationBuilder}, allowing for
  * interception of "update table" operations before they are executed.
- * 
- * @author Kasper Sørensen
  */
 public interface RowUpdationInterceptor extends
 		Interceptor<RowUpdationBuilder> {

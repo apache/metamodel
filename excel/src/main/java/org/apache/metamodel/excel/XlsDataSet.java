@@ -28,8 +28,6 @@ import org.apache.metamodel.query.SelectItem;
 
 /**
  * Stream {@link DataSet} implementation for Excel support.
- * 
- * @author Kasper Sørensen
  */
 final class XlsDataSet extends AbstractDataSet {
 

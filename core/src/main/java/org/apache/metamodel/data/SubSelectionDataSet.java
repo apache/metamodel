@@ -22,8 +22,6 @@ import org.apache.metamodel.query.SelectItem;
 
 /**
  * {@link DataSet} wrapper for doing subselection.
- * 
- * @author Kasper Sørensen
  */
 public final class SubSelectionDataSet extends AbstractDataSet {
 

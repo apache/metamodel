@@ -24,8 +24,6 @@ import java.io.Serializable;
  * {@link Func} useful for mapping {@link HasName} instances to names, using
  * {@link CollectionUtils#map(Object[], Func)} and
  * {@link CollectionUtils#map(Iterable, Func)}.
- * 
- * @author Kasper Sørensen
  */
 public final class HasNameMapper implements Func<HasName, String>, Serializable {
 

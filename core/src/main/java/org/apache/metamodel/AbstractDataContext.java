@@ -39,8 +39,6 @@ import org.apache.metamodel.schema.Table;
 /**
  * Abstract implementation of the DataContext interface. Provides convenient
  * implementations of all trivial and datastore-independent methods.
- * 
- * @author Kasper Sørensen
  */
 public abstract class AbstractDataContext implements DataContext {
 

@@ -39,8 +39,6 @@ import com.mongodb.Mongo;
 
 /**
  * Simple example program that can copy data to a MongoDB collection
- * 
- * @author Kasper Sørensen
  */
 public class MongoDbDataCopyer {
 

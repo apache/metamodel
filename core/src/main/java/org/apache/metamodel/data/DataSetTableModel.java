@@ -31,8 +31,6 @@ import org.apache.metamodel.util.EqualsBuilder;
 /**
  * {@link TableModel} implementation which wraps a {@link DataSet} and presents its data.
  * 
- * @author Kasper Sørensen
- * 
  * @since 3.0
  */
 public class DataSetTableModel extends AbstractTableModel {

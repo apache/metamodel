@@ -22,8 +22,6 @@ import org.apache.metamodel.schema.Table;
 
 /**
  * An interface for objects that support inserting rows into tables.
- * 
- * @author Kasper Sørensen
  */
 public interface RowInsertable {
 

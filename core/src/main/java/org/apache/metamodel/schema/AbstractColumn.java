@@ -21,8 +21,6 @@ package org.apache.metamodel.schema;
 /**
  * Abstract {@link Column} implementation. Implements most common and trivial
  * methods.
- * 
- * @author Kasper Sørensen
  */
 public abstract class AbstractColumn implements Column {
 

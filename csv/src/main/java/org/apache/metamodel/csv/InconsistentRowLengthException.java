@@ -45,8 +45,6 @@ import org.apache.metamodel.data.Row;
  * 	}
  * }
  * </pre>
- * 
- * @author Kasper Sørensen
  */
 public final class InconsistentRowLengthException extends
 		InconsistentRowFormatException {

@@ -29,8 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 
  * Note that since this {@link ExecutorService} is shared, it is not recommended
  * to use it for dedicated tasks or daemon-like long-running tasks.
- * 
- * @author Kasper Sørensen
  */
 public final class SharedExecutorService {
 

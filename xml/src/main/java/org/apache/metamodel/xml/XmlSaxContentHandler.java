@@ -31,8 +31,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * SAX handler for publishing records based on xpath expressions.
- * 
- * @author Kasper Sørensen
  */
 class XmlSaxContentHandler extends DefaultHandler {
 

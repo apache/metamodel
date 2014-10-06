@@ -36,8 +36,6 @@ import org.apache.metamodel.util.LazyRef;
 
 /**
  * {@link RowInsertionBuilder} for excel spreadsheets.
- * 
- * @author Kasper Sørensen
  */
 final class ExcelInsertBuilder extends
 		AbstractRowInsertionBuilder<ExcelUpdateCallback> {

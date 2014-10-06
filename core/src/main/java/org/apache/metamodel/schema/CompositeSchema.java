@@ -29,8 +29,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A composite schema, comprising tables from several {@link DataContext}s.
- * 
- * @author Kasper Sørensen
  */
 public class CompositeSchema extends AbstractSchema {
 

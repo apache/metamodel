@@ -22,8 +22,6 @@ import org.apache.metamodel.util.HasName;
 
 /**
  * Super-interface for named structural types in a DataContext.
- * 
- * @author Kasper Sørensen
  */
 public interface NamedStructure extends HasName {
 

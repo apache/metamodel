@@ -31,8 +31,6 @@ import org.apache.metamodel.update.RowUpdationBuilder;
 /**
  * Abstract implementation of the {@link UpdateCallback} interface. Implements
  * only the data store agnostic methods.
- * 
- * @author Kasper Sørensen
  */
 public abstract class AbstractUpdateCallback implements UpdateCallback {
 

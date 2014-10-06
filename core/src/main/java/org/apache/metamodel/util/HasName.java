@@ -20,8 +20,6 @@ package org.apache.metamodel.util;
 
 /**
  * Represents anything with a (String based) name.
- * 
- * @author Kasper Sørensen
  */
 public interface HasName {
 

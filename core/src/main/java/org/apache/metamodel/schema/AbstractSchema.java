@@ -34,8 +34,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Abstract implementation of the {@link Schema} interface. Implements most
  * common and trivial methods.
- * 
- * @author Kasper Sørensen
  */
 public abstract class AbstractSchema implements Schema {
 
