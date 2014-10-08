@@ -4,6 +4,12 @@ jdk:
   - openjdk7
   - oraclejdk8
 
+services:
+  - couchdb
+  
+before_script:
+  - curl -X PUT localhost:5984/metamodel_test_database
+
 after_success:
   - mvn test
  
