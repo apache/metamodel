@@ -19,7 +19,9 @@
 package org.apache.metamodel.mongodb;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -39,31 +41,46 @@ public abstract class MongoDbTestCase extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        Properties properties = new Properties();
         File file = new File(getPropertyFilePath());
         if (file.exists()) {
-            properties.load(new FileReader(file));
-            _hostname = properties.getProperty("mongodb.hostname");
-            
-            _databaseName = properties.getProperty("mongodb.databaseName");
-            if (_databaseName == null || _databaseName.isEmpty()) {
-                _databaseName = DEFAULT_TEST_DATABASE_NAME;
-            }
-            
-            _collectionName = properties.getProperty("mongodb.collectionName");
-            if (_collectionName == null || _collectionName.isEmpty()) {
-                _collectionName = DEFAULT_TEST_COLLECTION_NAME;
-            }
-
-            _configured = (_hostname != null && !_hostname.isEmpty());
-
-            if (_configured) {
-                System.out.println("Loaded MongoDB configuration. Hostname=" + _hostname + ", Collection="
-                        + _collectionName);
-            }
+            loadPropertyFile(file);
         } else {
-            _configured = false;
+            // Continuous integration case
+            if (System.getenv("CONTINUOUS_INTEGRATION") != null) {
+                File travisFile = new File("../travis-metamodel-integrationtest-configuration.properties");
+                if (travisFile.exists()) {
+                    loadPropertyFile(travisFile);
+                } else {
+                    _configured = false;
+                }
+            } else {
+                _configured = false;
+            }
         }
+    }
+
+    private void loadPropertyFile(File file) throws FileNotFoundException, IOException {
+        Properties properties = new Properties();
+        properties.load(new FileReader(file));
+        _hostname = properties.getProperty("mongodb.hostname");
+        
+        _databaseName = properties.getProperty("mongodb.databaseName");
+        if (_databaseName == null || _databaseName.isEmpty()) {
+            _databaseName = DEFAULT_TEST_DATABASE_NAME;
+        }
+        
+        _collectionName = properties.getProperty("mongodb.collectionName");
+        if (_collectionName == null || _collectionName.isEmpty()) {
+            _collectionName = DEFAULT_TEST_COLLECTION_NAME;
+        }
+
+        _configured = (_hostname != null && !_hostname.isEmpty());
+
+        if (_configured) {
+            System.out.println("Loaded MongoDB configuration. Hostname=" + _hostname + ", Collection="
+                    + _collectionName);
+        }
+        
     }
 
     private String getPropertyFilePath() {

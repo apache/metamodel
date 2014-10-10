@@ -6,6 +6,7 @@ jdk:
 
 services:
   - couchdb
+  - mongodb
   
 after_success:
   - mvn test
