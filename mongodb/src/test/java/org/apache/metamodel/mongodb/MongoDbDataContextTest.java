@@ -112,6 +112,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
     }
 
     public void testRead() throws Exception {
+        // Adding a comment to commit something and invoke a build in Travis...
         if (!isConfigured()) {
             System.err.println(getInvalidConfigurationMessage());
             return;
