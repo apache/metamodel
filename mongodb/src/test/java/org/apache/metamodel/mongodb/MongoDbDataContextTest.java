@@ -332,7 +332,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         // do a query that we cannot push to mongo
         // Replace column index 0 by 1
         ds = dataContext.query().from(getCollectionName())
-                .select(FunctionType.SUM, dataContext.getDefaultSchema().getTables()[1].getColumnByName("id"))
+                .select(FunctionType.SUM, dataContext.getDefaultSchema().getTables()[0].getColumnByName("id"))
                 .where("foo").isEquals("bar").execute();
         assertEquals(InMemoryDataSet.class, ds.getClass());
 
