@@ -25,8 +25,6 @@ import org.apache.metamodel.query.SelectItem;
 
 /**
  * DataSet implementation based on in-memory data.
- * 
- * @author Kasper Sørensen
  */
 public final class InMemoryDataSet extends AbstractDataSet {
 

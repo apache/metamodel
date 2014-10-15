@@ -42,9 +42,6 @@ import org.junit.Ignore;
 /**
  * A wrapper around a connection, used to assert whether or not a it has been
  * closed or not, without actually closing it.
- * 
- * @author Kasper Sørensen
- * 
  */
 @Ignore
 public class CloseableConnectionWrapper implements Connection {

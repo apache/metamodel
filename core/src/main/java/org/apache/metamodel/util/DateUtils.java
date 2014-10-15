@@ -25,8 +25,6 @@ import java.util.Date;
 
 /**
  * Various utility methods pertaining to date handling
- * 
- * @author Kasper Sørensen
  */
 public final class DateUtils {
 

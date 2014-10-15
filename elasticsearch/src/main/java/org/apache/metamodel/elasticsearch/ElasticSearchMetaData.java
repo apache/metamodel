@@ -25,8 +25,6 @@ import org.apache.metamodel.schema.ColumnType;
  *
  * We will map the elasticsearch fields to columns and their
  * types to {@link ColumnType}s.
- *
- * @author Alberto Rodriguez
  */
 public class ElasticSearchMetaData {
     

@@ -41,8 +41,6 @@ import org.apache.metamodel.util.ResourceUtils;
 
 /**
  * DataContext implementation for fixed width value files.
- * 
- * @author Kasper Sørensen
  */
 public class FixedWidthDataContext extends QueryPostprocessDataContext {
 

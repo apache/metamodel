@@ -24,8 +24,6 @@ import java.util.List;
 /**
  * Represents a list of interceptors
  * 
- * @author Kasper Sørensen
- * 
  * @param <E>
  *            the thing to intercept
  * 

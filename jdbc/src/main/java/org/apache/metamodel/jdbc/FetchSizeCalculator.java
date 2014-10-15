@@ -34,8 +34,6 @@ import org.slf4j.LoggerFactory;
  * Oracle's caching size, see <a href=
  * "http://www.oracle.com/technetwork/database/enterprise-edition/memory.pdf"
  * >JDBC Memory Management</a>, section "Where does it all go?".
- * 
- * @author Kasper Sørensen
  */
 final class FetchSizeCalculator {
 

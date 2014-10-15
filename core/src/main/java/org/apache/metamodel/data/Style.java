@@ -30,8 +30,6 @@ import java.io.Serializable;
  * 
  * Creation of {@link Style} objects is handled by the {@link StyleBuilder}
  * class.
- * 
- * @author Kasper Sørensen
  */
 public interface Style extends Serializable {
 
@@ -43,8 +41,6 @@ public interface Style extends Serializable {
 
 	/**
 	 * Represents the text alignment of a value.
-	 * 
-	 * @author Kasper Sørensen
 	 */
 	public static enum TextAlignment {
 		LEFT, RIGHT, CENTER, JUSTIFY
@@ -55,8 +51,6 @@ public interface Style extends Serializable {
 	 * 
 	 * Creation of {@link Color} objects is handled by the static
 	 * {@link StyleBuilder}.createColor(...) methods.
-	 * 
-	 * @author Kasper Sørensen
 	 */
 	public static interface Color extends Serializable {
 
@@ -69,8 +63,6 @@ public interface Style extends Serializable {
 
 	/**
 	 * Represents a unit of sizing elements (eg. fonts) in a {@link Style}.
-	 * 
-	 * @author Kasper Sørensen
 	 */
 	public static enum SizeUnit {
 		/**

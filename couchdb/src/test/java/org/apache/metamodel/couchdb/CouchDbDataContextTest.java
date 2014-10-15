@@ -281,6 +281,43 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         assertFalse(ds.next());
         ds.close();
 
+        // Test greater than or equals
+        ds = dc.query().from(getDatabaseName()).select("name").and("age").where("age").greaterThanOrEquals(29)
+                .execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[John Doe, 30]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        ds = dc.query().from(getDatabaseName()).select("name").and("age").where("age").greaterThanOrEquals(30)
+                .execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[John Doe, 30]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        ds = dc.query().from(getDatabaseName()).select("name").and("age").where("age").greaterThanOrEquals(31)
+                .execute();
+        assertFalse(ds.next());
+        ds.close();
+
+        // Test less than or equals
+        ds = dc.query().from(getDatabaseName()).select("name").and("age").where("age").lessThanOrEquals(31).execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[John Doe, 30]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        ds = dc.query().from(getDatabaseName()).select("name").and("age").where("age").lessThanOrEquals(30).execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[John Doe, 30]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        ds = dc.query().from(getDatabaseName()).select("name").and("age").where("age").lessThanOrEquals(29).execute();
+        assertFalse(ds.next());
+        ds.close();
+
         // test primary key lookup query
         ds = dc.query().from(getDatabaseName()).select("name").and("gender").where("_id").eq(pkValue).execute();
         assertTrue(ds.next());

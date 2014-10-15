@@ -28,8 +28,6 @@ import org.apache.metamodel.util.EqualsBuilder;
 
 /**
  * Builder class for {@link Style} and related objects, like {@link Color}.
- * 
- * @author Kasper Sørensen
  */
 public final class StyleBuilder {
 

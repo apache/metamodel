@@ -24,8 +24,6 @@ import org.apache.metamodel.util.BaseObject;
 
 /**
  * Default immutable implementation of {@link Style}.
- * 
- * @author Kasper Sørensen
  */
 public final class StyleImpl extends BaseObject implements Style {
 

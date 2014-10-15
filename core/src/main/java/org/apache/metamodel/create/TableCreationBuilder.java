@@ -24,8 +24,6 @@ import org.apache.metamodel.schema.Table;
 
 /**
  * Builder object for {@link Table} creation.
- * 
- * @author Kasper Sørensen
  */
 public interface TableCreationBuilder {
 

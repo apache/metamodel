@@ -31,8 +31,6 @@ package org.apache.metamodel.intercept;
  * @see TableCreationInterceptor
  * @see SchemaInterceptor
  * 
- * @author Kasper Sørensen
- * 
  * @param <E>
  *            the type of object to intercept
  */

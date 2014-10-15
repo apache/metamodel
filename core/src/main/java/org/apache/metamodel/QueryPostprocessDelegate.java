@@ -24,9 +24,6 @@ import org.apache.metamodel.schema.Schema;
  * A simple subclass of {@link QueryPostprocessDataContext} which provides less
  * implementation fuzz when custom querying features (like composite
  * datacontexts or type conversion) is needed.
- * 
- * @author Kasper Sørensen
- * @author Ankit Kumar
  */
 public abstract class QueryPostprocessDelegate extends
 		QueryPostprocessDataContext {

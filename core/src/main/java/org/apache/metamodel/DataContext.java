@@ -31,8 +31,6 @@ import org.apache.metamodel.schema.Table;
  * A DataContext represents the central entry point for interactions with
  * datastores. The DataContext contains of the structure of data (in the form of
  * schemas) and interactions (in the form of queries) with data.
- * 
- * @author Kasper Sørensen
  */
 public interface DataContext {
 

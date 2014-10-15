@@ -29,8 +29,6 @@ import org.apache.metamodel.schema.TableType;
 
 /**
  * Table implementation that is based on JDBC metadata.
- * 
- * @author Kasper Sørensen
  */
 final class JdbcTable extends MutableTable {
 

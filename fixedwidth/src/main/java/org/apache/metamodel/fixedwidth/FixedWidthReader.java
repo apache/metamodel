@@ -29,8 +29,6 @@ import java.util.List;
 
 /**
  * Reader capable of separating values based on a fixed width setting.
- * 
- * @author Kasper Sørensen
  */
 final class FixedWidthReader implements Closeable {
 

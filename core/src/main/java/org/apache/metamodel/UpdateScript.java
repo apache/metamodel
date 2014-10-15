@@ -26,8 +26,6 @@ import org.apache.metamodel.util.Action;
  * {@link UpdateScript} and submit them to the
  * {@link UpdateableDataContext#executeUpdate(UpdateScript)} method for
  * execution.
- * 
- * @author Kasper Sørensen
  */
 public interface UpdateScript extends Action<UpdateCallback> {
 

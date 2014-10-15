@@ -34,8 +34,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Abstract {@link Table} implementation. Includes most common/trivial methods.
- * 
- * @author Kasper Sørensen
  */
 public abstract class AbstractTable implements Table {
 

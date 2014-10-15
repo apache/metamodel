@@ -26,8 +26,6 @@ import java.io.Serializable;
  * 
  * @see Table
  * @see Column
- * 
- * @author Kasper Sørensen
  */
 public interface Relationship extends Serializable, Comparable<Relationship> {
 

@@ -46,9 +46,6 @@ import java.io.Writer;
  * robert_futrell at users.sourceforge.net
  * http://fifesoft.com/rsyntaxtextarea
  * </pre>
- * 
- * @author Robert Futrell
- * @version 0.7
  */
 public class UnicodeWriter extends Writer {
 

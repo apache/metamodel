@@ -27,8 +27,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Represents a lazy loaded reference.
  * 
- * @author Kasper Sørensen
- * 
  * @param <E>
  */
 public abstract class LazyRef<E> implements Ref<E> {

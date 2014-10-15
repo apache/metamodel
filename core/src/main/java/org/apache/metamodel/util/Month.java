@@ -23,9 +23,6 @@ import java.util.Calendar;
 /**
  * Provides a handy and type-safe enum around the months otherwise defined as
  * int constants in java.util.Calendar.
- * 
- * @author Kasper Sørensen
- * 
  */
 public enum Month implements HasName {
 

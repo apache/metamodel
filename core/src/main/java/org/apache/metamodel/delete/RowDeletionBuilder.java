@@ -25,8 +25,6 @@ import org.apache.metamodel.schema.Table;
 
 /**
  * Builder object for row deletions in a {@link Table}.
- * 
- * @author Kasper Sørensen
  */
 public interface RowDeletionBuilder extends WhereClauseBuilder<RowDeletionBuilder> {
 

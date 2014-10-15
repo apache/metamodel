@@ -26,8 +26,6 @@ import java.io.Serializable;
  * 
  * @see Schema
  * @see Column
- * 
- * @author Kasper Sørensen
  */
 public interface Table extends Comparable<Table>, Serializable, NamedStructure {
 

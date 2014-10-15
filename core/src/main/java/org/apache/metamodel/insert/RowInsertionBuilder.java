@@ -26,8 +26,6 @@ import org.apache.metamodel.schema.Table;
 
 /**
  * Builder object for row insertion, into a {@link Table}.
- * 
- * @author Kasper Sørensen
  */
 public interface RowInsertionBuilder extends RowBuilder<RowInsertionBuilder> {
 

@@ -30,8 +30,6 @@ import org.apache.metamodel.schema.Table;
 
 /**
  * {@link TableCreationBuilder} implementation for Excel spreadsheets.
- * 
- * @author Kasper Sørensen
  */
 final class ExcelTableCreationBuilder extends AbstractTableCreationBuilder<ExcelUpdateCallback> {
 

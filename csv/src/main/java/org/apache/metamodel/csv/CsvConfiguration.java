@@ -26,8 +26,6 @@ import org.apache.metamodel.util.FileHelper;
 
 /**
  * Represents the configuration for reading/parsing CSV files.
- * 
- * @author Kasper Sørensen
  */
 public final class CsvConfiguration extends BaseObject implements Serializable {
 

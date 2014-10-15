@@ -35,8 +35,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * {@link RowDeletionBuilder} that issues an SQL DELETE FROM statement
- * 
- * @author Kasper Sørensen
  */
 final class JdbcDeleteBuilder extends AbstractRowDeletionBuilder {
 

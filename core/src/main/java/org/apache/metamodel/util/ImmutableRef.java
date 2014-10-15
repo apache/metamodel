@@ -21,8 +21,6 @@ package org.apache.metamodel.util;
 /**
  * Simple/hard implementation of the {@link Ref} interface.
  * 
- * @author Kasper Sørensen
- * 
  * @param <E>
  */
 public final class ImmutableRef<E> implements Ref<E> {

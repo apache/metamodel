@@ -33,8 +33,6 @@ import org.apache.metamodel.util.BaseObject;
 /**
  * Abstract DataSet implementation. Provides convenient implementations of
  * trivial method and reusable parts of non-trivial methods of a DataSet.
- * 
- * @author Kasper Sørensen
  */
 public abstract class AbstractDataSet extends BaseObject implements DataSet {
 

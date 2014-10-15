@@ -21,8 +21,6 @@ package org.apache.metamodel.util;
 /**
  * Represents a mutable reference to any object
  * 
- * @author Kasper Sørensen
- * 
  * @param <E>
  */
 public final class MutableRef<E> implements Ref<E> {

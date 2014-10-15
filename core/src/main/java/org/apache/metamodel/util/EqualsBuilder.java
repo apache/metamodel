@@ -25,8 +25,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A helper class for implementing equals(...) methods.
- * 
- * @author Kasper Sørensen
  */
 public final class EqualsBuilder {
 

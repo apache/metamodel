@@ -23,8 +23,6 @@ import org.apache.metamodel.query.Query;
 /**
  * An {@link Interceptor} for Queries, allowing to touch or modify a query
  * before execution.
- * 
- * @author Kasper Sørensen
  */
 public interface QueryInterceptor extends Interceptor<Query> {
 

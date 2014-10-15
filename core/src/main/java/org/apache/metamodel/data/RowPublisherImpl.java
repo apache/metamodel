@@ -28,8 +28,6 @@ import org.apache.metamodel.MetaModelException;
 
 /**
  * Row publisher implementation used by {@link RowPublisherDataSet}.
- * 
- * @author Kasper Sørensen
  */
 class RowPublisherImpl implements RowPublisher {
 

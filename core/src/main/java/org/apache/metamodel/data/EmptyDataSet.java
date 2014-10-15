@@ -25,8 +25,6 @@ import org.apache.metamodel.schema.Column;
 
 /**
  * An empty data set.
- * 
- * @author Kasper Sørensen
  */
 public final class EmptyDataSet extends AbstractDataSet {
     

@@ -30,8 +30,6 @@ import org.apache.metamodel.schema.Column;
  * Represents a built query that is satisfied and ready for querying or further
  * building.
  * 
- * @author Kasper Sørensen
- * 
  * @param <B>
  */
 public interface SatisfiedQueryBuilder<B extends SatisfiedQueryBuilder<?>> {

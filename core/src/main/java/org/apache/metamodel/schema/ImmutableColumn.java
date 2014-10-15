@@ -27,8 +27,6 @@ import java.io.Serializable;
  * constructor in ImmutableSchema.
  * 
  * @see ImmutableSchema
- * 
- * @author Kasper Sørensen
  */
 public final class ImmutableColumn extends AbstractColumn implements Serializable {
 

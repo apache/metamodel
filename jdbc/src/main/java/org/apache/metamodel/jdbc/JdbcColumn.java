@@ -24,8 +24,6 @@ import org.apache.metamodel.schema.Table;
 
 /**
  * Column implementation for JDBC data contexts.
- * 
- * @author Kasper Sørensen
  */
 final class JdbcColumn extends MutableColumn {
 

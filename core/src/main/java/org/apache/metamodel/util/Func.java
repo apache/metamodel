@@ -23,8 +23,6 @@ package org.apache.metamodel.util;
  * functionality that has an input and an output. A {@link Func} has a return
  * type, unlike an {@link Action}.
  * 
- * @author Kasper Sørensen
- * 
  * @param <I>
  *            the input type
  * @param <O>

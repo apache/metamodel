@@ -34,8 +34,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * {@link RowInsertionBuilder} that issues an SQL INSERT statement
- * 
- * @author Kasper Sørensen
  */
 final class JdbcInsertBuilder extends AbstractRowInsertionBuilder<JdbcUpdateCallback> {
 

@@ -23,8 +23,6 @@ import org.apache.metamodel.data.DataSet;
 /**
  * An {@link Interceptor} for {@link DataSet}s, allowing to touch, enrich or
  * modify a dataset before it is returned to the user.
- * 
- * @author Kasper Sørensen
  */
 public interface DataSetInterceptor extends Interceptor<DataSet> {
 

@@ -95,6 +95,8 @@ public class ElasticSearchDataContextTest {
                 Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
 
         Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
+        
+        assertEquals("[message, postDate, user]", Arrays.toString(table.getColumnNames()));
 
         assertEquals(ColumnType.STRING, table.getColumnByName("user").getType());
         assertEquals(ColumnType.DATE, table.getColumnByName("postDate").getType());

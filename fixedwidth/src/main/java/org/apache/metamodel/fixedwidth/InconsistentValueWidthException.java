@@ -23,8 +23,6 @@ import org.apache.metamodel.data.Row;
 
 /**
  * Exception thrown when inconsistent widths of a Fixed Width Value file
- * 
- * @author Kasper Sørensen
  */
 public final class InconsistentValueWidthException extends
 		InconsistentRowFormatException {

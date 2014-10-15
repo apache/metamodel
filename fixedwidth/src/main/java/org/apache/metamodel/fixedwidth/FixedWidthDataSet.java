@@ -26,8 +26,6 @@ import org.apache.metamodel.util.FileHelper;
 
 /**
  * DataSet implementation for fixed width values.
- * 
- * @author Kasper Sørensen
  */
 class FixedWidthDataSet extends AbstractDataSet {
 

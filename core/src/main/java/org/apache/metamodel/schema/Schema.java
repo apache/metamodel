@@ -28,8 +28,6 @@ import org.apache.metamodel.DataContext;
  * 
  * @see DataContext
  * @see Table
- * 
- * @author Kasper Sørensen
  */
 public interface Schema extends Comparable<Schema>, Serializable, NamedStructure {
 

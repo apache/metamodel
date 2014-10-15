@@ -24,8 +24,6 @@ import org.apache.metamodel.data.Style;
 
 /**
  * Callback for read rows in an XLSX spreadsheet.
- * 
- * @author Kasper Sørensen
  */
 interface XlsxRowCallback {
 

@@ -25,8 +25,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Comparator of booleans
- * 
- * @author Kasper Sørensen
  */
 public final class BooleanComparator implements Comparator<Object> {
 

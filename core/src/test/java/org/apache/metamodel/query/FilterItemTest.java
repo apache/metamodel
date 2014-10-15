@@ -18,11 +18,6 @@
  */
 package org.apache.metamodel.query;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
 import junit.framework.TestCase;
 
 import org.apache.metamodel.DataContext;
@@ -43,6 +38,11 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 public class FilterItemTest extends TestCase {
 
@@ -99,6 +99,12 @@ public class FilterItemTest extends TestCase {
 
         c = new FilterItem(selectItem, OperatorType.EQUALS_TO, true);
         assertEquals("Col1 = 1", c.toString());
+
+        c = new FilterItem(selectItem, OperatorType.GREATER_THAN_OR_EQUAL, 123);
+        assertEquals("Col1 >= 123", c.toString());
+
+        c = new FilterItem(selectItem, OperatorType.LESS_THAN_OR_EQUAL, 123);
+        assertEquals("Col1 <= 123", c.toString());
 
         Column timeColumn = new MutableColumn("TimeCol", ColumnType.TIME);
         selectItem = new SelectItem(timeColumn);
@@ -195,6 +201,30 @@ public class FilterItemTest extends TestCase {
         row = new DefaultRow(header, new Object[] { 1, null });
         assertFalse(c.evaluate(row));
 
+        c = new FilterItem(s1, OperatorType.GREATER_THAN_OR_EQUAL, s2);
+        row = new DefaultRow(header, new Object[] { 5, 1 });
+        assertTrue(c.evaluate(row));
+        row = new DefaultRow(header, new Object[] { 1, 5 });
+        assertFalse(c.evaluate(row));
+        row = new DefaultRow(header, new Object[] { 5, 5 });
+        assertTrue(c.evaluate(row));
+        row = new DefaultRow(header, new Object[] { null, 1 });
+        assertFalse(c.evaluate(row));
+        row = new DefaultRow(header, new Object[] { 1, null });
+        assertFalse(c.evaluate(row));
+
+        c = new FilterItem(s1, OperatorType.LESS_THAN_OR_EQUAL, s2);
+        row = new DefaultRow(header, new Object[] { 1, 5 });
+        assertTrue(c.evaluate(row));
+        row = new DefaultRow(header, new Object[] { 5, 1 });
+        assertFalse(c.evaluate(row));
+        row = new DefaultRow(header, new Object[] { 1, 1 });
+        assertTrue(c.evaluate(row));
+        row = new DefaultRow(header, new Object[] { null, 1 });
+        assertFalse(c.evaluate(row));
+        row = new DefaultRow(header, new Object[] { 1, null });
+        assertFalse(c.evaluate(row));
+
         c = new FilterItem(s1, OperatorType.EQUALS_TO, s2);
         row = new DefaultRow(header, new Object[] { 1, null });
         assertFalse(c.evaluate(row));
@@ -247,7 +277,7 @@ public class FilterItemTest extends TestCase {
 
     /**
      * Tests that the following (general) rules apply to the object:
-     * 
+     * <p/>
      * <li>the hashcode is the same when run twice on an unaltered object</li>
      * <li>if o1.equals(o2) then this condition must be true: o1.hashCode() ==
      * 02.hashCode()

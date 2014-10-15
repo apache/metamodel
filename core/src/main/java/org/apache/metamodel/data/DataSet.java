@@ -31,8 +31,6 @@ import org.apache.metamodel.query.SelectItem;
  * DataSet works similarly to a slightly modularized ResultSet when you traverse
  * it - use the next() method to loop through the rows of the DataSet and use
  * the getRow() method to get the current row.
- * 
- * @author Kasper Sørensen
  */
 public interface DataSet extends Closeable, Iterable<Row> {
 

@@ -21,8 +21,6 @@ package org.apache.metamodel.data;
 
 /**
  * Wraps another DataSet and transparently applies a set of filters to it.
- * 
- * @author Kasper Sørensen
  */
 public final class FilteredDataSet extends AbstractDataSet {
 

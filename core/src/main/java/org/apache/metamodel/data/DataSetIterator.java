@@ -22,8 +22,6 @@ import java.util.Iterator;
 
 /**
  * Iterator implementation that iterates through a DataSet.
- * 
- * @author Kasper Sørensen
  */
 public final class DataSetIterator implements Iterator<Row> {
 

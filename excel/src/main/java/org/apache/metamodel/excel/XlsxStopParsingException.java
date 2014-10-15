@@ -23,8 +23,6 @@ import org.xml.sax.SAXException;
 /**
  * Exception thrown when all elements of interest in a spreadsheet have been
  * parsed.
- * 
- * @author Kasper Sørensen
  */
 final class XlsxStopParsingException extends SAXException {
 

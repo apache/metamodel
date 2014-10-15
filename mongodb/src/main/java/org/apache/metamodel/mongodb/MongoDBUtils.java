@@ -30,8 +30,6 @@ import com.mongodb.DBObject;
 
 /**
  * A utility class for MongoDB module.
- * 
- * @author Tomasz Guzialek
  */
 public class MongoDBUtils {
 

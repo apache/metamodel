@@ -148,7 +148,8 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         // Instantiate the actual data context
         final DataContext dataContext = new MongoDbDataContext(db);
 
-        assertEquals("[" + getCollectionName() + ", system.indexes]", Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
+        assertEquals("[" + getCollectionName() + ", system.indexes]",
+                Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
         Table table = dataContext.getDefaultSchema().getTableByName(getCollectionName());
         assertEquals("[_id, baz, foo, id, list, name]", Arrays.toString(table.getColumnNames()));
 
@@ -252,6 +253,61 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             ds.close();
         }
 
+        // test GREATER_THAN_OR_EQUAL
+        ds = dataContext.query().from(getCollectionName()).select("id").and("name").where("id")
+                .greaterThanOrEquals(500).and("foo").isEquals("bar").execute();
+        assertEquals(MongoDbDataSet.class, ds.getClass());
+        assertFalse(((MongoDbDataSet) ds).isQueryPostProcessed());
+
+        try {
+            List<Object[]> objectArrays = ds.toObjectArrays();
+            assertEquals(100, objectArrays.size());
+            assertEquals("[500, record no. 500]", Arrays.toString(objectArrays.get(0)));
+        } finally {
+            ds.close();
+        }
+
+        ds = dataContext.query().from(getCollectionName()).select("id").and("name").where("id")
+                .greaterThanOrEquals(501).and("foo").isEquals("bar").execute();
+        assertEquals(MongoDbDataSet.class, ds.getClass());
+        assertFalse(((MongoDbDataSet) ds).isQueryPostProcessed());
+
+        try {
+            List<Object[]> objectArrays = ds.toObjectArrays();
+            assertEquals(99, objectArrays.size());
+            assertEquals("[505, record no. 505]", Arrays.toString(objectArrays.get(0)));
+        } finally {
+            ds.close();
+        }
+
+        // test LESS_THAN_OR_EQUAL
+
+        ds = dataContext.query().from(getCollectionName()).select("id").and("name").where("id").lessThanOrEquals(500)
+                .and("foo").isEquals("bar").execute();
+        assertEquals(MongoDbDataSet.class, ds.getClass());
+        assertFalse(((MongoDbDataSet) ds).isQueryPostProcessed());
+
+        try {
+            List<Object[]> objectArrays = ds.toObjectArrays();
+            assertEquals(101, objectArrays.size());
+            assertEquals("[500, record no. 500]", Arrays.toString(objectArrays.get(100)));
+        } finally {
+            ds.close();
+        }
+
+        ds = dataContext.query().from(getCollectionName()).select("id").and("name").where("id").lessThanOrEquals(499)
+                .and("foo").isEquals("bar").execute();
+        assertEquals(MongoDbDataSet.class, ds.getClass());
+        assertFalse(((MongoDbDataSet) ds).isQueryPostProcessed());
+
+        try {
+            List<Object[]> objectArrays = ds.toObjectArrays();
+            assertEquals(100, objectArrays.size());
+            assertEquals("[495, record no. 495]", Arrays.toString(objectArrays.get(99)));
+        } finally {
+            ds.close();
+        }
+
         // test a primary key lookup query
         BasicDBObject dbRow = new BasicDBObject();
         dbRow.put("_id", 123456);
@@ -273,8 +329,9 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         assertFalse(ds.next());
 
         // do a query that we cannot push to mongo
+        // Replace column index 0 by 1
         ds = dataContext.query().from(getCollectionName())
-                .select(FunctionType.SUM, dataContext.getDefaultSchema().getTables()[0].getColumnByName("id"))
+                .select(FunctionType.SUM, dataContext.getDefaultSchema().getTables()[1].getColumnByName("id"))
                 .where("foo").isEquals("bar").execute();
         assertEquals(InMemoryDataSet.class, ds.getClass());
 

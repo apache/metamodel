@@ -28,8 +28,6 @@ import org.apache.metamodel.util.FileHelper;
 /**
  * Jdbc {@link UpdateCallback} for databases that do not support batch features.
  * Instead we will use a single transaction for the {@link UpdateScript}.
- * 
- * @author Kasper Sørensen
  */
 final class JdbcSimpleUpdateCallback extends JdbcUpdateCallback {
 

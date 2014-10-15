@@ -29,8 +29,6 @@ import org.apache.metamodel.schema.Table;
  * Abstract implementation of the {@link RowInsertionBuilder} interface,
  * provided as a convenience to {@link RowInsertable} implementations. Handles
  * all the building operations, but not the commit operation.
- * 
- * @author Kasper Sørensen
  */
 public abstract class AbstractRowInsertionBuilder<U extends UpdateCallback> extends
         AbstractRowBuilder<RowInsertionBuilder> implements RowInsertionBuilder {

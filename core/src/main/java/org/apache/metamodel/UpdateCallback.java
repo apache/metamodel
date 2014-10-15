@@ -31,8 +31,6 @@ import org.apache.metamodel.update.RowUpdateable;
  * single {@link UpdateCallback}. This pattern guarantees that connections
  * and/or file handles are handled correctly, surrounding the
  * {@link UpdateScript} that is being executed.
- * 
- * @author Kasper Sørensen
  */
 public interface UpdateCallback extends TableCreatable, TableDroppable, RowInsertable, RowUpdateable, RowDeletable {
 

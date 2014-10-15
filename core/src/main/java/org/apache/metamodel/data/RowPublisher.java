@@ -24,8 +24,6 @@ package org.apache.metamodel.data;
  * between the publishing and consuming part of a dataset scenario. It will
  * manage a queue of rows and will block calls if the queue is not being
  * read/emptied as fast as it is being filled.
- * 
- * @author Kasper Sørensen
  */
 public interface RowPublisher {
 

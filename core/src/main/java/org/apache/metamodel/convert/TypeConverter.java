@@ -24,9 +24,6 @@ package org.apache.metamodel.convert;
  * 
  * @see ConvertedDataContext
  * 
- * @author Kasper Sørensen
- * @author Ankit Kumar
- * 
  * @param <P>
  *            the physical type of value
  * @param <V>

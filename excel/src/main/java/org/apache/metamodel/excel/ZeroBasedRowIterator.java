@@ -26,8 +26,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 /**
  * An iterator implementation that iterates from the first logical (as opposed
  * to physical, which is the default in POI) row in a spreadsheet.
- * 
- * @author Kasper Sørensen
  */
 final class ZeroBasedRowIterator implements Iterator<Row> {
 
