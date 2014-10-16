@@ -21,12 +21,15 @@ package org.apache.metamodel.schema;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import org.apache.metamodel.util.NumberComparator;
 import org.apache.metamodel.util.ObjectComparator;
@@ -218,6 +221,8 @@ public class ColumnTypeImpl implements ColumnType {
             type = ColumnType.MAP;
         } else if (List.class.isAssignableFrom(cls)) {
             type = ColumnType.LIST;
+        } else if (Set.class.isAssignableFrom(cls)) {
+            type = ColumnType.SET;
         } else if (cls == java.sql.Date.class) {
             type = ColumnType.DATE;
         } else if (cls == Timestamp.class) {
@@ -226,6 +231,10 @@ public class ColumnTypeImpl implements ColumnType {
             type = ColumnType.TIME;
         } else if (Date.class.isAssignableFrom(cls)) {
             type = ColumnType.TIMESTAMP;
+        } else if (cls == UUID.class) {
+            type = ColumnType.UUID;
+        } else if (cls == InetAddress.class) {
+            type = ColumnType.INET;
         } else {
             type = ColumnType.OTHER;
         }
