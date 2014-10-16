@@ -19,13 +19,15 @@
 package org.apache.metamodel.couchdb;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Properties;
 
 import junit.framework.TestCase;
 
 public abstract class CouchDbTestCase extends TestCase {
-    
+
     private static final String DEFAULT_TEST_DATABASE_NAME = "eobjects_metamodel_test";
 
     private String _hostname;
@@ -36,23 +38,37 @@ public abstract class CouchDbTestCase extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        Properties properties = new Properties();
         File file = new File(getPropertyFilePath());
         if (file.exists()) {
-            properties.load(new FileReader(file));
-            _hostname = properties.getProperty("couchdb.hostname");
-            _databaseName = properties.getProperty("couchdb.databaseName");
-            if (_databaseName == null || _databaseName.isEmpty()) {
-                _databaseName = DEFAULT_TEST_DATABASE_NAME;
-            }
-            
-            _configured = (_hostname != null && !_hostname.isEmpty());
-            
-            if (_configured) {
-                System.out.println("Loaded CouchDB configuration. Hostname=" + _hostname + ", Database=" + _databaseName);
-            }
+            loadPropertyFile(file);
         } else {
-            _configured = false;
+            // Continuous integration case
+            if (System.getenv("CONTINUOUS_INTEGRATION") != null) {
+                File travisFile = new File("../travis-metamodel-integrationtest-configuration.properties");
+                if (travisFile.exists()) {
+                    loadPropertyFile(travisFile);
+                } else {
+                    _configured = false;
+                }
+            } else {
+                _configured = false;
+            }
+        }
+    }
+
+    private void loadPropertyFile(File file) throws IOException, FileNotFoundException {
+        Properties properties = new Properties();
+        properties.load(new FileReader(file));
+        _hostname = properties.getProperty("couchdb.hostname");
+        _databaseName = properties.getProperty("couchdb.databaseName");
+        if (_databaseName == null || _databaseName.isEmpty()) {
+            _databaseName = DEFAULT_TEST_DATABASE_NAME;
+        }
+
+        _configured = (_hostname != null && !_hostname.isEmpty());
+
+        if (_configured) {
+            System.out.println("Loaded CouchDB configuration. Hostname=" + _hostname + ", Database=" + _databaseName);
         }
     }
 
@@ -69,7 +85,7 @@ public abstract class CouchDbTestCase extends TestCase {
     public boolean isConfigured() {
         return _configured;
     }
-    
+
     public String getHostname() {
         return _hostname;
     }

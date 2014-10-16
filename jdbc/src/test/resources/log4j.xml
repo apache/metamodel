@@ -10,7 +10,7 @@
 	</appender>
 
 	<logger name="org.apache.metamodel">
-		<level value="debug" />
+		<level value="warn" />
 	</logger>
 
 	<root>

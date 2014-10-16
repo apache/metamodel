@@ -349,6 +349,7 @@ under the License.
 							<exclude>KEYS</exclude>
 							<exclude>*.md</exclude>
 							<exclude>example-metamodel-integrationtest-configuration.properties</exclude>
+							<exclude>travis-metamodel-integrationtest-configuration.properties</exclude>
 							<exclude>**/.gitignore/**</exclude>
 							<exclude>.git/**</exclude>
 							<exclude>**/src/test/resources/**</exclude>

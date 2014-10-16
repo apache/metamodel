@@ -4,6 +4,10 @@ jdk:
   - openjdk7
   - oraclejdk8
 
+services:
+  - couchdb
+  - mongodb
+  
 after_success:
   - mvn test
  
