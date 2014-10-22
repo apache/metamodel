@@ -30,15 +30,17 @@ public class ElasticSearchMetaDataParserTest extends TestCase {
         String[] columnNames = metaData.getColumnNames();
         ColumnType[] columnTypes = metaData.getColumnTypes();
 
-        assertTrue(columnNames.length==4);
-        assertEquals(columnNames[0], "message");
-        assertEquals(columnNames[1], "postDate");
-        assertEquals(columnNames[2], "anotherDate");
-        assertEquals(columnNames[3], "user");
-        assertTrue(columnTypes.length == 4);
-        assertEquals(columnTypes[0], ColumnType.BIGINT);
-        assertEquals(columnTypes[1], ColumnType.DATE);
+        assertTrue(columnNames.length==5);
+        assertEquals(columnNames[0], "_id");
+        assertEquals(columnNames[1], "message");
+        assertEquals(columnNames[2], "postDate");
+        assertEquals(columnNames[3], "anotherDate");
+        assertEquals(columnNames[4], "user");
+        assertTrue(columnTypes.length == 5);
+        assertEquals(columnTypes[0], ColumnType.STRING);
+        assertEquals(columnTypes[1], ColumnType.BIGINT);
         assertEquals(columnTypes[2], ColumnType.DATE);
-        assertEquals(columnTypes[3], ColumnType.STRING);
+        assertEquals(columnTypes[3], ColumnType.DATE);
+        assertEquals(columnTypes[4], ColumnType.STRING);
     }
 }

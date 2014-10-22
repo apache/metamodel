@@ -22,9 +22,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.metamodel.data.AbstractDataSet;
-import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
-import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.elasticsearch.action.search.ClearScrollRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -33,6 +32,9 @@ import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * {@link DataSet} implementation for ElasticSearch
+ */
 final class ElasticSearchDataSet extends AbstractDataSet {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataSet.class);
@@ -110,14 +112,9 @@ final class ElasticSearchDataSet extends AbstractDataSet {
             return null;
         }
 
-        final int size = getHeader().size();
-        final Object[] values = new Object[size];
-        for (int i = 0; i < values.length; i++) {
-            final SelectItem selectItem = getHeader().getSelectItem(i);
-            final Map<String, Object> element = _currentHit.getSource();
-            final String key = selectItem.getColumn().getName();
-            values[i] = element.get(key);
-        }
-        return new DefaultRow(getHeader(), values);
+        final Map<String, Object> source = _currentHit.getSource();
+        final String documentId = _currentHit.getId();
+        final Row row = ElasticSearchUtils.createRow(source, documentId, getHeader());
+        return row;
     }
 }

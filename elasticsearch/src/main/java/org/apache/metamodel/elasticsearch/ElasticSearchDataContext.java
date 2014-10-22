@@ -30,8 +30,13 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetHeader;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
@@ -40,6 +45,7 @@ import org.apache.metamodel.util.SimpleTableDef;
 import org.elasticsearch.Version;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateRequestBuilder;
 import org.elasticsearch.action.count.CountResponse;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -74,6 +80,8 @@ import org.slf4j.LoggerFactory;
 public class ElasticSearchDataContext extends QueryPostprocessDataContext implements DataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
+
+    public static final String FIELD_ID = "_id";
 
     public static final TimeValue TIMEOUT_SCROLL = TimeValue.timeValueSeconds(60);
 
@@ -202,6 +210,11 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         final MutableSchema theSchema = new MutableSchema(getMainSchemaName());
         for (final SimpleTableDef tableDef : tableDefs) {
             final MutableTable table = tableDef.toTable().setSchema(theSchema);
+            final Column idColumn = table.getColumnByName(FIELD_ID);
+            if (idColumn != null && idColumn instanceof MutableColumn) {
+                final MutableColumn mutableColumn = (MutableColumn) idColumn;
+                mutableColumn.setPrimaryKey(true);
+            }
             theSchema.addTable(table);
         }
         return theSchema;
@@ -227,12 +240,36 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     }
 
     @Override
+    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn,
+            Object keyValue) {
+        if (keyValue == null) {
+            return null;
+        }
+
+        final String documentType = table.getName();
+        final String id = keyValue.toString();
+
+        final GetResponse response = elasticSearchClient.prepareGet(indexName, documentType, id).execute().actionGet();
+
+        if (!response.isExists()) {
+            return null;
+        }
+
+        final Map<String, Object> source = response.getSource();
+        final String documentId = response.getId();
+
+        final DataSetHeader header = new SimpleDataSetHeader(selectItems);
+
+        return ElasticSearchUtils.createRow(source, documentId, header);
+    }
+
+    @Override
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
         if (!whereItems.isEmpty()) {
             // not supported - will have to be done by counting client-side
             return null;
         }
-        String documentType = table.getName();
+        final String documentType = table.getName();
         final CountResponse response = elasticSearchClient.prepareCount(indexName)
                 .setQuery(QueryBuilders.termQuery("_type", documentType)).execute().actionGet();
         return response.getCount();

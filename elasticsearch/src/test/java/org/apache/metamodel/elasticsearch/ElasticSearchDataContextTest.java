@@ -19,13 +19,13 @@
 package org.apache.metamodel.elasticsearch;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.table.TableModel;
 
@@ -33,10 +33,12 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.data.FilteredDataSet;
+import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.elasticsearch.utils.EmbeddedElasticsearchServer;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -44,6 +46,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class ElasticSearchDataContextTest {
@@ -74,9 +77,9 @@ public class ElasticSearchDataContextTest {
         indexOnePeopleDocument("male", 18, 4);
         indexOneTweeterDocumentPerIndex(indexType2, 1);
         indexBulkDocuments(indexName, bulkIndexType, 10);
-        
+
         // TODO: Find a better way than sleep to ensure data is in sync.
-        
+
         // Waiting for indexing the data....
         Thread.sleep(2000);
         dataContext = new ElasticSearchDataContext(client, indexName);
@@ -95,8 +98,8 @@ public class ElasticSearchDataContextTest {
                 Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
 
         Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
-        
-        assertEquals("[message, postDate, user]", Arrays.toString(table.getColumnNames()));
+
+        assertEquals("[_id, message, postDate, user]", Arrays.toString(table.getColumnNames()));
 
         assertEquals(ColumnType.STRING, table.getColumnByName("user").getType());
         assertEquals(ColumnType.DATE, table.getColumnByName("postDate").getType());
@@ -109,7 +112,72 @@ public class ElasticSearchDataContextTest {
             assertTrue(ds.next());
             assertEquals("Row[values=[user1, 1]]", ds.getRow().toString());
         } finally {
-            // ds.close();
+            ds.close();
+        }
+    }
+
+    @Test
+    public void testDocumentIdAsPrimaryKey() throws Exception {
+        Table table = dataContext.getDefaultSchema().getTableByName("tweet2");
+        Column[] pks = table.getPrimaryKeys();
+        assertEquals(1, pks.length);
+        assertEquals("_id", pks[0].getName());
+
+        DataSet ds = dataContext.query().from(table).select("user", "_id").orderBy("_id").asc().execute();
+        try {
+            assertTrue(ds.next());
+            assertEquals("Row[values=[user1, tweet_tweet2_1]]", ds.getRow().toString());
+        } finally {
+            ds.close();
+        }
+    }
+
+    @Test
+    public void testExecutePrimaryKeyLookupQuery() throws Exception {
+        Table table = dataContext.getDefaultSchema().getTableByName("tweet2");
+        Column[] pks = table.getPrimaryKeys();
+
+        DataSet ds = dataContext.query().from(table).selectAll().where(pks[0]).eq("tweet_tweet2_1").execute();
+        try {
+            assertTrue(ds.next());
+            Object dateValue = ds.getRow().getValue(2);
+            assertEquals("Row[values=[tweet_tweet2_1, 1, " + dateValue + ", user1]]", ds.getRow().toString());
+
+            assertFalse(ds.next());
+
+            assertEquals(InMemoryDataSet.class, ds.getClass());
+        } finally {
+            ds.close();
+        }
+    }
+
+    // TODO: Un-ignore this test, and it wil fail - needs fixin'
+    @Test
+    @Ignore
+    public void testDateIsHandledAsDate() throws Exception {
+        Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
+        Column column = table.getColumnByName("postDate");
+        ColumnType type = column.getType();
+        assertEquals(ColumnType.DATE, type);
+
+        DataSet dataSet = dataContext.query().from(table).select(column).execute();
+        while (dataSet.next()) {
+            Object value = dataSet.getRow().getValue(column);
+            assertTrue("Got class: " + value.getClass() + ", expected Date (or subclass)", value instanceof Date);
+        }
+    }
+
+    @Test
+    public void testNumberIsHandledAsNumber() throws Exception {
+        Table table = dataContext.getDefaultSchema().getTableByName("peopletype");
+        Column column = table.getColumnByName("age");
+        ColumnType type = column.getType();
+        assertEquals(ColumnType.BIGINT, type);
+
+        DataSet dataSet = dataContext.query().from(table).select(column).execute();
+        while (dataSet.next()) {
+            Object value = dataSet.getRow().getValue(column);
+            assertTrue("Got class: " + value.getClass() + ", expected Number (or subclass)", value instanceof Number);
         }
     }
 
@@ -253,7 +321,8 @@ public class ElasticSearchDataContextTest {
 
     private static void indexOneTweeterDocumentPerIndex(String indexType, int id) {
         try {
-            client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id)).execute().actionGet();
+            client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id))
+                    .setId("tweet_" + indexType + "_" + id).execute().actionGet();
         } catch (Exception ex) {
             System.out.println("Exception indexing documents!!!!!");
         }
@@ -268,9 +337,12 @@ public class ElasticSearchDataContextTest {
         }
     }
 
-    private static XContentBuilder buildTweeterJson(int elementId) throws Exception {
-        return jsonBuilder().startObject().field("user", "user" + elementId).field("postDate", new Date())
-                .field("message", elementId).endObject();
+    private static Map<String, Object> buildTweeterJson(int elementId) throws Exception {
+        Map<String, Object> map = new LinkedHashMap<String, Object>();
+        map.put("user", "user" + elementId);
+        map.put("postDate", new Date());
+        map.put("message", elementId);
+        return map;
     }
 
     private static XContentBuilder buildPeopleJson(String gender, int age, int elementId) throws Exception {

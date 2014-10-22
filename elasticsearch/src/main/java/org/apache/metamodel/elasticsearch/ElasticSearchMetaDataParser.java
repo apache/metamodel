@@ -38,9 +38,15 @@ public class ElasticSearchMetaDataParser {
         final String plainMetaDataInfo = removeFirstAndLastCharacter(metaDataInfo.toString());
         final String metaDataWithoutDateFormats = removeDateFormats(plainMetaDataInfo);
         final String[] metaDataFields = metaDataWithoutDateFormats.split(",");
-        final String[] fieldNames = new String[metaDataFields.length];
-        final ColumnType[] columnTypes = new ColumnType[metaDataFields.length];
-        int i = 0;
+        
+        final String[] fieldNames = new String[metaDataFields.length + 1];
+        final ColumnType[] columnTypes = new ColumnType[metaDataFields.length + 1];
+        
+        // add the document ID field (fixed)
+        fieldNames[0] = ElasticSearchDataContext.FIELD_ID;
+        columnTypes[0] = ColumnType.STRING;
+        
+        int i = 1;
         for (String metaDataField : metaDataFields) {
             // message={type=long}
             fieldNames[i] = getNameFromMetaDataField(metaDataField);
