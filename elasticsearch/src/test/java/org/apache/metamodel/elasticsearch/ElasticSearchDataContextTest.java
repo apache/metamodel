@@ -80,8 +80,9 @@ public class ElasticSearchDataContextTest {
 
         // TODO: Find a better way than sleep to ensure data is in sync.
 
-        // Waiting for indexing the data....
-        Thread.sleep(2000);
+        // The refresh API allows to explicitly refresh one or more index,
+        // making all operations performed since the last refresh available for search
+        client.admin().indices().prepareRefresh().execute().actionGet();
         dataContext = new ElasticSearchDataContext(client, indexName);
         System.out.println("Embedded ElasticSearch server created!");
     }
