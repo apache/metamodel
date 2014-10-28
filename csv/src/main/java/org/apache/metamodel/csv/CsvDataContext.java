@@ -66,6 +66,10 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
 
     /**
      * Constructs a CSV DataContext based on a file
+     *
+     * The file provided can be either existing or non-existing. In the
+     * case of non-existing files, a file will be automatically created
+     * when a CREATE TABLE update is executed on the DataContext.
      * 
      * @param file
      * @param configuration

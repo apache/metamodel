@@ -73,6 +73,10 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
     /**
      * Constructs an Excel DataContext based on a resource and a custom
      * configuration.
+     *
+     * The file provided can be either existing or non-existing. In the
+     * case of non-existing files, a file will be automatically created
+     * when a CREATE TABLE update is executed on the DataContext.
      * 
      * @param file
      * @param configuration
