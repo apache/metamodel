@@ -78,8 +78,6 @@ public class ElasticSearchDataContextTest {
         indexOneTweeterDocumentPerIndex(indexType2, 1);
         indexBulkDocuments(indexName, bulkIndexType, 10);
 
-        // TODO: Find a better way than sleep to ensure data is in sync.
-
         // The refresh API allows to explicitly refresh one or more index,
         // making all operations performed since the last refresh available for search
         client.admin().indices().prepareRefresh().execute().actionGet();

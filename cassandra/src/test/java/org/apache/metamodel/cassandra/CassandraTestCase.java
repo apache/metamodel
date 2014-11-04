@@ -38,8 +38,8 @@ public abstract class CassandraTestCase extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        Properties properties = new Properties();
-        File file = new File(getPropertyFilePath());
+        final Properties properties = new Properties();
+        final File file = new File(getPropertyFilePath());
         if (file.exists()) {
             properties.load(new FileReader(file));
             _hostname = properties.getProperty("cassandra.hostname");
@@ -49,9 +49,11 @@ public abstract class CassandraTestCase extends TestCase {
                 _keySpaceName = DEFAULT_TEST_KEYSPACE_NAME;
             }
             
-            _port = new Integer(properties.getProperty("cassandra.port"));
-            if (_port == null) {
+            final String portString = properties.getProperty("cassandra.port"); 
+            if (portString == null || portString.isEmpty()) {
                 _port = DEFAULT_TEST_PORT;
+            } else {
+                _port = new Integer(portString);
             }
 
             _configured = (_hostname != null && !_hostname.isEmpty());
