@@ -22,7 +22,6 @@ import java.util.Iterator;
 
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSetHeader;
-import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 import org.ektorp.StreamingViewResult;
@@ -36,7 +35,7 @@ final class CouchDbDataSet extends AbstractDataSet {
 
     private final Iterator<org.ektorp.ViewResult.Row> _iterator;
     private final StreamingViewResult _streamingViewResult;
-    private DefaultRow _row;
+    private Row _row;
 
     public CouchDbDataSet(SelectItem[] selectItems, StreamingViewResult streamingViewResult) {
         super(selectItems);
@@ -55,7 +54,7 @@ final class CouchDbDataSet extends AbstractDataSet {
         final JsonNode node = row.getDocAsNode();
 
         final DataSetHeader header = getHeader();
-        _row = (DefaultRow) CouchDbUtils.jsonNodeToMetaModelRow(node, header);
+        _row = CouchDbUtils.jsonNodeToMetaModelRow(node, header);
 
         return true;
     }

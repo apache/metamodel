@@ -4,6 +4,7 @@
  * [METAMODEL-18] - New module 'cassandra' for connecting and modelling Apache Cassandra databases through MetaModel.
  * [METAMODEL-74] - Fixed bug related to skipping blank values when applying an aggregate function (SUM, AVG etc.)
  * [METAMODEL-76] - Query parser improved to handle filters without spaces inbetween operator and operands.
+ * [METAMODEL-92] - For JSON, MongoDB and CouchDB: Made it possible to specify column names referring nested fields such as "name.first" or "addresses[0].city".
 
 ### Apache MetaModel 4.2.0-incubating
 

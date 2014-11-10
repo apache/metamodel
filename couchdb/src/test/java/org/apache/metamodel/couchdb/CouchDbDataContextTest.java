@@ -123,6 +123,14 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
             assertTrue(row.getValue(1) instanceof Map);
             assertTrue(row.getValue(2) instanceof List);
 
+            CouchDbDataContext dc2 = new CouchDbDataContext(couchDbInstance, new SimpleTableDef("test_table_map_and_list",
+                    new String[] { "foo.hello[0]", "bar[1].couch" }));
+            ds = dc2.query().from("test_table_map_and_list").select("foo.hello[0]", "bar[1].couch").execute();
+            assertTrue(ds.next());
+            assertEquals("Row[values=[world, db]]", ds.getRow().toString());
+            assertFalse(ds.next());
+            ds.close();
+
         } finally {
             dc.executeUpdate(new DropTable(table));
         }

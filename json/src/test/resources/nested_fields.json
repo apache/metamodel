@@ -1,0 +1,9 @@
+[
+ { "name":{ "first":"John", "last":"Doe" }, "gender":"MALE", "interests":["football","tennis"] },
+ { "name":{ "first":"John", "last":"Doe" }, "gender":"MALE",
+  "interests":[
+  {"type":"sport", "name":"soccer"},
+  {"type":"music", "name":"guitar"}
+  ]
+  }
+]

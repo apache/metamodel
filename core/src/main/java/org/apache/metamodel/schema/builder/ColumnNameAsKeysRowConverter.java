@@ -25,6 +25,7 @@ import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Document;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.util.CollectionUtils;
 
 /**
  * Converter that assumes that keys in the documents are represented as columns
@@ -44,7 +45,8 @@ public class ColumnNameAsKeysRowConverter implements DocumentConverter {
 
     protected Object get(Document document, String columnName) {
         final Map<String, ?> map = document.getValues();
-        return map.get(columnName);
+        final Object value = CollectionUtils.find(map, columnName);
+        return value;
     }
 
 }

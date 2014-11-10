@@ -21,14 +21,17 @@ package org.apache.metamodel.json;
 import java.io.File;
 import java.util.Arrays;
 
+import junit.framework.TestCase;
+
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.builder.SchemaBuilder;
+import org.apache.metamodel.schema.builder.SimpleTableDefSchemaBuilder;
 import org.apache.metamodel.schema.builder.SingleMapColumnSchemaBuilder;
 import org.apache.metamodel.util.FileResource;
-
-import junit.framework.TestCase;
+import org.apache.metamodel.util.Resource;
+import org.apache.metamodel.util.SimpleTableDef;
 
 public class JsonDataContextTest extends TestCase {
 
@@ -73,5 +76,24 @@ public class JsonDataContextTest extends TestCase {
         assertEquals("Row[values=[USA, F, 1235, Jane Doe]]", dataSet.getRow().toString());
         assertFalse(dataSet.next());
         dataSet.close();
+    }
+
+    public void testUseCustomTableDefWithNestedColumnDefinition() throws Exception {
+        final SimpleTableDef tableDef = new SimpleTableDef("mytable", new String[] { "name.first", "name.last",
+                "gender", "interests[0]", "interests[0].type", "interests[0].name" });
+        final Resource resource = new FileResource("src/test/resources/nested_fields.json");
+        final SchemaBuilder schemaBuilder = new SimpleTableDefSchemaBuilder("myschema", tableDef);
+        final JsonDataContext dataContext = new JsonDataContext(resource, schemaBuilder);
+
+        final DataSet ds = dataContext.query().from("mytable").selectAll().execute();
+        try {
+            assertTrue(ds.next());
+            assertEquals("Row[values=[John, Doe, MALE, football, null, null]]", ds.getRow().toString());
+            assertTrue(ds.next());
+            assertEquals("Row[values=[John, Doe, MALE, {type=sport, name=soccer}, sport, soccer]]", ds.getRow().toString());
+            assertFalse(ds.next());
+        } finally {
+            ds.close();
+        }
     }
 }

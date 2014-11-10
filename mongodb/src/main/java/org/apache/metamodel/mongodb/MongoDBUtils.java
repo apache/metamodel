@@ -19,12 +19,14 @@
 package org.apache.metamodel.mongodb;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.util.CollectionUtils;
 
 import com.mongodb.DBObject;
 
@@ -34,24 +36,28 @@ import com.mongodb.DBObject;
 public class MongoDBUtils {
 
     /**
-     * Converts a MongoDB data object {@link DBObject} into MetaModel {@link Row}.
+     * Converts a MongoDB data object {@link DBObject} into MetaModel
+     * {@link Row}.
      * 
-     * @param dbObject a MongoDB object storing data.
-     * @param header a header describing the columns of the data stored.
+     * @param dbObject
+     *            a MongoDB object storing data.
+     * @param header
+     *            a header describing the columns of the data stored.
      * @return the MetaModel {@link Row} result object.
      */
     public static Row toRow(DBObject dbObject, DataSetHeader header) {
-
         if (dbObject == null) {
             return null;
         }
+
+        final Map<?,?> map = dbObject.toMap();
 
         final int size = header.size();
         final Object[] values = new Object[size];
         for (int i = 0; i < values.length; i++) {
             final SelectItem selectItem = header.getSelectItem(i);
             final String key = selectItem.getColumn().getName();
-            final Object value = dbObject.get(key);
+            final Object value = CollectionUtils.find(map, key);
             values[i] = toValue(selectItem.getColumn(), value);
         }
         return new DefaultRow(header, values);

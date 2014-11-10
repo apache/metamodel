@@ -30,7 +30,6 @@ final class CouchDbDocumentConverter extends ColumnNameAsKeysRowConverter {
             Row row = (Row) document.getSourceObject();
             return row.getId();
         }
-        // TODO Auto-generated method stub
         return super.get(document, columnName);
     }
 }

@@ -71,7 +71,7 @@ final class CouchDbDatabaseDocumentSource implements DocumentSource {
 
         final Row row = _rowIterator.next();
         final JsonNode docNode = row.getDocAsNode();
-        final Map<String, Object> map = CouchDbUtils.jsonNodeToMap(docNode);
+        final Map<String, ?> map = CouchDbUtils.jsonNodeToMap(docNode);
         return new Document(_databaseName, map, row);
     }
 

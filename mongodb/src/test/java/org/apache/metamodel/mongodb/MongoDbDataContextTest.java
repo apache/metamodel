@@ -34,6 +34,7 @@ import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.SimpleTableDef;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -59,6 +60,47 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         super.tearDown();
         if (isConfigured()) {
             db.dropDatabase();
+        }
+    }
+
+    public void testNestedObjectFetching() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        DBCollection col = db.createCollection(getCollectionName(), null);
+
+        // delete if already exists
+        {
+            col.drop();
+            col = db.createCollection(getCollectionName(), null);
+        }
+
+        final BasicDBList list = new BasicDBList();
+        list.add(new BasicDBObject().append("city", "Copenhagen").append("country", "Denmark"));
+        list.add(new BasicDBObject().append("city", "Stockholm").append("country", "Sweden"));
+
+        final BasicDBObject dbRow = new BasicDBObject();
+        dbRow.append("name", new BasicDBObject().append("first", "John").append("last", "Doe"));
+        dbRow.append("gender", "MALE");
+        dbRow.append("addresses", list);
+        col.insert(dbRow);
+
+        final MongoDbDataContext dc = new MongoDbDataContext(db, new SimpleTableDef(getCollectionName(), new String[] {
+                "name.first", "name.last", "gender", "addresses", "addresses[0].city", "addresses[0].country",
+                "addresses[5].foobar" }));
+
+        final DataSet ds = dc.query().from(getCollectionName()).selectAll().execute();
+        try {
+            assertTrue(ds.next());
+            final Object addresses = ds.getRow().getValue(3);
+            assertEquals("Row[values=[John, Doe, MALE, " + addresses + ", Copenhagen, Denmark, null]]", ds.getRow()
+                    .toString());
+            assertTrue(addresses instanceof List);
+            assertFalse(ds.next());
+        } finally {
+            ds.close();
         }
     }
 

@@ -25,10 +25,12 @@ import java.util.Map;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.util.CollectionUtils;
 import org.ektorp.DbAccessException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 
 /**
  * Convenience and utility methods for MetaModel's CouchDB adaptor
@@ -60,35 +62,17 @@ final class CouchDbUtils {
      *         .
      */
     public static Row jsonNodeToMetaModelRow(JsonNode node, DataSetHeader header) {
+        final Map<String, ?> map = jsonNodeToMap(node);
+
         final int size = header.size();
         final Object[] values = new Object[size];
         for (int i = 0; i < size; i++) {
             final String key = header.getSelectItem(i).getColumn().getName();
-            final JsonNode valueNode = node.get(key);
-            final Object value;
-            if (valueNode == null || valueNode.isNull()) {
-                value = null;
-            } else if (valueNode.isTextual()) {
-                value = valueNode.asText();
-            } else if (valueNode.isArray()) {
-                value = jsonNodeToList(valueNode);
-            } else if (valueNode.isObject()) {
-                value = jsonNodeToMap(valueNode);
-            } else if (valueNode.isBoolean()) {
-                value = valueNode.asBoolean();
-            } else if (valueNode.isInt()) {
-                value = valueNode.asInt();
-            } else if (valueNode.isLong()) {
-                value = valueNode.asLong();
-            } else if (valueNode.isDouble()) {
-                value = valueNode.asDouble();
-            } else {
-                value = valueNode;
-            }
+            final Object value = CollectionUtils.find(map, key);
             values[i] = value;
         }
 
-        DefaultRow finalRow = new DefaultRow(header, values);
+        final DefaultRow finalRow = new DefaultRow(header, values);
 
         return finalRow;
     }
@@ -100,12 +84,13 @@ final class CouchDbUtils {
      *            The {@link JsonNode} to convert.
      * @return The {@link Map} with values from {@link JsonNode}.
      */
-    public static Map<String, Object> jsonNodeToMap(JsonNode valueNode) {
+    public static Map<String, ?> jsonNodeToMap(JsonNode valueNode) {
         if (valueNode == null) {
             return null;
         }
         try {
-            return new ObjectMapper().reader(Map.class).readValue(valueNode);
+            final ObjectReader reader = new ObjectMapper().reader(Map.class);
+            return reader.readValue(valueNode);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
@@ -123,7 +108,8 @@ final class CouchDbUtils {
             return null;
         }
         try {
-            return new ObjectMapper().reader(List.class).readValue(valueNode);
+            ObjectReader reader = new ObjectMapper().reader(List.class);
+            return reader.readValue(valueNode);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
