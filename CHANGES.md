@@ -5,6 +5,7 @@
  * [METAMODEL-74] - Fixed bug related to skipping blank values when applying an aggregate function (SUM, AVG etc.)
  * [METAMODEL-76] - Query parser improved to handle filters without spaces inbetween operator and operands.
  * [METAMODEL-92] - For JSON, MongoDB and CouchDB: Made it possible to specify column names referring nested fields such as "name.first" or "addresses[0].city".
+ * [METAMODEL-95] - Fixed a critical bug in the Salesforce.com module which caused all number values to be interpreted as '1'.
 
 ### Apache MetaModel 4.2.0-incubating
 

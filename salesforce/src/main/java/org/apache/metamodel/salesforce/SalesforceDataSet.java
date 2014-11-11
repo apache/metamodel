@@ -108,7 +108,7 @@ final class SalesforceDataSet extends AbstractDataSet {
                 return BooleanComparator.toBoolean(value);
             }
             if (columnType.isNumber()) {
-                return NumberComparator.toNumber(columnType.isNumber());
+                return NumberComparator.toNumber(value);
             }
             if (columnType.isTimeBased()) {
                 final SimpleDateFormat dateFormat;

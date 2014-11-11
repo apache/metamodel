@@ -1,0 +1,18 @@
+<n1:queryResponse xmlns:n1="urn:partner.soap.sforce.com">
+    <n1:done>true</n1:done>
+    <n1:queryLocator n2:nil="true"
+                     xmlns:n2="http://www.w3.org/2001/XMLSchema-instance" />
+    <n1:records>
+        <n3:type n4:type="string" xmlns:n3="urn:sobject.partner.soap.sforce.com"
+                 xmlns:n4="http://www.w3.org/2001/XMLSchema-instance">Application</n3:type>
+        <n5:Version n6:type="string" xmlns:n5="urn:sobject.partner.soap.sforce.com"
+                         xmlns:n6="http://www.w3.org/2001/XMLSchema-instance">5386.21</n5:Version>
+    </n1:records>
+    <n1:records>
+        <n7:type n8:type="string" xmlns:n7="urn:sobject.partner.soap.sforce.com"
+                 xmlns:n8="http://www.w3.org/2001/XMLSchema-instance">Application</n7:type>
+        <n9:Version n10:type="string" xmlns:n9="urn:sobject.partner.soap.sforce.com"
+                         xmlns:n10="http://www.w3.org/2001/XMLSchema-instance">53.0</n9:Version>
+    </n1:records>
+    <n1:size>2</n1:size>
+</n1:queryResponse>

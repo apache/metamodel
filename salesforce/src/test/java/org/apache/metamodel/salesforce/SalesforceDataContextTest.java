@@ -22,10 +22,8 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
@@ -51,7 +49,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
             System.err.println(getInvalidConfigurationMessage());
             return;
         }
-        SalesforceDataContext dc = new SalesforceDataContext(getUsername(), getPassword(), getSecurityToken());
+        SalesforceDataContext dc = getSalesforceDataContext();
 
         Column[] timeColumns = dc.getDefaultSchema().getTableByName("Contact").getTimeBasedColumns();
         assertEquals(
@@ -71,6 +69,10 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
             assertFalse(ds.next());
         }
         ds.close();
+    }
+
+    private SalesforceDataContext getSalesforceDataContext() {
+        return new SalesforceDataContext(getEndpoint(), getUsername(), getPassword(), getSecurityToken());
     }
 
     public void testInvalidLoginException() throws Exception {
@@ -113,7 +115,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
             return;
         }
 
-        SalesforceDataContext dc = new SalesforceDataContext(getUsername(), getPassword(), getSecurityToken());
+        SalesforceDataContext dc = getSalesforceDataContext();
 
         Schema schema = dc.getDefaultSchema();
 
@@ -152,7 +154,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
             return;
         }
 
-        SalesforceDataContext dc = new SalesforceDataContext(getUsername(), getPassword(), getSecurityToken());
+        SalesforceDataContext dc = getSalesforceDataContext();
 
         runConversionTest(dc, "Account");
         runConversionTest(dc, "Contact");
@@ -188,7 +190,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
             return;
         }
 
-        SalesforceDataContext dc = new SalesforceDataContext(getUsername(), getPassword(), getSecurityToken());
+        SalesforceDataContext dc = getSalesforceDataContext();
 
         DataSet ds;
 
@@ -225,7 +227,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
             return;
         }
 
-        SalesforceDataContext dc = new SalesforceDataContext(getUsername(), getPassword(), getSecurityToken());
+        SalesforceDataContext dc = getSalesforceDataContext();
 
         final String tableName = "Account";
         final String insertedName = "MetaModel TESTER contact";
@@ -303,7 +305,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
             return;
         }
 
-        SalesforceDataContext dc = new SalesforceDataContext(getUsername(), getPassword(), getSecurityToken());
+        SalesforceDataContext dc = getSalesforceDataContext();
 
         final String tableName = "Contact";
         final String firstName = "MetaModelJohn";

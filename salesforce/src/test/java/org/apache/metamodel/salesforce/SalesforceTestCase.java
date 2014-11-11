@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Properties;
 
+import com.sforce.soap.partner.Connector;
 import junit.framework.TestCase;
 
 /**
@@ -33,6 +34,7 @@ public abstract class SalesforceTestCase extends TestCase {
     private String _username;
     private String _password;
     private String _securityToken;
+    private String _endpoint;
     private boolean _configured;
 
     @Override
@@ -46,7 +48,8 @@ public abstract class SalesforceTestCase extends TestCase {
             _username = properties.getProperty("salesforce.username");
             _password = properties.getProperty("salesforce.password");
             _securityToken = properties.getProperty("salesforce.securityToken");
-            
+            _endpoint = properties.getProperty("salesforce.endpoint", Connector.END_POINT);
+
             _configured = (_username != null && !_username.isEmpty());
         } else {
             _configured = false;
@@ -78,4 +81,9 @@ public abstract class SalesforceTestCase extends TestCase {
     public String getSecurityToken() {
         return _securityToken;
     }
+
+    public String getEndpoint() {
+        return _endpoint;
+    }
+
 }
