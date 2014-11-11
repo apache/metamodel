@@ -65,6 +65,22 @@ public class JdbcUpdateBuilderTest extends JdbcTestCase {
                 .replaceAll("\"", "_"));
     }
 
+    public void testUpdateWhereSomethingIsOrIsNotNull() throws Exception {
+        JdbcDataContext dataContext = new JdbcDataContext(getTestDbConnection());
+        Table table = dataContext.getTableByQualifiedLabel("PUBLIC.EMPLOYEES");
+        JdbcUpdateCallback updateCallback = new JdbcSimpleUpdateCallback(dataContext);
+
+        assertEquals("[EMPLOYEENUMBER, LASTNAME, FIRSTNAME, EXTENSION, EMAIL, OFFICECODE, REPORTSTO, JOBTITLE]",
+                Arrays.toString(table.getColumnNames()));
+
+        JdbcUpdateBuilder updateBuilder = new JdbcUpdateBuilder(updateCallback, table, new DefaultQueryRewriter(
+                dataContext), false);
+        updateBuilder.value("LASTNAME", "foo").where("email").isNull().where("officecode").isNotNull();
+        assertEquals(
+                "UPDATE PUBLIC._EMPLOYEES_ SET LASTNAME=? WHERE _EMPLOYEES_._EMAIL_ IS NULL AND _EMPLOYEES_._OFFICECODE_ IS NOT NULL",
+                updateBuilder.createSqlStatement().replaceAll("\"", "_"));
+    }
+
     public void testCreateSqlStatementWithQuotesInValue() throws Exception {
         JdbcDataContext dataContext = new JdbcDataContext(getTestDbConnection());
         Table table = dataContext.getTableByQualifiedLabel("PUBLIC.EMPLOYEES");

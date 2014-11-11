@@ -33,8 +33,8 @@ public class JdbcDeleteBuilderTest extends JdbcTestCase {
                 dataContext), true);
 
         updateBuilder.where("REPORTSTO").eq(1234);
-        assertEquals("DELETE FROM PUBLIC._EMPLOYEES_ WHERE _EMPLOYEES_._REPORTSTO_ = 1234",
-                updateBuilder.createSqlStatement().replaceAll("\"", "_"));
+        assertEquals("DELETE FROM PUBLIC._EMPLOYEES_ WHERE _EMPLOYEES_._REPORTSTO_ = 1234", updateBuilder
+                .createSqlStatement().replaceAll("\"", "_"));
 
         updateBuilder.where("JOBTITLE").eq("Sales rep");
         assertEquals(
@@ -53,8 +53,25 @@ public class JdbcDeleteBuilderTest extends JdbcTestCase {
                 Arrays.toString(table.getColumnNames()));
 
         updateBuilder.where("firstname").isNull().where("lastname").isNotNull();
-        assertEquals("DELETE FROM PUBLIC._EMPLOYEES_ WHERE _EMPLOYEES_._FIRSTNAME_ IS NULL AND _EMPLOYEES_._LASTNAME_ IS NOT NULL", updateBuilder
-                .createSqlStatement().replaceAll("\"", "_"));
+        assertEquals(
+                "DELETE FROM PUBLIC._EMPLOYEES_ WHERE _EMPLOYEES_._FIRSTNAME_ IS NULL AND _EMPLOYEES_._LASTNAME_ IS NOT NULL",
+                updateBuilder.createSqlStatement().replaceAll("\"", "_"));
+    }
+
+    public void testUpdateWhereSomethingIsOrIsNotNull() throws Exception {
+        JdbcDataContext dataContext = new JdbcDataContext(getTestDbConnection());
+        Table table = dataContext.getTableByQualifiedLabel("PUBLIC.EMPLOYEES");
+        JdbcUpdateCallback updateCallback = new JdbcSimpleUpdateCallback(dataContext);
+
+        assertEquals("[EMPLOYEENUMBER, LASTNAME, FIRSTNAME, EXTENSION, EMAIL, OFFICECODE, REPORTSTO, JOBTITLE]",
+                Arrays.toString(table.getColumnNames()));
+
+        JdbcDeleteBuilder updateBuilder = new JdbcDeleteBuilder(updateCallback, table, new DefaultQueryRewriter(
+                dataContext), false);
+        updateBuilder.where("email").isNull().where("officecode").isNotNull();
+        assertEquals(
+                "DELETE FROM PUBLIC._EMPLOYEES_ WHERE _EMPLOYEES_._EMAIL_ IS NULL AND _EMPLOYEES_._OFFICECODE_ IS NOT NULL",
+                updateBuilder.createSqlStatement().replaceAll("\"", "_"));
     }
 
     public void testCreateSqlStatementWithQuotesInValue() throws Exception {
@@ -63,10 +80,9 @@ public class JdbcDeleteBuilderTest extends JdbcTestCase {
         JdbcUpdateCallback updateCallback = new JdbcSimpleUpdateCallback(dataContext);
         JdbcDeleteBuilder updateBuilder = new JdbcDeleteBuilder(updateCallback, table, new DefaultQueryRewriter(
                 dataContext), true);
-        
+
         updateBuilder.where("OFFICECODE").isEquals("ro'om");
-        assertEquals(
-                "DELETE FROM PUBLIC._EMPLOYEES_ WHERE _EMPLOYEES_._OFFICECODE_ = 'ro''om'",
-                updateBuilder.createSqlStatement().replaceAll("\"", "_"));
+        assertEquals("DELETE FROM PUBLIC._EMPLOYEES_ WHERE _EMPLOYEES_._OFFICECODE_ = 'ro''om'", updateBuilder
+                .createSqlStatement().replaceAll("\"", "_"));
     }
 }

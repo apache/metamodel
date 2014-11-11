@@ -6,7 +6,8 @@
  * [METAMODEL-76] - Query parser improved to handle filters without spaces inbetween operator and operands.
  * [METAMODEL-92] - For JSON, MongoDB and CouchDB: Made it possible to specify column names referring nested fields such as "name.first" or "addresses[0].city".
  * [METAMODEL-95] - Fixed a critical bug in the Salesforce.com module which caused all number values to be interpreted as '1'.
-
+ * [METAMODEL-85] - Fixed a bug that caused NULL values to be evaluated with equal-sign in JDBC update and delete statements instead of 'IS NULL'.
+ 
 ### Apache MetaModel 4.2.0-incubating
 
  * [METAMODEL-38] - New module 'json' for handling json files (containing JSON arrays of documents or line-delimited JSON documents)

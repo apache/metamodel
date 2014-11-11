@@ -72,8 +72,8 @@ final class JdbcUpdateBuilder extends AbstractRowUpdationBuilder {
                 for (int i = 0; i < columns.length; i++) {
                     boolean explicitNull = explicitNulls[i];
                     if (values[i] != null || explicitNull) {
-                    	JdbcUtils.setStatementValue(st, valueCounter, columns[i], values[i]);
-                    	
+                        JdbcUtils.setStatementValue(st, valueCounter, columns[i], values[i]);
+
                         valueCounter++;
                     }
                 }
@@ -83,9 +83,9 @@ final class JdbcUpdateBuilder extends AbstractRowUpdationBuilder {
                     if (JdbcUtils.isPreparedParameterCandidate(whereItem)) {
                         final Object operand = whereItem.getOperand();
                         final Column column = whereItem.getSelectItem().getColumn();
-                        
-						JdbcUtils.setStatementValue(st, valueCounter, column, operand);
-                        
+
+                        JdbcUtils.setStatementValue(st, valueCounter, column, operand);
+
                         valueCounter++;
                     }
                 }
@@ -99,7 +99,7 @@ final class JdbcUpdateBuilder extends AbstractRowUpdationBuilder {
             }
         }
     }
-    
+
     protected String createSqlStatement() {
         return createSqlStatement(_inlineValues);
     }
@@ -119,7 +119,8 @@ final class JdbcUpdateBuilder extends AbstractRowUpdationBuilder {
         boolean[] explicitNulls = getExplicitNulls();
         boolean firstValue = true;
         for (int i = 0; i < columns.length; i++) {
-            if (values[i] != null || explicitNulls[i]) {
+            final Object value = values[i];
+            if (value != null || explicitNulls[i]) {
                 if (firstValue) {
                     firstValue = false;
                 } else {
@@ -130,9 +131,8 @@ final class JdbcUpdateBuilder extends AbstractRowUpdationBuilder {
                 sb.append(columnName);
 
                 sb.append('=');
-
                 if (inlineValues) {
-                    sb.append(JdbcUtils.getValueAsSql(columns[i], values[i], _queryRewriter));
+                    sb.append(JdbcUtils.getValueAsSql(columns[i], value, _queryRewriter));
                 } else {
                     sb.append('?');
                 }
