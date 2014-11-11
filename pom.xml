@@ -34,7 +34,7 @@ under the License.
 	<parent>
 		<groupId>org.apache</groupId>
 		<artifactId>apache</artifactId>
-		<version>13</version>
+		<version>15</version>
 	</parent>
 	<scm>
 		<url>https://git-wip-us.apache.org/repos/asf?p=incubator-metamodel.git</url>
@@ -190,7 +190,15 @@ under the License.
 				<artifactId>maven-release-plugin</artifactId>
 				<configuration>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<goals>deploy</goals>
 				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.scm</groupId>
+						<artifactId>maven-scm-provider-gitexe</artifactId>
+						<version>1.9.2</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 
 			<plugin>
