@@ -23,6 +23,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.metamodel.MetaModelException;
@@ -35,10 +37,15 @@ import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.builder.DocumentSourceProvider;
 import org.apache.metamodel.schema.builder.SchemaBuilder;
+import org.apache.metamodel.util.SimpleTableDef;
+
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
 
 /**
  * DataContext implementation for Neo4j
@@ -53,18 +60,18 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
     private static final String NEO4J_DRIVER_CLASS = "org.neo4j.jdbc.Driver";
 
     private Connection _connection;
-    
+
     private SchemaBuilder _schemaBuilder;
 
     public Neo4jDataContext() {
         createConnection();
-        
+
         _schemaBuilder = new Neo4jInferentialSchemaBuilder();
     }
-    
+
     public Neo4jDataContext(Connection connection) {
         _connection = connection;
-        
+
         _schemaBuilder = new Neo4jInferentialSchemaBuilder();
     }
 
@@ -79,7 +86,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
             e.printStackTrace();
         }
     }
-    
+
     @Override
     protected String getDefaultSchemaName() throws MetaModelException {
         return SCHEMA_NAME;
@@ -87,14 +94,59 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
 
     @Override
     protected Schema getMainSchema() throws MetaModelException {
-        MutableSchema schema = _schemaBuilder.build();
-        // TODO: The schema has no tables defined... Find a way to specify them.
+        SimpleTableDef[] tableDefs = detectSchema();
+        MutableSchema schema = new MutableSchema(getMainSchemaName());
+        for (SimpleTableDef tableDef : tableDefs) {
+            MutableTable table = tableDef.toTable().setSchema(schema);
+            schema.addTable(table);
+        }
         return schema;
     }
 
     @Override
     protected String getMainSchemaName() throws MetaModelException {
         return SCHEMA_NAME;
+    }
+
+    public SimpleTableDef[] detectSchema() {
+        Collection<String> finalLabels = new ArrayList<String>();
+
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            statement = _connection.createStatement();
+            resultSet = statement.executeQuery("START n=node(*) RETURN distinct labels(n)");
+            while (resultSet.next()) {
+                String labelList = resultSet.getString("labels(n)");
+                if (labelList.contains(",")) {
+                    labelList = labelList.substring(1, labelList.length() - 1);
+                    Iterable<String> labelsSplitted = Splitter.on(",").trimResults(CharMatcher.is('\"')).split(labelList);
+                    for (String label : labelsSplitted) {
+                        if (!finalLabels.contains(label)) {
+                            finalLabels.add(label);
+                        }
+                    }
+                } else {
+                    labelList = labelList.substring(2, labelList.length() - 2);
+                    if (!finalLabels.contains(labelList)) {
+                        finalLabels.add(labelList);
+                    }
+                }
+            }
+            SimpleTableDef[] result = new SimpleTableDef[finalLabels.size()];
+            int i = 0;
+            for (String label : finalLabels) {
+                // TODO: Column names set to NULL...
+                SimpleTableDef table = new SimpleTableDef(label, null);
+                result[i] = table;
+                i++;
+            }
+            return result;
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
