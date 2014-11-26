@@ -45,19 +45,16 @@ import org.w3c.dom.Element;
 public class XmlDomDataContextTest extends TestCase {
 
     public void testGetFromUrl() throws Exception {
-        // Retrieve a news rss
-        URL url = new URL("http://projects.apache.org/feeds/rss.xml");
-
+        // Retrieve a test file, but through URL from GitHub servers.
+        URL url = new URL(
+                "https://raw.githubusercontent.com/apache/incubator-metamodel/master/xml/src/test/resources/xml_input_eobjects.xml");
         try {
-            XmlDomDataContext dataContext = new XmlDomDataContext(url, true);
-
-            Schema schema = dataContext.getDefaultSchema();
-            assertEquals("rss.xml", schema.getName());
-
-            assertNotNull(schema.getTableByName("rss"));
-            assertNotNull(schema.getTableByName("channel_title"));
-            assertNotNull(schema.getTableByName("channel_link"));
-            assertNotNull(schema.getTableByName("channel_item"));
+            XmlDomDataContext dataContext = new XmlDomDataContext(url, false);
+            assertEquals("xml_input_eobjects.xml", dataContext.getDefaultSchema().getName());
+            assertEquals(2, dataContext.getSchemaNames().length);
+            Schema schema = dataContext.getSchemaByName("xml_input_eobjects.xml");
+            assertEquals("Schema[name=xml_input_eobjects.xml]", schema.toString());
+            assertEquals(5, schema.getTableCount());
         } catch (IllegalArgumentException e) {
             // If the network is not accessible omit the test
             if (!(e.getCause() instanceof UnknownHostException)) {
