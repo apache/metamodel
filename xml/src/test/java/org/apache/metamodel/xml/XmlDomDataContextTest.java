@@ -47,7 +47,7 @@ public class XmlDomDataContextTest extends TestCase {
     public void testGetFromUrl() throws Exception {
         // Retrieve a test file, but through URL from GitHub servers.
         URL url = new URL(
-                "https://raw.githubusercontent.com/apache/incubator-metamodel/master/xml/src/test/resources/xml_input_eobjects.xml");
+                "https://raw.githubusercontent.com/apache/metamodel/master/xml/src/test/resources/xml_input_eobjects.xml");
         try {
             XmlDomDataContext dataContext = new XmlDomDataContext(url, false);
             assertEquals("xml_input_eobjects.xml", dataContext.getDefaultSchema().getName());
