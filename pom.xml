@@ -37,9 +37,9 @@ under the License.
 		<version>15</version>
 	</parent>
 	<scm>
-		<url>https://git-wip-us.apache.org/repos/asf?p=incubator-metamodel.git</url>
-		<connection>scm:git:http://git-wip-us.apache.org/repos/asf/incubator-metamodel.git</connection>
-		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-metamodel.git</developerConnection>
+		<url>https://git-wip-us.apache.org/repos/asf?p=metamodel.git</url>
+		<connection>scm:git:http://git-wip-us.apache.org/repos/asf/metamodel.git</connection>
+		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/metamodel.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
@@ -51,7 +51,7 @@ under the License.
 		offered to datastores that do not otherwise support advanced querying
 		and a unified view of the datastore structure is offered through a
 		single model of the schemas, tables, columns and relationships.</description>
-	<url>http://metamodel.incubator.apache.org</url>
+	<url>http://metamodel.apache.org</url>
 	<inceptionYear>2007</inceptionYear>
 	<packaging>pom</packaging>
 	<modules>
@@ -81,17 +81,17 @@ under the License.
 	<mailingLists>
 		<mailingList>
 			<name>Development</name>
-			<post>dev@metamodel.incubator.apache.org</post>
-			<subscribe>dev-subscribe@metamodel.incubator.apache.org</subscribe>
-			<unsubscribe>dev-unsubscribe@metamodel.incubator.apache.org</unsubscribe>
-			<archive>http://mail-archives.apache.org/mod_mbox/incubator-metamodel-dev/</archive>
+			<post>dev@metamodel.apache.org</post>
+			<subscribe>dev-subscribe@metamodel.apache.org</subscribe>
+			<unsubscribe>dev-unsubscribe@metamodel.apache.org</unsubscribe>
+			<archive>http://mail-archives.apache.org/mod_mbox/metamodel-dev/</archive>
 		</mailingList>
 		<mailingList>
 			<name>Commits</name>
-			<post>commits@metamodel.incubator.apache.org</post>
-			<subscribe>commits-subscribe@metamodel.incubator.apache.org</subscribe>
-			<unsubscribe>commits-unsubscribe@metamodel.incubator.apache.org</unsubscribe>
-			<archive>http://mail-archives.apache.org/mod_mbox/incubator-metamodel-commits/</archive>
+			<post>commits@metamodel.apache.org</post>
+			<subscribe>commits-subscribe@metamodel.apache.org</subscribe>
+			<unsubscribe>commits-unsubscribe@metamodel.apache.org</unsubscribe>
+			<archive>http://mail-archives.apache.org/mod_mbox/metamodel-commits/</archive>
 		</mailingList>
 	</mailingLists>
 	<organization>
