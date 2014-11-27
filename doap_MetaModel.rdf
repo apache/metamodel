@@ -36,6 +36,8 @@ MetaModel isn't a data mapping framework. Instead we emphasize abstraction of me
     <download-page rdf:resource="http://metamodel.apache.org/#download" />
     <programming-language>Java</programming-language>
     <category rdf:resource="http://projects.apache.org/category/database" />
+    <category rdf:resource="http://projects.apache.org/category/big-data" />
+    <category rdf:resource="http://projects.apache.org/category/library" />
     <release>
       <Version>
         <name>MetaModel 4.3.0-incubating</name>
