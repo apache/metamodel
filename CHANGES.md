@@ -1,3 +1,7 @@
+### Apache MetaModel 4.3.1
+
+ * [METAMODEL-100] - Fixed bug when having multiple columns of same name. Added column no. comparison when calling Column.equals(...).
+
 ### Apache MetaModel 4.3.0-incubating
 
  * [METAMODEL-77] - New module 'elasticsearch' for connecting and modeling ElasticSearch indexes through MetaModel.

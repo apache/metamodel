@@ -26,8 +26,10 @@ import java.util.List;
 import javax.swing.table.TableModel;
 
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.query.CompiledQuery;
@@ -38,9 +40,9 @@ import org.apache.metamodel.query.GroupByItem;
 import org.apache.metamodel.query.JoinType;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.OrderByItem;
-import org.apache.metamodel.query.QueryParameter;
 import org.apache.metamodel.query.OrderByItem.Direction;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.QueryParameter;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.MutableColumn;
@@ -55,6 +57,46 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
     private final Schema schema = getExampleSchema();
     private final Table table1 = schema.getTableByName(TABLE_CONTRIBUTOR);
     private final Table table2 = schema.getTableByName(TABLE_ROLE);
+
+    // see issue METAMODEL-100
+    public void testSelectFromColumnsWithSameName() throws Exception {
+        final MutableTable table = new MutableTable("table");
+        table.addColumn(new MutableColumn("foo", table).setColumnNumber(0));
+        table.addColumn(new MutableColumn("foo", table).setColumnNumber(1));
+        table.addColumn(new MutableColumn("bar", table).setColumnNumber(2));
+
+        final QueryPostprocessDataContext dc = new QueryPostprocessDataContext() {
+            @Override
+            protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+                Object[] values = new Object[columns.length];
+                for (int i = 0; i < columns.length; i++) {
+                    values[i] = columns[i].getColumnNumber();
+                }
+                DataSetHeader header = new SimpleDataSetHeader(columns);
+                DefaultRow row = new DefaultRow(header, values);
+                return new InMemoryDataSet(row);
+            }
+
+            @Override
+            protected String getMainSchemaName() throws MetaModelException {
+                return "sch";
+            }
+
+            @Override
+            protected Schema getMainSchema() throws MetaModelException {
+                MutableSchema schema = new MutableSchema(getMainSchemaName());
+                schema.addTable(table);
+                table.setSchema(schema);
+                return schema;
+            }
+        };
+        
+        DataSet ds = dc.query().from(table).selectAll().execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[0, 1, 2]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+    }
 
     public void testAggregateQueryNoWhereClause() throws Exception {
         MockDataContext dc = new MockDataContext("sch", "tab", "1");
