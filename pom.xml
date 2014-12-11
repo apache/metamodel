@@ -34,7 +34,7 @@ under the License.
 	<parent>
 		<groupId>org.apache</groupId>
 		<artifactId>apache</artifactId>
-		<version>15</version>
+		<version>16</version>
 	</parent>
 	<scm>
 		<url>https://git-wip-us.apache.org/repos/asf?p=metamodel.git</url>
