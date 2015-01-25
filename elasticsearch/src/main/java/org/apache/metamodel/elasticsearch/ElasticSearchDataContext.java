@@ -142,6 +142,8 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *         user.
      */
     public static SimpleTableDef[] detectSchema(Client client, String indexName) {
+        logger.info("Detecting schema for index '{}'", indexName);
+
         final ClusterState cs;
         final ClusterStateRequestBuilder clusterStateRequestBuilder = client.admin().cluster().prepareState();
 
@@ -163,18 +165,24 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         }
         cs = clusterStateRequestBuilder.execute().actionGet().getState();
 
-        final IndexMetaData imd = cs.getMetaData().index(indexName);
-        final ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
-        final ObjectLookupContainer<String> documentTypes = mappings.keys();
-
         final List<SimpleTableDef> result = new ArrayList<SimpleTableDef>();
-        for (final Object documentTypeCursor : documentTypes) {
-            final String documentType = ((ObjectCursor<?>) documentTypeCursor).value.toString();
-            try {
-                final SimpleTableDef table = detectTable(cs, indexName, documentType);
-                result.add(table);
-            } catch (Exception e) {
-                logger.error("Unexpected error during detectTable for document type: {}", documentType, e);
+
+        final IndexMetaData imd = cs.getMetaData().index(indexName);
+        if (imd == null) {
+            // index does not exist
+            logger.warn("No metadata returned for index name '{}' - no tables will be detected.");
+        } else {
+            final ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
+            final ObjectLookupContainer<String> documentTypes = mappings.keys();
+
+            for (final Object documentTypeCursor : documentTypes) {
+                final String documentType = ((ObjectCursor<?>) documentTypeCursor).value.toString();
+                try {
+                    final SimpleTableDef table = detectTable(cs, indexName, documentType);
+                    result.add(table);
+                } catch (Exception e) {
+                    logger.error("Unexpected error during detectTable for document type '{}'", documentType, e);
+                }
             }
         }
         final SimpleTableDef[] tableDefArray = (SimpleTableDef[]) result.toArray(new SimpleTableDef[result.size()]);
@@ -202,8 +210,16 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      * @return a table definition for ElasticSearch.
      */
     public static SimpleTableDef detectTable(ClusterState cs, String indexName, String documentType) throws Exception {
+        logger.debug("Detecting table for document type '{}' in index '{}'", documentType, indexName);
         final IndexMetaData imd = cs.getMetaData().index(indexName);
+        if (imd == null) {
+            // index does not exist
+            throw new IllegalArgumentException("No such index: " + indexName);
+        }
         final MappingMetaData mappingMetaData = imd.mapping(documentType);
+        if (mappingMetaData == null) {
+            throw new IllegalArgumentException("No such document type in index '" + indexName + "': " + documentType);
+        }
         final Map<String, Object> mp = mappingMetaData.getSourceAsMap();
         final Iterator<Map.Entry<String, Object>> it = mp.entrySet().iterator();
         final Map.Entry<String, Object> pair = it.next();
