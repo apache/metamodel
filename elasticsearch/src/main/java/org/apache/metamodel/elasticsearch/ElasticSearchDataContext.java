@@ -103,6 +103,12 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *            and column model of the ElasticSearch index.
      */
     public ElasticSearchDataContext(Client client, String indexName, SimpleTableDef... tableDefs) {
+        if (client == null) {
+            throw new IllegalArgumentException("ElasticSearch Client cannot be null");
+        }
+        if (indexName == null || indexName.trim().length() == 0) {
+            throw new IllegalArgumentException("Invalid ElasticSearch Index name: " + indexName);
+        }
         this.elasticSearchClient = client;
         this.indexName = indexName;
         this.tableDefs = tableDefs;
