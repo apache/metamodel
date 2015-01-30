@@ -73,6 +73,7 @@ under the License.
 		<module>sugarcrm</module>
 		<module>full</module>
 		<module>spring</module>
+		<module>neo4j</module>
 	</modules>
 	<issueManagement>
 		<system>Jira</system>
