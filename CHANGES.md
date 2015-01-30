@@ -1,3 +1,12 @@
+### Apache MetaModel 4.3.2 (WIP)
+
+ * [METAMODEL-78] - Fixed a bug that caused SELECT DISTINCT to sometimes return duplicates records on certain DataContext implementations.
+ * [METAMODEL-106] - Improved handling of invalid or non-existing index names passed to ElasticSearchDataContext
+
+### Apache MetaModel 4.3.1
+
+ * [METAMODEL-100] - Fixed bug when having multiple columns of same name. Added column no. comparison when calling Column.equals(...).
+
 ### Apache MetaModel 4.3.0-incubating
 
  * [METAMODEL-77] - New module 'elasticsearch' for connecting and modeling ElasticSearch indexes through MetaModel.

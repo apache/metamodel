@@ -3,17 +3,17 @@
 MetaModel is a data access framework, providing a common interface for exploration and querying of different types of datastores.
 
 <div>
-<img src="http://metamodel.incubator.apache.org/img/logo.png" style="float: right; margin-left: 20px;" alt="MetaModel logo" />
+<img src="http://metamodel.apache.org/img/logo.png" style="float: right; margin-left: 20px;" alt="MetaModel logo" />
 </div>
 
 ### Mailing lists
 
- * Developer list:  dev@metamodel.incubator.apache.org
- * Commits list:    commits@metamodel.incubator.apache.org
+ * Developer list:  dev@metamodel.apache.org
+ * Commits list:    commits@metamodel.apache.org
 
 ### Website
 
-http://metamodel.incubator.apache.org/
+http://metamodel.apache.org/
 
 ### Documentation
 
