@@ -31,6 +31,7 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
@@ -157,6 +158,29 @@ public class PojoDataContextTest extends TestCase {
         assertEquals("Row[values=[2, 1004, false]]", ds.getRow().toString());
         assertTrue(ds.next());
         assertEquals("Row[values=[3, 1005, true]]", ds.getRow().toString());
+        assertFalse(ds.next());
+
+        Query qOrderd = dc.query().from("bar").select("col1").toQuery().selectDistinct().orderBy("col1");
+        ds = dc.executeQuery(qOrderd);
+        assertTrue(ds.next());
+        assertEquals("Row[values=[2]]", ds.getRow().toString());
+        assertTrue(ds.next());
+        assertEquals("Row[values=[3]]", ds.getRow().toString());
+        assertFalse(ds.next());
+
+        Query qUnordered = dc.query().from("bar").select("col1").toQuery().selectDistinct();
+        ds = dc.executeQuery(qUnordered);
+        assertTrue(ds.next());
+        //Check both possibilities for the order, because not for certain
+        if(ds.getRow().toString().equals("Row[values=[2]]")){
+            assertEquals("Row[values=[2]]", ds.getRow().toString());
+            assertTrue(ds.next());
+            assertEquals("Row[values=[3]]", ds.getRow().toString());
+        }else{
+            assertEquals("Row[values=[3]]", ds.getRow().toString());
+            assertTrue(ds.next());
+            assertEquals("Row[values=[2]]", ds.getRow().toString());
+        }
         assertFalse(ds.next());
 
         dc.executeUpdate(new UpdateScript() {

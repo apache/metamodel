@@ -77,6 +77,10 @@ public abstract class AbstractColumn implements Column {
         }
         if (obj instanceof Column) {
             Column other = (Column) obj;
+            if (getColumnNumber() != other.getColumnNumber()) {
+                return false;
+            }
+            
             if (!getName().equals(other.getName())) {
                 return false;
             }

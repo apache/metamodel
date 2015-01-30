@@ -157,7 +157,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         // Check for very simple queries with max rows property set (typically
         // preview), see Ticket #187
         previewTable: if (whereItems.isEmpty() && groupByItems.isEmpty() && havingItems.isEmpty()
-                && orderByItems.isEmpty() && fromItems.size() == 1) {
+                && orderByItems.isEmpty() && fromItems.size() == 1 && !query.getSelectClause().isDistinct()) {
 
             final Table table = fromItems.get(0).getTable();
             if (table != null) {
