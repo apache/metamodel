@@ -196,6 +196,20 @@ public class CassandraDataContextTest extends CassandraTestCase {
         }
         assertTrue(thrown);
     }
+    
+    public void testNonExistentKeystore() {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+        
+        try {
+            new CassandraDataContext(cluster, "nonExistentKeyspace");
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertNotNull(e);
+        }
+    }
 
     private void createCassandraKeySpaceAndTable(Session session) {
         session.execute("CREATE KEYSPACE IF NOT EXISTS " + getKeyspaceName() + " WITH replication "

@@ -105,6 +105,9 @@ public class CassandraDataContext extends QueryPostprocessDataContext implements
     public static SimpleTableDef[] detectSchema(Cluster cluster, String keyspaceName) {
         final Metadata metadata = cluster.getMetadata();
         final KeyspaceMetadata keyspace = metadata.getKeyspace(keyspaceName);
+        if (keyspace == null) {
+            throw new IllegalArgumentException("Keyspace '" + keyspaceName + "' does not exist in the database");
+        }
         final Collection<TableMetadata> tables = keyspace.getTables();
         final SimpleTableDef[] result = new SimpleTableDef[tables.size()];
         int i = 0;
