@@ -168,6 +168,44 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         ds1.close();
         ds2.close();
     }
+    
+    @Test
+    public void testCountQuery() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        // insert a few records
+        {
+            requestWrapper.executeCypherQuery("CREATE (n:JUnitLabel { name: 'John Doe', age: 30 })");
+            requestWrapper.executeCypherQuery("CREATE (n:JUnitLabel { name: 'Jane Doe', gender: 'F' })");
+        }
+
+        // create datacontext using detected schema
+        final DataContext dc = new Neo4jDataContext(getHostname(), getPort());
+
+        final DataSet ds2 = dc.query().from("JUnitLabel").selectCount().execute();
+        final DataSet ds1 = dc.query().from("JUnitLabel").selectCount().where("name").eq("John Doe").execute();
+
+        assertTrue("Class: " + ds1.getClass().getName(), ds1 instanceof Neo4jDataSet);
+        assertTrue("Class: " + ds2.getClass().getName(), ds2 instanceof Neo4jDataSet);
+
+        assertTrue(ds1.next());
+        assertTrue(ds2.next());
+
+        final Row row1 = ds1.getRow();
+        final Row row2 = ds2.getRow();
+
+        assertFalse(ds1.next());
+        assertFalse(ds2.next());
+
+        assertEquals("Row[values=[Jane Doe, null]]", row1.toString());
+        assertEquals("Row[values=[John Doe, 30]]", row2.toString());
+
+        ds1.close();
+        ds2.close();
+    }
 
     @Override
     protected void tearDown() throws Exception {

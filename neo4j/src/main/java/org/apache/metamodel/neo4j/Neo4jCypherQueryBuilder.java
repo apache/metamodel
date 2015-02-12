@@ -18,6 +18,9 @@
  */
 package org.apache.metamodel.neo4j;
 
+import java.util.List;
+
+import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
 
@@ -52,6 +55,18 @@ public class Neo4jCypherQueryBuilder {
             cypherBuilder.append(" LIMIT " + maxRows);
         }
         return cypherBuilder.toString();
+    }
+    
+    public static String buildCountQuery(String tableName, List<FilterItem> whereItems) {
+        StringBuilder cypherBuilder = new StringBuilder();
+        cypherBuilder.append("MATCH (n:");
+        cypherBuilder.append(tableName);
+        cypherBuilder.append(") RETURN COUNT(*);");
+        return cypherBuilder.toString();
+    }
+
+    public static String buildCountQuery(Table table, List<FilterItem> whereItems) {
+        return buildCountQuery(table.getName(), whereItems);
     }
     
 }
