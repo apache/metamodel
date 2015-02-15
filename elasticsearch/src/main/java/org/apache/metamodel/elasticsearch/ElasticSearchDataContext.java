@@ -29,6 +29,8 @@ import java.util.Map;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Row;
@@ -77,7 +79,7 @@ import org.slf4j.LoggerFactory;
  * This implementation supports either automatic discovery of a schema or manual
  * specification of a schema, through the {@link SimpleTableDef} class.
  */
-public class ElasticSearchDataContext extends QueryPostprocessDataContext implements DataContext {
+public class ElasticSearchDataContext extends QueryPostprocessDataContext implements DataContext, UpdateableDataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
 
@@ -299,5 +301,30 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     private boolean limitMaxRowsIsSet(int maxRows) {
         return (maxRows != -1);
+    }
+
+    @Override
+    public void executeUpdate(UpdateScript update) {
+        final ElasticSearchUpdateCallback callback = new ElasticSearchUpdateCallback(this);
+        update.run(callback);
+        callback.onExecuteUpdateFinished();
+    }
+
+    /**
+     * Gets the {@link Client} that this {@link DataContext} is wrapping.
+     * 
+     * @return
+     */
+    public Client getElasticSearchClient() {
+        return elasticSearchClient;
+    }
+
+    /**
+     * Gets the name of the index that this {@link DataContext} is working on.
+     * 
+     * @return
+     */
+    public String getIndexName() {
+        return indexName;
     }
 }
