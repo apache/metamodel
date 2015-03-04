@@ -110,7 +110,7 @@ public final class SelectItemParser implements QueryPartProcessor {
         final int startParenthesis = expression.indexOf('(');
         if (startParenthesis > 0 && expression.endsWith(")")) {
             String functionName = expression.substring(0, startParenthesis);
-            function = FunctionType.get(functionName);
+            function = FunctionType.get(functionName.toUpperCase());
             if (function != null) {
                 expression = expression.substring(startParenthesis + 1, expression.length() - 1).trim();
                 if (function == FunctionType.COUNT && "*".equals(expression)) {
