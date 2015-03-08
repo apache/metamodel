@@ -20,6 +20,7 @@ package org.apache.metamodel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,6 @@ import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.data.FirstRowDataSet;
 import org.apache.metamodel.data.InMemoryDataSet;
-import org.apache.metamodel.data.MaxRowsDataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.query.FilterItem;
@@ -44,6 +44,7 @@ import org.apache.metamodel.query.JoinType;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.OrderByItem;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectClause;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
@@ -96,14 +97,25 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         final List<FilterItem> havingItems = query.getHavingClause().getItems();
         final List<OrderByItem> orderByItems = query.getOrderByClause().getItems();
 
+        final int firstRow = (query.getFirstRow() == null ? 1 : query.getFirstRow());
+        final int maxRows = (query.getMaxRows() == null ? -1 : query.getMaxRows());
+
+        if (maxRows == 0) {
+            // no rows requested - no reason to do anything
+            return new EmptyDataSet(selectItems);
+        }
+
         // check certain common query types that can often be optimized by
         // subclasses
-        if (fromItems.size() == 1 && groupByItems.isEmpty() && havingItems.isEmpty()) {
+        final boolean singleFromItem = fromItems.size() == 1;
+        final boolean noGrouping = groupByItems.isEmpty() && havingItems.isEmpty();
+        if (singleFromItem && noGrouping) {
 
             final FromItem fromItem = query.getFromClause().getItem(0);
             final Table table = fromItem.getTable();
             if (table != null) {
-                // check for approximate SELECT COUNT(*) queries
+
+                // check for SELECT COUNT(*) queries
                 if (selectItems.size() == 1) {
                     final SelectItem selectItem = query.getSelectClause().getItem(0);
                     if (SelectItem.isCountAllItem(selectItem)) {
@@ -124,52 +136,45 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
                     }
                 }
 
-                // check for lookup query by primary key
-                if (whereItems.size() == 1) {
-                    final FilterItem whereItem = whereItems.get(0);
-                    final SelectItem selectItem = whereItem.getSelectItem();
-                    if (!whereItem.isCompoundFilter() && selectItem != null && selectItem.getColumn() != null) {
-                        final Column column = selectItem.getColumn();
-                        if (column.isPrimaryKey() && whereItem.getOperator() == OperatorType.EQUALS_TO) {
-                            logger.debug("Query is a primary key lookup query. Trying executePrimaryKeyLookupQuery(...)");
-                            if (table != null) {
-                                if (isMainSchemaTable(table)) {
-                                    final Object operand = whereItem.getOperand();
-                                    final Row row = executePrimaryKeyLookupQuery(table, selectItems, column, operand);
-                                    if (row == null) {
-                                        logger.debug("DataContext did not return any GET query results. Proceeding with manual lookup.");
-                                    } else {
-                                        final DataSetHeader header = new SimpleDataSetHeader(selectItems);
-                                        return new InMemoryDataSet(header, row);
+                final boolean isSimpleSelect = isSimpleSelect(query.getSelectClause());
+                if (isSimpleSelect) {
+                    // check for lookup query by primary key
+                    if (whereItems.size() == 1) {
+                        final FilterItem whereItem = whereItems.get(0);
+                        final SelectItem selectItem = whereItem.getSelectItem();
+                        if (!whereItem.isCompoundFilter() && selectItem != null && selectItem.getColumn() != null) {
+                            final Column column = selectItem.getColumn();
+                            if (column.isPrimaryKey() && whereItem.getOperator() == OperatorType.EQUALS_TO) {
+                                logger.debug("Query is a primary key lookup query. Trying executePrimaryKeyLookupQuery(...)");
+                                if (table != null) {
+                                    if (isMainSchemaTable(table)) {
+                                        final Object operand = whereItem.getOperand();
+                                        final Row row = executePrimaryKeyLookupQuery(table, selectItems, column,
+                                                operand);
+                                        if (row == null) {
+                                            logger.debug("DataContext did not return any GET query results. Proceeding with manual lookup.");
+                                        } else {
+                                            final DataSetHeader header = new SimpleDataSetHeader(selectItems);
+                                            return new InMemoryDataSet(header, row);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
 
-            }
-        }
+                    // check for simple queries with or without simple criteria
+                    if (orderByItems.isEmpty()) {
+                        // no WHERE criteria set
+                        if (whereItems.isEmpty()) {
+                            final DataSet dataSet = materializeTable(table, selectItems, firstRow, maxRows);
+                            return dataSet;
+                        }
 
-        final int firstRow = (query.getFirstRow() == null ? 1 : query.getFirstRow());
-        final int maxRows = (query.getMaxRows() == null ? -1 : query.getMaxRows());
-
-        // Check for very simple queries with max rows property set (typically
-        // preview), see Ticket #187
-        previewTable: if (whereItems.isEmpty() && groupByItems.isEmpty() && havingItems.isEmpty()
-                && orderByItems.isEmpty() && fromItems.size() == 1 && !query.getSelectClause().isDistinct()) {
-
-            final Table table = fromItems.get(0).getTable();
-            if (table != null) {
-                for (SelectItem item : selectItems) {
-                    if (item.getFunction() != null || item.getExpression() != null) {
-                        break previewTable;
+                        final DataSet dataSet = materializeTable(table, selectItems, whereItems, firstRow, maxRows);
+                        return dataSet;
                     }
                 }
-
-                DataSet dataSet = materializeTable(table, selectItems, firstRow, maxRows);
-                dataSet = MetaModelHelper.getSelection(selectItems, dataSet);
-                return dataSet;
             }
         }
 
@@ -209,13 +214,27 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
             dataSet = MetaModelHelper.getSelection(selectItems, dataSet);
         }
 
-        if (firstRow > 1) {
-            dataSet = new FirstRowDataSet(dataSet, firstRow);
-        }
-        if (maxRows != -1) {
-            dataSet = new MaxRowsDataSet(dataSet, maxRows);
-        }
+        dataSet = MetaModelHelper.getPaged(dataSet, firstRow, maxRows);
         return dataSet;
+    }
+
+    /**
+     * Determines if all the select items are 'simple' meaning that they just
+     * represent scans of values in columns.
+     * 
+     * @param selectItems
+     * @return
+     */
+    private boolean isSimpleSelect(SelectClause clause) {
+        if (clause.isDistinct()) {
+            return false;
+        }
+        for (SelectItem item : clause.getItems()) {
+            if (item.getFunction() != null || item.getExpression() != null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -253,7 +272,8 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
      *            the primary key value that is specified in the lookup query.
      * @return the row if the particular table, or null if not available.
      */
-    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn, Object keyValue) {
+    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn,
+            Object keyValue) {
         return null;
     }
 
@@ -298,30 +318,35 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
             if (fromItem.getLeftSide() == null || fromItem.getRightSide() == null) {
                 throw new IllegalArgumentException("Joined FromItem requires both left and right side: " + fromItem);
             }
-            DataSet[] fromItemDataSets = new DataSet[2];
+            final DataSet[] fromItemDataSets = new DataSet[2];
 
             // materialize left side
-            List<SelectItem> leftOn = Arrays.asList(fromItem.getLeftOn());
+            final List<SelectItem> leftOn = Arrays.asList(fromItem.getLeftOn());
             fromItemDataSets[0] = materializeFromItem(fromItem.getLeftSide(),
                     CollectionUtils.concat(true, selectItems, leftOn));
 
             // materialize right side
-            List<SelectItem> rightOn = Arrays.asList(fromItem.getRightOn());
+            final List<SelectItem> rightOn = Arrays.asList(fromItem.getRightOn());
             fromItemDataSets[1] = materializeFromItem(fromItem.getRightSide(),
                     CollectionUtils.concat(true, selectItems, rightOn));
 
-            FilterItem[] onConditions = new FilterItem[leftOn.size()];
+            final FilterItem[] onConditions = new FilterItem[leftOn.size()];
             for (int i = 0; i < onConditions.length; i++) {
-                FilterItem whereItem = new FilterItem(leftOn.get(i), OperatorType.EQUALS_TO, rightOn.get(i));
+                final FilterItem whereItem = new FilterItem(leftOn.get(i), OperatorType.EQUALS_TO, rightOn.get(i));
                 onConditions[i] = whereItem;
             }
-            if (joinType == JoinType.INNER) {
+
+            switch (joinType) {
+            case INNER:
                 dataSet = MetaModelHelper.getCarthesianProduct(fromItemDataSets, onConditions);
-            } else if (joinType == JoinType.LEFT) {
+                break;
+            case LEFT:
                 dataSet = MetaModelHelper.getLeftJoin(fromItemDataSets[0], fromItemDataSets[1], onConditions);
-            } else if (joinType == JoinType.RIGHT) {
+                break;
+            case RIGHT:
                 dataSet = MetaModelHelper.getRightJoin(fromItemDataSets[0], fromItemDataSets[1], onConditions);
-            } else {
+                break;
+            default:
                 throw new IllegalArgumentException("FromItem type not supported: " + fromItem);
             }
         } else if (fromItem.getSubQuery() != null) {
@@ -336,8 +361,8 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         return dataSet;
     }
 
-    protected DataSet materializeTable(final Table table, final List<SelectItem> selectItems, final int firstRow,
-            final int maxRows) {
+    protected DataSet materializeTable(final Table table, final List<SelectItem> selectItems,
+            final List<FilterItem> whereItems, final int firstRow, final int maxRows) {
         if (table == null) {
             throw new IllegalArgumentException("Table cannot be null");
         }
@@ -353,10 +378,6 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
             }
         }
 
-        if (maxRows == 0) {
-            return new EmptyDataSet(selectItems);
-        }
-
         final Schema schema = table.getSchema();
         final String schemaName;
         if (schema == null) {
@@ -367,16 +388,14 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
 
         final DataSet dataSet;
         if (INFORMATION_SCHEMA_NAME.equals(schemaName)) {
-            final DataSet informationDataSet = materializeInformationSchemaTable(table, selectItems, maxRows);
-            if (firstRow > 1) {
-                @SuppressWarnings("resource")
-                final DataSet firstRowDataSet = new FirstRowDataSet(informationDataSet, firstRow);
-                dataSet = firstRowDataSet;
-            } else {
-                dataSet = informationDataSet;
-            }
+            DataSet informationDataSet = materializeInformationSchemaTable(table,
+                    buildWorkingSelectItems(selectItems, whereItems));
+            informationDataSet = MetaModelHelper.getFiltered(informationDataSet, whereItems);
+            informationDataSet = MetaModelHelper.getSelection(selectItems, informationDataSet);
+            informationDataSet = MetaModelHelper.getPaged(informationDataSet, firstRow, maxRows);
+            dataSet = informationDataSet;
         } else {
-            final DataSet tableDataSet = materializeMainSchemaTable(table, selectItems, firstRow, maxRows);
+            final DataSet tableDataSet = materializeMainSchemaTable(table, selectItems, whereItems, firstRow, maxRows);
 
             // conversion is done at materialization time, since it enables
             // the refined types to be used also in eg. where clauses.
@@ -384,6 +403,17 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         }
 
         return dataSet;
+    }
+
+    private List<SelectItem> buildWorkingSelectItems(List<SelectItem> selectItems, List<FilterItem> whereItems) {
+        final List<SelectItem> evaluatedSelectItems = MetaModelHelper.getEvaluatedSelectItems(whereItems);
+        return CollectionUtils.concat(true, selectItems, evaluatedSelectItems);
+    }
+
+    @Deprecated
+    protected DataSet materializeTable(final Table table, final List<SelectItem> selectItems, final int firstRow,
+            final int maxRows) {
+        return materializeTable(table, selectItems, Collections.<FilterItem> emptyList(), firstRow, maxRows);
     }
 
     protected boolean isMainSchemaTable(Table table) {
@@ -479,8 +509,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         return informationSchema;
     }
 
-    private DataSet materializeInformationSchemaTable(final Table table, final List<SelectItem> selectItems,
-            final int maxRows) {
+    private DataSet materializeInformationSchemaTable(final Table table, final List<SelectItem> selectItems) {
         final String tableName = table.getName();
         final SelectItem[] columnSelectItems = MetaModelHelper.createSelectItems(table.getColumns());
         final SimpleDataSetHeader header = new SimpleDataSetHeader(columnSelectItems);
@@ -536,13 +565,9 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         }
 
         // Handle column subset
-        DataSet selectionDataSet = MetaModelHelper.getSelection(selectItems, dataSet);
+        final DataSet selectionDataSet = MetaModelHelper.getSelection(selectItems, dataSet);
         dataSet = selectionDataSet;
 
-        // Handle maxRows
-        if (maxRows != -1) {
-            dataSet = new MaxRowsDataSet(dataSet, maxRows);
-        }
         return dataSet;
     }
 
@@ -576,6 +601,28 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
      * @return the name of the main schema that subclasses of this class produce
      */
     protected abstract String getMainSchemaName() throws MetaModelException;
+
+    /**
+     * Execute a simple one-table query against a table in the main schema of
+     * the subclasses of this class. This default implementation will delegate
+     * to {@link #materializeMainSchemaTable(Table, List, int, int)} and apply
+     * WHERE item filtering afterwards.
+     * 
+     * @param table
+     * @param selectItems
+     * @param whereItems
+     * @param firstRow
+     * @param maxRows
+     * @return
+     */
+    protected DataSet materializeMainSchemaTable(Table table, List<SelectItem> selectItems,
+            List<FilterItem> whereItems, int firstRow, int maxRows) {
+        final List<SelectItem> workingSelectItems = buildWorkingSelectItems(selectItems, whereItems);
+        DataSet dataSet = materializeMainSchemaTable(table, workingSelectItems, firstRow, maxRows);
+        dataSet = MetaModelHelper.getFiltered(dataSet, whereItems);
+        dataSet = MetaModelHelper.getSelection(selectItems, dataSet);
+        return dataSet;
+    }
 
     /**
      * Executes a simple one-table query against a table in the main schema of

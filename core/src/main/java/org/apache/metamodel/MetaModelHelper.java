@@ -35,8 +35,10 @@ import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.data.FilteredDataSet;
+import org.apache.metamodel.data.FirstRowDataSet;
 import org.apache.metamodel.data.IRowFilter;
 import org.apache.metamodel.data.InMemoryDataSet;
+import org.apache.metamodel.data.MaxRowsDataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.data.SubSelectionDataSet;
@@ -773,4 +775,38 @@ public final class MetaModelHelper {
         return parser.parse();
     }
 
+    public static DataSet getPaged(DataSet dataSet, int firstRow, int maxRows) {
+        if (firstRow > 1) {
+            dataSet = new FirstRowDataSet(dataSet, firstRow);
+        }
+        if (maxRows != -1) {
+            dataSet = new MaxRowsDataSet(dataSet, maxRows);
+        }
+        return dataSet;
+    }
+
+    public static List<SelectItem> getEvaluatedSelectItems(final List<FilterItem> items) {
+        final List<SelectItem> result = new ArrayList<SelectItem>();
+        for (FilterItem item : items) {
+            addEvaluatedSelectItems(result, item);
+        }
+        return result;
+    }
+
+    private static void addEvaluatedSelectItems(List<SelectItem> result, FilterItem item) {
+        final FilterItem[] orItems = item.getChildItems();
+        if (orItems != null) {
+            for (FilterItem filterItem : orItems) {
+                addEvaluatedSelectItems(result, filterItem);
+            }
+        }
+        final SelectItem selectItem = item.getSelectItem();
+        if (selectItem != null && !result.contains(selectItem)) {
+            result.add(selectItem);
+        }
+        final Object operand = item.getOperand();
+        if (operand != null && operand instanceof SelectItem && !result.contains(operand)) {
+            result.add((SelectItem) operand);
+        }
+    }
 }

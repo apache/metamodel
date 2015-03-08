@@ -939,7 +939,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         QueryPostprocessDataContext dc = new QueryPostprocessDataContext() {
             @Override
             protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-                throw new UnsupportedAddressTypeException();
+                throw new UnsupportedOperationException();
             }
 
             @Override
