@@ -19,10 +19,7 @@
 package org.apache.metamodel.elasticsearch;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -32,14 +29,16 @@ import java.util.Map;
 
 import javax.swing.table.TableModel;
 
+import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.create.CreateTable;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
-import org.apache.metamodel.data.FilteredDataSet;
 import org.apache.metamodel.data.InMemoryDataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.delete.DeleteFrom;
 import org.apache.metamodel.drop.DropTable;
 import org.apache.metamodel.elasticsearch.utils.EmbeddedElasticsearchServer;
 import org.apache.metamodel.query.FunctionType;
@@ -49,6 +48,7 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.update.Update;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -206,7 +206,8 @@ public class ElasticSearchDataContextTest {
 
         final Column fooColumn = table.getColumnByName("foo");
         final Column idColumn = table.getPrimaryKeys()[0];
-        assertEquals("Column[name=_id,columnNumber=0,type=STRING,nullable=null,nativeType=null,columnSize=null]", idColumn.toString());
+        assertEquals("Column[name=_id,columnNumber=0,type=STRING,nullable=null,nativeType=null,columnSize=null]",
+                idColumn.toString());
 
         dataContext.executeUpdate(new UpdateScript() {
             @Override
@@ -230,6 +231,126 @@ public class ElasticSearchDataContextTest {
         }
 
         dataContext.executeUpdate(new DropTable(table));
+    }
+
+    @Test
+    public void testDeleteAll() throws Exception {
+        final Schema schema = dataContext.getDefaultSchema();
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        createTable.withColumn("foo").ofType(ColumnType.STRING);
+        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
+        dataContext.executeUpdate(createTable);
+
+        final Table table = schema.getTableByName("testCreateTable");
+
+        dataContext.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
+            }
+        });
+
+        dataContext.executeUpdate(new DeleteFrom(table));
+
+        Row row = MetaModelHelper.executeSingleRowQuery(dataContext, dataContext.query().from(table).selectCount()
+                .toQuery());
+        assertEquals("Row[values=[0]]", row.toString());
+
+        dataContext.executeUpdate(new DropTable(table));
+    }
+
+    @Test
+    public void testDeleteByQuery() throws Exception {
+        final Schema schema = dataContext.getDefaultSchema();
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        createTable.withColumn("foo").ofType(ColumnType.STRING);
+        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
+        dataContext.executeUpdate(createTable);
+
+        final Table table = schema.getTableByName("testCreateTable");
+
+        dataContext.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
+            }
+        });
+
+        dataContext.executeUpdate(new DeleteFrom(table).where("foo").eq("hello").where("bar").eq(42));
+
+        Row row = MetaModelHelper.executeSingleRowQuery(dataContext,
+                dataContext.query().from(table).select("foo", "bar").toQuery());
+        assertEquals("Row[values=[world, 43]]", row.toString());
+
+        dataContext.executeUpdate(new DropTable(table));
+    }
+
+    @Test
+    public void testDeleteUnsupportedQueryType() throws Exception {
+        final Schema schema = dataContext.getDefaultSchema();
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        createTable.withColumn("foo").ofType(ColumnType.STRING);
+        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
+        dataContext.executeUpdate(createTable);
+
+        final Table table = schema.getTableByName("testCreateTable");
+        try {
+
+            dataContext.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback callback) {
+                    callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                    callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
+                }
+            });
+
+            // greater than is not yet supported
+            try {
+                dataContext.executeUpdate(new DeleteFrom(table).where("bar").gt(40));
+                fail("Exception expected");
+            } catch (UnsupportedOperationException e) {
+                assertEquals("Could not push down WHERE items to delete by query request: [testCreateTable.bar > 40]",
+                        e.getMessage());
+            }
+
+        } finally {
+            dataContext.executeUpdate(new DropTable(table));
+        }
+    }
+
+    @Test
+    public void testUpdateRow() throws Exception {
+        final Schema schema = dataContext.getDefaultSchema();
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        createTable.withColumn("foo").ofType(ColumnType.STRING);
+        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
+        dataContext.executeUpdate(createTable);
+
+        final Table table = schema.getTableByName("testCreateTable");
+        try {
+
+            dataContext.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback callback) {
+                    callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                    callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
+                }
+            });
+
+            dataContext.executeUpdate(new Update(table).value("foo", "howdy").where("bar").eq(42));
+
+            DataSet dataSet = dataContext.query().from(table).select("foo", "bar").orderBy("bar").execute();
+            assertTrue(dataSet.next());
+            assertEquals("Row[values=[howdy, 42]]", dataSet.getRow().toString());
+            assertTrue(dataSet.next());
+            assertEquals("Row[values=[world, 43]]", dataSet.getRow().toString());
+            assertFalse(dataSet.next());
+            dataSet.close();
+        } finally {
+            dataContext.executeUpdate(new DropTable(table));
+        }
     }
 
     @Test
@@ -262,7 +383,22 @@ public class ElasticSearchDataContextTest {
     public void testWhereColumnEqualsValues() throws Exception {
         DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
                 .isEquals("user4").execute();
-        assertEquals(FilteredDataSet.class, ds.getClass());
+        assertEquals(ElasticSearchDataSet.class, ds.getClass());
+
+        try {
+            assertTrue(ds.next());
+            assertEquals("Row[values=[user4, 4]]", ds.getRow().toString());
+            assertFalse(ds.next());
+        } finally {
+            ds.close();
+        }
+    }
+
+    @Test
+    public void testWhereMultiColumnsEqualValues() throws Exception {
+        DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
+                .isEquals("user4").and("message").ne(5).execute();
+        assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
         try {
             assertTrue(ds.next());

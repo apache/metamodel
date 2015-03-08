@@ -31,11 +31,11 @@ import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class ElasticSearchInsertIntoBuilder extends AbstractRowInsertionBuilder<ElasticSearchUpdateCallback> {
+final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<ElasticSearchUpdateCallback> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchInsertIntoBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchInsertBuilder.class);
 
-    public ElasticSearchInsertIntoBuilder(ElasticSearchUpdateCallback updateCallback, Table table) {
+    public ElasticSearchInsertBuilder(ElasticSearchUpdateCallback updateCallback, Table table) {
         super(updateCallback, table);
     }
 

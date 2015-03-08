@@ -26,7 +26,6 @@ import org.apache.metamodel.drop.TableDropBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.update.RowUpdationBuilder;
 import org.elasticsearch.client.Client;
 
 /**
@@ -63,33 +62,18 @@ final class ElasticSearchUpdateCallback extends AbstractUpdateCallback {
     @Override
     public RowInsertionBuilder insertInto(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        return new ElasticSearchInsertIntoBuilder(this, table);
-    }
-
-    @Override
-    public boolean isUpdateSupported() {
-        // TODO
-        return false;
-    }
-
-    @Override
-    public RowUpdationBuilder update(Table table) throws IllegalArgumentException, IllegalStateException,
-            UnsupportedOperationException {
-        // TODO
-        throw new UnsupportedOperationException();
+        return new ElasticSearchInsertBuilder(this, table);
     }
 
     @Override
     public boolean isDeleteSupported() {
-        // TODO
-        return false;
+        return true;
     }
 
     @Override
     public RowDeletionBuilder deleteFrom(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        // TODO
-        throw new UnsupportedOperationException();
+        return new ElasticSearchDeleteBuilder(this, table);
     }
 
     public void onExecuteUpdateFinished() {
