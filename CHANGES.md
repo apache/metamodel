@@ -1,7 +1,8 @@
-### Apache MetaModel 4.3.2 (WIP)
+### Apache MetaModel 4.4.0 (WIP)
 
  * [METAMODEL-78] - Fixed a bug that caused SELECT DISTINCT to sometimes return duplicates records on certain DataContext implementations.
  * [METAMODEL-106] - Improved handling of invalid or non-existing index names passed to ElasticSearchDataContext
+ * [METAMODEL-79] - Added update execution support on ElasticSearch module. Increased capability of pushing down WHERE items to ElasticSearch searches.
 
 ### Apache MetaModel 4.3.1
 
