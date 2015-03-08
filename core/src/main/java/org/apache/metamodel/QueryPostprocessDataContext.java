@@ -618,9 +618,18 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
     protected DataSet materializeMainSchemaTable(Table table, List<SelectItem> selectItems,
             List<FilterItem> whereItems, int firstRow, int maxRows) {
         final List<SelectItem> workingSelectItems = buildWorkingSelectItems(selectItems, whereItems);
-        DataSet dataSet = materializeMainSchemaTable(table, workingSelectItems, firstRow, maxRows);
-        dataSet = MetaModelHelper.getFiltered(dataSet, whereItems);
-        dataSet = MetaModelHelper.getSelection(selectItems, dataSet);
+        DataSet dataSet; 
+        if (whereItems.isEmpty()) {
+            // paging is pushed down to materializeMainSchemaTable
+            dataSet = materializeMainSchemaTable(table, workingSelectItems, firstRow, maxRows);
+            dataSet = MetaModelHelper.getSelection(selectItems, dataSet);
+        } else {
+            // do not push down paging, first we have to apply filtering
+            dataSet = materializeMainSchemaTable(table, workingSelectItems, 1, -1);
+            dataSet = MetaModelHelper.getFiltered(dataSet, whereItems);
+            dataSet = MetaModelHelper.getPaged(dataSet, firstRow, maxRows);
+            dataSet = MetaModelHelper.getSelection(selectItems, dataSet);
+        }
         return dataSet;
     }
 
