@@ -32,7 +32,6 @@ import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.action.deletebyquery.IndexDeleteByQueryResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,22 +64,19 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
         deleteByQueryRequestBuilder.setTypes(documentType);
 
         final List<FilterItem> whereItems = getWhereItems();
-        if (whereItems.isEmpty()) {
-            // truncate the index
-            deleteByQueryRequestBuilder.setQuery(QueryBuilders.matchAllQuery());
-        } else {
-            // delete by query
-            final QueryBuilder queryBuilder = dataContext.createQueryBuilderForSimpleWhere(table, whereItems,
-                    LogicalOperator.AND);
-            if (queryBuilder == null) {
-                // TODO: The where items could not be pushed down to a query. We
-                // could solve this by running a query first, gather all
-                // document IDs and then delete by IDs.
-                throw new UnsupportedOperationException("Could not push down WHERE items to delete by query request: "
-                        + whereItems);
-            }
-            deleteByQueryRequestBuilder.setQuery(queryBuilder);
+
+        // delete by query - note that creteQueryBuilderForSimpleWhere may
+        // return matchAllQuery() if no where items are present.
+        final QueryBuilder queryBuilder = dataContext.createQueryBuilderForSimpleWhere(table, whereItems,
+                LogicalOperator.AND);
+        if (queryBuilder == null) {
+            // TODO: The where items could not be pushed down to a query. We
+            // could solve this by running a query first, gather all
+            // document IDs and then delete by IDs.
+            throw new UnsupportedOperationException("Could not push down WHERE items to delete by query request: "
+                    + whereItems);
         }
+        deleteByQueryRequestBuilder.setQuery(queryBuilder);
 
         final DeleteByQueryResponse response = deleteByQueryRequestBuilder.execute().actionGet();
 

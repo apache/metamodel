@@ -111,7 +111,8 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
 
         final ColumnType type = column.getType();
         if (type == null) {
-            return "object";
+            throw new IllegalStateException("No column type specified for '" + column.getName()
+                    + "' - cannot build ElasticSearch mapping without type.");
         }
 
         if (type.isLiteral()) {
@@ -136,8 +137,7 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
             return "object";
         }
 
-        logger.warn("Unhandled column type {} - the column '{}' will not have any type defined", type, column.getName());
-
-        return "object";
+        throw new UnsupportedOperationException("Unsupported column type '" + type.getName() + "' of column '"
+                + column.getName() + "' - cannot translate to an ElasticSearch type.");
     }
 }
