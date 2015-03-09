@@ -2,6 +2,7 @@
 
  * [METAMODEL-78] - Fixed a bug that caused SELECT DISTINCT to sometimes return duplicates records on certain DataContext implementations.
  * [METAMODEL-106] - Improved handling of invalid or non-existing index names passed to ElasticSearchDataContext
+ * [METAMODEL-115] - Improved query parsing to allow lower-case function names, operators etc.
 
 ### Apache MetaModel 4.3.1
 
