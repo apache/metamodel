@@ -53,7 +53,7 @@ import org.junit.Ignore;
  * Test case that tests postgresql interaction. The test requires the
  * "dellstore2" sample database that can be found at pgfoundry.
  * 
- * @see http://pgfoundry.org/projects/dbsamples/
+ * @see http://mirrors.dotsrc.org/postgresql/projects/pgFoundry/dbsamples/
  */
 public class PostgresqlTest extends AbstractJdbIntegrationTest {
 
