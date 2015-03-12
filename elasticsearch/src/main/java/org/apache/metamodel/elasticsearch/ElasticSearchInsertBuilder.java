@@ -70,7 +70,8 @@ final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<Elast
         requestBuilder.setCreate(true);
 
         final IndexResponse result = requestBuilder.execute().actionGet();
-        logger.debug("Inserted document: id={}, created={}", result.getId(), result.isCreated());
+        
+        logger.debug("Inserted document: id={}", result.getId());
     }
 
 }
