@@ -27,7 +27,7 @@ MetaModel uses maven as it's build tool. Code can be built with:
 mvn clean install.
 ```
 
-If you also want to run integration tests:
+### Running the integration tests
 
  1. Copy the file 'example-metamodel-integrationtest-configuration.properties' to your user home.
  2. Remove the 'example-' prefix from its filename
