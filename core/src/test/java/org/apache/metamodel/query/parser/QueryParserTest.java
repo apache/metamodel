@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.query.parser;
 
+import java.lang.String;
 import java.util.Arrays;
 import java.util.List;
 
@@ -93,6 +94,21 @@ public class QueryParserTest extends TestCase {
     public void testSelectDistinct() throws Exception {
         Query q = MetaModelHelper.parseQuery(dc, "SELECT DISTINCT foo, bar AS f FROM sch.tbl");
         assertEquals("SELECT DISTINCT tbl.foo, tbl.bar AS f FROM sch.tbl", q.toSql());
+    }
+
+    public void testSelectDistinctInLowerCase() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc, "SELECT distinct foo, bar AS f FROM sch.tbl");
+        assertEquals("SELECT DISTINCT tbl.foo, tbl.bar AS f FROM sch.tbl", q.toSql());
+    }
+
+    public void testSelectMinInLowerCase() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc, "SELECT min(tbl.foo) FROM sch.tbl");
+        assertEquals("SELECT MIN(tbl.foo) FROM sch.tbl", q.toSql());
+    }
+
+    public void testSelectAvgInLowerCase() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc, "SELECT avg(tbl.foo) FROM sch.tbl");
+        assertEquals("SELECT AVG(tbl.foo) FROM sch.tbl", q.toSql());
     }
 
     public void testSimpleSelectFrom() throws Exception {
@@ -237,6 +253,30 @@ public class QueryParserTest extends TestCase {
         assertEquals("a", ((List<?>) operand).get(0));
         assertEquals("b", ((List<?>) operand).get(1));
         assertEquals(5, ((List<?>) operand).get(2));
+    }
+
+    public void testWhereInInLowerCase() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc, "SELECT foo FROM sch.tbl WHERE foo in ('a','b',5)");
+        assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.foo IN ('a' , 'b' , '5')", q.toSql());
+
+        FilterItem whereItem = q.getWhereClause().getItem(0);
+        assertEquals(OperatorType.IN, whereItem.getOperator());
+        Object operand = whereItem.getOperand();
+        assertTrue(operand instanceof List);
+        assertEquals("a", ((List<?>) operand).get(0));
+        assertEquals("b", ((List<?>) operand).get(1));
+        assertEquals(5, ((List<?>) operand).get(2));
+    }
+
+    public void testWhereLikeInLowerCase() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc, "SELECT foo FROM sch.tbl WHERE foo like 'a%'");
+        assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.foo LIKE 'a%'", q.toSql());
+
+        FilterItem whereItem = q.getWhereClause().getItem(0);
+        assertEquals(OperatorType.LIKE, whereItem.getOperator());
+        Object operand = whereItem.getOperand();
+        assertTrue(operand instanceof String);
+        assertEquals("a%", operand);
     }
 
     public void testSimpleSubQuery() throws Exception {

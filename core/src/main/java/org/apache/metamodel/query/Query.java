@@ -297,6 +297,8 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
     }
 
     private FilterItem findFilterItem(String expression) {
+        String _upperExpression = expression.toUpperCase();
+
         final QueryPartCollectionProcessor collectionProcessor = new QueryPartCollectionProcessor();
         new QueryPartParser(collectionProcessor, expression, " AND ", " OR ").parse();
 
@@ -329,7 +331,7 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
                 } else {
                     searchStr = operatorCandidate.toSql();
                 }
-                final int operatorIndex = expression.indexOf(searchStr);
+                final int operatorIndex = _upperExpression.indexOf(searchStr);
                 if (operatorIndex > 0) {
                     operator = operatorCandidate;
                     leftSide = expression.substring(0, operatorIndex).trim();
