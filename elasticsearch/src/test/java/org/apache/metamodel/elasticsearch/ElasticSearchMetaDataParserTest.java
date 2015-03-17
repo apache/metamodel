@@ -24,23 +24,32 @@ import org.apache.metamodel.schema.ColumnType;
 public class ElasticSearchMetaDataParserTest extends TestCase {
 
     public void testParseMetadataInfo() throws Exception {
-        String metaDataInfo = "{message={type=long}, postDate={type=date, format=dateOptionalTime}, anotherDate={type=date, format=dateOptionalTime}, user={type=string}}";
+        String metaDataInfo = "{message={type=long}, " +
+                "postDate={type=date, format=dateOptionalTime}, " +
+                "anotherDate={type=date, format=dateOptionalTime}, " +
+                "user={type=string}, " +
+                "critical={type=boolean}, " +
+                "income={type=double}}";
 
         ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(metaDataInfo);
         String[] columnNames = metaData.getColumnNames();
         ColumnType[] columnTypes = metaData.getColumnTypes();
 
-        assertTrue(columnNames.length==5);
+        assertTrue(columnNames.length == 7);
         assertEquals(columnNames[0], "_id");
         assertEquals(columnNames[1], "message");
         assertEquals(columnNames[2], "postDate");
         assertEquals(columnNames[3], "anotherDate");
         assertEquals(columnNames[4], "user");
-        assertTrue(columnTypes.length == 5);
+        assertEquals(columnNames[5], "critical");
+        assertEquals(columnNames[6], "income");
+        assertTrue(columnTypes.length == 7);
         assertEquals(columnTypes[0], ColumnType.STRING);
         assertEquals(columnTypes[1], ColumnType.BIGINT);
         assertEquals(columnTypes[2], ColumnType.DATE);
         assertEquals(columnTypes[3], ColumnType.DATE);
         assertEquals(columnTypes[4], ColumnType.STRING);
+        assertEquals(columnTypes[5], ColumnType.BOOLEAN);
+        assertEquals(columnTypes[6], ColumnType.DOUBLE);
     }
 }
