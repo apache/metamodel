@@ -20,18 +20,11 @@ package org.apache.metamodel.csv;
 
 import java.io.IOException;
 import java.lang.*;
-import java.lang.Double;
-import java.lang.Exception;
-import java.lang.Float;
-import java.lang.Long;
-import java.lang.Short;
-import java.sql.Date;
-import java.sql.Time;
-import java.sql.Timestamp;
 
 import org.apache.metamodel.schema.AbstractTable;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.ColumnTypeImpl;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.Relationship;
 import org.apache.metamodel.schema.Schema;
@@ -166,50 +159,7 @@ final class CsvTable extends AbstractTable {
     }
 
     private ColumnType getColumnType(String columnValue) {
-        if(columnValue.toUpperCase().equals("TRUE") | columnValue.toUpperCase().equals("FALSE")) {
-            return ColumnType.BOOLEAN;
-        }
-        try {
-            Short.parseShort(columnValue);
-            return ColumnType.SMALLINT;
-        } catch (Exception ex1) {
-            try {
-                Integer.parseInt(columnValue);
-                return ColumnType.INTEGER;
-            } catch (Exception ex2) {
-                try {
-                    Long.parseLong(columnValue);
-                    return ColumnType.BIGINT;
-                } catch (Exception ex3) {
-                    try {
-                        Float.parseFloat(columnValue);
-                        return ColumnType.FLOAT;
-                    } catch (Exception ex4) {
-                        try {
-                            Double.parseDouble(columnValue);
-                            return ColumnType.DOUBLE;
-                        } catch (Exception ex5) {
-                            try {
-                                Date.parse(columnValue);
-                                return ColumnType.DATE;
-                            } catch (Exception ex6) {
-                                try {
-                                    Time.parse(columnValue);
-                                    return ColumnType.TIME;
-                                } catch (Exception ex7) {
-                                    try {
-                                        Timestamp.parse(columnValue);
-                                        return ColumnType.TIMESTAMP;
-                                    } catch (Exception ex8) {
-                                        return ColumnType.STRING;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        return ColumnTypeImpl.convertColumnType(CsvDataUtil.cast(columnValue).getClass());
     }
 
     @Override
