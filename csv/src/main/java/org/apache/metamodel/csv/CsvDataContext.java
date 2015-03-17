@@ -196,7 +196,7 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
     }
 
     /**
-     * Gets the CSV configuration used
+     * tts the CSV configuration used
      * 
      * @return a CSV configuration
      */

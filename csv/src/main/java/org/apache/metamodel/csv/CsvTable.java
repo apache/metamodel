@@ -19,6 +19,15 @@
 package org.apache.metamodel.csv;
 
 import java.io.IOException;
+import java.lang.*;
+import java.lang.Double;
+import java.lang.Exception;
+import java.lang.Float;
+import java.lang.Long;
+import java.lang.Short;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 
 import org.apache.metamodel.schema.AbstractTable;
 import org.apache.metamodel.schema.Column;
@@ -94,9 +103,10 @@ final class CsvTable extends AbstractTable {
                 reader.readNext();
             }
             final String[] columnHeaders = reader.readNext();
+            final String[] columnValues = reader.readNext();
 
             reader.close();
-            return buildColumns(columnHeaders);
+            return buildColumns(columnHeaders, columnValues);
         } catch (IOException e) {
             throw new IllegalStateException("Exception reading from resource: "
                     + _schema.getDataContext().getResource().getName(), e);
@@ -128,6 +138,78 @@ final class CsvTable extends AbstractTable {
             columns[i] = column;
         }
         return columns;
+    }
+
+    private Column[] buildColumns(final String[] columnNames, final String[] columnValues) {
+        if (columnNames == null) {
+            return new Column[0];
+        }
+
+        final CsvConfiguration configuration = _schema.getDataContext().getConfiguration();
+        final int columnNameLineNumber = configuration.getColumnNameLineNumber();
+        final boolean nullable = !configuration.isFailOnInconsistentRowLength();
+
+        final Column[] columns = new Column[columnNames.length];
+        final AlphabeticSequence sequence = new AlphabeticSequence();
+        for (int i = 0; i < columnNames.length; i++) {
+            final String columnName;
+            if (columnNameLineNumber == CsvConfiguration.NO_COLUMN_NAME_LINE) {
+                columnName = sequence.next();
+            } else {
+                columnName = columnNames[i];
+            }
+            Column column = new MutableColumn(columnName, getColumnType(columnValues[i]), this, i, null, null, nullable, null,
+                    false, null);
+            columns[i] = column;
+        }
+        return columns;
+    }
+
+    private ColumnType getColumnType(String columnValue) {
+        if(columnValue.toUpperCase().equals("TRUE") | columnValue.toUpperCase().equals("FALSE")) {
+            return ColumnType.BOOLEAN;
+        }
+        try {
+            Short.parseShort(columnValue);
+            return ColumnType.SMALLINT;
+        } catch (Exception ex1) {
+            try {
+                Integer.parseInt(columnValue);
+                return ColumnType.INTEGER;
+            } catch (Exception ex2) {
+                try {
+                    Long.parseLong(columnValue);
+                    return ColumnType.BIGINT;
+                } catch (Exception ex3) {
+                    try {
+                        Float.parseFloat(columnValue);
+                        return ColumnType.FLOAT;
+                    } catch (Exception ex4) {
+                        try {
+                            Double.parseDouble(columnValue);
+                            return ColumnType.DOUBLE;
+                        } catch (Exception ex5) {
+                            try {
+                                Date.parse(columnValue);
+                                return ColumnType.DATE;
+                            } catch (Exception ex6) {
+                                try {
+                                    Time.parse(columnValue);
+                                    return ColumnType.TIME;
+                                } catch (Exception ex7) {
+                                    try {
+                                        Timestamp.parse(columnValue);
+                                        return ColumnType.TIMESTAMP;
+                                    } catch (Exception ex8) {
+                                        return ColumnType.STRING;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
