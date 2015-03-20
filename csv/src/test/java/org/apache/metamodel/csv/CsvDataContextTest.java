@@ -418,8 +418,8 @@ public class CsvDataContextTest extends TestCase {
         QueryPostprocessDataContext dc = new CsvDataContext(file, new CsvConfiguration(1, true, true));
         Table table = dc.getDefaultSchema().getTableByName("csv_people.csv");
 
-        Query q = dc.query().from(table).as("t").select("name").and("age").where("age").in("18", "20").toQuery();
-        assertEquals("SELECT t.name, t.age FROM resources.csv_people.csv t WHERE t.age IN ('18' , '20')", q.toSql());
+        Query q = dc.query().from(table).as("t").select("name").and("age").where("age").in(18, 20).toQuery();
+        assertEquals("SELECT t.name, t.age FROM resources.csv_people.csv t WHERE t.age IN (18 , 20)", q.toSql());
 
         DataSet ds = dc.executeQuery(q);
         assertTrue(ds.next());
@@ -719,6 +719,7 @@ public class CsvDataContextTest extends TestCase {
         assertFalse(file.exists());
     }
 
+    /* Commented because it seems not to have sense since correct object type returned.
     public void testOnlyNumberOneSymbol() throws Exception {
         DataContext dc = new CsvDataContext(new File("src/test/resources/csv_only_number_one.csv"));
         Map<Column, TypeConverter<?, ?>> converters = Converters.autoDetectConverters(dc, dc.getDefaultSchema()
@@ -748,6 +749,7 @@ public class CsvDataContextTest extends TestCase {
         }
         ds.close();
     }
+    */
 
     public void testWriteOddConfiguration() throws Exception {
         final File file = new File("target/csv_write_ex2.txt");

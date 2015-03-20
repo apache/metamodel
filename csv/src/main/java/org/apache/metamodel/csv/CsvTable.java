@@ -20,6 +20,7 @@ package org.apache.metamodel.csv;
 
 import java.io.IOException;
 import java.lang.*;
+import java.util.ArrayList;
 
 import org.apache.metamodel.schema.AbstractTable;
 import org.apache.metamodel.schema.Column;
@@ -96,10 +97,9 @@ final class CsvTable extends AbstractTable {
                 reader.readNext();
             }
             final String[] columnHeaders = reader.readNext();
-            final String[] columnValues = reader.readNext();
 
             reader.close();
-            return buildColumns(columnHeaders, columnValues);
+            return buildColumns(columnHeaders);
         } catch (IOException e) {
             throw new IllegalStateException("Exception reading from resource: "
                     + _schema.getDataContext().getResource().getName(), e);
@@ -109,6 +109,36 @@ final class CsvTable extends AbstractTable {
     }
 
     private Column[] buildColumns(final String[] columnNames) {
+        CSVReader reader = null;
+
+        if (columnNames == null) {
+            return new Column[0];
+        }
+
+        try {
+            reader = _schema.getDataContext().createCsvReader(0);
+
+            final int columnNameLineNumber = _schema.getDataContext().getConfiguration().getColumnNameLineNumber();
+            for (int i = 1; i < columnNameLineNumber; i++) {
+                reader.readNext();
+            }
+            final String[] columnHeaders = reader.readNext(); //Discard column headers
+            final String[] columnValues = reader.readNext();
+
+            reader.close();
+            if(columnValues != null) {
+                return buildColumns(columnNames, getColumnTypes(columnValues));
+            }
+            return buildColumns(columnNames, getColumnTypes(columnNames));
+        } catch (IOException e) {
+            throw new IllegalStateException("Exception reading from resource: "
+                    + _schema.getDataContext().getResource().getName(), e);
+        } finally {
+            FileHelper.safeClose(reader);
+        }
+    }
+
+    private Column[] buildColumns(final String[] columnNames, final ColumnType[] columnTypes) {
         if (columnNames == null) {
             return new Column[0];
         }
@@ -121,45 +151,34 @@ final class CsvTable extends AbstractTable {
         final AlphabeticSequence sequence = new AlphabeticSequence();
         for (int i = 0; i < columnNames.length; i++) {
             final String columnName;
+            Column column;
             if (columnNameLineNumber == CsvConfiguration.NO_COLUMN_NAME_LINE) {
                 columnName = sequence.next();
             } else {
                 columnName = columnNames[i];
             }
-            Column column = new MutableColumn(columnName, ColumnType.STRING, this, i, null, null, nullable, null,
-                    false, null);
+            if(columnTypes.length > i)
+                column = new MutableColumn(columnName, columnTypes[i], this, i, null, null, nullable, null,
+                        false, null);
+            else column = new MutableColumn(columnName, ColumnType.VARCHAR, this, i, null, null, nullable, null,
+                        false, null);
             columns[i] = column;
+
         }
         return columns;
     }
 
-    private Column[] buildColumns(final String[] columnNames, final String[] columnValues) {
-        if (columnNames == null) {
-            return new Column[0];
-        }
+    private ColumnType[] getColumnTypes(String[] columnValues) {
+        ColumnType[] types = new ColumnType[0];
 
-        final CsvConfiguration configuration = _schema.getDataContext().getConfiguration();
-        final int columnNameLineNumber = configuration.getColumnNameLineNumber();
-        final boolean nullable = !configuration.isFailOnInconsistentRowLength();
-
-        final Column[] columns = new Column[columnNames.length];
-        final AlphabeticSequence sequence = new AlphabeticSequence();
-        for (int i = 0; i < columnNames.length; i++) {
-            final String columnName;
-            if (columnNameLineNumber == CsvConfiguration.NO_COLUMN_NAME_LINE) {
-                columnName = sequence.next();
-            } else {
-                columnName = columnNames[i];
+        if(columnValues != null) {
+            types = new ColumnType[columnValues.length];
+            for (int i = 0; i < columnValues.length; i++) {
+                types[i] = ColumnTypeImpl.convertColumnType(CsvDataUtil.cast(columnValues[i]).getClass());
             }
-            Column column = new MutableColumn(columnName, getColumnType(columnValues[i]), this, i, null, null, nullable, null,
-                    false, null);
-            columns[i] = column;
         }
-        return columns;
-    }
 
-    private ColumnType getColumnType(String columnValue) {
-        return ColumnTypeImpl.convertColumnType(CsvDataUtil.cast(columnValue).getClass());
+        return types;
     }
 
     @Override

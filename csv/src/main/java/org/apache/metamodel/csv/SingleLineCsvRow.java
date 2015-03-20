@@ -44,7 +44,7 @@ final class SingleLineCsvRow extends AbstractRow {
     private final int _columnsInTable;
     private final boolean _failOnInconsistentRowLength;
     private final int _rowNumber;
-    private String[] _values;
+    private Object[] _values;
 
     public SingleLineCsvRow(SingleLineCsvDataSet dataSet, final String line, final int columnsInTable,
             final boolean failOnInconsistentRowLength, final int rowNumber) {
@@ -56,7 +56,7 @@ final class SingleLineCsvRow extends AbstractRow {
         _values = null;
     }
 
-    private String[] getValuesInternal() {
+    private Object[] getValuesInternal() {
         if (_values == null) {
             final String[] csvValues = parseLine();
 
@@ -71,13 +71,13 @@ final class SingleLineCsvRow extends AbstractRow {
             // requested
             final DataSetHeader header = _dataSet.getHeader();
             final int size = header.size();
-            final String[] rowValues = new String[size];
+            final Object[] rowValues = new Object[size];
 
             for (int i = 0; i < size; i++) {
                 final Column column = header.getSelectItem(i).getColumn();
                 final int columnNumber = column.getColumnNumber();
                 if (columnNumber < csvValues.length) {
-                    rowValues[i] = csvValues[columnNumber];
+                    rowValues[i] = CsvDataUtil.cast(csvValues[columnNumber]);
                 } else {
                     // Ticket #125: Missing values should be interpreted as
                     // null.
@@ -108,7 +108,7 @@ final class SingleLineCsvRow extends AbstractRow {
 
     @Override
     public Object getValue(int index) throws IndexOutOfBoundsException {
-        final String[] values = getValuesInternal();
+        final Object[] values = getValuesInternal();
         assert values != null;
         return values[index];
     }
