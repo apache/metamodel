@@ -22,8 +22,6 @@ import java.lang.Double;
 import java.lang.Exception;
 import java.lang.Float;
 import java.lang.Long;
-import java.lang.Short;
-import java.lang.System;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -31,35 +29,32 @@ import java.sql.Timestamp;
 final class CsvDataUtil {
 
     public static Object cast(String columnValue) {
+        if(columnValue == null) return null;
         if(columnValue.toUpperCase().equals("TRUE") | columnValue.toUpperCase().equals("FALSE")) {
             return Boolean.parseBoolean(columnValue);
         }
         try {
-            return Short.parseShort(columnValue);
-        } catch (Exception ex1) {
+            return Integer.valueOf(columnValue);
+        } catch (Exception ex2) {
             try {
-                return Integer.parseInt(columnValue);
-            } catch (Exception ex2) {
+                return Long.valueOf(columnValue);
+            } catch (Exception ex3) {
                 try {
-                    return Long.parseLong(columnValue);
-                } catch (Exception ex3) {
+                    return Float.valueOf(columnValue);
+                } catch (Exception ex4) {
                     try {
-                        return Float.parseFloat(columnValue);
-                    } catch (Exception ex4) {
+                        return Double.valueOf(columnValue);
+                    } catch (Exception ex5) {
                         try {
-                            return Double.parseDouble(columnValue);
-                        } catch (Exception ex5) {
+                            return Date.valueOf(columnValue);
+                        } catch (Exception ex6) {
                             try {
-                                return new Date(Date.parse(columnValue));
-                            } catch (Exception ex6) {
+                                return Time.valueOf(columnValue);
+                            } catch (Exception ex7) {
                                 try {
-                                    return new Time(Time.parse(columnValue));
-                                } catch (Exception ex7) {
-                                    try {
-                                        return new Timestamp(Timestamp.parse(columnValue));
-                                    } catch (Exception ex8) {
-                                        return columnValue;
-                                    }
+                                    return Timestamp.valueOf(columnValue);
+                                } catch (Exception ex8) {
+                                    return columnValue;
                                 }
                             }
                         }
@@ -68,5 +63,4 @@ final class CsvDataUtil {
             }
         }
     }
-
 }
