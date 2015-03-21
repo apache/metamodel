@@ -213,6 +213,23 @@ public class QueryParserTest extends TestCase {
         assertTrue(bazConditions.isCompoundFilter());
     }
 
+    public void testCoumpoundWhereClauseDelimInLoweCase() throws Exception {
+        Query q = MetaModelHelper
+                .parseQuery(dc, "SELECT foo FROM sch.tbl WHERE (bar = 'baz' OR (baz > 5 and baz < 7))");
+        assertEquals("SELECT tbl.foo FROM sch.tbl WHERE (tbl.bar = 'baz' OR (tbl.baz > 5 AND tbl.baz < 7))", q.toSql());
+
+        FilterClause wc = q.getWhereClause();
+        assertEquals(1, wc.getItemCount());
+        FilterItem item = wc.getItem(0);
+        assertTrue(item.isCompoundFilter());
+
+        FilterItem[] childItems = item.getChildItems();
+        assertEquals(2, childItems.length);
+
+        FilterItem bazConditions = childItems[1];
+        assertTrue(bazConditions.isCompoundFilter());
+    }
+
     public void testWhereSomethingIsNull() throws Exception {
         Query q = MetaModelHelper.parseQuery(dc, "SELECT foo FROM sch.tbl WHERE bar IS NULL");
         assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.bar IS NULL", q.toSql());
