@@ -19,7 +19,6 @@
 package org.apache.metamodel.elasticsearch;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
@@ -28,8 +27,6 @@ import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.LogicalOperator;
 import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
-import org.elasticsearch.action.deletebyquery.IndexDeleteByQueryResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.slf4j.Logger;
@@ -77,16 +74,8 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
                     + whereItems);
         }
         deleteByQueryRequestBuilder.setQuery(queryBuilder);
+        deleteByQueryRequestBuilder.execute().actionGet();
 
-        final DeleteByQueryResponse response = deleteByQueryRequestBuilder.execute().actionGet();
-
-        if (logger.isDebugEnabled()) {
-            final Map<String, Object> headers = response.getHeaders();
-            final IndexDeleteByQueryResponse indexResponse = response.getIndex(indexName);
-            final Map<String, Object> indexHeaders = indexResponse.getHeaders();
-
-            logger.debug("Deleted documents by query. Response headers: {}, Index headers: {}", headers, indexHeaders);
-        }
+        logger.debug("Deleted documents by query.");
     }
-
 }

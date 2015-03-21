@@ -1,3 +1,7 @@
+### Apache MetaModel work-in-progress
+
+ * [METAMODEL-123] - Added compatibility with ElasticSearch version 1.4.x
+
 ### Apache MetaModel 4.3.2
 
  * [METAMODEL-78] - Fixed a bug that caused SELECT DISTINCT to sometimes return duplicates records on certain DataContext implementations.
