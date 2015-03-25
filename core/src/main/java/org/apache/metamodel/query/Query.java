@@ -125,9 +125,35 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
         if ("*".equals(expression)) {
             return selectAll();
         }
-
-        SelectItem selectItem = findSelectItem(expression, true);
-        return select(selectItem);
+        
+        String[] possibleSelectItems = splitExpressionByComma(expression);
+        for(String possibleSelectItem : possibleSelectItems) {
+              SelectItem selectItem = findSelectItem(possibleSelectItem, true);
+              select(selectItem);
+        }
+        return this;
+    }
+   
+    /**
+     * If multiple columns or expressions are given in comma seperated string, this methods splits and generates
+     * string array of expressions representing single column.
+     * @param expression
+     * @return
+     */
+    public String[] splitExpressionByComma(String expression) {
+              String[] intermediateSplit = expression.split(",");
+       List<String> expressionList = new ArrayList<String>();
+       for(int i=0 ; i < intermediateSplit.length ; i++) {
+              String token = intermediateSplit[i];
+              int openParanthesisIndex = token.lastIndexOf("(");
+              int closeParanthesisIndex = token.lastIndexOf(")");
+              if(openParanthesisIndex > -1 && (closeParanthesisIndex < 0 || openParanthesisIndex > closeParanthesisIndex)) {
+                     intermediateSplit[i+1] = token + "," + intermediateSplit[i+1];
+                     continue;
+              }
+              expressionList.add(token);
+       }
+       return expressionList.toArray(new String[expressionList.size()]);
     }
 
     private SelectItem findSelectItem(String expression, boolean allowExpressionBasedSelectItem) {
