@@ -1022,4 +1022,16 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
 
         assertEquals("file.csv.foo = 'bar'", item.toSql());
     }
+    
+    public void testQueryWithMultipleColumnsInExpression() {
+        Query query1 = new Query().from(table1).select("contributor_id,name");
+        DataSet set = getDataContext().executeQuery(query1);
+        assertEquals(set.next(), true);
+        assertEquals(set.getRow().toString(), "Row[values=[1, kasper]]");
+        Query query2 = new Query().from(table1).select("Greatest(1,2,3),max(contributer_id)");
+        assertEquals(query2.toString(), "SELECT Greatest(1,2,3), MAX(contributer_id) FROM MetaModelSchema.contributor");
+        Query query3 = new Query().from(table1).select("*,count(*)");
+        assertEquals(query3.toString(), "SELECT contributor.contributor_id, contributor.name, contributor.country, COUNT(*)"
+                      + " FROM MetaModelSchema.contributor");
+    }
 }
