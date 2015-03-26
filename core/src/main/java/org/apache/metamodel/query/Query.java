@@ -122,14 +122,14 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
      * @return
      */
     public Query select(String expression) {
-        if ("*".equals(expression)) {
-            return selectAll();
-        }
-        
         String[] possibleSelectItems = splitExpressionByComma(expression);
         for(String possibleSelectItem : possibleSelectItems) {
-              SelectItem selectItem = findSelectItem(possibleSelectItem, true);
-              select(selectItem);
+            if ("*".equals(possibleSelectItem)) {
+                selectAll();
+                continue;
+            }
+            SelectItem selectItem = findSelectItem(possibleSelectItem, true);
+            select(selectItem);
         }
         return this;
     }
