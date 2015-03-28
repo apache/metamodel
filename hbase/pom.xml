@@ -20,7 +20,7 @@
 	<name>MetaModel module for Apache HBase</name>
 
 	<properties>
-		<hbase.version>0.95.1-hadoop1</hbase.version>
+		<hbase.version>1.0.0</hbase.version>
 	</properties>
 
 	<dependencies>
@@ -113,6 +113,10 @@
 				<exclusion>
 					<groupId>org.codehaus.jackson</groupId>
 					<artifactId>jackson-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.codehaus.jackson</groupId>
+					<artifactId>jackson-core-asl</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
