@@ -90,7 +90,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
                 return schema;
             }
         };
-        
+
         DataSet ds = dc.query().from(table).selectAll().execute();
         assertTrue(ds.next());
         assertEquals("Row[values=[0, 1, 2]]", ds.getRow().toString());
@@ -1022,6 +1022,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
 
         assertEquals("file.csv.foo = 'bar'", item.toSql());
     }
+<<<<<<< HEAD
     
     public void testQueryWithMultipleColumnsInExpression() {
         Query query1 = new Query().from(table1).select("contributor_id,name");
@@ -1033,5 +1034,18 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         Query query3 = new Query().from(table1).select("*,count(*)");
         assertEquals("SELECT contributor.contributor_id, contributor.name, contributor.country, COUNT(*)"
                 + " FROM MetaModelSchema.contributor",query3.toString());
+=======
+
+    public void testQueryWithMultipleColumnsInExpression() {
+        Query query1 = new Query().from(table1).select("contributor_id,name");
+        DataSet set = getDataContext().executeQuery(query1);
+        assertEquals(true, set.next());
+        assertEquals("Row[values=[1, kasper]]", set.getRow().toString());
+        Query query2 = new Query().from(table1).select("Greatest(1,2,3),max(contributer_id)");
+        assertEquals("SELECT Greatest(1,2,3), MAX(contributer_id) FROM MetaModelSchema.contributor", query2.toString());
+        Query query3 = new Query().from(table1).select("*,count(*)");
+        assertEquals("SELECT contributor.contributor_id, contributor.name, contributor.country, COUNT(*)"
+                + " FROM MetaModelSchema.contributor", query3.toString());
+>>>>>>> upstream/master
     }
 }

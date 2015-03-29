@@ -1,6 +1,8 @@
 ### Apache MetaModel work-in-progress
 
  * [METAMODEL-123] - Added compatibility with ElasticSearch version 1.4.x
+ * [METAMODEL-93] - Added compatibility with Apache HBase version 1.0.0
+ * [METAMODEL-124] - Invoked ElasticSearch cross-version incompatible methods via reflection
 
 ### Apache MetaModel 4.3.2
 
