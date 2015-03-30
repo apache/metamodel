@@ -809,4 +809,20 @@ public final class MetaModelHelper {
             result.add((SelectItem) operand);
         }
     }
+    
+    /**
+     * This method returns all the SelectItems used in the query.
+     * @param query
+     * @return
+     */
+    public static List<SelectItem> getAllSelectItems(Query query) {
+    	List<SelectItem> selectItems = query.getSelectClause().getItems();
+    	List<SelectItem> whereSelectItems = query.getWhereClause().getEvaluatedSelectItems();
+    	List<SelectItem> groupBySelectItems = query.getGroupByClause().getEvaluatedSelectItems();
+    	List<SelectItem> havingSelectItems = query.getHavingClause().getEvaluatedSelectItems();
+    	List<SelectItem> orderBySelectItems = query.getOrderByClause().getEvaluatedSelectItems();
+    	List<SelectItem> allSelectItems = CollectionUtils.concat(true, selectItems, whereSelectItems,
+                groupBySelectItems, havingSelectItems, orderBySelectItems);
+    	return allSelectItems;
+    }
 }

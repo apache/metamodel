@@ -88,7 +88,7 @@ public class QueryParserTest extends TestCase {
         assertEquals("SELECT tbl.foo AS f FROM sch.tbl", q.toSql());
 
         q = MetaModelHelper.parseQuery(dc, "SELECT a.foo AS foobarbaz FROM sch.tbl a WHERE foobarbaz = '123'");
-        assertEquals("SELECT a.foo AS foobarbaz FROM sch.tbl a WHERE foobarbaz = '123'", q.toSql());
+        assertEquals("SELECT a.foo AS foobarbaz FROM sch.tbl a WHERE a.foo = '123'", q.toSql());
     }
 
     public void testSelectDistinct() throws Exception {
