@@ -469,7 +469,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     @Override
-    public SelectItem clone() {
+    protected SelectItem clone() {
         final SelectItem subQuerySelectItem = (_subQuerySelectItem == null ? null : _subQuerySelectItem.clone());
         final FromItem fromItem = (_fromItem == null ? null : _fromItem.clone());
         final SelectItem s = new SelectItem(_column, fromItem, _function, _expression, subQuerySelectItem, _alias,

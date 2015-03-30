@@ -169,7 +169,7 @@ public final class SelectItemParser implements QueryPartProcessor {
         List<SelectItem> allSelectItems = MetaModelHelper.getAllSelectItems(_query);
         for(SelectItem selectItem : allSelectItems) {
         	if(selectItem.getAlias() != null && selectItem.getAlias().equals(expressionCopy)) {
-        		return selectItem.clone();
+        		return selectItem;
         	}
         }
 
