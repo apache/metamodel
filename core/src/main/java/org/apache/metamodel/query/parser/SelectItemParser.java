@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.query.parser;
 
-import java.util.List;
-
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.query.FromItem;
@@ -166,11 +164,9 @@ public final class SelectItemParser implements QueryPartProcessor {
         }
         
         //if the expression is alias of some select item defined return clone of that select item
-        List<SelectItem> allSelectItems = MetaModelHelper.getAllSelectItems(_query);
-        for(SelectItem selectItem : allSelectItems) {
-        	if(selectItem.getAlias() != null && selectItem.getAlias().equals(expressionCopy)) {
-        		return selectItem;
-        	}
+        SelectItem selectItem = MetaModelHelper.getSelectItemByAlias(_query,expressionCopy);
+        if(selectItem != null) {
+        	return selectItem;
         }
 
         if (_allowExpressionBasedSelectItems) {

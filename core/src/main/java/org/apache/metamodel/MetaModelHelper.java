@@ -815,14 +815,13 @@ public final class MetaModelHelper {
      * @param query
      * @return
      */
-    public static List<SelectItem> getAllSelectItems(Query query) {
+    public static SelectItem getSelectItemByAlias(Query query,String alias) {
     	List<SelectItem> selectItems = query.getSelectClause().getItems();
-    	List<SelectItem> whereSelectItems = query.getWhereClause().getEvaluatedSelectItems();
-    	List<SelectItem> groupBySelectItems = query.getGroupByClause().getEvaluatedSelectItems();
-    	List<SelectItem> havingSelectItems = query.getHavingClause().getEvaluatedSelectItems();
-    	List<SelectItem> orderBySelectItems = query.getOrderByClause().getEvaluatedSelectItems();
-    	List<SelectItem> allSelectItems = CollectionUtils.concat(true, selectItems, whereSelectItems,
-                groupBySelectItems, havingSelectItems, orderBySelectItems);
-    	return allSelectItems;
+    	for(SelectItem selectItem : selectItems) {
+        	if(selectItem.getAlias() != null && selectItem.getAlias().equals(alias)) {
+        		return selectItem;
+        	}
+        }
+    	return null;
     }
 }
