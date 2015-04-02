@@ -19,6 +19,7 @@
 package org.apache.metamodel.query.parser;
 
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
@@ -98,6 +99,7 @@ public final class SelectItemParser implements QueryPartProcessor {
      *             was passed in the expression
      */
     public SelectItem findSelectItem(String expression) throws MultipleSelectItemsParsedException {
+    	String expressionCopy = expression;
         if ("*".equals(expression)) {
             throw new MultipleSelectItemsParsedException(null);
         }
@@ -159,6 +161,12 @@ public final class SelectItemParser implements QueryPartProcessor {
                 }
                 return new SelectItem(subQuerySelectItem, fromItem);
             }
+        }
+        
+        //if the expression is alias of some select item defined return  that select item
+        SelectItem selectItem = MetaModelHelper.getSelectItemByAlias(_query,expressionCopy);
+        if(selectItem != null) {
+        	return selectItem;
         }
 
         if (_allowExpressionBasedSelectItems) {

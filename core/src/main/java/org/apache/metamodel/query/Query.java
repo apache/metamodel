@@ -122,7 +122,7 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
      * @return
      */
     public Query select(String expression) {
-        QueryPartParser clauseParser = new QueryPartParser(new SelectItemParser(this, true), expression, ",");
+    	QueryPartParser clauseParser = new QueryPartParser(new SelectItemParser(this, true), expression, ",");
         clauseParser.parse();
         return this;
     }
