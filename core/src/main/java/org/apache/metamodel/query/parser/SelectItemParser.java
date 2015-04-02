@@ -163,7 +163,7 @@ public final class SelectItemParser implements QueryPartProcessor {
             }
         }
         
-        //if the expression is alias of some select item defined return clone of that select item
+        //if the expression is alias of some select item defined return  that select item
         SelectItem selectItem = MetaModelHelper.getSelectItemByAlias(_query,expressionCopy);
         if(selectItem != null) {
         	return selectItem;

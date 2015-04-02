@@ -811,7 +811,7 @@ public final class MetaModelHelper {
     }
     
     /**
-     * This method returns all the SelectItems used in the query.
+     * This method returns the select item of the given alias name.
      * @param query
      * @return
      */
