@@ -1034,4 +1034,25 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         assertEquals("SELECT contributor.contributor_id, contributor.name, contributor.country, COUNT(*)"
                 + " FROM MetaModelSchema.contributor", query3.toString());
     }
+
+    public void testOrderOnAggregationValue() throws Exception {
+        MockDataContext dc = new MockDataContext("sch", "tab", "hello");
+
+        Query query = dc.parseQuery("SELECT MAX(baz) AS X FROM tab GROUP BY baz ORDER BY X");
+
+        DataSet ds = dc.executeQuery(query);
+
+        List<String> values = new ArrayList<String>();
+
+        while (ds.next()) {
+            final String value = (String) ds.getRow().getValue(0);
+            values.add(value);
+        }
+
+        ds.close();
+
+        // this should be alphabetically sorted
+        assertEquals("[hello, world]", values.toString());
+    }
+
 }

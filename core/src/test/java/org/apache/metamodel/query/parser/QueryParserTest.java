@@ -88,7 +88,14 @@ public class QueryParserTest extends TestCase {
         assertEquals("SELECT tbl.foo AS f FROM sch.tbl", q.toSql());
 
         q = MetaModelHelper.parseQuery(dc, "SELECT a.foo AS foobarbaz FROM sch.tbl a WHERE foobarbaz = '123'");
-        assertEquals("SELECT a.foo AS foobarbaz FROM sch.tbl a WHERE foobarbaz = '123'", q.toSql());
+        assertEquals("SELECT a.foo AS foobarbaz FROM sch.tbl a WHERE a.foo = '123'", q.toSql());
+
+        // assert that the referred "foobarbaz" is in fact the same select item
+        // (that's not visible from the toSql() call since there
+        // WhereItem.toSql() method will not use the alias)
+        SelectItem selectItem1 = q.getSelectClause().getItem(0);
+        SelectItem selectItem2 = q.getWhereClause().getItem(0).getSelectItem();
+        assertSame(selectItem1, selectItem2);
     }
 
     public void testSelectDistinct() throws Exception {
@@ -172,29 +179,29 @@ public class QueryParserTest extends TestCase {
         assertEquals("baz", whereClause.getItem(0).getOperand());
         assertEquals(Integer.class, whereClause.getItem(1).getOperand().getClass());
     }
-    
+
     public void testWhereStringEscaped() throws Exception {
         Query q = MetaModelHelper.parseQuery(dc, "SELECT foo FROM sch.tbl WHERE bar = 'ba\\'z'");
         assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.bar = 'ba'z'", q.toSql());
     }
-    
+
     public void testWhereOperandIsBoolean() throws Exception {
-     // set 'baz' column to an integer column (to influence query generation)
+        // set 'baz' column to an integer column (to influence query generation)
         MutableColumn col = (MutableColumn) dc.getColumnByQualifiedLabel("tbl.baz");
         col.setType(ColumnType.BOOLEAN);
-        
+
         Query q = MetaModelHelper.parseQuery(dc, "SELECT foo FROM sch.tbl WHERE baz = TRUE");
         assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.baz = TRUE", q.toSql());
     }
-    
+
     public void testWhereOperandIsDate() throws Exception {
         // set 'baz' column to an integer column (to influence query generation)
-           MutableColumn col = (MutableColumn) dc.getColumnByQualifiedLabel("tbl.baz");
-           col.setType(ColumnType.TIME);
-           
-           Query q = MetaModelHelper.parseQuery(dc, "SELECT foo FROM sch.tbl WHERE baz = 10:24");
-           assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.baz = TIME '10:24:00'", q.toSql());
-       }
+        MutableColumn col = (MutableColumn) dc.getColumnByQualifiedLabel("tbl.baz");
+        col.setType(ColumnType.TIME);
+
+        Query q = MetaModelHelper.parseQuery(dc, "SELECT foo FROM sch.tbl WHERE baz = 10:24");
+        assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.baz = TIME '10:24:00'", q.toSql());
+    }
 
     public void testCoumpoundWhereClause() throws Exception {
         Query q = MetaModelHelper
@@ -300,7 +307,7 @@ public class QueryParserTest extends TestCase {
         Query q = MetaModelHelper.parseQuery(dc, "SELECT f.foo AS fo FROM (SELECT * FROM sch.tbl) f");
         assertEquals("SELECT f.foo AS fo FROM (SELECT tbl.foo, tbl.bar, tbl.baz FROM sch.tbl) f", q.toSql());
     }
-    
+
     public void testSelectEverythingFromSubQuery() throws Exception {
         Query q = MetaModelHelper.parseQuery(dc, "SELECT * FROM (SELECT foo, bar FROM sch.tbl) f");
         assertEquals("SELECT f.foo, f.bar FROM (SELECT tbl.foo, tbl.bar FROM sch.tbl) f", q.toSql());
@@ -311,7 +318,7 @@ public class QueryParserTest extends TestCase {
         assertEquals("[0, 7]", Arrays.toString(qp.indexesOf("SELECT ", null)));
         assertEquals("[10, 16]", Arrays.toString(qp.indexesOf(" FROM ", null)));
     }
-    
+
     public void testGetIndicesIgnoreWhiteSpaceAndCaseDifferences() throws Exception {
         QueryParser qp = new QueryParser(dc, " \t\r\n select ... from ... BAR BAZ");
         assertEquals("[0, 7]", Arrays.toString(qp.indexesOf("SELECT ", null)));

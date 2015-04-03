@@ -19,6 +19,7 @@
 package org.apache.metamodel.query.parser;
 
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
@@ -84,7 +85,7 @@ public final class SelectItemParser implements QueryPartProcessor {
             }
         }
     }
-    
+
     /**
      * Finds/creates a SelectItem based on the given expression. Unlike the
      * {@link #parse(String, String)} method, this method will not actually add
@@ -105,6 +106,8 @@ public final class SelectItemParser implements QueryPartProcessor {
         if ("COUNT(*)".equalsIgnoreCase(expression)) {
             return SelectItem.getCountAllItem();
         }
+
+        final String unmodifiedExpression = expression;
 
         final FunctionType function;
         final int startParenthesis = expression.indexOf('(');
@@ -153,12 +156,20 @@ public final class SelectItemParser implements QueryPartProcessor {
                 }
             } else if (fromItem.getSubQuery() != null) {
                 final Query subQuery = fromItem.getSubQuery();
-                final SelectItem subQuerySelectItem = new SelectItemParser(subQuery, _allowExpressionBasedSelectItems).findSelectItem(columnName);
+                final SelectItem subQuerySelectItem = new SelectItemParser(subQuery, _allowExpressionBasedSelectItems)
+                        .findSelectItem(columnName);
                 if (subQuerySelectItem == null) {
                     return null;
                 }
                 return new SelectItem(subQuerySelectItem, fromItem);
             }
+        }
+
+        // if the expression is alias of some select item defined return that
+        // select item
+        final SelectItem aliasSelectItem = MetaModelHelper.getSelectItemByAlias(_query, unmodifiedExpression);
+        if (aliasSelectItem != null) {
+            return aliasSelectItem;
         }
 
         if (_allowExpressionBasedSelectItems) {

@@ -809,4 +809,20 @@ public final class MetaModelHelper {
             result.add((SelectItem) operand);
         }
     }
+
+    /**
+     * This method returns the select item of the given alias name.
+     * 
+     * @param query
+     * @return
+     */
+    public static SelectItem getSelectItemByAlias(Query query, String alias) {
+        List<SelectItem> selectItems = query.getSelectClause().getItems();
+        for (SelectItem selectItem : selectItems) {
+            if (selectItem.getAlias() != null && selectItem.getAlias().equals(alias)) {
+                return selectItem;
+            }
+        }
+        return null;
+    }
 }
