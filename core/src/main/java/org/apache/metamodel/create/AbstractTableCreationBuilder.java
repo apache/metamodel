@@ -128,7 +128,7 @@ public abstract class AbstractTableCreationBuilder<U extends UpdateCallback> imp
         for(int i = 0 ; i < columns.length ; i++) {
             if(columns[i].isPrimaryKey()) {
                 if(!primaryKeyExists) {
-                    sb.append(" ,PRIMARY KEY(");
+                    sb.append(", PRIMARY KEY(");
                     sb.append(columns[i].getName());
                     primaryKeyExists = true;
                 } else {

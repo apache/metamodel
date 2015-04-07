@@ -64,7 +64,7 @@ public class AbstractCreateTableBuilderTest extends TestCase {
                 table.getColumns()[2].toString());
 
         System.out.println(builder.toSql());
-        assertEquals("CREATE TABLE schema.tablename (foo VARCHAR(1234),bar,baz NOT NULL , PRIMARY KEY(foo))", builder.toSql());
+        assertEquals("CREATE TABLE schema.tablename (foo VARCHAR(1234),bar,baz NOT NULL, PRIMARY KEY(foo))", builder.toSql());
     }
 
     public void testLike() throws Exception {

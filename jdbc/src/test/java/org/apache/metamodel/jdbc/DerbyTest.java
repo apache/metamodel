@@ -291,7 +291,7 @@ public class DerbyTest extends TestCase {
                         .ofType(ColumnType.INTEGER).execute();
                 writtenTableRef.set(writtenTable);
                 String sql = createTableBuilder.createSqlStatement();
-                assertEquals("CREATE TABLE APP.test_table (id INTEGER, name VARCHAR(255), age INTEGER , PRIMARY KEY(id))",
+                assertEquals("CREATE TABLE APP.test_table (id INTEGER, name VARCHAR(255), age INTEGER, PRIMARY KEY(id))",
                         sql.replaceAll("\"", "|"));
                 assertNotNull(writtenTable);
             }

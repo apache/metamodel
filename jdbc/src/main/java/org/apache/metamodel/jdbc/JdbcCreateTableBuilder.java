@@ -119,7 +119,7 @@ final class JdbcCreateTableBuilder extends AbstractTableCreationBuilder<JdbcUpda
         for(int i = 0 ; i < columns.length ; i++) {
             if(columns[i].isPrimaryKey()) {
                 if(!primaryKeyExists) {
-                    sb.append(" ,PRIMARY KEY(");
+                    sb.append(", PRIMARY KEY(");
                     sb.append(columns[i].getName());
                     primaryKeyExists = true;
                 } else {
