@@ -117,19 +117,19 @@ final class JdbcCreateTableBuilder extends AbstractTableCreationBuilder<JdbcUpda
 		}
         boolean primaryKeyExists = false;
         for(int i = 0 ; i < columns.length ; i++) {
-        	if(columns[i].isPrimaryKey()) {
-        		if(!primaryKeyExists) {
-        			sb.append(" , PRIMARY KEY(");
-        			sb.append(columns[i].getName());
-        			primaryKeyExists = true;
-        		} else {
-        			sb.append(",");
-        			sb.append(columns[i].getName());
-        		}
-        	}
+            if(columns[i].isPrimaryKey()) {
+                if(!primaryKeyExists) {
+                    sb.append(" , PRIMARY KEY(");
+                    sb.append(columns[i].getName());
+                    primaryKeyExists = true;
+                } else {
+                    sb.append(",");
+                    sb.append(columns[i].getName());
+                }
+            }
         }
         if(primaryKeyExists) {
-        	sb.append(")");
+            sb.append(")");
         }
 		sb.append(")");
 		return sb.toString();
