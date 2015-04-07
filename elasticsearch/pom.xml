@@ -13,14 +13,14 @@
 	<parent>
 		<artifactId>MetaModel</artifactId>
 		<groupId>org.apache.metamodel</groupId>
-		<version>4.3.2-SNAPSHOT</version>
+		<version>4.3.3-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>MetaModel-elasticsearch</artifactId>
 	<name>MetaModel module for Elasticsearch analytics engine</name>
 
 	<properties>
-		<elasticsearch.latest.version>1.3.2</elasticsearch.latest.version>
+		<elasticsearch.latest.version>1.4.4</elasticsearch.latest.version>
 		<elasticsearch.jdk6.version>0.90.13</elasticsearch.jdk6.version>
 	</properties>
 

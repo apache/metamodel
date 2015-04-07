@@ -13,14 +13,14 @@
 	<parent>
 		<artifactId>MetaModel</artifactId>
 		<groupId>org.apache.metamodel</groupId>
-		<version>4.3.2-SNAPSHOT</version>
+		<version>4.3.3-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>MetaModel-hbase</artifactId>
 	<name>MetaModel module for Apache HBase</name>
 
 	<properties>
-		<hbase.version>0.95.1-hadoop1</hbase.version>
+		<hbase.version>1.0.0</hbase.version>
 	</properties>
 
 	<dependencies>
@@ -113,6 +113,10 @@
 				<exclusion>
 					<groupId>org.codehaus.jackson</groupId>
 					<artifactId>jackson-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.codehaus.jackson</groupId>
+					<artifactId>jackson-core-asl</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

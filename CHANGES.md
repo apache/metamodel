@@ -1,7 +1,16 @@
-### Apache MetaModel 4.3.2 (WIP)
+### Apache MetaModel work-in-progress
+
+ * [METAMODEL-123] - Added compatibility with ElasticSearch version 1.4.x
+ * [METAMODEL-93] - Added compatibility with Apache HBase version 1.0.0
+ * [METAMODEL-124] - Invoked ElasticSearch cross-version incompatible methods via reflection
+ * [METAMODEL-125] - Added support for comma-separated select items in Query.select(String) method argument.
+ * [METAMODEL-128] - Fixed bug in DataSet ordering when aggregation functions are applied to non-JDBC modules.
+
+### Apache MetaModel 4.3.2
 
  * [METAMODEL-78] - Fixed a bug that caused SELECT DISTINCT to sometimes return duplicates records on certain DataContext implementations.
  * [METAMODEL-106] - Improved handling of invalid or non-existing index names passed to ElasticSearchDataContext
+ * [METAMODEL-79] - Added update execution support on ElasticSearch module. Increased capability of pushing down WHERE items to ElasticSearch searches.
  * [METAMODEL-115] - Improved query parsing to allow lower-case function names, operators etc.
 
 ### Apache MetaModel 4.3.1

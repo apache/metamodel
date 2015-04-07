@@ -29,18 +29,26 @@ import java.util.Map;
 
 import javax.swing.table.TableModel;
 
-import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelHelper;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.create.CreateTable;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
-import org.apache.metamodel.data.FilteredDataSet;
 import org.apache.metamodel.data.InMemoryDataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.delete.DeleteFrom;
+import org.apache.metamodel.drop.DropTable;
 import org.apache.metamodel.elasticsearch.utils.EmbeddedElasticsearchServer;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.update.Update;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -58,7 +66,7 @@ public class ElasticSearchDataContextTest {
     private static final String peopleIndexType = "peopletype";
     private static EmbeddedElasticsearchServer embeddedElasticsearchServer;
     private static Client client;
-    private static DataContext dataContext;
+    private static UpdateableDataContext dataContext;
 
     @BeforeClass
     public static void beforeTests() throws Exception {
@@ -66,6 +74,19 @@ public class ElasticSearchDataContextTest {
         client = embeddedElasticsearchServer.getClient();
         indexOneTweeterDocumentPerIndex(indexType1, 1);
         indexOneTweeterDocumentPerIndex(indexType2, 1);
+        insertPeopleDocuments();
+        indexOneTweeterDocumentPerIndex(indexType2, 1);
+        indexBulkDocuments(indexName, bulkIndexType, 10);
+
+        // The refresh API allows to explicitly refresh one or more index,
+        // making all operations performed since the last refresh available for
+        // search
+        client.admin().indices().prepareRefresh().execute().actionGet();
+        dataContext = new ElasticSearchDataContext(client, indexName);
+        System.out.println("Embedded ElasticSearch server created!");
+    }
+
+    private static void insertPeopleDocuments() {
         indexOnePeopleDocument("female", 20, 5);
         indexOnePeopleDocument("female", 17, 8);
         indexOnePeopleDocument("female", 18, 9);
@@ -75,14 +96,6 @@ public class ElasticSearchDataContextTest {
         indexOnePeopleDocument("male", 17, 2);
         indexOnePeopleDocument("male", 18, 3);
         indexOnePeopleDocument("male", 18, 4);
-        indexOneTweeterDocumentPerIndex(indexType2, 1);
-        indexBulkDocuments(indexName, bulkIndexType, 10);
-
-        // The refresh API allows to explicitly refresh one or more index,
-        // making all operations performed since the last refresh available for search
-        client.admin().indices().prepareRefresh().execute().actionGet();
-        dataContext = new ElasticSearchDataContext(client, indexName);
-        System.out.println("Embedded ElasticSearch server created!");
     }
 
     @AfterClass
@@ -168,7 +181,7 @@ public class ElasticSearchDataContextTest {
 
     @Test
     public void testNumberIsHandledAsNumber() throws Exception {
-        Table table = dataContext.getDefaultSchema().getTableByName("peopletype");
+        Table table = dataContext.getDefaultSchema().getTableByName(peopleIndexType);
         Column column = table.getColumnByName("age");
         ColumnType type = column.getType();
         assertEquals(ColumnType.BIGINT, type);
@@ -181,10 +194,211 @@ public class ElasticSearchDataContextTest {
     }
 
     @Test
+    public void testCreateTableInsertQueryAndDrop() throws Exception {
+        final Schema schema = dataContext.getDefaultSchema();
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        createTable.withColumn("foo").ofType(ColumnType.STRING);
+        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
+        dataContext.executeUpdate(createTable);
+
+        final Table table = schema.getTableByName("testCreateTable");
+        assertEquals("[" + ElasticSearchDataContext.FIELD_ID + ", foo, bar]", Arrays.toString(table.getColumnNames()));
+
+        final Column fooColumn = table.getColumnByName("foo");
+        final Column idColumn = table.getPrimaryKeys()[0];
+        assertEquals("Column[name=_id,columnNumber=0,type=STRING,nullable=null,nativeType=null,columnSize=null]",
+                idColumn.toString());
+
+        dataContext.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
+            }
+        });
+
+        final DataSet ds = dataContext.query().from(table).selectAll().orderBy("bar").execute();
+        try {
+            assertTrue(ds.next());
+            assertEquals("hello", ds.getRow().getValue(fooColumn).toString());
+            assertNotNull(ds.getRow().getValue(idColumn));
+            assertTrue(ds.next());
+            assertEquals("world", ds.getRow().getValue(fooColumn).toString());
+            assertNotNull(ds.getRow().getValue(idColumn));
+            assertFalse(ds.next());
+        } finally {
+            ds.close();
+        }
+
+        dataContext.executeUpdate(new DropTable(table));
+    }
+
+    @Test
+    public void testDeleteAll() throws Exception {
+        final Schema schema = dataContext.getDefaultSchema();
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        createTable.withColumn("foo").ofType(ColumnType.STRING);
+        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
+        dataContext.executeUpdate(createTable);
+
+        final Table table = schema.getTableByName("testCreateTable");
+
+        dataContext.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
+            }
+        });
+
+        dataContext.executeUpdate(new DeleteFrom(table));
+
+        Row row = MetaModelHelper.executeSingleRowQuery(dataContext, dataContext.query().from(table).selectCount()
+                .toQuery());
+        assertEquals("Row[values=[0]]", row.toString());
+
+        dataContext.executeUpdate(new DropTable(table));
+    }
+
+    @Test
+    public void testDeleteByQuery() throws Exception {
+        final Schema schema = dataContext.getDefaultSchema();
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        createTable.withColumn("foo").ofType(ColumnType.STRING);
+        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
+        dataContext.executeUpdate(createTable);
+
+        final Table table = schema.getTableByName("testCreateTable");
+
+        dataContext.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
+            }
+        });
+
+        dataContext.executeUpdate(new DeleteFrom(table).where("foo").eq("hello").where("bar").eq(42));
+
+        Row row = MetaModelHelper.executeSingleRowQuery(dataContext,
+                dataContext.query().from(table).select("foo", "bar").toQuery());
+        assertEquals("Row[values=[world, 43]]", row.toString());
+
+        dataContext.executeUpdate(new DropTable(table));
+    }
+
+    @Test
+    public void testDeleteUnsupportedQueryType() throws Exception {
+        final Schema schema = dataContext.getDefaultSchema();
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        createTable.withColumn("foo").ofType(ColumnType.STRING);
+        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
+        dataContext.executeUpdate(createTable);
+
+        final Table table = schema.getTableByName("testCreateTable");
+        try {
+
+            dataContext.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback callback) {
+                    callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                    callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
+                }
+            });
+
+            // greater than is not yet supported
+            try {
+                dataContext.executeUpdate(new DeleteFrom(table).where("bar").gt(40));
+                fail("Exception expected");
+            } catch (UnsupportedOperationException e) {
+                assertEquals("Could not push down WHERE items to delete by query request: [testCreateTable.bar > 40]",
+                        e.getMessage());
+            }
+
+        } finally {
+            dataContext.executeUpdate(new DropTable(table));
+        }
+    }
+
+    @Test
+    public void testUpdateRow() throws Exception {
+        final Schema schema = dataContext.getDefaultSchema();
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        createTable.withColumn("foo").ofType(ColumnType.STRING);
+        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
+        dataContext.executeUpdate(createTable);
+
+        final Table table = schema.getTableByName("testCreateTable");
+        try {
+
+            dataContext.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback callback) {
+                    callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                    callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
+                }
+            });
+
+            dataContext.executeUpdate(new Update(table).value("foo", "howdy").where("bar").eq(42));
+
+            DataSet dataSet = dataContext.query().from(table).select("foo", "bar").orderBy("bar").execute();
+            assertTrue(dataSet.next());
+            assertEquals("Row[values=[howdy, 42]]", dataSet.getRow().toString());
+            assertTrue(dataSet.next());
+            assertEquals("Row[values=[world, 43]]", dataSet.getRow().toString());
+            assertFalse(dataSet.next());
+            dataSet.close();
+        } finally {
+            dataContext.executeUpdate(new DropTable(table));
+        }
+    }
+
+    @Test
+    public void testDropTable() throws Exception {
+        Table table = dataContext.getDefaultSchema().getTableByName(peopleIndexType);
+
+        // assert that the table was there to begin with
+        {
+            DataSet ds = dataContext.query().from(table).selectCount().execute();
+            ds.next();
+            assertEquals("Row[values=[9]]", ds.getRow().toString());
+            ds.close();
+        }
+
+        dataContext.executeUpdate(new DropTable(table));
+        try {
+            DataSet ds = dataContext.query().from(table).selectCount().execute();
+            ds.next();
+            assertEquals("Row[values=[0]]", ds.getRow().toString());
+            ds.close();
+        } finally {
+            // restore the people documents for the next tests
+            insertPeopleDocuments();
+            client.admin().indices().prepareRefresh().execute().actionGet();
+            dataContext = new ElasticSearchDataContext(client, indexName);
+        }
+    }
+
+    @Test
     public void testWhereColumnEqualsValues() throws Exception {
         DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
                 .isEquals("user4").execute();
-        assertEquals(FilteredDataSet.class, ds.getClass());
+        assertEquals(ElasticSearchDataSet.class, ds.getClass());
+
+        try {
+            assertTrue(ds.next());
+            assertEquals("Row[values=[user4, 4]]", ds.getRow().toString());
+            assertFalse(ds.next());
+        } finally {
+            ds.close();
+        }
+    }
+
+    @Test
+    public void testWhereMultiColumnsEqualValues() throws Exception {
+        DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
+                .isEquals("user4").and("message").ne(5).execute();
+        assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
         try {
             assertTrue(ds.next());
@@ -283,8 +497,6 @@ public class ElasticSearchDataContextTest {
             dataContext.query().from("nonExistingTable").select("user").and("message").execute();
         } catch (IllegalArgumentException IAex) {
             thrown = true;
-        } finally {
-            // ds.close();
         }
         assertTrue(thrown);
     }

@@ -25,7 +25,7 @@ under the License.
 		<javadoc.version>2.9.1</javadoc.version>
 		<slf4j.version>1.7.7</slf4j.version>
 		<junit.version>4.11</junit.version>
-		<guava.version>18.0</guava.version>
+		<guava.version>16.0</guava.version>
 		<easymock.version>3.2</easymock.version>
 		<httpcomponents.version>4.3.1</httpcomponents.version>
 		<checksum-maven-plugin.version>1.2</checksum-maven-plugin.version>
@@ -44,7 +44,7 @@ under the License.
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
 	<artifactId>MetaModel</artifactId>
-	<version>4.3.2-SNAPSHOT</version>
+	<version>4.3.3-SNAPSHOT</version>
 	<name>MetaModel</name>
 	<description>MetaModel is a library that encapsulates the differences and enhances 
 		the capabilities of different datastores. Rich querying abilities are

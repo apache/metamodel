@@ -81,7 +81,9 @@ public class ElasticSearchMetaDataParser {
         } else if (metaDataFieldType.equals("float")) {
             columnType = ColumnType.FLOAT;
         } else if (metaDataFieldType.equals("boolean")) {
-            columnType = ColumnType.FLOAT;
+            columnType = ColumnType.BOOLEAN;
+        } else if (metaDataFieldType.equals("double")) {
+            columnType = ColumnType.DOUBLE;
         } else {
             columnType = ColumnType.STRING;
         }
