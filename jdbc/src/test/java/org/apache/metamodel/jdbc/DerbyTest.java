@@ -75,6 +75,18 @@ public class DerbyTest extends TestCase {
         }
     }
 
+    public void testCreateInsertAndUpdate() throws Exception {
+        Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
+        JdbcDataContext dc = new JdbcDataContext(conn);
+        JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(dc, "metamodel_test_simple");
+    }
+
+    public void testCompositePrimaryKeyCreation() throws Exception {
+        Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
+        JdbcDataContext dc = new JdbcDataContext(conn);
+        JdbcTestTemplates.compositeKeyCreation(dc, "metamodel_test_composite_keys");
+    }
+
     public void testDifferentOperators() throws Exception {
         Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
         
@@ -291,7 +303,7 @@ public class DerbyTest extends TestCase {
                         .ofType(ColumnType.INTEGER).execute();
                 writtenTableRef.set(writtenTable);
                 String sql = createTableBuilder.createSqlStatement();
-                assertEquals("CREATE TABLE APP.test_table (id INTEGER PRIMARY KEY, name VARCHAR(255), age INTEGER)",
+                assertEquals("CREATE TABLE APP.test_table (id INTEGER, name VARCHAR(255), age INTEGER, PRIMARY KEY(id))",
                         sql.replaceAll("\"", "|"));
                 assertNotNull(writtenTable);
             }

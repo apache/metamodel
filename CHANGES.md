@@ -5,6 +5,7 @@
  * [METAMODEL-124] - Invoked ElasticSearch cross-version incompatible methods via reflection
  * [METAMODEL-125] - Added support for comma-separated select items in Query.select(String) method argument.
  * [METAMODEL-128] - Fixed bug in DataSet ordering when aggregation functions are applied to non-JDBC modules.
+ * [METAMODEL-131] - Added support for composite primary keys in JDBC CREATE TABLE statements.
 
 ### Apache MetaModel 4.3.2
 

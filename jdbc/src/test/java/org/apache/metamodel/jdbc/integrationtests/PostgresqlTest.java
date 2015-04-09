@@ -64,6 +64,22 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         return "postgresql";
     }
 
+    public void testCreateInsertAndUpdate() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(getDataContext(), "metamodel_test_simple");
+    }
+
+    public void testCompositePrimaryKeyCreation() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcTestTemplates.compositeKeyCreation(getDataContext(), "metamodel_test_composite_keys");
+    }
+
     public void testInterpretationOfNull() throws Exception {
         if (!isConfigured()) {
             return;
@@ -406,6 +422,16 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                 }
             });
         }
+    }
+
+    public void testCreateInsertAndUpdateDateTypes() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcDataContext dataContext = getDataContext();
+        JdbcTestTemplates.createInsertAndUpdateDateTypes(dataContext, dataContext.getDefaultSchema(),
+                "metamodel_postgresql_test");
     }
 
     public void testCreateTableAndWriteRecords() throws Exception {
