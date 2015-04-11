@@ -1,4 +1,4 @@
-### Apache MetaModel work-in-progress
+### Apache MetaModel 4.3.3
 
  * [METAMODEL-123] - Added compatibility with ElasticSearch version 1.4.x
  * [METAMODEL-93] - Added compatibility with Apache HBase version 1.0.0
