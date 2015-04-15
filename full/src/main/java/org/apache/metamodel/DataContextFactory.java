@@ -648,7 +648,7 @@ public class DataContextFactory {
      *       The ElasticSearch index name
      * @return a DataContext object that matches the request
      */
-    public static DataContext createElasticSearchDataContext(Client client, String indexName) {
+    public static UpdateableDataContext createElasticSearchDataContext(Client client, String indexName) {
         return new ElasticSearchDataContext(client, indexName);
     }
 
