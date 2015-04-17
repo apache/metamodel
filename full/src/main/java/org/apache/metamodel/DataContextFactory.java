@@ -28,6 +28,7 @@ import javax.sql.DataSource;
 
 import org.apache.metamodel.cassandra.CassandraDataContext;
 import org.apache.metamodel.elasticsearch.ElasticSearchDataContext;
+import org.apache.metamodel.solr.SolrDataContext;
 import org.ektorp.http.StdHttpClient.Builder;
 import org.apache.metamodel.couchdb.CouchDbDataContext;
 import org.apache.metamodel.csv.CsvConfiguration;
@@ -651,6 +652,18 @@ public class DataContextFactory {
     public static UpdateableDataContext createElasticSearchDataContext(Client client, String indexName) {
         return new ElasticSearchDataContext(client, indexName);
     }
+
+	/**
+    * Creates a new Solr datacontext
+    * @param url
+			The Solr url
+    * @param indexName
+			The Solr index name
+    * @return a DataContext object that matches the request
+     */
+	 public static DataContext createSolrDataContext(String url, String indexName) {
+     	return new SolrDataContext(url,indexName);
+     }
 
     /**
      * Creates a new Cassandra datacontext.
