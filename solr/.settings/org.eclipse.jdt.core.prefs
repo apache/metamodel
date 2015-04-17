@@ -1,0 +1,9 @@
+#Fri Jan 30 22:32:19 IST 2015
+org.eclipse.jdt.core.compiler.codegen.targetPlatform=1.6
+eclipse.preferences.version=1
+encoding/src/main/java=utf-8
+org.eclipse.jdt.core.compiler.source=1.6
+encoding/src/test/resources=utf-8
+encoding/src/main/resources=utf-8
+encoding/src/test/java=utf-8
+org.eclipse.jdt.core.compiler.compliance=1.6
