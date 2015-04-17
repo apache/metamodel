@@ -151,6 +151,11 @@ under the License.
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+            <groupId>org.apache.metamodel</groupId>
+            <artifactId>MetaModel-solr</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+		<dependency>
 			<groupId>org.apache.metamodel</groupId>
 			<artifactId>MetaModel-cassandra</artifactId>
 			<version>${project.version}</version>
