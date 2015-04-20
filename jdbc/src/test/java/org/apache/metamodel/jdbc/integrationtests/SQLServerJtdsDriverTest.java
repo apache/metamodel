@@ -52,6 +52,22 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
     protected String getPropertyPrefix() {
         return "sqlserver.jtds_driver";
     }
+    
+    public void testCreateInsertAndUpdate() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(getDataContext(), "metamodel_test_simple");
+    }
+
+    public void testCompositePrimaryKeyCreation() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcTestTemplates.compositeKeyCreation(getDataContext(), "metamodel_test_composite_keys");
+    }
 
     public void testWorkingWithDates() throws Exception {
         if (!isConfigured()) {

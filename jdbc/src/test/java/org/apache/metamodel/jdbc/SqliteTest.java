@@ -70,6 +70,16 @@ public class SqliteTest extends TestCase {
         _connection.close();
     }
 
+    public void testCreateInsertAndUpdate() throws Exception {
+        JdbcDataContext dc = new JdbcDataContext(_connection);
+        JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(dc, "metamodel_test_simple");
+    }
+
+    public void testCompositePrimaryKeyCreation() throws Exception {
+        JdbcDataContext dc = new JdbcDataContext(_connection);
+        JdbcTestTemplates.compositeKeyCreation(dc, "metamodel_test_composite_keys");
+    }
+
     public void testDifferentOperators() throws Exception {
         JdbcTestTemplates.differentOperatorsTest(_connection);
     }
@@ -248,8 +258,7 @@ public class SqliteTest extends TestCase {
         JdbcDataContext dc = new JdbcDataContext(_connection);
         JdbcTestTemplates.convertClobToString(dc);
     }
-    
-    
+
     public void testInterpretationOfNull() throws Exception {
         JdbcTestTemplates.interpretationOfNulls(_connection);
     }

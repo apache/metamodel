@@ -70,6 +70,16 @@ public class H2databaseTest extends TestCase {
         super.tearDown();
         conn.close();
     }
+    
+    public void testCreateInsertAndUpdate() throws Exception {
+        JdbcDataContext dc = new JdbcDataContext(conn);
+        JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(dc, "metamodel_test_simple");
+    }
+
+    public void testCompositePrimaryKeyCreation() throws Exception {
+        JdbcDataContext dc = new JdbcDataContext(conn);
+        JdbcTestTemplates.compositeKeyCreation(dc, "metamodel_test_composite_keys");
+    }
 
     public void testUsingSingleUpdates() throws Exception {
         final JdbcDataContext dc = new JdbcDataContext(conn);
@@ -263,7 +273,7 @@ public class H2databaseTest extends TestCase {
                         .withColumn("name").ofSize(255).ofType(ColumnType.VARCHAR).withColumn("age").ofType(ColumnType.INTEGER)
                         .execute();
                 String sql = createTableBuilder.createSqlStatement();
-                assertEquals("CREATE TABLE PUBLIC.test_table (id INTEGER PRIMARY KEY, name VARCHAR(255), age INTEGER)", sql);
+                assertEquals("CREATE TABLE PUBLIC.test_table (id INTEGER, name VARCHAR(255), age INTEGER, PRIMARY KEY(id))", sql);
                 assertNotNull(writtenTable);
                 assertEquals("[ID, NAME, AGE]", Arrays.toString(writtenTable.getColumnNames()));
 

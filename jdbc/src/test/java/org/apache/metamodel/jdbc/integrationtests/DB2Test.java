@@ -32,10 +32,26 @@ import org.apache.metamodel.schema.Table;
  * modified for whatever server is available (even within Human Inference).
  */
 public class DB2Test extends AbstractJdbIntegrationTest {
-    
+
     @Override
     protected String getPropertyPrefix() {
         return "db2";
+    }
+
+    public void testCreateInsertAndUpdate() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(getDataContext(), "metamodel_db2_test");
+    }
+    
+    public void testCompositePrimaryKeyCreation() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+        
+        JdbcTestTemplates.compositeKeyCreation(getDataContext(), "metamodel_test_composite_keys");
     }
 
     public void testInterpretationOfNull() throws Exception {
