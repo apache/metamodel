@@ -103,7 +103,7 @@ public final class QueryPartParser {
         DelimOccurrence result = null;
         for (int i = 0; i < _ItemDelims.length; i++) {
             String delim = _ItemDelims[i];
-            int index = _clause.toUpperCase().indexOf(delim, offset);
+            int index = _clause.indexOf(delim, offset);
             if (index != -1) {
                 if (result == null || index == Math.min(result.index, index)) {
                     result = new DelimOccurrence();
