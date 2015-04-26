@@ -653,8 +653,8 @@ public class DataContextFactory {
         return new ElasticSearchDataContext(client, indexName);
     }
 
-	/**
-    * Creates a new Solr datacontext
+    /**
+    * Creates a new ElasticSearch datacontext.
     * @param url
 			The Solr url
     * @param indexName
