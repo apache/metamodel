@@ -20,52 +20,73 @@ package org.apache.metamodel.solr;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-
-import javax.swing.table.TableModel;
+import java.util.ArrayList;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.data.DataSetTableModel;
-import org.apache.metamodel.data.FilteredDataSet;
-import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.data.Row;
-import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
-import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.schema.Table;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class SolrDataContextTest {
-    private static final String url = "http://localhost:8983/solr/collection1";
-    private static final String index = "collection1";
+import java.io.File;
+import java.io.FileReader;
+import java.util.Properties;
 
-    private static DataContext dataContext;
+public class SolrDataContextTest {
+    private static String _url   = null;
+    private static String _index = null;
+
+    private static DataContext _dataContext;
+
+    private static boolean _configured;
+
+    private static String getPropertyFilePath() {
+        String userHome = System.getProperty("user.home");
+        return userHome + "/metamodel-integrationtest-configuration.properties";
+    }
 
     @BeforeClass
     public static void beforeTests() throws Exception {
-        DataContext dataContext = new SolrDataContext(url, index);
+        Properties properties = new Properties();
+        File file             = new File(getPropertyFilePath());
 
+        if (file.exists()) {
+            properties.load(new FileReader(file));
+            _url    = properties.getProperty("solr.url");
+            _index  = properties.getProperty("solr.index");
+
+            _configured = (_url != null && _index != null && !_url.isEmpty() && !_index.isEmpty());
+        } else {
+            _configured = false;
+        }
+
+        if (_configured) {
+            _dataContext = new SolrDataContext(_url, _index);
+        } else {
+            return;
+        }
     }
 
     @AfterClass
     public static void afterTests() {
-        System.out.println("Solr server shut down!");
+        if (_configured) {
+            System.out.println("Solr server shut down!");
+        }
     }
 
     @Test
     public void testWhereWithLimit() throws Exception {
-        DataSet dataSet = dataContext
+        if (!_configured) {
+            System.err.println(notConfiguredMessage());
+            return;
+        }
+
+        DataSet dataSet = _dataContext
                 .executeQuery("SELECT * FROM collection1 WHERE (manu='maxtor' or manu='samsung') LIMIT 1");
         try {
             assertTrue(dataSet.next());
@@ -81,9 +102,14 @@ public class SolrDataContextTest {
 
     @Test
     public void testGroupByQueryWithAlphaOrder() throws Exception {
+        if (!_configured) {
+            System.err.println(notConfiguredMessage());
+            return;
+        }
+
         List<String> output = new ArrayList<String>();
 
-        DataSet dataSet = dataContext
+        DataSet dataSet = _dataContext
                 .executeQuery("SELECT COUNT(*) AS X, manu FROM collection1 WHERE (manu='maxtor' OR manu='samsung') GROUP BY manu ORDER BY manu LIMIT 3");
 
         while (dataSet.next()) {
@@ -98,9 +124,14 @@ public class SolrDataContextTest {
 
     @Test
     public void testGroupByQueryWithMeasureOrder() throws Exception {
+        if (!_configured) {
+            System.err.println(notConfiguredMessage());
+            return;
+        }
+
         List<String> output = new ArrayList<String>();
 
-        DataSet dataSet = dataContext
+        DataSet dataSet = _dataContext
                 .executeQuery("SELECT COUNT(*) AS X, manu FROM collection1 WHERE (manu='maxtor' OR manu='samsung') GROUP BY manu ORDER BY X DESC LIMIT 3");
 
         while (dataSet.next()) {
@@ -115,7 +146,12 @@ public class SolrDataContextTest {
 
     @Test
     public void testCountQuery() throws Exception {
-        DataSet dataSet = dataContext
+        if (!_configured) {
+            System.err.println(notConfiguredMessage());
+            return;
+        }
+
+        DataSet dataSet = _dataContext
                 .executeQuery("SELECT COUNT(*) FROM collection1");
 
         try {
@@ -128,7 +164,12 @@ public class SolrDataContextTest {
 
     @Test
     public void testCountWithWhereQuery() throws Exception {
-        DataSet dataSet = dataContext
+        if (!_configured) {
+            System.err.println(notConfiguredMessage());
+            return;
+        }
+
+        DataSet dataSet = _dataContext
                 .executeQuery("SELECT COUNT(*) FROM collection1 WHERE (manu='samsung' or manu='maxtor')");
 
         try {
@@ -141,10 +182,15 @@ public class SolrDataContextTest {
 
     @Test
     public void testGroupByQueryWithWrongMeasureOrder() throws Exception {
+        if (!_configured) {
+            System.err.println(notConfiguredMessage());
+            return;
+        }
+
         boolean isThrown = false;
 
         try {
-            DataSet dataSet = dataContext
+            DataSet dataSet = _dataContext
                     .executeQuery("SELECT COUNT(*) AS X, manu FROM collection1 WHERE (manu='maxtor' OR manu='samsung') GROUP BY manu ORDER BY X LIMIT 3");
             List<String> output = new ArrayList<String>();
 
@@ -162,10 +208,15 @@ public class SolrDataContextTest {
 
     @Test
     public void testGroupByQueryWithWrongAlphaOrder() throws Exception {
+        if (!_configured) {
+            System.err.println(notConfiguredMessage());
+            return;
+        }
+
         boolean isThrown = false;
 
         try {
-            DataSet dataSet = dataContext
+            DataSet dataSet = _dataContext
                     .executeQuery("SELECT COUNT(*) AS X, manu FROM collection1 WHERE (manu='maxtor' OR manu='samsung') GROUP BY manu ORDER BY manu DESC LIMIT 3");
             List<String> output = new ArrayList<String>();
 
@@ -183,10 +234,15 @@ public class SolrDataContextTest {
 
     @Test
     public void testQueryForANonExistingIndex() throws Exception {
+        if (!_configured) {
+            System.err.println(notConfiguredMessage());
+            return;
+        }
+
         boolean isThrown = false;
 
         try {
-            DataSet dataSet = dataContext
+            DataSet dataSet = _dataContext
                     .executeQuery("SELECT COUNT(*) FROM foo");
         } catch (Exception e) {
             isThrown = true;
@@ -195,5 +251,9 @@ public class SolrDataContextTest {
         }
 
         assertTrue(isThrown);
+    }
+
+    private String notConfiguredMessage() {
+        return "Solr server not configured";
     }
 }
