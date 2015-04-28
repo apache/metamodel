@@ -40,135 +40,135 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
 /**
- * {@link DataSet} implementation for ElasticSearch
+ * {@link DataSet} implementation for Solr 
  */
 final class SolrDataSet extends AbstractDataSet {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(SolrDataSet.class);
+    private static final Logger logger = LoggerFactory
+            .getLogger(SolrDataSet.class);
 
-	private final AtomicBoolean _closed;
-	private final SolrDocumentList _docs;
-	private final Map<String, List<FacetField.Count>> _facetMap;
+    private final AtomicBoolean _closed;
+    private final SolrDocumentList _docs;
+    private final Map<String, List<FacetField.Count>> _facetMap;
 
-	private Column[] _columns;
-	private int _numColumns = 0;
-	private int _hitIndex = 0;
-	private int _docListSize = 0;
-	private int _facetFieldListSize = 0;
+    private Column[] _columns;
+    private int _numColumns = 0;
+    private int _hitIndex = 0;
+    private int _docListSize = 0;
+    private int _facetFieldListSize = 0;
 
-	public SolrDataSet(SolrDocumentList _docs, Column[] columns) {
-		super(columns);
-		_numColumns = columns.length;
-		_columns = columns;
-		this._docs = _docs;
+    public SolrDataSet(SolrDocumentList _docs, Column[] columns) {
+        super(columns);
+        _numColumns = columns.length;
+        _columns = columns;
+        this._docs = _docs;
 
-		_facetMap = null;
-		_docListSize = _docs.size();
-		_closed = new AtomicBoolean(false);
-	}
+        _facetMap = null;
+        _docListSize = _docs.size();
+        _closed = new AtomicBoolean(false);
+    }
 
-	public SolrDataSet(List<FacetField> facetFieldsList, Column[] columns) {
-		super(columns);
-		_numColumns = columns.length;
-		_columns = columns;
+    public SolrDataSet(List<FacetField> facetFieldsList, Column[] columns) {
+        super(columns);
+        _numColumns = columns.length;
+        _columns = columns;
 
-		Map<String, List<FacetField.Count>> facetMap = new IdentityHashMap<String, List<FacetField.Count>>();
+        Map<String, List<FacetField.Count>> facetMap = new IdentityHashMap<String, List<FacetField.Count>>();
 
-		for (FacetField facetField : facetFieldsList) {
-			String facetName = facetField.getName();
-			List<FacetField.Count> facetPairs = facetField.getValues();
-			facetMap.put(facetName, facetPairs);
-			_facetFieldListSize = facetPairs.size();
-		}
+        for (FacetField facetField : facetFieldsList) {
+            String facetName = facetField.getName();
+            List<FacetField.Count> facetPairs = facetField.getValues();
+            facetMap.put(facetName, facetPairs);
+            _facetFieldListSize = facetPairs.size();
+        }
 
-		_facetMap = facetMap;
-		_docs = null;
-		_closed = new AtomicBoolean(false);
-	}
+        _facetMap = facetMap;
+        _docs = null;
+        _closed = new AtomicBoolean(false);
+    }
 
-	@Override
-	public void close() {
-		super.close();
-		boolean closeNow = _closed.compareAndSet(true, false);
-		if (closeNow) {
-		}
-	}
+    @Override
+    public void close() {
+        super.close();
+        boolean closeNow = _closed.compareAndSet(true, false);
+        if (closeNow) {
+        }
+    }
 
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-		if (!_closed.get()) {
-			logger.warn(
-					"finalize() invoked, but DataSet is not closed. Invoking close() on {}",
-					this);
-			close();
-		}
-	}
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (!_closed.get()) {
+            logger.warn(
+                    "finalize() invoked, but DataSet is not closed. Invoking close() on {}",
+                    this);
+            close();
+        }
+    }
 
-	@Override
-	public boolean next() {
-		if (_docListSize != 0 && _docListSize == _hitIndex)
-			return false;
+    @Override
+    public boolean next() {
+        if (_docListSize != 0 && _docListSize == _hitIndex)
+            return false;
 
-		if (_facetFieldListSize != 0 && _facetFieldListSize == _hitIndex)
-			return false;
+        if (_facetFieldListSize != 0 && _facetFieldListSize == _hitIndex)
+            return false;
 
-		if (_docListSize == 0 && _facetFieldListSize == 0)
-			return false;
+        if (_docListSize == 0 && _facetFieldListSize == 0)
+            return false;
 
-		return true;
-	}
+        return true;
+    }
 
-	private Object[] getRow(SolrDocumentList _docs) {
-		Object[] values = new Object[_numColumns];
-		SolrDocument doc = _docs.get(_hitIndex);
+    private Object[] getRow(SolrDocumentList _docs) {
+        Object[] values = new Object[_numColumns];
+        SolrDocument doc = _docs.get(_hitIndex);
 
-		Map<String, Object> docValues = doc.getFieldValueMap();
+        Map<String, Object> docValues = doc.getFieldValueMap();
 
-		for (int i = 0; i < _columns.length; i++) {
-			String key = _columns[i].getName();
-			values[i] = docValues.get(key);
-		}
+        for (int i = 0; i < _columns.length; i++) {
+            String key = _columns[i].getName();
+            values[i] = docValues.get(key);
+        }
 
-		_hitIndex++;
+        _hitIndex++;
 
-		return values;
-	}
+        return values;
+    }
 
-	private Object[] getRow(Map<String, List<FacetField.Count>> facetMap) {
-		Set<String> keys = facetMap.keySet();
-		Object[] values = new Object[2];
+    private Object[] getRow(Map<String, List<FacetField.Count>> facetMap) {
+        Set<String> keys = facetMap.keySet();
+        Object[] values = new Object[2];
 
-		for (String key : keys) {
-			List<FacetField.Count> facetPairs = facetMap.get(key);
-			FacetField.Count facetPair = facetPairs.get(_hitIndex);
+        for (String key : keys) {
+            List<FacetField.Count> facetPairs = facetMap.get(key);
+            FacetField.Count facetPair = facetPairs.get(_hitIndex);
 
-			long facetCount = facetPair.getCount();
-			String nameValue = facetPair.getName();
+            long facetCount = facetPair.getCount();
+            String nameValue = facetPair.getName();
 
-			values[0] = (Object) facetCount;
-			values[1] = (Object) nameValue;
-		}
+            values[0] = (Object) facetCount;
+            values[1] = (Object) nameValue;
+        }
 
-		_hitIndex++;
+        _hitIndex++;
 
-		return values;
-	}
+        return values;
+    }
 
-	@Override
-	public Row getRow() {
-		DataSetHeader dataSetHeader = super.getHeader();
+    @Override
+    public Row getRow() {
+        DataSetHeader dataSetHeader = super.getHeader();
 
-		Object[] values;
+        Object[] values;
 
-		if (_docListSize > 0) {
-			values = getRow(_docs);
-		} else {
-			values = getRow(_facetMap);
-		}
+        if (_docListSize > 0) {
+            values = getRow(_docs);
+        } else {
+            values = getRow(_facetMap);
+        }
 
-		final Row row = new DefaultRow(dataSetHeader, values);
-		return row;
-	}
+        final Row row = new DefaultRow(dataSetHeader, values);
+        return row;
+    }
 }

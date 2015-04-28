@@ -72,9 +72,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 
 /**
- * DataContext implementation for ElasticSearch analytics engine.
+ * DataContext implementation for Solr analytics engine.
  * 
- * ElasticSearch has a data storage structure hierarchy that briefly goes like
+ * Solr has a data storage structure hierarchy that briefly goes like
  * this:
  * <ul>
  * <li>Index</li>
@@ -103,7 +103,7 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
 
     private SolrQuery query = new SolrQuery();
 
-    private static enum queryTypes {
+    private static enum QUERYTYPE {
         ROW, FACET
     };
 
@@ -277,7 +277,7 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
                 query.addFacetField(facetField);
             }
 
-            setOrder(q, query, queryTypes.FACET);
+            setOrder(q, query, QUERYTYPE.FACET);
 
             query.setFacetLimit(limit);
 
@@ -322,7 +322,7 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
         return new SolrDataSet(response.getResults(), columns);
     }
 
-    private void setOrder(Query q, SolrQuery query, queryTypes qtype) {
+    private void setOrder(Query q, SolrQuery query, QUERYTYPE qtype) {
         List<OrderByItem> orderByList = q.getOrderByClause().getItems();
 
         for (OrderByItem orderItem : orderByList) {
@@ -343,7 +343,7 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
                 }
             }
 
-            if (qtype == queryTypes.FACET) {
+            if (qtype == QUERYTYPE.FACET) {
                 if (orderColumn == null) {
                     if (direction.equalsIgnoreCase("ASC")) {
                         throw new UnsupportedOperationException(
@@ -381,7 +381,7 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
         query.setRows(num);
 
         if (q != null) {
-            setOrder(q, query, queryTypes.ROW);
+            setOrder(q, query, QUERYTYPE.ROW);
         }
 
         QueryResponse response = null;
