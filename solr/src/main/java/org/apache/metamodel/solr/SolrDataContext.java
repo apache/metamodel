@@ -95,8 +95,6 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
     private static final Logger logger = LoggerFactory
             .getLogger(SolrDataContext.class);
 
-    public static final String FIELD_ID = "id";
-
     private final SimpleTableDef tableDef;
     private final String indexName;
     private final String url;
@@ -176,11 +174,6 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
                     getMainSchemaName());
 
             final MutableTable table = tableDef.toTable().setSchema(theSchema);
-            final Column idColumn = table.getColumnByName(FIELD_ID);
-            if (idColumn != null && idColumn instanceof MutableColumn) {
-                final MutableColumn mutableColumn = (MutableColumn) idColumn;
-                mutableColumn.setPrimaryKey(true);
-            }
             theSchema.addTable(table);
 
             return theSchema;
