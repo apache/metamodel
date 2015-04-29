@@ -1,3 +1,7 @@
+### Work-in-progress
+
+ * [METAMODEL-136] - Added LIKE operator native support (using conversion to regex) for MongoDB.
+
 ### Apache MetaModel 4.3.3
 
  * [METAMODEL-123] - Added compatibility with ElasticSearch version 1.4.x
