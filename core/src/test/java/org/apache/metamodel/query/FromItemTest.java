@@ -18,7 +18,14 @@
  */
 package org.apache.metamodel.query;
 
+import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelTestCase;
+import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetHeader;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.InMemoryDataSet;
+import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Relationship;
 import org.apache.metamodel.schema.Schema;
@@ -98,4 +105,35 @@ public class FromItemTest extends MetaModelTestCase {
 				"MetaModelSchema.project a LEFT JOIN (SELECT c.contributor_id, c.project_id AS foobar, c.name FROM MetaModelSchema.role c) b ON a.project_id = b.foobar",
 				from.toString());
 	}
+	
+    public void testCompoundJoin() {
+        final Schema schema = getExampleSchema();
+   
+        final QueryPostprocessDataContext dc = new QueryPostprocessDataContext() {
+            @Override
+            protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+                Object[] values = new Object[columns.length];
+                for (int i = 0; i < columns.length; i++) {
+                    values[i] = columns[i].getColumnNumber();
+                }
+                DataSetHeader header = new SimpleDataSetHeader(columns);
+                DefaultRow row = new DefaultRow(header, values);
+                return new InMemoryDataSet(row);
+            }
+
+            @Override
+            protected String getMainSchemaName() throws MetaModelException {
+                return "MetaModelSchema";
+            }
+
+            @Override
+            protected Schema getMainSchema() throws MetaModelException {
+                return schema;
+            }
+        };
+ 
+        Query query = dc.parseQuery("SELECT c.contributor_id,p.project_id from contributor c INNER JOIN role r ON c.contributor_id=r.contributor_id INNER JOIN project p ON p.project_id=r.project_id");
+        System.out.println(query);
+        assertEquals("SELECT c.contributor_id, p.project_id FROM MetaModelSchema.contributor c INNER JOIN MetaModelSchema.role r ON c.contributor_id = r.contributor_id INNER JOIN MetaModelSchema.project p ON p.project_id = r.project_id", query.toSql());
+    }
 }
