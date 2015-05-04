@@ -71,11 +71,7 @@ final class FromItemParser implements QueryPartProcessor {
                 fromItem.setAlias(alias);
             }
         } else if (itemToken.toUpperCase().indexOf(" JOIN ") != -1) {
-            if(itemToken.split("(?i) JOIN ").length == 2) {
-                fromItem = parseJoinItem(null,itemToken,new HashSet<FromItem>());
-            } else {
-                fromItem = parseAllJoinItems(itemToken);
-            }
+            fromItem = parseAllJoinItems(itemToken);
         } else {
             fromItem = parseTableItem(itemToken);
         }
@@ -115,7 +111,7 @@ final class FromItemParser implements QueryPartProcessor {
             String joinType = joinSplit[i].substring(joinSplit[i].lastIndexOf(" "));
             String rightPart = (i+1 == joinSplit.length-1) ? joinSplit[i+1] : joinSplit[i+1].substring(0, joinSplit[i+1].lastIndexOf(" "));
             joinsList.add((leftPart + " " + joinType + " JOIN " + rightPart).replaceAll(" +", " "));
-            String rightTable = rightPart.substring(0, rightPart.lastIndexOf(" ON "));
+            String rightTable = rightPart.substring(0, rightPart.toUpperCase().lastIndexOf(" ON "));
             String nextJoinType = joinSplit[i+1].substring(joinSplit[i+1].lastIndexOf(" "));
             joinSplit[i+1] = rightTable + " " + nextJoinType;
         }
@@ -129,7 +125,7 @@ final class FromItemParser implements QueryPartProcessor {
 
     // this method will be documented based on this example itemToken: FOO f
     // INNER JOIN BAR b ON f.id = b.id
-    private FromItem parseJoinItem(final FromItem leftFromItem,final String itemToken,Set<FromItem> fromItems) {
+    private FromItem parseJoinItem(final FromItem leftFromItem, final String itemToken, Set<FromItem> fromItems) {
         final int indexOfJoin = itemToken.toUpperCase().indexOf(" JOIN ");
 
         // firstPart = "FOO f INNER"
