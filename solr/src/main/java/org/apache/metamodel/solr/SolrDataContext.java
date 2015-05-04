@@ -108,7 +108,7 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
     private static final int MAX_RETRIES = 0;
     private static final int SOCK_TIMEOUT = 1000;
     private static final int CONN_TIMEOUT = 5000;
-    private static final int DEFAULT_LIMIT = 1000;
+    private static final int DEFAULT_LIMIT = -1;
 
     public SolrDataContext(String url, String indexName) {
         this.url = url;
