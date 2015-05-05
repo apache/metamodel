@@ -152,6 +152,7 @@ final class FromItemParser implements QueryPartProcessor {
         final FromItem rightSide = parseTableItem(secondTableToken);
         
         fromItems.add(leftSide);
+        fromItems.add(rightSide);
 
         // onClausess = ["f.id = b.id"]
         final String[] onClauses = secondPart.substring(indexOfOn + " ON ".length()).split(" AND ");
@@ -165,8 +166,8 @@ final class FromItemParser implements QueryPartProcessor {
             // rightPart = "b.id"
             final String rightPart = onClause.substring(indexOfEquals + 1).trim();
 
-            leftOn[i] = findSelectItem(leftPart, fromItems.toArray(new FromItem[fromItems.size()]), rightSide);
-            rightOn[i] = findSelectItem(rightPart, fromItems.toArray(new FromItem[fromItems.size()]), rightSide);
+            leftOn[i] = findSelectItem(leftPart, fromItems.toArray(new FromItem[fromItems.size()]));
+            rightOn[i] = findSelectItem(rightPart, fromItems.toArray(new FromItem[fromItems.size()]));
         }
         
         final FromItem leftItem = (leftFromItem != null) ? leftFromItem : leftSide;
@@ -175,7 +176,7 @@ final class FromItemParser implements QueryPartProcessor {
         return result;
     }
 
-    private SelectItem findSelectItem(String token, FromItem[] leftSides, FromItem rightSide) {
+    private SelectItem findSelectItem(String token, FromItem[] joinTables) {
         // first look in the original query
         SelectItemParser selectItemParser = new SelectItemParser(_query, false);
         SelectItem result = selectItemParser.findSelectItem(token);
@@ -183,24 +184,15 @@ final class FromItemParser implements QueryPartProcessor {
         if (result == null) {
             // fail over and try with the from items available in the join that
             // is being built.
-            FromItem leftFromItem = null;
-            for(FromItem leftSide : leftSides) {
-                final Query temporaryQuery = new Query().from(leftSide, rightSide);
-                selectItemParser = new SelectItemParser(temporaryQuery, false);
-                result = selectItemParser.findSelectItem(token);
-                if(result != null) {
-                    leftFromItem = leftSide;
-                    break;
-                }
-            }
+            final Query temporaryQuery = new Query().from(joinTables);
+            selectItemParser = new SelectItemParser(temporaryQuery, false);
+            result = selectItemParser.findSelectItem(token);
             if (result == null) {
                 throw new QueryParserException("Not capable of parsing ON token: " + token);
             }
 
             // set the query on the involved query parts (since they have been
             // temporarily moved to the searched query).
-            leftFromItem.setQuery(_query);
-            rightSide.setQuery(_query);
             result.setQuery(_query);
         }
         return result;
