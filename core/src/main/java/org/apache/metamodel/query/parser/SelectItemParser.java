@@ -62,7 +62,7 @@ public final class SelectItemParser implements QueryPartProcessor {
         final int indexOfAlias = itemToken.toUpperCase().lastIndexOf(" AS ");
         if (indexOfAlias != -1) {
             alias = itemToken.substring(indexOfAlias + " AS ".length());
-            itemToken = itemToken.substring(0, indexOfAlias);
+            itemToken = itemToken.substring(0, indexOfAlias).trim();
         }
 
         try {

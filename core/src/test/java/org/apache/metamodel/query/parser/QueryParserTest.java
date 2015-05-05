@@ -113,6 +113,11 @@ public class QueryParserTest extends TestCase {
         assertEquals("SELECT MIN(tbl.foo) FROM sch.tbl", q.toSql());
     }
 
+    public void testSelectEmptySpacesBeforeAs() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM sch.tbl");
+        assertEquals("SELECT tbl.foo AS alias FROM sch.tbl", q.toSql());
+    }
+
     public void testSelectAvgInLowerCase() throws Exception {
         Query q = MetaModelHelper.parseQuery(dc, "SELECT avg(tbl.foo) FROM sch.tbl");
         assertEquals("SELECT AVG(tbl.foo) FROM sch.tbl", q.toSql());
