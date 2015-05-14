@@ -59,9 +59,6 @@ public class ElasticSearchDataContextNonDynamicMappingTest {
     public void testNonDynamicMapingTableNames() throws Exception{
         assertEquals("[tweets]",
                 Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
-
-        Table table = dataContext.getDefaultSchema().getTableByName("tweets");
-
     }
 
     private static void createIndex() {
