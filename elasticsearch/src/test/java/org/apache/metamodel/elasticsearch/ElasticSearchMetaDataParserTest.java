@@ -24,7 +24,7 @@ import org.apache.metamodel.schema.ColumnType;
 public class ElasticSearchMetaDataParserTest extends TestCase {
 
     public void testParseMetadataInfo() throws Exception {
-        String metaDataInfo = "{message={type=long,index=not_analyzed}, " +
+        String metaDataInfo = "{message={type=long}, " +
                 "postDate={type=date, format=dateOptionalTime}, " +
                 "anotherDate={type=date, format=dateOptionalTime}, " +
                 "user={type=string}, " +
