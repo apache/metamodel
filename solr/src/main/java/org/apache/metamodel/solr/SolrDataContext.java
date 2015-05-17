@@ -108,7 +108,7 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
     private static final int MAX_RETRIES = 0;
     private static final int SOCK_TIMEOUT = 1000;
     private static final int CONN_TIMEOUT = 5000;
-    private static final int DEFAULT_LIMIT = -1;
+    private static final int DEFAULT_LIMIT = 10000;
 
     public SolrDataContext(String url, String indexName) {
         this.url = url;
@@ -199,109 +199,6 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
     }
 
     @Override
-    public DataSet executeQuery(Query q) throws MetaModelException {
-        String queryStr = "";
-        QueryResponse response = null;
-
-        Schema schema = getMainSchema();
-        Table table = schema.getTable(0);
-        Column[] columns = table.getColumns();
-
-        boolean selectAll = true;
-        List<SelectItem> selectItems = q.getSelectClause().getItems();
-
-        for (SelectItem selectItem : selectItems) {
-            if (selectItem.getFunction() != null
-                    || selectItem.getColumn() == null) {
-                selectAll = false;
-                break;  
-            }
-        }
-
-        if (selectItems.size() == 1 && selectAll == false) {
-            return super.executeQuery(q);
-        }
-        
-        FilterClause clause = q.getWhereClause();
-
-        if (clause != null) {
-            List<FilterItem> filterItemList = clause.getItems();
-
-            boolean isFirst = true;
-            
-            for (FilterItem filterItem : filterItemList) {
-                String expr = filterItem.getExpression();
-
-                if (expr == null){
-                    expr = filterItem.toString();
-                    expr = expr.replaceAll("[a-z_0-9]+\\.","");
-                }
-                
-                expr = expr.replace(" or ", " OR ").replace(" and ", " AND ").replaceAll("=",":");
-                
-                String joiner = (isFirst == true) ? " " : " AND ";
-                queryStr += joiner + expr;
-                
-                isFirst = false;
-            }
-        }
-        
-        if (queryStr.isEmpty()) {
-            queryStr = "*:*";
-        }
-
-        Integer limitObject = q.getMaxRows();
-        int limit = DEFAULT_LIMIT;
-
-        if (limitObject != null) {
-            limit = (int) limitObject;
-        }
-
-        final List<GroupByItem> groupByItems = q.getGroupByClause().getItems();
-
-        if (groupByItems.size() > 0) {
-            query.clear();
-            query.setQuery(queryStr);
-            query.setFacet(true);
-
-            for (int i = 0; i < groupByItems.size(); i++) {
-                String facetField = groupByItems.get(i).getSelectItem()
-                        .getColumn().getName();
-                query.addFacetField(facetField);
-            }
-
-            setOrder(q, query, QUERYTYPE.FACET);
-
-            query.setFacetLimit(limit);
-
-            try {
-                HttpSolrServer server = initSolrServer();
-                response = server.query(query);
-            } catch (SolrServerException e) {
-                logger.error("Server initialization failed", "", e);
-                throw new MetaModelException("Server initialization failed "
-                        + e);
-            }
-
-            List<FacetField> facetFieldsList = response.getFacetFields();
-
-            String facetFieldName = facetFieldsList.get(0).getName();
-
-            Column[] facetColumns = { new MutableColumn("count"),
-                    new MutableColumn(facetFieldName) };
-
-            return new SolrDataSet(facetFieldsList, facetColumns);
-        } else if (selectAll) {
-            response = selectRows(table, q, queryStr, 0, limit);
-            SolrDocumentList results = response.getResults();
-
-            return new SolrDataSet(results, columns);
-        }
-
-        return super.executeQuery(q);
-    }
-
-    @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns,
             int maxRows) {
         QueryResponse response = selectRows(table, null, "*:*", 0, maxRows);
@@ -310,8 +207,9 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
 
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns,
-            int offset, int num) {
+            int offset, int num) {        
         QueryResponse response = selectRows(table, null, "*:*", offset, num);
+        
         return new SolrDataSet(response.getResults(), columns);
     }
 
@@ -338,17 +236,13 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
 
             if (qtype == QUERYTYPE.FACET) {
                 if (orderColumn == null) {
-                    if (direction.equalsIgnoreCase("ASC")) {
-                        throw new UnsupportedOperationException(
-                                "Ascending sort on count unsupported");
+                    if (!direction.equalsIgnoreCase("ASC")) {
+                        query.setFacetSort("count");
                     }
-                    query.setFacetSort("count");
                 } else {
-                    if (direction.equalsIgnoreCase("DESC")) {
-                        throw new UnsupportedOperationException(
-                                "Descending sort on facet unsupported");
+                    if (!direction.equalsIgnoreCase("DESC")) {
+                        query.setFacetSort("index");   
                     }
-                    query.setFacetSort("index");
                 }
             }
         }
@@ -371,8 +265,13 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
         query.clear();
         query.setQuery(queryStr);
         query.setStart(offset);
-        query.setRows(num);
-
+        
+        if (num != -1) {
+            query.setRows(num);
+        } else {
+            query.setRows(DEFAULT_LIMIT);
+        }
+        
         if (q != null) {
             setOrder(q, query, QUERYTYPE.ROW);
         }
@@ -385,7 +284,7 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
             logger.error("Search query for documents failed", "", e);
             throw new MetaModelException("Query failed " + e);
         }
-
+       
         return response;
     }
 
