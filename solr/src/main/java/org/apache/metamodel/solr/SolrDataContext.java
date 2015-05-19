@@ -108,7 +108,7 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
     private static final int MAX_RETRIES = 0;
     private static final int SOCK_TIMEOUT = 1000;
     private static final int CONN_TIMEOUT = 5000;
-    private static final int DEFAULT_LIMIT = 10000;
+    private static final int DEFAULT_LIMIT = 1000;
 
     public SolrDataContext(String url, String indexName) {
         this.url = url;
@@ -208,9 +208,19 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns,
             int offset, int num) {        
-        QueryResponse response = selectRows(table, null, "*:*", offset, num);
+        int limit = num;
         
-        return new SolrDataSet(response.getResults(), columns);
+        if (num == -1) {
+            limit = this.executeCountQuery(table, null, false).intValue();
+        }
+        
+        if (DEFAULT_LIMIT > limit) {
+            QueryResponse response = selectRows(table, null, "*:*", offset, limit);
+            return new SolrDataSet(response.getResults(), columns);
+        } else {
+            HttpSolrServer server = initSolrServer();
+            return new SolrDataSet(server,"*:*",columns,limit);
+        }
     }
 
     private void setOrder(Query q, SolrQuery query, QUERYTYPE qtype) {
@@ -265,12 +275,7 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
         query.clear();
         query.setQuery(queryStr);
         query.setStart(offset);
-        
-        if (num != -1) {
-            query.setRows(num);
-        } else {
-            query.setRows(DEFAULT_LIMIT);
-        }
+        query.setRows(num);
         
         if (q != null) {
             setOrder(q, query, QUERYTYPE.ROW);

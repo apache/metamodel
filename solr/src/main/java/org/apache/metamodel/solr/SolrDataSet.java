@@ -31,13 +31,24 @@ import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.schema.Column;
+
+import org.apache.metamodel.MetaModelException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.solr.client.solrj.response.FacetField;
-import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.params.*;
+
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrQuery.SortClause;
+import org.apache.solr.client.solrj.SolrQuery.ORDER;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.client.solrj.response.FacetField;
+import org.apache.solr.client.solrj.response.FacetField.Count;
 
 /**
  * {@link DataSet} implementation for Solr 
@@ -57,17 +68,44 @@ final class SolrDataSet extends AbstractDataSet {
     private int _docListSize = 0;
     private int _facetFieldListSize = 0;
 
+    private HttpSolrServer _server;
+    private SolrQuery _solrQuery;
+    private String _cursorMark = "";
+    private QueryResponse _rsp;
+    private SolrDataSet _dataSet;
+    private int _limit;
+    
+    final private static int BATCH_SIZE = 500;
+    
     public SolrDataSet(SolrDocumentList _docs, Column[] columns) {
         super(columns);
         _numColumns = columns.length;
         _columns = columns;
+       
         this._docs = _docs;
-
         _facetMap = null;
         _docListSize = _docs.size();
+       
         _closed = new AtomicBoolean(false);
     }
 
+    public SolrDataSet(HttpSolrServer server,String queryStr,Column[] columns,int limit) {
+        super(columns);
+        _numColumns = columns.length;
+        _columns = columns;
+        
+        this._docs = null;
+        _facetMap = null;
+        _docListSize = 0;
+        
+        this._server   = server;
+        this._solrQuery= new SolrQuery(queryStr).setRows(BATCH_SIZE).setSort(SortClause.asc("id"));
+        
+        this._limit = limit;
+        
+        _closed = new AtomicBoolean(false);
+    }
+    
     public SolrDataSet(List<FacetField> facetFieldsList, Column[] columns) {
         super(columns);
         _numColumns = columns.length;
@@ -86,7 +124,7 @@ final class SolrDataSet extends AbstractDataSet {
         _docs = null;
         _closed = new AtomicBoolean(false);
     }
-
+    
     @Override
     public void close() {
         super.close();
@@ -107,7 +145,26 @@ final class SolrDataSet extends AbstractDataSet {
     }
 
     @Override
-    public boolean next() {
+    public boolean next() {      
+        if (_server != null) {
+            if (_dataSet != null && _dataSet.next()) {
+                return true;
+            }
+            
+            if (_cursorMark.isEmpty()) {    
+                _cursorMark = CursorMarkParams.CURSOR_MARK_START;
+                return true;
+            } else {
+                String nextCursorMark = _rsp.getNextCursorMark();
+                if (_cursorMark.equals(nextCursorMark) || _hitIndex >= _limit) {
+                    return false;
+                } else {
+                    _cursorMark = nextCursorMark;
+                    return true;
+                }
+            }
+        }
+        
         if (_docListSize != 0 && _docListSize == _hitIndex)
             return false;
 
@@ -120,6 +177,31 @@ final class SolrDataSet extends AbstractDataSet {
         return true;
     }
 
+    private Row getBatchRow() {      
+        if (_dataSet != null && _dataSet.next()) {
+            ++_hitIndex;
+            return _dataSet.getRow();
+        }
+        
+        _solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, _cursorMark);
+
+        try {
+            _rsp = _server.query(_solrQuery);
+            _dataSet = new SolrDataSet(_rsp.getResults(), _columns);            
+        }
+        catch (Exception e) {
+            logger.error("Search query for documents failed", "", e);
+            throw new MetaModelException("Query failed " + e);
+        }
+        
+        if (_dataSet != null && _dataSet.next()) {
+            ++_hitIndex;
+            return _dataSet.getRow();
+        }     
+
+        return null;
+    }
+    
     private Object[] getRow(SolrDocumentList _docs) {
         Object[] values = new Object[_numColumns];
         SolrDocument doc = _docs.get(_hitIndex);
@@ -160,15 +242,19 @@ final class SolrDataSet extends AbstractDataSet {
     public Row getRow() {
         DataSetHeader dataSetHeader = super.getHeader();
 
-        Object[] values;
-
-        if (_docListSize > 0) {
-            values = getRow(_docs);
+        if (_server != null) {
+            return getBatchRow();
         } else {
-            values = getRow(_facetMap);
+            Object[] values;
+            
+            if (_docListSize > 0) {
+                values = getRow(_docs);
+            } else {
+                values = getRow(_facetMap);
+            }
+            
+            final Row row = new DefaultRow(dataSetHeader, values);
+            return row;
         }
-
-        final Row row = new DefaultRow(dataSetHeader, values);
-        return row;
     }
 }
