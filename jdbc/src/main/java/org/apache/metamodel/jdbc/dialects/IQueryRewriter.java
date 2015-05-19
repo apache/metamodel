@@ -74,10 +74,11 @@ public interface IQueryRewriter {
 	 * different names for them. The implementation of this method will do that
 	 * conversion.
 	 * 
-	 * @param columnType
+	 * @param columnType the (non-null) {@link ColumnType} to rewrite
+	 * @param columnSize the (possibly null) column size that may or may not have been specified
 	 * @return
 	 */
-	public String rewriteColumnType(ColumnType columnType);
+	public String rewriteColumnType(ColumnType columnType, Integer columnSize);
 
 	/**
 	 * Gets the column type for a specific JDBC type (as defined in

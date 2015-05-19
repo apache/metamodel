@@ -47,6 +47,7 @@ import org.apache.metamodel.jdbc.dialects.H2QueryRewriter;
 import org.apache.metamodel.jdbc.dialects.HsqldbQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.MysqlQueryRewriter;
+import org.apache.metamodel.jdbc.dialects.OracleQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.PostgresqlQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.SQLServerQueryRewriter;
 import org.apache.metamodel.query.CompiledQuery;
@@ -79,6 +80,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     public static final String DATABASE_PRODUCT_SQLSERVER = "Microsoft SQL Server";
     public static final String DATABASE_PRODUCT_DB2 = "DB2";
     public static final String DATABASE_PRODUCT_DB2_PREFIX = "DB2/";
+    public static final String DATABASE_PRODUCT_ORACLE = "Oracle";
 
     public static final ColumnType COLUMN_TYPE_CLOB_AS_STRING = new ColumnTypeImpl("CLOB",
             SuperColumnType.LITERAL_TYPE, String.class, true);
@@ -213,6 +215,8 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             setQueryRewriter(new MysqlQueryRewriter(this));
         } else if (DATABASE_PRODUCT_POSTGRESQL.equals(_databaseProductName)) {
             setQueryRewriter(new PostgresqlQueryRewriter(this));
+        } else if (DATABASE_PRODUCT_ORACLE.equals(_databaseProductName)) {
+            setQueryRewriter(new OracleQueryRewriter(this));
         } else if (DATABASE_PRODUCT_SQLSERVER.equals(_databaseProductName)) {
             setQueryRewriter(new SQLServerQueryRewriter(this));
         } else if (DATABASE_PRODUCT_DB2.equals(_databaseProductName)

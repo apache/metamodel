@@ -2,6 +2,7 @@
 
  * [METAMODEL-136] - Added LIKE operator native support (using conversion to regex) for MongoDB.
  * [METAMODEL-138] - Allow empty characteres before AS keyword.
+ * [METAMODEL-141] - Improved mapping of ColumnType to SQL data types for Oracle, SQL Server, MySQL, DB2 and PostgreSQL
 
 ### Apache MetaModel 4.3.3
 

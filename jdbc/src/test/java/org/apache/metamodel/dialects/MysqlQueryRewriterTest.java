@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 import org.apache.metamodel.jdbc.dialects.MysqlQueryRewriter;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableTable;
 
@@ -43,4 +44,13 @@ public class MysqlQueryRewriterTest extends TestCase {
 		assertEquals("SELECT bar FROM foo WHERE bar = 'M\\'jellow strain\\'ger'",
 				queryString);
 	}
+	
+	public void testRewriteLiteralColumnTypesWithoutArgs() throws Exception {
+	    MysqlQueryRewriter qr = new MysqlQueryRewriter(null);
+        assertEquals("TEXT", qr.rewriteColumnType(ColumnType.VARCHAR, null));
+        assertEquals("TEXT", qr.rewriteColumnType(ColumnType.NVARCHAR, null));
+        assertEquals("TEXT", qr.rewriteColumnType(ColumnType.STRING, null));
+        assertEquals("CHAR", qr.rewriteColumnType(ColumnType.CHAR, null));
+        assertEquals("NCHAR", qr.rewriteColumnType(ColumnType.NCHAR, null));
+    }
 }

@@ -27,6 +27,7 @@ import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.CollectionUtils;
 
 /**
@@ -66,6 +67,19 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
             }
         }
         return query;
+    }
+
+    @Override
+    public String rewriteColumnType(ColumnType columnType, Integer columnSize) {
+        if (columnType == ColumnType.STRING) {
+            // convert STRING to VARCHAR as the default SQL type for strings
+            rewriteColumnType(ColumnType.VARCHAR, columnSize);
+        }
+        if (columnType == ColumnType.NUMBER) {
+            // convert NUMBER to FLOAT as the default SQL type for numbers
+            rewriteColumnType(ColumnType.FLOAT, columnSize);
+        }
+        return super.rewriteColumnType(columnType, columnSize);
     }
 
     private boolean needsQuoting(String alias, String identifierQuoteString) {
@@ -111,7 +125,9 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
                 for (ListIterator<Object> it = elements.listIterator(); it.hasNext();) {
                     Object next = it.next();
                     if (next == null) {
-                        logger.warn("element in IN list is NULL, which isn't supported by SQL. Stripping the element from the list: {}", item);
+                        logger.warn(
+                                "element in IN list is NULL, which isn't supported by SQL. Stripping the element from the list: {}",
+                                item);
                         it.remove();
                     } else if (next instanceof String) {
                         String str = (String) next;
