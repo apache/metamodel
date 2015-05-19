@@ -267,6 +267,11 @@ public class FromItem extends BaseObject implements QueryItem, Cloneable {
             sb.append(superQueryAlias);
             return;
         }
+        
+        if(_join != null && _leftSide.getJoin() != null) {
+            sb.append(onItem.toSql());
+            return;
+        }
 
         if (sideAlias != null) {
             sb.append(sideAlias);
