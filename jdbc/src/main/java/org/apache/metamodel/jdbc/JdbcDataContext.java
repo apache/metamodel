@@ -747,8 +747,13 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
 
     @Override
     protected Schema getSchemaByNameInternal(String name) {
-        JdbcSchema schema = new JdbcSchema(name, _metadataLoader);
-        _metadataLoader.loadTables(schema);
+        final JdbcSchema schema = new JdbcSchema(name, _metadataLoader);
+        final Connection connection = getConnection();
+        try {
+            _metadataLoader.loadTables(schema, connection);
+        } finally {
+            close(connection, null, null);
+        }
         return schema;
     }
 
