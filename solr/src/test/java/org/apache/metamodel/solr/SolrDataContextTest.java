@@ -87,7 +87,7 @@ public class SolrDataContextTest {
         }
 
         DataSet dataSet = _dataContext
-                .executeQuery("SELECT * FROM collection1 WHERE (manu='maxtor' or manu='samsung') LIMIT 1");
+                .executeQuery("SELECT * FROM collection1 WHERE (manu LIKE '%Maxtor%' or manu LIKE '%Samsung%') LIMIT 1");
         try {
             assertTrue(dataSet.next());
 
@@ -110,7 +110,7 @@ public class SolrDataContextTest {
         List<String> output = new ArrayList<String>();
 
         DataSet dataSet = _dataContext
-                .executeQuery("SELECT COUNT(*) AS X, manu FROM collection1 WHERE (manu='maxtor' OR manu='samsung') GROUP BY manu ORDER BY manu LIMIT 3");
+                .executeQuery("SELECT COUNT(*) AS X, manu FROM collection1 WHERE (manu LIKE '%Maxtor%' OR manu LIKE '%Samsung%') GROUP BY manu ORDER BY manu LIMIT 3");
 
         while (dataSet.next()) {
             Row row = dataSet.getRow();
@@ -132,7 +132,7 @@ public class SolrDataContextTest {
         List<String> output = new ArrayList<String>();
 
         DataSet dataSet = _dataContext
-                .executeQuery("SELECT COUNT(*) AS X, manu FROM collection1 WHERE (manu='maxtor' OR manu='samsung') GROUP BY manu ORDER BY X DESC LIMIT 3");
+                .executeQuery("SELECT COUNT(*) AS X, manu FROM collection1 WHERE (manu LIKE '%Maxtor%' OR manu LIKE '%Samsung%') GROUP BY manu ORDER BY X DESC LIMIT 3");
 
         while (dataSet.next()) {
             Row row = dataSet.getRow();
@@ -170,7 +170,7 @@ public class SolrDataContextTest {
         }
 
         DataSet dataSet = _dataContext
-                .executeQuery("SELECT COUNT(*) FROM collection1 WHERE (manu='samsung' or manu='maxtor')");
+                .executeQuery("SELECT COUNT(*) FROM collection1 WHERE (manu LIKE '%Samsung%' or manu LIKE '%Maxtor%')");
 
         try {
             assertTrue(dataSet.next());
@@ -178,58 +178,6 @@ public class SolrDataContextTest {
         } finally {
             dataSet.close();
         }
-    }
-
-    @Test
-    public void testGroupByQueryWithWrongMeasureOrder() throws Exception {
-        if (!_configured) {
-            System.err.println(notConfiguredMessage());
-            return;
-        }
-
-        boolean isThrown = false;
-
-        try {
-            DataSet dataSet = _dataContext
-                    .executeQuery("SELECT COUNT(*) AS X, manu FROM collection1 WHERE (manu='maxtor' OR manu='samsung') GROUP BY manu ORDER BY X LIMIT 3");
-            List<String> output = new ArrayList<String>();
-
-            while (dataSet.next()) {
-                Row row = dataSet.getRow();
-            }
-        } catch (Exception e) {
-            isThrown = true;
-        } finally {
-
-        }
-
-        assertTrue(isThrown);
-    }
-
-    @Test
-    public void testGroupByQueryWithWrongAlphaOrder() throws Exception {
-        if (!_configured) {
-            System.err.println(notConfiguredMessage());
-            return;
-        }
-
-        boolean isThrown = false;
-
-        try {
-            DataSet dataSet = _dataContext
-                    .executeQuery("SELECT COUNT(*) AS X, manu FROM collection1 WHERE (manu='maxtor' OR manu='samsung') GROUP BY manu ORDER BY manu DESC LIMIT 3");
-            List<String> output = new ArrayList<String>();
-
-            while (dataSet.next()) {
-                Row row = dataSet.getRow();
-            }
-        } catch (Exception e) {
-            isThrown = true;
-        } finally {
-
-        }
-
-        assertTrue(isThrown);
     }
 
     @Test
