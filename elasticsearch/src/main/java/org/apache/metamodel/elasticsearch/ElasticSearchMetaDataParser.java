@@ -37,15 +37,15 @@ public class ElasticSearchMetaDataParser {
     public static ElasticSearchMetaData parse(Object metaDataInfo) {
         final String plainMetaDataInfo = removeFirstAndLastCharacter(metaDataInfo.toString());
         final String metaDataWithoutDateFormats = removeDateFormats(plainMetaDataInfo);
-        final String[] metaDataFields = metaDataWithoutDateFormats.split(",");
-        
+        final String[] metaDataFields = metaDataWithoutDateFormats.split("},");
+
         final String[] fieldNames = new String[metaDataFields.length + 1];
         final ColumnType[] columnTypes = new ColumnType[metaDataFields.length + 1];
-        
+
         // add the document ID field (fixed)
         fieldNames[0] = ElasticSearchDataContext.FIELD_ID;
         columnTypes[0] = ColumnType.STRING;
-        
+
         int i = 1;
         for (String metaDataField : metaDataFields) {
             // message={type=long}
@@ -91,10 +91,14 @@ public class ElasticSearchMetaDataParser {
     }
 
     private static String getMetaDataFieldTypeFromMetaDataField(String metaDataField) {
-        final String metaDataFieldWithoutName = metaDataField.substring(metaDataField.indexOf("=") + 1);
-        final String metaDataFieldType = metaDataFieldWithoutName.substring(metaDataFieldWithoutName.indexOf("=") + 1,
-                metaDataFieldWithoutName.length() - 1);
-        return metaDataFieldType;
+        String type = metaDataField.substring(metaDataField.indexOf("type=")+5);
+        if(type.indexOf(",")>0){
+            type = type.substring(0,type.indexOf(","));
+        }
+        if(type.indexOf("}") > 0){
+            type = type.substring(0, type.indexOf("}"));
+        }
+        return type;
     }
 
 }
