@@ -230,15 +230,16 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         final Map<String, Object> mp = mappingMetaData.getSourceAsMap();
         final Iterator<Map.Entry<String, Object>> it = mp.entrySet().iterator();
         SimpleTableDef std = null;
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             final Map.Entry<String, Object> pair = it.next();
-            if(pair.getKey().equals("properties")) {
+            if (pair.getKey().equals("properties")) {
                 final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(pair.getValue());
                 std = new SimpleTableDef(documentType, metaData.getColumnNames(), metaData.getColumnTypes());
             }
         }
-        if(std == null){
-            throw new IllegalArgumentException("No properties defined for document type '" + documentType + "' in index: "+ indexName);
+        if (std == null) {
+            throw new IllegalArgumentException("No properties defined for document type '" + documentType
+                    + "' in index: " + indexName);
         }
         return std;
     }

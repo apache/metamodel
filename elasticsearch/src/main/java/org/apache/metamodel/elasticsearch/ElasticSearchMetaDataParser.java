@@ -25,7 +25,7 @@ import org.apache.metamodel.schema.ColumnType;
  * into an ElasticSearchMetaData object.
  */
 public class ElasticSearchMetaDataParser {
-    
+
     /**
      * Parses the ElasticSearch meta data info into an ElasticSearchMetaData
      * object. This method makes much easier to create the ElasticSearch schema.
@@ -91,11 +91,11 @@ public class ElasticSearchMetaDataParser {
     }
 
     private static String getMetaDataFieldTypeFromMetaDataField(String metaDataField) {
-        String type = metaDataField.substring(metaDataField.indexOf("type=")+5);
-        if(type.indexOf(",")>0){
-            type = type.substring(0,type.indexOf(","));
+        String type = metaDataField.substring(metaDataField.indexOf("type=") + 5);
+        if (type.indexOf(",") > 0) {
+            type = type.substring(0, type.indexOf(","));
         }
-        if(type.indexOf("}") > 0){
+        if (type.indexOf("}") > 0) {
             type = type.substring(0, type.indexOf("}"));
         }
         return type;
