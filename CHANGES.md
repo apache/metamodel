@@ -1,10 +1,11 @@
 ### Work-in-progress
 
  * [METAMODEL-136] - Added LIKE operator native support (using conversion to regex) for MongoDB.
- * [METAMODEL-138] - Allow empty characteres before AS keyword.
+ * [METAMODEL-138] - Allow empty characters before AS keyword in query parsing.
  * [METAMODEL-141] - Improved mapping of ColumnType to SQL data types for Oracle, SQL Server, MySQL, DB2 and PostgreSQL
  * [METAMODEL-142] - Ensured that JDBC schema refreshes in an UpdateScript is using same Connection/Transaction as rest of operations
  * [METAMODEL-133] - Improved query parser support for multiple JOINs in same query.
+ * [METAMODEL-140] - Fixed support for ElasticSearch mappings with additional property attributes.
 
 ### Apache MetaModel 4.3.3
 
