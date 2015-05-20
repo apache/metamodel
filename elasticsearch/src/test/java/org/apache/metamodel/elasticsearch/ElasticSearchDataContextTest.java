@@ -49,6 +49,7 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.Update;
+import org.elasticsearch.Version;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
@@ -523,13 +524,19 @@ public class ElasticSearchDataContextTest {
     }
 
     @Test
-    public void testNonDynamicMapingTableNames() throws Exception{
+    public void testNonDynamicMapingTableNames() throws Exception {
+        if (Version.CURRENT.major == 0) {
+            // this test is omitted on v. 0.x versions of ElasticSearch since
+            // the put mapping API is incompatible with 1.x so we cannot create
+            // the same prerequisites in the test.
+            return;
+        }
+
         createIndex();
 
         ElasticSearchDataContext dataContext2 = new ElasticSearchDataContext(client, indexName2);
 
-        assertEquals("[tweet3]",
-                Arrays.toString(dataContext2.getDefaultSchema().getTableNames()));
+        assertEquals("[tweet3]", Arrays.toString(dataContext2.getDefaultSchema().getTableNames()));
     }
 
     private static void createIndex() {
