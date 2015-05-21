@@ -18,11 +18,9 @@
  */
 package org.apache.metamodel.solr;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
-import java.util.List;
 import java.util.Set;
+import java.util.List;
 import java.util.IdentityHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 

@@ -22,10 +22,7 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -38,20 +35,11 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.data.DataSetHeader;
-import org.apache.metamodel.data.Row;
-import org.apache.metamodel.data.SimpleDataSetHeader;
-import org.apache.metamodel.query.FilterClause;
 import org.apache.metamodel.query.FilterItem;
-import org.apache.metamodel.query.GroupByItem;
 import org.apache.metamodel.query.OrderByItem;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.query.LogicalOperator;
-import org.apache.metamodel.query.OperatorType;
-import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
@@ -62,7 +50,6 @@ import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.common.SolrDocumentList;
 
 import org.slf4j.Logger;
@@ -229,15 +216,14 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
         for (OrderByItem orderItem : orderByList) {
             SelectItem orderFieldOrFunc = orderItem.getSelectItem();
             Column orderColumn = orderFieldOrFunc.getColumn();
-            FunctionType orderFunc = orderFieldOrFunc.getFunction();
-
+           
             String orderField = null;
             String direction = orderItem.getDirection().toString();
 
             if (orderColumn != null) {
                 orderField = orderColumn.getName();
 
-                if (direction == null || direction.equalsIgnoreCase("ASC")) {
+                if (direction.equalsIgnoreCase("ASC")) {
                     query.addSort(orderField, SolrQuery.ORDER.asc);
                 } else {
                     query.addSort(orderField, SolrQuery.ORDER.desc);
