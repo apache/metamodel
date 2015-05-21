@@ -22,9 +22,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.drop.DropTable;
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.jdbc.JdbcTestTemplates;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
@@ -52,13 +54,41 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
     protected String getPropertyPrefix() {
         return "sqlserver.jtds_driver";
     }
-    
+
     public void testCreateInsertAndUpdate() throws Exception {
         if (!isConfigured()) {
             return;
         }
-
         JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(getDataContext(), "metamodel_test_simple");
+    }
+
+    public void testCreateTableInUpdateScript() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        final BasicDataSource dataSource = getDataSource();
+
+        final String tableName = "Pairs";
+        final JdbcDataContext dc = new JdbcDataContext(dataSource);
+        final Schema schema = dc.getDefaultSchema();
+
+        if (schema.getTableByName(tableName) != null) {
+            dc.executeUpdate(new DropTable(schema, tableName));
+        }
+
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                Table table = callback.createTable(schema, tableName).withColumn("GroupID").withColumn("RecordID_1")
+                        .withColumn("RecordID_2").withColumn("SimilarityScore").ofType(ColumnType.VARCHAR).execute();
+                assertNotNull(table);
+            }
+        });
+
+        assertNotNull(schema.getTableByName(tableName));
+
+        dc.executeUpdate(new DropTable(schema, tableName));
     }
 
     public void testCompositePrimaryKeyCreation() throws Exception {

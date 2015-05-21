@@ -20,7 +20,6 @@ package org.apache.metamodel.dialects;
 
 import junit.framework.TestCase;
 
-import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.SQLServerQueryRewriter;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
@@ -37,7 +36,7 @@ public class SQLServerQueryRewriterTest extends TestCase {
 
     private MutableTable table;
     private MutableColumn column;
-    private IQueryRewriter qr = new SQLServerQueryRewriter(null);
+    private SQLServerQueryRewriter qr = new SQLServerQueryRewriter(null);
 
     @Override
     protected void setUp() throws Exception {
@@ -48,6 +47,15 @@ public class SQLServerQueryRewriterTest extends TestCase {
         column = new MutableColumn("bar");
         column.setQuote("\"");
         column.setTable(table);
+    }
+
+    public void testRewriteColumnTypeDouble() throws Exception {
+        assertEquals("FLOAT", qr.rewriteColumnType(ColumnType.DOUBLE, null));
+    }
+
+    public void testRewriteColumnTypeVarchar() throws Exception {
+        assertEquals("VARCHAR(128)", qr.rewriteColumnType(ColumnType.VARCHAR, 128));
+        assertEquals("VARCHAR(MAX)", qr.rewriteColumnType(ColumnType.VARCHAR, null));
     }
 
     public void testRewriteFromItem() throws Exception {

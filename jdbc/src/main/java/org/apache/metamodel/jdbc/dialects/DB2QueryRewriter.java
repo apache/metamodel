@@ -116,11 +116,11 @@ public class DB2QueryRewriter extends DefaultQueryRewriter implements IQueryRewr
     }
 
     @Override
-    public String rewriteColumnType(ColumnType columnType) {
+    public String rewriteColumnType(ColumnType columnType, Integer columnSize) {
         if (columnType == ColumnType.BOOLEAN || columnType == ColumnType.BIT) {
             return "SMALLINT";
         }
-        return super.rewriteColumnType(columnType);
+        return super.rewriteColumnType(columnType, columnSize);
     }
 
     @Override

@@ -49,6 +49,11 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.Update;
+import org.elasticsearch.Version;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -62,8 +67,11 @@ public class ElasticSearchDataContextTest {
     private static final String indexName = "twitter";
     private static final String indexType1 = "tweet1";
     private static final String indexType2 = "tweet2";
+    private static final String indexName2 = "twitter2";
+    private static final String indexType3 = "tweet3";
     private static final String bulkIndexType = "bulktype";
     private static final String peopleIndexType = "peopletype";
+    private static final String mapping = "{\"date_detection\":\"false\",\"properties\":{\"message\":{\"type\":\"string\",\"index\":\"not_analyzed\",\"doc_values\":\"true\"}}}";
     private static EmbeddedElasticsearchServer embeddedElasticsearchServer;
     private static Client client;
     private static UpdateableDataContext dataContext;
@@ -513,6 +521,34 @@ public class ElasticSearchDataContextTest {
             // ds.close();
         }
         assertTrue(thrown);
+    }
+
+    @Test
+    public void testNonDynamicMapingTableNames() throws Exception {
+        if (Version.CURRENT.major == 0) {
+            // this test is omitted on v. 0.x versions of ElasticSearch since
+            // the put mapping API is incompatible with 1.x so we cannot create
+            // the same prerequisites in the test.
+            return;
+        }
+
+        createIndex();
+
+        ElasticSearchDataContext dataContext2 = new ElasticSearchDataContext(client, indexName2);
+
+        assertEquals("[tweet3]", Arrays.toString(dataContext2.getDefaultSchema().getTableNames()));
+    }
+
+    private static void createIndex() {
+        CreateIndexRequest cir = new CreateIndexRequest(indexName2);
+        CreateIndexResponse response = client.admin().indices().create(cir).actionGet();
+
+        System.out.println("create index: " + response.isAcknowledged());
+
+        PutMappingRequest pmr = new PutMappingRequest(indexName2).type(indexType3).source(mapping);
+
+        PutMappingResponse response2 = client.admin().indices().putMapping(pmr).actionGet();
+        System.out.println("put mapping: " + response2.isAcknowledged());
     }
 
     private static void indexBulkDocuments(String indexName, String indexType, int numberOfDocuments) {

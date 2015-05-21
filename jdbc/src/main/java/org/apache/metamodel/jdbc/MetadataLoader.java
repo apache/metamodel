@@ -18,19 +18,31 @@
  */
 package org.apache.metamodel.jdbc;
 
+import java.sql.Connection;
+
 /**
  * Defines the interface for a component capable of loading schema-model
  * metadata.
  */
 interface MetadataLoader {
 
-	public void loadTables(JdbcSchema jdbcSchema);
+    public void loadTables(JdbcSchema jdbcSchema);
 
-	public void loadRelations(JdbcSchema jdbcSchema);
+    public void loadRelations(JdbcSchema jdbcSchema);
 
-	public void loadColumns(JdbcTable jdbcTable);
+    public void loadColumns(JdbcTable jdbcTable);
 
-	public void loadIndexes(JdbcTable jdbcTable);
+    public void loadIndexes(JdbcTable jdbcTable);
 
-	public void loadPrimaryKeys(JdbcTable jdbcTable);
+    public void loadPrimaryKeys(JdbcTable jdbcTable);
+    
+    public void loadTables(JdbcSchema jdbcSchema, Connection connection);
+
+    public void loadRelations(JdbcSchema jdbcSchema, Connection connection);
+
+    public void loadColumns(JdbcTable jdbcTable, Connection connection);
+
+    public void loadIndexes(JdbcTable jdbcTable, Connection connection);
+
+    public void loadPrimaryKeys(JdbcTable jdbcTable, Connection connection);
 }
