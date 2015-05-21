@@ -20,7 +20,6 @@ package org.apache.metamodel.csv;
 
 import java.io.IOException;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DefaultRow;
