@@ -203,7 +203,7 @@ final class CsvTable extends AbstractTable {
                 if (columnTypeSet.size() == 1) {
                     columnTypes[i] = columnTypeSet.iterator().next();
                 } else {
-                    columnTypes[i] = ColumnTypeImpl.convertColumnType(String.class);
+                    columnTypes[i] = ColumnTypeImpl.convertColumnType(Object.class);
                 }
                 i++;
             }
