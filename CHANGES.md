@@ -1,4 +1,4 @@
-### Work-in-progress
+### Apache MetaModel 4.3.4
 
  * [METAMODEL-136] - Added LIKE operator native support (using conversion to regex) for MongoDB.
  * [METAMODEL-138] - Allow empty characters before AS keyword in query parsing.
