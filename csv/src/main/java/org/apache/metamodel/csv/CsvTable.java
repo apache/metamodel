@@ -20,7 +20,7 @@ package org.apache.metamodel.csv;
 
 import java.io.IOException;
 import java.lang.*;
-import java.util.ArrayList;
+import java.util.*;
 
 import org.apache.metamodel.schema.AbstractTable;
 import org.apache.metamodel.schema.Column;
@@ -122,14 +122,8 @@ final class CsvTable extends AbstractTable {
             for (int i = 1; i < columnNameLineNumber; i++) {
                 reader.readNext();
             }
-            final String[] columnHeaders = reader.readNext(); //Discard column headers
-            final String[] columnValues = reader.readNext();
 
-            reader.close();
-            if(columnValues != null) {
-                return buildColumns(columnNames, getColumnTypes(columnValues));
-            }
-            return buildColumns(columnNames, getColumnTypes(columnNames));
+            return buildColumns(columnNames, getColumnTypes(reader, 1000));
         } catch (IOException e) {
             throw new IllegalStateException("Exception reading from resource: "
                     + _schema.getDataContext().getResource().getName(), e);
@@ -168,17 +162,54 @@ final class CsvTable extends AbstractTable {
         return columns;
     }
 
-    private ColumnType[] getColumnTypes(String[] columnValues) {
-        ColumnType[] types = new ColumnType[0];
+    private ColumnType[] getColumnTypes(CSVReader reader, int sampleSize) throws IOException {
+        ColumnType[] columnTypes = new ColumnType[0];
+        final SortedMap<String, Set<ColumnType>> columnsAndTypes = new TreeMap<String, Set<ColumnType>>();
+        String[] columnHeader = reader.readNext();
+        if (columnHeader != null) {
+            String[] nextValuesLine = reader.readNext();
+            while (nextValuesLine != null || sampleSize > 0) {
+                HashMap<String, ColumnType> values = new HashMap<String, ColumnType>();
+                if(nextValuesLine != null) {
+                    int columns = columnHeader.length;
+                    if(nextValuesLine.length < columnHeader.length) columns = nextValuesLine.length;
+                    for (int i = 0; i < columns; i++) {
+                        values.put(columnHeader[i],
+                                ColumnTypeImpl.convertColumnType(CsvDataUtil.cast(nextValuesLine[i]).getClass()));
+                    }
+                }
+                for (String columnName : columnHeader) {
+                    Set<ColumnType> types = columnsAndTypes.get(columnName);
+                    if (types == null) {
+                        types = new HashSet<ColumnType>();
+                    }
+                    ColumnType value = values.get(columnName);
 
-        if(columnValues != null) {
-            types = new ColumnType[columnValues.length];
-            for (int i = 0; i < columnValues.length; i++) {
-                types[i] = ColumnTypeImpl.convertColumnType(CsvDataUtil.cast(columnValues[i]).getClass());
+                    if (value != null) {
+                        types.add(value);
+                    }
+                    columnsAndTypes.put(columnName, types);
+                }
+
+                sampleSize--;
+                nextValuesLine = reader.readNext();
+            }
+
+            columnTypes = new ColumnType[columnsAndTypes.size()];
+
+            int i = 0;
+            for (Map.Entry<String, Set<ColumnType>>  columnAndTypes : columnsAndTypes.entrySet()) {
+                final Set<ColumnType> columnTypeSet = columnAndTypes.getValue();
+                if (columnTypeSet.size() == 1) {
+                    columnTypes[i] = columnTypeSet.iterator().next();
+                } else {
+                    columnTypes[i] = ColumnTypeImpl.convertColumnType(String.class);
+                }
+                i++;
             }
         }
 
-        return types;
+        return columnTypes;
     }
 
     @Override
