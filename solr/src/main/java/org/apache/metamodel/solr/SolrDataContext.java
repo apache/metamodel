@@ -94,7 +94,7 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
     private static final int MAX_RETRIES = 0;
     private static final int SOCK_TIMEOUT = 1000;
     private static final int CONN_TIMEOUT = 5000;
-    private static final int DEFAULT_LIMIT = 1000;
+    private static final int DEFAULT_LIMIT = 100;
 
     /**
      * Constructor to create DataContext object.
@@ -131,11 +131,11 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
             Map<String, Object> schemaMap = null;
 
             if (outerMap != null) {
-                schemaMap = (Map) outerMap.get("schema");
+                schemaMap = (Map<String, Object>) outerMap.get("schema");
             }
 
             if (schemaMap != null) {
-                List<Map<String, String>> fieldMapList = (List) schemaMap
+                List<Map<String, String>> fieldMapList = (List<Map<String, String>>) schemaMap
                         .get("fields");
                 List<String> columnNames = new ArrayList<String>();
                 List<ColumnType> columnTypes = new ArrayList<ColumnType>();
