@@ -18,6 +18,9 @@
  */
 package org.apache.metamodel.create;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
@@ -81,6 +84,10 @@ public abstract class AbstractTableCreationBuilder<U extends UpdateCallback> imp
 
     @Override
     public ColumnCreationBuilder withColumn(String name) {
+        if(getUpdateCallback() != null) {
+    	    String dataContext = getUpdateCallback().getDataContext().getClass().getSimpleName();
+    	    name = removeInvalidChars(name, ContextType.getContext(dataContext));
+        }
         logger.debug("withColumn({})", name);
         MutableColumn col = (MutableColumn) _table.getColumnByName(name);
         if (col == null) {
@@ -88,6 +95,17 @@ public abstract class AbstractTableCreationBuilder<U extends UpdateCallback> imp
             _table.addColumn(col);
         }
         return new ColumnCreationBuilderImpl(this, col);
+    }
+    
+    private String removeInvalidChars(String str, ContextType ctx) {
+        if(ctx == null) {
+            return str;
+        }
+        Map<String,String> charMap = ctx.getCharMap();
+        for(Entry<String,String> charTuple : charMap.entrySet()) {
+            str = str.replaceAll(charTuple.getKey(), charTuple.getValue());
+        }
+        return str;
     }
 
     @Override

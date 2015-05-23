@@ -21,7 +21,10 @@ package org.apache.metamodel.create;
 import junit.framework.TestCase;
 
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.MockUpdateableDataContext;
 import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableSchema;
@@ -103,5 +106,18 @@ public class AbstractCreateTableBuilderTest extends TestCase {
                 table.getColumns()[1].toString());
         assertEquals("Column[name=baz,columnNumber=2,type=null,nullable=null,nativeType=null,columnSize=null]",
                 table.getColumns()[2].toString());
+    }
+    
+    public void testInvalidCharReplacement() {
+        UpdateableDataContext context = new MockUpdateableDataContext();
+        context.executeUpdate(new UpdateScript() {
+            
+            @Override
+            public void run(UpdateCallback callback) {
+                ColumnCreationBuilder builder = callback.createTable("schema", "test").withColumn("ID NO").ofType(ColumnType.NUMBER).
+                withColumn("person'sname").ofType(ColumnType.VARCHAR);
+                assertEquals("CREATE TABLE schema.test (ID_NO NUMBER,personsname VARCHAR)", builder.toSql());
+            }
+        });
     }
 }
