@@ -3,7 +3,7 @@ package org.apache.metamodel.create;
 import java.util.HashMap;
 import java.util.Map;
  
-public enum ContextType {
+enum ContextType {
  
     JdbcDataContext {
         void updateCharMap() {
