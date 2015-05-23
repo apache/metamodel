@@ -20,12 +20,8 @@ package org.apache.metamodel.solr;
 
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -38,20 +34,12 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.data.DataSetHeader;
-import org.apache.metamodel.data.Row;
-import org.apache.metamodel.data.SimpleDataSetHeader;
-import org.apache.metamodel.query.FilterClause;
 import org.apache.metamodel.query.FilterItem;
-import org.apache.metamodel.query.GroupByItem;
 import org.apache.metamodel.query.OrderByItem;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.query.LogicalOperator;
-import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
@@ -62,8 +50,6 @@ import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.client.solrj.response.FacetField;
-import org.apache.solr.common.SolrDocumentList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +59,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 
 /**
  * DataContext implementation for Solr analytics engine.
- * 
+ *
  * Solr has a data storage structure hierarchy that briefly goes like
  * this:
  * <ul>
@@ -81,10 +67,10 @@ import com.fasterxml.jackson.databind.ObjectReader;
  * <li>Document type (short: Type) (within an index)</li>
  * <li>Documents (of a particular type)</li>
  * </ul>
- * 
+ *
  * When instantiating this DataContext, an index name is provided. Within this
  * index, each document type is represented as a table.
- * 
+ *
  * This implementation supports either automatic discovery of a schema or manual
  * specification of a schema, through the {@link SimpleTableDef} class.
  */
@@ -95,13 +81,13 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
     private static final Logger logger = LoggerFactory
             .getLogger(SolrDataContext.class);
 
-    private final SimpleTableDef tableDef;
-    private final String indexName;
-    private final String url;
+    private final SimpleTableDef _tableDef;
+    private final String _indexName;
+    private final String _url;
 
-    private SolrQuery query = new SolrQuery();
+    private SolrQuery _query = new SolrQuery();
 
-    private static enum QUERYTYPE {
+    private static enum QueryType {
         ROW, FACET
     };
 
@@ -110,20 +96,30 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
     private static final int CONN_TIMEOUT = 5000;
     private static final int DEFAULT_LIMIT = 1000;
 
-    public SolrDataContext(String url, String indexName) {
-        this.url = url;
-        this.indexName = indexName;
-        this.tableDef = detectSchema(url, indexName);
+    /**
+     * Constructor to create DataContext object.
+     * @param url an absolute url referencing a particular Solr core
+     * @param indexName name of the referenced core
+    **/
+    public SolrDataContext(final String url, final String indexName) {
+        this._url = url;
+        this._indexName = indexName;
+        this._tableDef = detectSchema();
     }
 
-    private SimpleTableDef detectSchema(String url, String indexName) {
+    /**
+     * Returns tableDef object containing the table definition after parsing the schema from the REST service.
+     * @param None
+     * @return the tableDef object
+    **/
+    private SimpleTableDef detectSchema() {
         SimpleTableDef tableDef = null;
 
-        url += "/schema";
+        final String schemaUrl = _url + "/schema";
 
         try {
             HttpClient httpclient = new DefaultHttpClient();
-            HttpGet request = new HttpGet(url);
+            HttpGet request = new HttpGet(schemaUrl);
             HttpResponse response = httpclient.execute(request);
 
             InputStreamReader inputStream = new InputStreamReader(response
@@ -157,7 +153,7 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
                 ColumnType[] columnTypesArr = new ColumnType[columnTypes.size()];
                 columnTypesArr = columnTypes.toArray(columnTypesArr);
 
-                tableDef = new SimpleTableDef(indexName, columnNamesArr,
+                tableDef = new SimpleTableDef(_indexName, columnNamesArr,
                         columnTypesArr);
             }
         } catch (IOException e) {
@@ -168,12 +164,12 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
     }
 
     @Override
-    protected Schema getMainSchema() throws MetaModelException {
+    final protected Schema getMainSchema() throws MetaModelException {
         try {
             final MutableSchema theSchema = new MutableSchema(
                     getMainSchemaName());
 
-            final MutableTable table = tableDef.toTable().setSchema(theSchema);
+            final MutableTable table = _tableDef.toTable().setSchema(theSchema);
             theSchema.addTable(table);
 
             return theSchema;
@@ -183,8 +179,8 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
     }
 
     @Override
-    protected Number executeCountQuery(Table table,
-            List<FilterItem> whereItems, boolean functionApproximationAllowed) {
+    final protected Number executeCountQuery(final Table table,
+            final List<FilterItem> whereItems, final boolean functionApproximationAllowed) {
         String queryStr = "*:*";
 
         if (whereItems != null) {
@@ -199,31 +195,37 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns,
-            int maxRows) {
+    final protected DataSet materializeMainSchemaTable(final Table table, final Column[] columns,
+            final int maxRows) {
         QueryResponse response = selectRows(table, null, "*:*", 0, maxRows);
         return new SolrDataSet(response.getResults(), columns);
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns,
-            int offset, int num) {        
+    final protected DataSet materializeMainSchemaTable(final Table table, final Column[] columns,
+            final int offset, final int num) {
         int limit = num;
-        
+
         if (num == -1) {
             limit = this.executeCountQuery(table, null, false).intValue();
         }
-        
+
         if (DEFAULT_LIMIT > limit) {
             QueryResponse response = selectRows(table, null, "*:*", offset, limit);
             return new SolrDataSet(response.getResults(), columns);
         } else {
             HttpSolrServer server = initSolrServer();
-            return new SolrDataSet(server,"*:*",columns,limit);
+            return new SolrDataSet(server, "*:*", columns, limit);
         }
     }
 
-    private void setOrder(Query q, SolrQuery query, QUERYTYPE qtype) {
+    /**
+     * Sets the equivalent of SQL 'order by' clause in the Solr query.
+     * @param q Query object of MM
+     * @param query SolrJ Query object
+     * @param qtype Enum to indicate row or facet query
+    **/
+    private void setOrder(final Query q, final SolrQuery query, final QueryType qtype) {
         List<OrderByItem> orderByList = q.getOrderByClause().getItems();
 
         for (OrderByItem orderItem : orderByList) {
@@ -244,22 +246,26 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
                 }
             }
 
-            if (qtype == QUERYTYPE.FACET) {
+            if (qtype == QueryType.FACET) {
                 if (orderColumn == null) {
                     if (!direction.equalsIgnoreCase("ASC")) {
                         query.setFacetSort("count");
                     }
                 } else {
                     if (!direction.equalsIgnoreCase("DESC")) {
-                        query.setFacetSort("index");   
+                        query.setFacetSort("index");
                     }
                 }
             }
         }
     }
 
+    /**
+     * Initialize connection to the Solr server based on the url.
+     * @return server object
+    **/
     private HttpSolrServer initSolrServer() {
-        HttpSolrServer server = new HttpSolrServer(url);
+        HttpSolrServer server = new HttpSolrServer(_url);
         server.setMaxRetries(MAX_RETRIES);
         server.setSoTimeout(SOCK_TIMEOUT);
         server.setConnectionTimeout(CONN_TIMEOUT);
@@ -268,33 +274,42 @@ public class SolrDataContext extends QueryPostprocessDataContext implements
         return server;
     }
 
-    private QueryResponse selectRows(Table table, Query q, String queryStr,
-            int offset, int num) {
+    /**
+     * Select rows/documents from the index.
+     * @param table Table object representing the core/schema
+     * @param q Query object of MM framework
+     * @param queryStr String representation of the query/keyword
+     * @param offset Offset for pagination
+     * @param num  Number of rows to retrieve
+     * @return QueryResponse SolrJ response object
+    **/
+    private QueryResponse selectRows(final Table table, final Query q, final String queryStr,
+            final int offset, final int num) {
         HttpSolrServer server = initSolrServer();
 
-        query.clear();
-        query.setQuery(queryStr);
-        query.setStart(offset);
-        query.setRows(num);
-        
+        _query.clear();
+        _query.setQuery(queryStr);
+        _query.setStart(offset);
+        _query.setRows(num);
+
         if (q != null) {
-            setOrder(q, query, QUERYTYPE.ROW);
+            setOrder(q, _query, QueryType.ROW);
         }
 
         QueryResponse response = null;
 
         try {
-            response = server.query(query);
+            response = server.query(_query);
         } catch (SolrServerException e) {
             logger.error("Search query for documents failed", "", e);
             throw new MetaModelException("Query failed " + e);
         }
-       
+
         return response;
     }
 
     @Override
-    protected String getMainSchemaName() throws MetaModelException {
-        return indexName;
+    final protected String getMainSchemaName() throws MetaModelException {
+        return _indexName;
     }
 }

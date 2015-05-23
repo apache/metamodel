@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.solr;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
 import java.util.List;
 import java.util.Set;
@@ -43,15 +41,13 @@ import org.apache.solr.common.params.*;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrQuery.SortClause;
-import org.apache.solr.client.solrj.SolrQuery.ORDER;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 
 /**
- * {@link DataSet} implementation for Solr 
+ * {@link DataSet} implementation for Solr.
  */
 final class SolrDataSet extends AbstractDataSet {
 
@@ -64,49 +60,65 @@ final class SolrDataSet extends AbstractDataSet {
 
     private Column[] _columns;
     private int _numColumns = 0;
-    private int _hitIndex = 0;
+    private int _hitIndex = 0; //current pointer in the document list
     private int _docListSize = 0;
     private int _facetFieldListSize = 0;
 
-    private HttpSolrServer _server;
-    private SolrQuery _solrQuery;
-    private String _cursorMark = "";
-    private QueryResponse _rsp;
-    private SolrDataSet _dataSet;
+    private HttpSolrServer _server; //server object to use for batch fetches
+    private SolrQuery _solrQuery;   //SolrJ Query object
+    private String _cursorMark = ""; //cursor to determine offset for next fetch
+    private QueryResponse _rsp;     //SolrJ Query Response object
+    private SolrDataSet _dataSet;   //MM DataSet object to populate
     private int _limit;
-    
-    final private static int BATCH_SIZE = 500;
-    
-    public SolrDataSet(SolrDocumentList _docs, Column[] columns) {
+
+    final private static int BATCH_SIZE = 500; //fetch results greater than the limit in batches of this size
+
+    /**
+     * Constructor to create SolrDataSet.
+     * @param docs object encapsulating Solr Documents
+     * @param columns array of MM Column objects
+    **/
+    public SolrDataSet(final SolrDocumentList docs, final Column[] columns) {
         super(columns);
         _numColumns = columns.length;
         _columns = columns;
-       
-        this._docs = _docs;
+
+        _docs = docs;
         _facetMap = null;
         _docListSize = _docs.size();
-       
+
         _closed = new AtomicBoolean(false);
     }
 
-    public SolrDataSet(HttpSolrServer server,String queryStr,Column[] columns,int limit) {
+    /**
+     * Constructor to create SolrDataSet.
+     * @param server Solrserver object for use in pagination
+     * @param queryStr search string
+     * @param columns array of MM Column objects
+     * @param limit result limit
+    **/
+    public SolrDataSet(final HttpSolrServer server, final String queryStr, final Column[] columns, final int limit) {
         super(columns);
         _numColumns = columns.length;
         _columns = columns;
-        
-        this._docs = null;
+
+        _docs = null;
         _facetMap = null;
         _docListSize = 0;
-        
-        this._server   = server;
-        this._solrQuery= new SolrQuery(queryStr).setRows(BATCH_SIZE).setSort(SortClause.asc("id"));
-        
-        this._limit = limit;
-        
+
+        _server    = server;
+        _solrQuery = new SolrQuery(queryStr).setRows(BATCH_SIZE).setSort(SortClause.asc("id"));
+        _limit     = limit;
+
         _closed = new AtomicBoolean(false);
     }
-    
-    public SolrDataSet(List<FacetField> facetFieldsList, Column[] columns) {
+
+    /**
+     * Constructor to create SolrDataSet
+     * @param facetFieldsList List of facet fields
+     * @param columns array of MM Column objects
+    **/
+    public SolrDataSet(final List<FacetField> facetFieldsList, final Column[] columns) {
         super(columns);
         _numColumns = columns.length;
         _columns = columns;
@@ -124,13 +136,10 @@ final class SolrDataSet extends AbstractDataSet {
         _docs = null;
         _closed = new AtomicBoolean(false);
     }
-    
+
     @Override
     public void close() {
         super.close();
-        boolean closeNow = _closed.compareAndSet(true, false);
-        if (closeNow) {
-        }
     }
 
     @Override
@@ -145,13 +154,13 @@ final class SolrDataSet extends AbstractDataSet {
     }
 
     @Override
-    public boolean next() {      
+    public boolean next() {
         if (_server != null) {
             if (_dataSet != null && _dataSet.next()) {
                 return true;
             }
-            
-            if (_cursorMark.isEmpty()) {    
+
+            if (_cursorMark.isEmpty()) {
                 _cursorMark = CursorMarkParams.CURSOR_MARK_START;
                 return true;
             } else {
@@ -164,47 +173,59 @@ final class SolrDataSet extends AbstractDataSet {
                 }
             }
         }
-        
-        if (_docListSize != 0 && _docListSize == _hitIndex)
-            return false;
 
-        if (_facetFieldListSize != 0 && _facetFieldListSize == _hitIndex)
+        if (_docListSize != 0 && _docListSize == _hitIndex) {
             return false;
+        }
 
-        if (_docListSize == 0 && _facetFieldListSize == 0)
+        if (_facetFieldListSize != 0 && _facetFieldListSize == _hitIndex) {
             return false;
+        }
+
+        if (_docListSize == 0 && _facetFieldListSize == 0) {
+            return false;
+        }
 
         return true;
     }
 
-    private Row getBatchRow() {      
+    /**
+     * Fetch rows of data based on the cursor offset.
+     * If data is not available in the DataSet object, then do another fetch
+     * @return Row a result row
+    **/
+    private Row getBatchRow() {
         if (_dataSet != null && _dataSet.next()) {
             ++_hitIndex;
             return _dataSet.getRow();
         }
-        
+
         _solrQuery.set(CursorMarkParams.CURSOR_MARK_PARAM, _cursorMark);
 
         try {
             _rsp = _server.query(_solrQuery);
-            _dataSet = new SolrDataSet(_rsp.getResults(), _columns);            
-        }
-        catch (Exception e) {
+            _dataSet = new SolrDataSet(_rsp.getResults(), _columns);
+        } catch (Exception e) {
             logger.error("Search query for documents failed", "", e);
             throw new MetaModelException("Query failed " + e);
         }
-        
+
         if (_dataSet != null && _dataSet.next()) {
             ++_hitIndex;
             return _dataSet.getRow();
-        }     
+        }
 
         return null;
     }
-    
-    private Object[] getRow(SolrDocumentList _docs) {
+
+    /**
+     * Fetch a row of data (Document values) based on the current offset.
+     * @param docs SolrDocumentList object containing the documents
+     * @return Object[] object array of (document) values
+    **/
+    private Object[] getRow(final SolrDocumentList docs) {
         Object[] values = new Object[_numColumns];
-        SolrDocument doc = _docs.get(_hitIndex);
+        SolrDocument doc = docs.get(_hitIndex);
 
         Map<String, Object> docValues = doc.getFieldValueMap();
 
@@ -218,7 +239,12 @@ final class SolrDataSet extends AbstractDataSet {
         return values;
     }
 
-    private Object[] getRow(Map<String, List<FacetField.Count>> facetMap) {
+    /**
+     * Fetch a row of data (Facet values) based on the current offset.
+     * @param facetMap SolrDocumentList object containing the documents
+     * @return Object[] object array of (document) values
+    **/
+    private Object[] getRow(final Map<String, List<FacetField.Count>> facetMap) {
         Set<String> keys = facetMap.keySet();
         Object[] values = new Object[2];
 
@@ -246,15 +272,16 @@ final class SolrDataSet extends AbstractDataSet {
             return getBatchRow();
         } else {
             Object[] values;
-            
+
             if (_docListSize > 0) {
                 values = getRow(_docs);
             } else {
                 values = getRow(_facetMap);
             }
-            
+
             final Row row = new DefaultRow(dataSetHeader, values);
             return row;
         }
     }
 }
+
