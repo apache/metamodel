@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,7 +71,7 @@ public class HdfsResource implements Resource, Closeable {
 
     @Override
     public boolean isReadOnly() {
-        // TODO Auto-generated method stub
+        // We assume it is not read-only
         return false;
     }
 
@@ -231,12 +232,7 @@ public class HdfsResource implements Resource, Closeable {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((_filepath == null) ? 0 : _filepath.hashCode());
-        result = prime * result + ((_hostname == null) ? 0 : _hostname.hashCode());
-        result = prime * result + _port;
-        return result;
+        return Arrays.hashCode(new Object[] { _filepath, _hostname, _port });
     }
 
     @Override

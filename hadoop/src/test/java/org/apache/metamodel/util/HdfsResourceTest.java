@@ -1,5 +1,7 @@
 package org.apache.metamodel.util;
 
+import java.io.InputStream;
+
 import junit.framework.TestCase;
 
 public class HdfsResourceTest extends TestCase {
