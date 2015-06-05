@@ -64,6 +64,7 @@ under the License.
 		<module>xml</module>
 		<module>jdbc</module>
 		<module>elasticsearch</module>
+		<module>hadoop</module>
 		<module>hbase</module>
 		<module>cassandra</module>
 		<module>mongodb</module>

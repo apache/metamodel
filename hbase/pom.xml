@@ -26,7 +26,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-core</artifactId>
+			<artifactId>MetaModel-hadoop</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
