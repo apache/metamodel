@@ -18,24 +18,19 @@
  */
 package org.apache.metamodel.util;
 
-/**
- * Represents an abstract function, which is an executable piece of
- * functionality that has an input and an output. A {@link Func} has a return
- * type, unlike an {@link Action}.
- * 
- * @param <I>
- *            the input type
- * @param <O>
- *            the output type
- */
-public interface Func<I, O> {
+public abstract class UncheckedFunc<I, O> implements Func<I, O> {
 
-    /**
-     * Evaluates an element and transforms it using this function.
-     * 
-     * @param arg
-     *            the input given to the function
-     * @return the output result of the function
-     */
-    public O eval(I arg);
+    @Override
+    public O eval(I arg) {
+        try {
+            return evalUnchecked(arg);
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            }
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected abstract O evalUnchecked(I arg) throws Exception;
 }

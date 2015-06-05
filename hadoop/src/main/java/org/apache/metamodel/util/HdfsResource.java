@@ -1,0 +1,265 @@
+package org.apache.metamodel.util;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.metamodel.MetaModelException;
+
+/**
+ * A {@link Resource} implementation that connects to Apache Hadoop's HDFS
+ * distributed file system.
+ */
+public class HdfsResource implements Resource, Closeable {
+
+    private static final Pattern URL_PATTERN = Pattern.compile("hdfs://(.+):([0-9]+)/(.*)");
+
+    private final String _hostname;
+    private final int _port;
+    private final String _filepath;
+
+    private FileSystem _fileSystem;
+
+    private Path _path;
+
+    /**
+     * Creates a {@link HdfsResource}
+     * 
+     * @param url
+     *            a URL of the form: hdfs://hostname:port/path/to/file
+     */
+    public HdfsResource(String url) {
+        if (url == null) {
+            throw new IllegalArgumentException("Url cannot be null");
+        }
+        final Matcher matcher = URL_PATTERN.matcher(url);
+        if (!matcher.find()) {
+            throw new IllegalArgumentException("Cannot parse url '" + url
+                    + "'. Must follow pattern: hdfs://hostname:port/path/to/file");
+        }
+        _hostname = matcher.group(1);
+        _port = Integer.parseInt(matcher.group(2));
+        _filepath = '/' + matcher.group(3);
+    }
+
+    public HdfsResource(String hostname, int port, String filepath) {
+        _hostname = hostname;
+        _port = port;
+        _filepath = filepath;
+    }
+
+    @Override
+    public String getName() {
+        final int lastSlash = _filepath.lastIndexOf('/');
+        if (lastSlash != -1) {
+            return _filepath.substring(lastSlash + 1);
+        }
+        return _filepath;
+    }
+
+    @Override
+    public String getQualifiedPath() {
+        return "hdfs://" + _hostname + ":" + _port + _filepath;
+    }
+
+    @Override
+    public boolean isReadOnly() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean isExists() {
+        return doWithFileSystem(new UncheckedFunc<FileSystem, Boolean>() {
+            @Override
+            protected Boolean evalUnchecked(FileSystem fs) throws Exception {
+                return fs.exists(getHadoopPath());
+            }
+        });
+    }
+
+    @Override
+    public long getSize() {
+        return doWithFileSystem(new UncheckedFunc<FileSystem, Long>() {
+            @Override
+            protected Long evalUnchecked(FileSystem fs) throws Exception {
+                return fs.getFileStatus(getHadoopPath()).getLen();
+            }
+        });
+    }
+
+    @Override
+    public long getLastModified() {
+        return doWithFileSystem(new UncheckedFunc<FileSystem, Long>() {
+            @Override
+            protected Long evalUnchecked(FileSystem fs) throws Exception {
+                return fs.getFileStatus(getHadoopPath()).getModificationTime();
+            }
+        });
+    }
+
+    @Override
+    public void write(final Action<OutputStream> writeCallback) throws ResourceException {
+        final OutputStream out = doWithFileSystem(new UncheckedFunc<FileSystem, OutputStream>() {
+            @Override
+            protected OutputStream evalUnchecked(FileSystem fs) throws Exception {
+                return fs.create(getHadoopPath(), true);
+            }
+        });
+        try {
+            writeCallback.run(out);
+        } catch (Exception e) {
+            throw wrapException(e);
+        } finally {
+            FileHelper.safeClose(out);
+        }
+    }
+
+    @Override
+    public void append(Action<OutputStream> appendCallback) throws ResourceException {
+        final OutputStream out = doWithFileSystem(new UncheckedFunc<FileSystem, OutputStream>() {
+            @Override
+            protected OutputStream evalUnchecked(FileSystem fs) throws Exception {
+                return fs.append(getHadoopPath());
+            }
+        });
+        try {
+            appendCallback.run(out);
+        } catch (Exception e) {
+            throw wrapException(e);
+        } finally {
+            FileHelper.safeClose(out);
+        }
+    }
+
+    @Override
+    public InputStream read() throws ResourceException {
+        return doWithFileSystem(new UncheckedFunc<FileSystem, InputStream>() {
+            @Override
+            protected InputStream evalUnchecked(FileSystem fs) throws Exception {
+                return fs.open(getHadoopPath());
+            }
+        });
+    }
+
+    @Override
+    public void read(Action<InputStream> readCallback) throws ResourceException {
+        final InputStream in = read();
+        try {
+            readCallback.run(in);
+        } catch (Exception e) {
+            throw wrapException(e);
+        } finally {
+            FileHelper.safeClose(in);
+        }
+    }
+
+    @Override
+    public <E> E read(Func<InputStream, E> readCallback) throws ResourceException {
+        final InputStream in = read();
+        try {
+            return readCallback.eval(in);
+        } catch (Exception e) {
+            throw wrapException(e);
+        } finally {
+            FileHelper.safeClose(in);
+        }
+    }
+
+    private <E> E doWithFileSystem(Func<FileSystem, E> action) {
+        final FileSystem hadoopFileSystem = getHadoopFileSystem();
+        try {
+            return action.eval(hadoopFileSystem);
+        } catch (Exception e) {
+            throw wrapException(e);
+        }
+    }
+
+    private RuntimeException wrapException(Exception e) {
+        if (e instanceof RuntimeException) {
+            return (RuntimeException) e;
+        }
+        return new MetaModelException(e);
+    }
+
+    public Configuration getHadoopConfiguration() {
+        final Configuration conf = new Configuration();
+        conf.set("fs.defaultFS", "hdfs://" + _hostname + ":" + _port);
+        return conf;
+    }
+
+    public FileSystem getHadoopFileSystem() {
+        if (_fileSystem == null) {
+            try {
+                _fileSystem = FileSystem.get(getHadoopConfiguration());
+            } catch (IOException e) {
+                throw new MetaModelException("Could not connect to HDFS: " + e.getMessage(), e);
+            }
+        }
+        return _fileSystem;
+    }
+
+    public Path getHadoopPath() {
+        if (_path == null) {
+            _path = new Path(_filepath);
+        }
+        return _path;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (_fileSystem != null) {
+            try {
+                _fileSystem.close();
+            } finally {
+                _fileSystem = null;
+            }
+        }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        close();
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((_filepath == null) ? 0 : _filepath.hashCode());
+        result = prime * result + ((_hostname == null) ? 0 : _hostname.hashCode());
+        result = prime * result + _port;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        HdfsResource other = (HdfsResource) obj;
+        if (_filepath == null) {
+            if (other._filepath != null)
+                return false;
+        } else if (!_filepath.equals(other._filepath))
+            return false;
+        if (_hostname == null) {
+            if (other._hostname != null)
+                return false;
+        } else if (!_hostname.equals(other._hostname))
+            return false;
+        if (_port != other._port)
+            return false;
+        return true;
+    }
+}
