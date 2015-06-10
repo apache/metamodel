@@ -1,3 +1,7 @@
+### Apache MetaModel (unreleased work)
+
+ * [METAMODEL-148] - Added a 'hadoop' module with a HdfsResource class to allow CSV, Excel and Fixed-width file access on HDFS.
+
 ### Apache MetaModel 4.3.4
 
  * [METAMODEL-136] - Added LIKE operator native support (using conversion to regex) for MongoDB.
