@@ -23,10 +23,18 @@ import java.io.FileReader;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Stopwatch;
 
 import junit.framework.TestCase;
 
 public class HdfsResourceIntegrationTest extends TestCase {
+    
+    private static final Logger logger = LoggerFactory.getLogger(HdfsResourceIntegrationTest.class);
 
     private boolean _configured;
     private Properties _properties;
@@ -67,33 +75,49 @@ public class HdfsResourceIntegrationTest extends TestCase {
             return;
         }
         final String contentString = "fun and games with Apache MetaModel and Hadoop is what we do";
+
+        final Stopwatch stopwatch = Stopwatch.createStarted();
         final HdfsResource res1 = new HdfsResource(_hostname, _port, _filePath);
-        try {
-            assertFalse(res1.isExists());
+        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - start");
 
-            res1.write(new Action<OutputStream>() {
-                @Override
-                public void run(OutputStream out) throws Exception {
-                    out.write(contentString.getBytes());
-                }
-            });
+        assertFalse(res1.isExists());
+        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - exists");
 
-            assertTrue(res1.isExists());
+        res1.write(new Action<OutputStream>() {
+            @Override
+            public void run(OutputStream out) throws Exception {
+                out.write(contentString.getBytes());
+            }
+        });
 
-            final String str = res1.read(new Func<InputStream, String>() {
-                @Override
-                public String eval(InputStream in) {
-                    return FileHelper.readInputStreamAsString(in, "UTF8");
-                }
-            });
+        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - written");
 
-            assertEquals(contentString, str);
-            res1.getHadoopFileSystem().delete(res1.getHadoopPath(), false);
+        assertTrue(res1.isExists());
 
-            assertFalse(res1.isExists());
+        final String str1 = res1.read(new Func<InputStream, String>() {
+            @Override
+            public String eval(InputStream in) {
+                return FileHelper.readInputStreamAsString(in, "UTF8");
+            }
+        });
+        assertEquals(contentString, str1);
+        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read1");
 
-        } finally {
-            res1.close();
-        }
+        final String str2 = res1.read(new Func<InputStream, String>() {
+            @Override
+            public String eval(InputStream in) {
+                return FileHelper.readInputStreamAsString(in, "UTF8");
+            }
+        });
+        assertEquals(str1, str2);
+        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read2");
+
+        res1.getHadoopFileSystem().delete(res1.getHadoopPath(), false);
+        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - deleted");
+
+        assertFalse(res1.isExists());
+
+        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - done");
+        stopwatch.stop();
     }
 }

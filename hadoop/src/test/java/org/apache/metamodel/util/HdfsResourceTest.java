@@ -38,9 +38,5 @@ public class HdfsResourceTest extends TestCase {
         assertEquals("apache.txt", res3.getName());
 
         assertFalse(res3.equals(res1));
-
-        res1.close();
-        res2.close();
-        res3.close();
     }
 }

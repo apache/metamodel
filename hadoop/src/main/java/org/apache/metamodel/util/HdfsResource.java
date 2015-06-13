@@ -18,7 +18,6 @@
  */
 package org.apache.metamodel.util;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,16 +34,13 @@ import org.apache.metamodel.MetaModelException;
  * A {@link Resource} implementation that connects to Apache Hadoop's HDFS
  * distributed file system.
  */
-public class HdfsResource implements Resource, Closeable {
+public class HdfsResource implements Resource {
 
     private static final Pattern URL_PATTERN = Pattern.compile("hdfs://(.+):([0-9]+)/(.*)");
 
     private final String _hostname;
     private final int _port;
     private final String _filepath;
-
-    private FileSystem _fileSystem;
-
     private Path _path;
 
     /**
@@ -214,14 +210,11 @@ public class HdfsResource implements Resource, Closeable {
     }
 
     public FileSystem getHadoopFileSystem() {
-        if (_fileSystem == null) {
-            try {
-                _fileSystem = FileSystem.get(getHadoopConfiguration());
-            } catch (IOException e) {
-                throw new MetaModelException("Could not connect to HDFS: " + e.getMessage(), e);
-            }
+        try {
+            return FileSystem.get(getHadoopConfiguration());
+        } catch (IOException e) {
+            throw new MetaModelException("Could not connect to HDFS: " + e.getMessage(), e);
         }
-        return _fileSystem;
     }
 
     public Path getHadoopPath() {
@@ -229,23 +222,6 @@ public class HdfsResource implements Resource, Closeable {
             _path = new Path(_filepath);
         }
         return _path;
-    }
-
-    @Override
-    public void close() throws IOException {
-        if (_fileSystem != null) {
-            try {
-                _fileSystem.close();
-            } finally {
-                _fileSystem = null;
-            }
-        }
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        close();
     }
 
     @Override
