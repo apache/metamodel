@@ -80,9 +80,6 @@ public class HdfsResourceIntegrationTest extends TestCase {
         final HdfsResource res1 = new HdfsResource(_hostname, _port, _filePath);
         logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - start");
 
-        assertFalse(res1.isExists());
-        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - exists");
-
         res1.write(new Action<OutputStream>() {
             @Override
             public void run(OutputStream out) throws Exception {

@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.metamodel.MetaModelException;
@@ -91,108 +92,168 @@ public class HdfsResource implements Resource {
 
     @Override
     public boolean isExists() {
-        return doWithFileSystem(new UncheckedFunc<FileSystem, Boolean>() {
-            @Override
-            protected Boolean evalUnchecked(FileSystem fs) throws Exception {
-                return fs.exists(getHadoopPath());
-            }
-        });
+        final FileSystem fs = getHadoopFileSystem();
+        try {
+            return fs.exists(getHadoopPath());
+        } catch (Exception e) {
+            throw wrapException(e);
+        } finally {
+            FileHelper.safeClose(fs);
+        }
     }
 
     @Override
     public long getSize() {
-        return doWithFileSystem(new UncheckedFunc<FileSystem, Long>() {
-            @Override
-            protected Long evalUnchecked(FileSystem fs) throws Exception {
-                return fs.getFileStatus(getHadoopPath()).getLen();
-            }
-        });
+        final FileSystem fs = getHadoopFileSystem();
+        try {
+            return fs.getFileStatus(getHadoopPath()).getLen();
+        } catch (Exception e) {
+            throw wrapException(e);
+        } finally {
+            FileHelper.safeClose(fs);
+        }
     }
 
     @Override
     public long getLastModified() {
-        return doWithFileSystem(new UncheckedFunc<FileSystem, Long>() {
-            @Override
-            protected Long evalUnchecked(FileSystem fs) throws Exception {
-                return fs.getFileStatus(getHadoopPath()).getModificationTime();
-            }
-        });
+        final FileSystem fs = getHadoopFileSystem();
+        try {
+            return fs.getFileStatus(getHadoopPath()).getModificationTime();
+        } catch (Exception e) {
+            throw wrapException(e);
+        } finally {
+            FileHelper.safeClose(fs);
+        }
     }
 
     @Override
     public void write(final Action<OutputStream> writeCallback) throws ResourceException {
-        final OutputStream out = doWithFileSystem(new UncheckedFunc<FileSystem, OutputStream>() {
-            @Override
-            protected OutputStream evalUnchecked(FileSystem fs) throws Exception {
-                return fs.create(getHadoopPath(), true);
-            }
-        });
+        final FileSystem fs = getHadoopFileSystem();
         try {
-            writeCallback.run(out);
+            final FSDataOutputStream out = fs.create(getHadoopPath(), true);
+            try {
+                writeCallback.run(out);
+            } finally {
+                FileHelper.safeClose(out);
+            }
         } catch (Exception e) {
             throw wrapException(e);
         } finally {
-            FileHelper.safeClose(out);
+            FileHelper.safeClose(fs);
         }
     }
 
     @Override
     public void append(Action<OutputStream> appendCallback) throws ResourceException {
-        final OutputStream out = doWithFileSystem(new UncheckedFunc<FileSystem, OutputStream>() {
-            @Override
-            protected OutputStream evalUnchecked(FileSystem fs) throws Exception {
-                return fs.append(getHadoopPath());
-            }
-        });
+        final FileSystem fs = getHadoopFileSystem();
         try {
-            appendCallback.run(out);
+            final FSDataOutputStream out = fs.append(getHadoopPath());
+            try {
+                appendCallback.run(out);
+            } finally {
+                FileHelper.safeClose(out);
+            }
         } catch (Exception e) {
             throw wrapException(e);
         } finally {
-            FileHelper.safeClose(out);
+            FileHelper.safeClose(fs);
         }
     }
 
     @Override
     public InputStream read() throws ResourceException {
-        return doWithFileSystem(new UncheckedFunc<FileSystem, InputStream>() {
+        final FileSystem fs = getHadoopFileSystem();
+        final InputStream in;
+        try {
+            in = fs.open(getHadoopPath());
+        } catch (Exception e) {
+            // we can close 'fs' in case of an exception
+            FileHelper.safeClose(fs);
+            throw wrapException(e);
+        }
+
+        // return a wrappper InputStream which manages the 'fs' closeable
+        return new InputStream() {
             @Override
-            protected InputStream evalUnchecked(FileSystem fs) throws Exception {
-                return fs.open(getHadoopPath());
+            public int read() throws IOException {
+                return in.read();
             }
-        });
+
+            @Override
+            public int read(byte[] b, int off, int len) throws IOException {
+                return in.read(b, off, len);
+            }
+
+            @Override
+            public int read(byte[] b) throws IOException {
+                return in.read(b);
+            }
+
+            @Override
+            public boolean markSupported() {
+                return in.markSupported();
+            }
+
+            @Override
+            public synchronized void mark(int readlimit) {
+                in.mark(readlimit);
+            }
+
+            @Override
+            public int available() throws IOException {
+                return in.available();
+            }
+
+            @Override
+            public synchronized void reset() throws IOException {
+                in.reset();
+            }
+
+            @Override
+            public long skip(long n) throws IOException {
+                return in.skip(n);
+            }
+
+            @Override
+            public void close() throws IOException {
+                super.close();
+                // need to close 'fs' when input stream is closed
+                FileHelper.safeClose(fs);
+            }
+        };
     }
 
     @Override
     public void read(Action<InputStream> readCallback) throws ResourceException {
-        final InputStream in = read();
+        final FileSystem fs = getHadoopFileSystem();
         try {
-            readCallback.run(in);
+            final InputStream in = fs.open(getHadoopPath());
+            try {
+                readCallback.run(in);
+            } finally {
+                FileHelper.safeClose(in);
+            }
         } catch (Exception e) {
             throw wrapException(e);
         } finally {
-            FileHelper.safeClose(in);
+            FileHelper.safeClose(fs);
         }
     }
 
     @Override
     public <E> E read(Func<InputStream, E> readCallback) throws ResourceException {
-        final InputStream in = read();
+        final FileSystem fs = getHadoopFileSystem();
         try {
-            return readCallback.eval(in);
+            final InputStream in = fs.open(getHadoopPath());
+            try {
+                return readCallback.eval(in);
+            } finally {
+                FileHelper.safeClose(in);
+            }
         } catch (Exception e) {
             throw wrapException(e);
         } finally {
-            FileHelper.safeClose(in);
-        }
-    }
-
-    private <E> E doWithFileSystem(Func<FileSystem, E> action) {
-        final FileSystem hadoopFileSystem = getHadoopFileSystem();
-        try {
-            return action.eval(hadoopFileSystem);
-        } catch (Exception e) {
-            throw wrapException(e);
+            FileHelper.safeClose(fs);
         }
     }
 
