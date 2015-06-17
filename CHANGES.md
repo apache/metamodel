@@ -1,6 +1,7 @@
 ### Apache MetaModel (unreleased work)
 
  * [METAMODEL-148] - Added a 'hadoop' module with a HdfsResource class to allow CSV, Excel and Fixed-width file access on HDFS.
+ * [METAMODEL-149] - Added support for COUNTER data type in Cassandra.
 
 ### Apache MetaModel 4.3.4
 
