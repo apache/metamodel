@@ -20,7 +20,6 @@ package org.apache.metamodel.cassandra;
 
 import java.util.Arrays;
 import java.util.List;
-
 import javax.swing.table.TableModel;
 
 import org.apache.metamodel.data.DataSet;
@@ -39,12 +38,14 @@ public class CassandraDataContextTest extends CassandraTestCase {
     private Cluster cluster;
     private CassandraDataContext dc;
     private String testTableName = "songs";
+    private String testCounterTableName = "counter";
     private String firstRowId = "756716f7-2e54-4715-9f00-91dcbea6cf51";
     private String secondRowId = "756716f7-2e54-4715-9f00-91dcbea6cf52";
     private String thirdRowId = "756716f7-2e54-4715-9f00-91dcbea6cf53";
     private String firstRowTitle = "My first song";
     private String secondRowTitle = "My second song";
     private String thirdRowTitle = "My third song";
+    private String urlName = "my_url";
 
     @Override
     protected void setUp() throws Exception {
@@ -54,8 +55,9 @@ public class CassandraDataContextTest extends CassandraTestCase {
             cluster = client.getCluster();
             Session session = cluster.connect();
             dc = new CassandraDataContext(cluster, getKeyspaceName());
-            createCassandraKeySpaceAndTable(session);
+            createCassandraKeySpaceAndTables(session);
             populateCassandraTableWithSomeData(session);
+            populateCassandraCounterTableWithSomeData(session);
         }
     }
 
@@ -73,7 +75,7 @@ public class CassandraDataContextTest extends CassandraTestCase {
             return;
         }
 
-        assertEquals("[" + testTableName + "]", Arrays.toString(dc.getDefaultSchema().getTableNames()));
+        assertEquals("[" + testCounterTableName +", "+testTableName + "]", Arrays.toString(dc.getDefaultSchema().getTableNames()));
 
         Table table = dc.getDefaultSchema().getTableByName(testTableName);
 
@@ -210,13 +212,38 @@ public class CassandraDataContextTest extends CassandraTestCase {
         }
     }
 
-    private void createCassandraKeySpaceAndTable(Session session) {
+    public void testCounterDataType() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+        Table table = dc.getDefaultSchema().getTableByName(testCounterTableName);
+
+        assertEquals(ColumnType.BIGINT, table.getColumnByName("counter_value").getType());
+        assertEquals(ColumnType.STRING, table.getColumnByName("url_name").getType());
+
+        DataSet ds = dc.query().from(testCounterTableName).select("counter_value").and("url_name").execute();
+        assertEquals(CassandraDataSet.class, ds.getClass());
+
+        try {
+            assertTrue(ds.next());
+            assertEquals("Row[values=[" + 1 + ", " + urlName + "]]", ds.getRow().toString());
+            assertFalse(ds.next());
+        } finally {
+            ds.close();
+        }
+    }
+
+    private void createCassandraKeySpaceAndTables(Session session) {
         session.execute("CREATE KEYSPACE IF NOT EXISTS " + getKeyspaceName() + " WITH replication "
                 + "= {'class':'SimpleStrategy', 'replication_factor':1};");
         session.execute("DROP TABLE IF EXISTS " + getKeyspaceName() + "." + testTableName + ";");
         session.execute("CREATE TABLE IF NOT EXISTS " + getKeyspaceName() + "." + testTableName + " ("
                 + "id uuid PRIMARY KEY," + "title text," + "hit boolean," + "duration float," + "position int,"
                 + "creationtime timestamp" + ");");
+        session.execute("DROP TABLE IF EXISTS " + getKeyspaceName() + "." + testCounterTableName + ";");
+        session.execute("CREATE TABLE IF NOT EXISTS " + getKeyspaceName() + "." + testCounterTableName + " ("
+                + "counter_value counter, url_name varchar, PRIMARY KEY (url_name)" + ");");
     }
 
     private void populateCassandraTableWithSomeData(Session session) {
@@ -235,5 +262,12 @@ public class CassandraDataContextTest extends CassandraTestCase {
         session.execute("INSERT INTO " + getKeyspaceName() + "." + testTableName
                 + " (id, title, hit, duration, position, creationtime) " + "VALUES (" + thirdRowId + ","
                 + "'My third song'," + "false," + "3.15," + "3," + "dateof(now()))" + ";");
+    }
+
+    private void populateCassandraCounterTableWithSomeData(Session session) {
+
+        // create 1 record
+        session.execute("UPDATE " + getKeyspaceName() + "." + testCounterTableName
+                + " SET counter_value = counter_value + 1 WHERE url_name='" + urlName + "';");
     }
 }
