@@ -52,6 +52,9 @@ public class PostgresqlQueryRewriter extends LimitOffsetQueryRewriter implements
         if (columnType == ColumnType.BIT) {
             return "BOOLEAN";
         }
+        if (columnType == ColumnType.DOUBLE) {
+            return "double precision";
+        }
         return super.rewriteColumnType(columnType, columnSize);
     }
 
