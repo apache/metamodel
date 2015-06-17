@@ -22,21 +22,24 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.table.TableModel;
 
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
+import junit.framework.TestCase;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.data.FilteredDataSet;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
+import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
-
-public class CassandraDataContextTest extends CassandraTestCase {
-
+public class CassandraDataContextTest extends TestCase {
     private CassandraSimpleClient client = new CassandraSimpleClient();
     private Cluster cluster;
     private CassandraDataContext dc;
+    private int defaultCassandraPort = 9142;
+    private String cassandraNode = "127.0.0.1";
+    private String keyspaceName = "my_keyspace";
     private String testTableName = "songs";
     private String testCounterTableName = "counter";
     private String firstRowId = "756716f7-2e54-4715-9f00-91dcbea6cf51";
@@ -50,31 +53,23 @@ public class CassandraDataContextTest extends CassandraTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        if (isConfigured()) {
-            client.connect(getHostname(), getPort());
-            cluster = client.getCluster();
-            Session session = cluster.connect();
-            dc = new CassandraDataContext(cluster, getKeyspaceName());
-            createCassandraKeySpaceAndTables(session);
-            populateCassandraTableWithSomeData(session);
-            populateCassandraCounterTableWithSomeData(session);
-        }
+        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+        client.connect(cassandraNode, defaultCassandraPort);
+        cluster = client.getCluster();
+        Session session = cluster.connect();
+        createCassandraKeySpaceAndTable(session);
+        populateCassandraTableWithSomeData(session);
+        populateCassandraCounterTableWithSomeData(session);
+        dc = new CassandraDataContext(cluster, keyspaceName);
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        if (isConfigured()) {
-            client.close();
-        }
+        client.close();
     }
 
     public void testSchemaAndSimpleQuery() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
-
         assertEquals("[" + testCounterTableName +", "+testTableName + "]", Arrays.toString(dc.getDefaultSchema().getTableNames()));
 
         Table table = dc.getDefaultSchema().getTableByName(testTableName);
@@ -103,14 +98,10 @@ public class CassandraDataContextTest extends CassandraTestCase {
     }
 
     public void testWhereColumnEqualsValues() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
         DataSet ds = dc.query().from(testTableName).select("id").and("title").where("id").isEquals(firstRowId)
                 .execute();
-        assertEquals(FilteredDataSet.class, ds.getClass());
 
+        assertEquals(FilteredDataSet.class, ds.getClass());
         try {
             assertTrue(ds.next());
             assertEquals("Row[values=[" + firstRowId + ", " + firstRowTitle + "]]", ds.getRow().toString());
@@ -121,13 +112,8 @@ public class CassandraDataContextTest extends CassandraTestCase {
     }
 
     public void testWhereColumnInValues() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
         DataSet ds = dc.query().from(testTableName).select("id").and("title").where("title")
                 .in(firstRowTitle, secondRowTitle).orderBy("id").execute();
-
         try {
             assertTrue(ds.next());
             assertEquals("Row[values=[" + firstRowId + ", " + firstRowTitle + "]]", ds.getRow().toString());
@@ -140,70 +126,46 @@ public class CassandraDataContextTest extends CassandraTestCase {
     }
 
     public void testMaxRows() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
         Table table = dc.getDefaultSchema().getTableByName(testTableName);
         Query query = new Query().from(table).select(table.getColumns()).setMaxRows(2);
         DataSet dataSet = dc.executeQuery(query);
-
         TableModel tableModel = new DataSetTableModel(dataSet);
+
         assertEquals(2, tableModel.getRowCount());
     }
 
     public void testCountQuery() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
         Table table = dc.getDefaultSchema().getTableByName(testTableName);
         Query q = new Query().selectCount().from(table);
-
         List<Object[]> data = dc.executeQuery(q).toObjectArrays();
         assertEquals(1, data.size());
         Object[] row = data.get(0);
+
         assertEquals(1, row.length);
         assertEquals("[3]", Arrays.toString(row));
     }
 
     public void testQueryForANonExistingTable() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
         boolean thrown = false;
         try {
             dc.query().from("nonExistingTable").select("user").and("message").execute();
         } catch (IllegalArgumentException IAex) {
             thrown = true;
-        } finally {
-            // ds.close();
         }
         assertTrue(thrown);
     }
 
     public void testQueryForAnExistingTableAndNonExistingField() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
         boolean thrown = false;
         try {
             dc.query().from(testTableName).select("nonExistingField").execute();
         } catch (IllegalArgumentException IAex) {
             thrown = true;
-        } finally {
-            // ds.close();
         }
         assertTrue(thrown);
     }
 
     public void testNonExistentKeystore() {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
         try {
             new CassandraDataContext(cluster, "nonExistentKeyspace");
             fail();
@@ -213,10 +175,6 @@ public class CassandraDataContextTest extends CassandraTestCase {
     }
 
     public void testCounterDataType() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
         Table table = dc.getDefaultSchema().getTableByName(testCounterTableName);
 
         assertEquals(ColumnType.BIGINT, table.getColumnByName("counter_value").getType());
@@ -234,40 +192,32 @@ public class CassandraDataContextTest extends CassandraTestCase {
         }
     }
 
-    private void createCassandraKeySpaceAndTables(Session session) {
-        session.execute("CREATE KEYSPACE IF NOT EXISTS " + getKeyspaceName() + " WITH replication "
+    private void createCassandraKeySpaceAndTable(Session session) {
+        session.execute("CREATE KEYSPACE IF NOT EXISTS " + keyspaceName + " WITH replication "
                 + "= {'class':'SimpleStrategy', 'replication_factor':1};");
-        session.execute("DROP TABLE IF EXISTS " + getKeyspaceName() + "." + testTableName + ";");
-        session.execute("CREATE TABLE IF NOT EXISTS " + getKeyspaceName() + "." + testTableName + " ("
+        session.execute("DROP TABLE IF EXISTS " + keyspaceName + "." + testTableName + ";");
+        session.execute("CREATE TABLE IF NOT EXISTS " + keyspaceName + "." + testTableName + " ("
                 + "id uuid PRIMARY KEY," + "title text," + "hit boolean," + "duration float," + "position int,"
                 + "creationtime timestamp" + ");");
-        session.execute("DROP TABLE IF EXISTS " + getKeyspaceName() + "." + testCounterTableName + ";");
-        session.execute("CREATE TABLE IF NOT EXISTS " + getKeyspaceName() + "." + testCounterTableName + " ("
+        session.execute("DROP TABLE IF EXISTS " + keyspaceName + "." + testCounterTableName + ";");
+        session.execute("CREATE TABLE IF NOT EXISTS " + keyspaceName + "." + testCounterTableName + " ("
                 + "counter_value counter, url_name varchar, PRIMARY KEY (url_name)" + ");");
     }
 
     private void populateCassandraTableWithSomeData(Session session) {
-
-        // create 1 record
-        session.execute("INSERT INTO " + getKeyspaceName() + "." + testTableName
+        session.execute("INSERT INTO " + keyspaceName + "." + testTableName
                 + " (id, title, hit, duration, position, creationtime) " + "VALUES (" + firstRowId + ","
                 + "'My first song'," + "false," + "2.15," + "1," + "dateof(now()))" + ";");
-
-        // create 1 record
-        session.execute("INSERT INTO " + getKeyspaceName() + "." + testTableName
+        session.execute("INSERT INTO " + keyspaceName + "." + testTableName
                 + " (id, title, hit, duration, position, creationtime) " + "VALUES (" + secondRowId + ","
                 + "'My second song'," + "true," + "2.55," + "2," + "dateof(now()))" + ";");
-
-        // create 1 record
-        session.execute("INSERT INTO " + getKeyspaceName() + "." + testTableName
+        session.execute("INSERT INTO " + keyspaceName + "." + testTableName
                 + " (id, title, hit, duration, position, creationtime) " + "VALUES (" + thirdRowId + ","
                 + "'My third song'," + "false," + "3.15," + "3," + "dateof(now()))" + ";");
     }
 
     private void populateCassandraCounterTableWithSomeData(Session session) {
-
-        // create 1 record
-        session.execute("UPDATE " + getKeyspaceName() + "." + testCounterTableName
+        session.execute("UPDATE " + keyspaceName + "." + testCounterTableName
                 + " SET counter_value = counter_value + 1 WHERE url_name='" + urlName + "';");
     }
 }

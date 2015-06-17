@@ -269,8 +269,8 @@ under the License.
 							<rules>
 								<bannedDependencies>
 									<excludes>
-										<exclude>commons-logging:commons-logging</exclude>
-										<exclude>org.codehaus.jackson</exclude>
+										<exclude>commons-logging:commons-logging:compile</exclude>
+										<exclude>org.codehaus.jackson:compile</exclude>
 									</excludes>
 								</bannedDependencies>
 							</rules>
