@@ -67,6 +67,8 @@ public class CassandraUtils {
         switch (columnType.getName()) {
         case BIGINT:
             return row.getVarint(columnName);
+        case COUNTER:
+            return row.getLong(columnName);
         case BLOB:
             return row.getBytes(columnName);
         case BOOLEAN:

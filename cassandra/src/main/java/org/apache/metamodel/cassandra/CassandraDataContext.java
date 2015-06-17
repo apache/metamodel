@@ -186,6 +186,7 @@ public class CassandraDataContext extends QueryPostprocessDataContext implements
     private static ColumnType getColumnTypeFromMetaDataField(DataType.Name metaDataName) {
         switch (metaDataName) {
         case BIGINT:
+        case COUNTER:
             return ColumnType.BIGINT;
         case BLOB:
             return ColumnType.BLOB;
