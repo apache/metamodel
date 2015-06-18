@@ -76,8 +76,6 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
 
     private final Map<Column, TypeConverter<?, ?>> _converters;
 
-    private Schema _mainSchema;
-
     public QueryPostprocessDataContext() {
         super();
         _converters = new HashMap<Column, TypeConverter<?, ?>>();
@@ -432,7 +430,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         schemaNames[1] = getMainSchemaName();
         return schemaNames;
     }
-
+    
     @Override
     protected String getDefaultSchemaName() throws MetaModelException {
         return getMainSchemaName();
@@ -449,7 +447,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         }
 
         if (name.equalsIgnoreCase(mainSchemaName)) {
-            return getMainSchemaInternal();
+            return getMainSchema();
         } else if (name.equals(INFORMATION_SCHEMA_NAME)) {
             return getInformationSchema();
         }
@@ -513,7 +511,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         final String tableName = table.getName();
         final SelectItem[] columnSelectItems = MetaModelHelper.createSelectItems(table.getColumns());
         final SimpleDataSetHeader header = new SimpleDataSetHeader(columnSelectItems);
-        final Table[] tables = getMainSchemaInternal().getTables();
+        final Table[] tables = getDefaultSchema().getTables();
         final List<Row> data = new ArrayList<Row>();
         if ("tables".equals(tableName)) {
             // "tables" columns: name, type, num_columns, remarks
@@ -541,7 +539,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         } else if ("relationships".equals(tableName)) {
             // "relationships" columns: primary_table, primary_column,
             // foreign_table, foreign_column
-            for (Relationship r : getMainSchemaInternal().getRelationships()) {
+            for (Relationship r : getDefaultSchema().getRelationships()) {
                 Column[] primaryColumns = r.getPrimaryColumns();
                 Column[] foreignColumns = r.getForeignColumns();
                 Table pTable = r.getPrimaryTable();
@@ -571,13 +569,15 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         return dataSet;
     }
 
+    /**
+     * 
+     * @return
+     * 
+     * @deprecated use {@link #getDefaultSchema()} instead
+     */
+    @Deprecated
     protected Schema getMainSchemaInternal() {
-        Schema schema = _mainSchema;
-        if (schema == null) {
-            schema = getMainSchema();
-            _mainSchema = schema;
-        }
-        return schema;
+        return getDefaultSchema();
     }
 
     /**

@@ -74,9 +74,9 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
      * Constructs an Excel DataContext based on a resource and a custom
      * configuration.
      *
-     * The file provided can be either existing or non-existing. In the
-     * case of non-existing files, a file will be automatically created
-     * when a CREATE TABLE update is executed on the DataContext.
+     * The file provided can be either existing or non-existing. In the case of
+     * non-existing files, a file will be automatically created when a CREATE
+     * TABLE update is executed on the DataContext.
      * 
      * @param file
      * @param configuration
@@ -151,10 +151,10 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
         try {
             SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate(inputStreamRef);
             inputStream = inputStreamRef.get();
-            
+
             // METAMODEL-47: Ensure that we have loaded the schema at this point
             getDefaultSchema();
-            
+
             DataSet dataSet = delegate.executeQuery(inputStream, table, columns, maxRows);
             return dataSet;
         } catch (Exception e) {
@@ -191,6 +191,12 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
         }
     }
 
+    @Override
+    protected void onSchemaCacheRefreshed() {
+        super.onSchemaCacheRefreshed();
+        _spreadsheetReaderDelegate = null;
+    }
+
     /**
      * Convenient method for testing and inspecting internal state.
      * 
@@ -203,7 +209,8 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
         return null;
     }
 
-    private SpreadsheetReaderDelegate getSpreadsheetReaderDelegate(Ref<InputStream> inputStream) throws MetaModelException {
+    private SpreadsheetReaderDelegate getSpreadsheetReaderDelegate(Ref<InputStream> inputStream)
+            throws MetaModelException {
         if (_spreadsheetReaderDelegate == null) {
             synchronized (this) {
                 if (_spreadsheetReaderDelegate == null) {

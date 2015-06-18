@@ -586,10 +586,15 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(ds.next());
     }
 
-    public void testCreateTable() throws Exception {
+    public void testCreateTableXls() throws Exception {
         // run the same test with both XLS and XLSX (because of different
         // workbook implementations)
         runCreateTableTest(new File("target/xls_people_created.xls"));
+    }
+
+    public void testCreateTableXlsx() throws Exception {
+        // run the same test with both XLS and XLSX (because of different
+        // workbook implementations)
         runCreateTableTest(new File("target/xls_people_created.xlsx"));
     }
 
@@ -680,8 +685,7 @@ public class ExcelDataContextTest extends TestCase {
 
         dc.refreshSchemas();
 
-        assertEquals("[my_table_2]", Arrays.toString(schema.getTableNames()));
-
+        assertEquals("[my_table_2]", Arrays.toString(dc.getDefaultSchema().getTableNames()));
         assertEquals(1, dc.getDefaultSchema().getTableCount());
     }
 
