@@ -1,4 +1,4 @@
-### Apache MetaModel (unreleased work)
+### Apache MetaModel 4.3.5
 
  * [METAMODEL-148] - Added a 'hadoop' module with a HdfsResource class to allow CSV, Excel and Fixed-width file access on HDFS.
  * [METAMODEL-152] - Fixed an issue of not clearing schema cache when refreshSchemas() is invoked.
