@@ -4,6 +4,7 @@
  * [METAMODEL-152] - Fixed an issue of not clearing schema cache when refreshSchemas() is invoked.
  * [METAMODEL-149] - Added support for COUNTER data type in Cassandra.
  * [METAMODEL-151] - Added support for DOUBLE data type mapping in PostgreSQL
+ * [METAMODEL-154] - Use embedded Cassandra server for integration tests.
 
 ### Apache MetaModel 4.3.4
 
