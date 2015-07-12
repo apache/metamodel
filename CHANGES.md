@@ -1,3 +1,7 @@
+### Apache MetaModel (work in progress)
+
+ * [METAMODEL-160] - Added support for Apache Hive via the JDBC module of MetaModel.
+
 ### Apache MetaModel 4.3.5
 
  * [METAMODEL-148] - Added a 'hadoop' module with a HdfsResource class to allow CSV, Excel and Fixed-width file access on HDFS.
