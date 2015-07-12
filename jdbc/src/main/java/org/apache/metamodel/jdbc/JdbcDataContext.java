@@ -44,6 +44,7 @@ import org.apache.metamodel.data.MaxRowsDataSet;
 import org.apache.metamodel.jdbc.dialects.DB2QueryRewriter;
 import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.H2QueryRewriter;
+import org.apache.metamodel.jdbc.dialects.HiveQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.HsqldbQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.MysqlQueryRewriter;
@@ -81,6 +82,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     public static final String DATABASE_PRODUCT_DB2 = "DB2";
     public static final String DATABASE_PRODUCT_DB2_PREFIX = "DB2/";
     public static final String DATABASE_PRODUCT_ORACLE = "Oracle";
+    public static final String DATABASE_PRODUCT_HIVE = "Apache Hive";
 
     public static final ColumnType COLUMN_TYPE_CLOB_AS_STRING = new ColumnTypeImpl("CLOB",
             SuperColumnType.LITERAL_TYPE, String.class, true);
@@ -226,6 +228,8 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             setQueryRewriter(new HsqldbQueryRewriter(this));
         } else if (DATABASE_PRODUCT_H2.equals(_databaseProductName)) {
             setQueryRewriter(new H2QueryRewriter(this));
+        } else if (DATABASE_PRODUCT_HIVE.equals(_databaseProductName)) {
+            setQueryRewriter(new HiveQueryRewriter(this));
         } else {
             setQueryRewriter(new DefaultQueryRewriter(this));
         }
