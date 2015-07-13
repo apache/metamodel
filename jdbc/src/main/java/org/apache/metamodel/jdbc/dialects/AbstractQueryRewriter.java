@@ -58,6 +58,11 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
     public JdbcDataContext getDataContext() {
         return _dataContext;
     }
+    
+    @Override
+    public boolean isTransactional() {
+        return true;
+    }
 
     @Override
     public ColumnType getColumnType(int jdbcType, String nativeType, Integer columnSize) {
