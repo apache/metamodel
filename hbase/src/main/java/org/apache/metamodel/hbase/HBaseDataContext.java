@@ -97,11 +97,9 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
         Configuration config = org.apache.hadoop.hbase.HBaseConfiguration.create();
         config.set("hbase.zookeeper.quorum", configuration.getZookeeperHostname());
         config.set("hbase.zookeeper.property.clientPort", Integer.toString(configuration.getZookeeperPort()));
-        
-        // TODO: Make part of HbaseConfiguration
-        config.set("hbase.client.retries.number", Integer.toString(1));
-        config.set("zookeeper.session.timeout", Integer.toString(2000));
-        config.set("zookeeper.recovery.retry", Integer.toString(1));
+        config.set("hbase.client.retries.number", Integer.toString(configuration.getHBaseClientRetries()));
+        config.set("zookeeper.session.timeout", Integer.toString(configuration.getZookeeperSessionTimeout()));
+        config.set("zookeeper.recovery.retry", Integer.toString(configuration.getZookeeperRecoveryRetries()));
         return config;
     }
 
