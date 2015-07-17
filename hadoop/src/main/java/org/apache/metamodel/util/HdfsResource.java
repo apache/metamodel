@@ -21,6 +21,7 @@ package org.apache.metamodel.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,7 +36,9 @@ import org.apache.metamodel.MetaModelException;
  * A {@link Resource} implementation that connects to Apache Hadoop's HDFS
  * distributed file system.
  */
-public class HdfsResource implements Resource {
+public class HdfsResource implements Resource, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private static final Pattern URL_PATTERN = Pattern.compile("hdfs://(.+):([0-9]+)/(.*)");
 
@@ -64,10 +67,32 @@ public class HdfsResource implements Resource {
         _filepath = '/' + matcher.group(3);
     }
 
+    /**
+     * Creates a {@link HdfsResource}
+     * 
+     * @param hostname
+     *            the HDFS (namenode) hostname
+     * @param port
+     *            the HDFS (namenode) port number
+     * @param filepath
+     *            the path on HDFS to the file, starting with slash ('/')
+     */
     public HdfsResource(String hostname, int port, String filepath) {
         _hostname = hostname;
         _port = port;
         _filepath = filepath;
+    }
+
+    public String getFilepath() {
+        return _filepath;
+    }
+
+    public String getHostname() {
+        return _hostname;
+    }
+
+    public int getPort() {
+        return _port;
     }
 
     @Override
