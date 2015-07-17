@@ -24,11 +24,11 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HTableInterface;
-import org.apache.hadoop.hbase.client.HTablePool;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
@@ -61,8 +61,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
     public static final String FIELD_ID = "_id";
 
     private final HBaseConfiguration _configuration;
-    private final HBaseAdmin _admin;
-    private final HTablePool _tablePool;
+    private final Connection _connection;
 
     /**
      * Creates a {@link HBaseDataContext}.
@@ -72,30 +71,24 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
     public HBaseDataContext(HBaseConfiguration configuration) {
         Configuration config = createConfig(configuration);
         _configuration = configuration;
-        _admin = createHbaseAdmin(config);
-        _tablePool = new HTablePool(config, 100);
+        _connection = createConnection(config);
     }
 
     /**
      * Creates a {@link HBaseDataContext}.
      * 
      * @param configuration
-     * @param admin
-     * @param hTablePool
+     * @param connection
      */
-    public HBaseDataContext(HBaseConfiguration configuration, HBaseAdmin admin, HTablePool hTablePool) {
+    public HBaseDataContext(HBaseConfiguration configuration, Connection connection) {
         _configuration = configuration;
-        _tablePool = hTablePool;
-        _admin = admin;
+        _connection = connection;
     }
 
-    private HBaseAdmin createHbaseAdmin(Configuration config) {
+    private Connection createConnection(Configuration config) {
         try {
-            return new HBaseAdmin(config);
-        } catch (Exception e) {
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            }
+            return ConnectionFactory.createConnection(config);
+        } catch (IOException e) {
             throw new MetaModelException(e);
         }
     }
@@ -104,20 +97,29 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
         Configuration config = org.apache.hadoop.hbase.HBaseConfiguration.create();
         config.set("hbase.zookeeper.quorum", configuration.getZookeeperHostname());
         config.set("hbase.zookeeper.property.clientPort", Integer.toString(configuration.getZookeeperPort()));
+        
+        // TODO: Make part of HbaseConfiguration
+        config.set("hbase.client.retries.number", Integer.toString(1));
+        config.set("zookeeper.session.timeout", Integer.toString(2000));
+        config.set("zookeeper.recovery.retry", Integer.toString(1));
         return config;
     }
 
-    public HTablePool getTablePool() {
-        return _tablePool;
-    }
-
     /**
-     * Gets the HBaseAdmin used by this {@link DataContext}
+     * Gets the {@link Admin} used by this {@link DataContext}
      * 
      * @return
      */
-    public HBaseAdmin getHBaseAdmin() {
-        return _admin;
+    public Admin getAdmin() {
+        try {
+            return _connection.getAdmin();
+        } catch (IOException e) {
+            throw new MetaModelException(e);
+        }
+    }
+
+    public Connection getConnection() {
+        return _connection;
     }
 
     @Override
@@ -127,7 +129,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
         try {
             SimpleTableDef[] tableDefinitions = _configuration.getTableDefinitions();
             if (tableDefinitions == null) {
-                final HTableDescriptor[] tables = _admin.listTables();
+                final HTableDescriptor[] tables = getAdmin().listTables();
                 tableDefinitions = new SimpleTableDef[tables.length];
                 for (int i = 0; i < tables.length; i++) {
                     SimpleTableDef emptyTableDef = new SimpleTableDef(tables[i].getNameAsString(), new String[0]);
@@ -136,7 +138,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
             }
 
             for (SimpleTableDef tableDef : tableDefinitions) {
-                schema.addTable(new HBaseTable(tableDef, schema, _admin, _configuration.getDefaultRowKeyType()));
+                schema.addTable(new HBaseTable(this, tableDef, schema, _configuration.getDefaultRowKeyType()));
             }
 
             return schema;
@@ -166,7 +168,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
         }
 
         long result = 0;
-        final HTableInterface hTable = _tablePool.getTable(table.getName());
+        final org.apache.hadoop.hbase.client.Table hTable = getHTable(table.getName());
         try {
             ResultScanner scanner = hTable.getScanner(new Scan());
             try {
@@ -182,17 +184,29 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
         }
     }
 
-    @Override
-    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn, Object keyValue) {
-        HTableInterface hTable = _tablePool.getTable(table.getName());
-        Get get = new Get(ByteUtils.toBytes(keyValue));
+    protected org.apache.hadoop.hbase.client.Table getHTable(String name) {
         try {
-            Result result = hTable.get(get);
-            DataSetHeader header = new SimpleDataSetHeader(selectItems);
-            Row row = new HBaseRow(header, result);
+            final TableName tableName = TableName.valueOf(name);
+            final org.apache.hadoop.hbase.client.Table hTable = _connection.getTable(tableName);
+            return hTable;
+        } catch (IOException e) {
+            throw new MetaModelException(e);
+        }
+    }
+
+    @Override
+    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn,
+            Object keyValue) {
+        final org.apache.hadoop.hbase.client.Table hTable = getHTable(table.getName());
+        final Get get = new Get(ByteUtils.toBytes(keyValue));
+        try {
+            final Result result = hTable.get(get);
+            final DataSetHeader header = new SimpleDataSetHeader(selectItems);
+            final Row row = new HBaseRow(header, result);
             return row;
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to execute HBase get operation with " + primaryKeyColumn.getName() + " = " + keyValue, e);
+            throw new IllegalStateException("Failed to execute HBase get operation with " + primaryKeyColumn.getName()
+                    + " = " + keyValue, e);
         } finally {
             FileHelper.safeClose(hTable);
         }
@@ -217,7 +231,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
             setMaxRows(scan, maxRows);
         }
 
-        final HTableInterface hTable = _tablePool.getTable(table.getName());
+        final org.apache.hadoop.hbase.client.Table hTable = getHTable(table.getName());
         try {
             final ResultScanner scanner = hTable.getScanner(scan);
             return new HBaseDataSet(columns, scanner, hTable);
