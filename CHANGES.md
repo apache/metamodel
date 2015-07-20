@@ -1,5 +1,6 @@
 ### Apache MetaModel (work in progress)
 
+ * [METAMODEL-161] - Upgraded HBase client API to version 1.1.1
  * [METAMODEL-160] - Added support for Apache Hive via the JDBC module of MetaModel.
  * [METAMODEL-162] - Made HdfsResource Serializable and added property getters
 

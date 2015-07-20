@@ -20,7 +20,6 @@ package org.apache.metamodel.hbase;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.metamodel.MetaModelException;
@@ -35,10 +34,10 @@ final class HBaseDataSet extends AbstractDataSet {
     private static final Logger logger = LoggerFactory.getLogger(HBaseDataSet.class);
 
     private final ResultScanner _scanner;
-    private final HTableInterface _hTable;
+    private final org.apache.hadoop.hbase.client.Table _hTable;
     private volatile Result _nextResult;
 
-    public HBaseDataSet(Column[] columns, ResultScanner scanner, HTableInterface hTable) {
+    public HBaseDataSet(Column[] columns, ResultScanner scanner, org.apache.hadoop.hbase.client.Table hTable) {
         super(columns);
         _scanner = scanner;
         _hTable = hTable;
