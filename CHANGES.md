@@ -1,6 +1,7 @@
 ### Apache MetaModel (work in progress)
 
  * [METAMODEL-160] - Added support for Apache Hive via the JDBC module of MetaModel.
+ * [METAMODEL-162] - Made HdfsResource Serializable and added property getters
 
 ### Apache MetaModel 4.3.5
 
