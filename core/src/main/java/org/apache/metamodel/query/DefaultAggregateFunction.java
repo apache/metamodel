@@ -22,9 +22,7 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.AggregateBuilder;
 
 /**
- * Represents an aggregate function to use in a SelectItem.
- * 
- * @see SelectItem
+ * Implementation of the {@link org.apache.metamodel.query.AggregateFunction}.
  */
 public class DefaultAggregateFunction<T> implements AggregateFunction {
 

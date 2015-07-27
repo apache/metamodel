@@ -18,6 +18,11 @@
  */
 package org.apache.metamodel.query;
 
+/**
+ * Factory to create AggregateFunctions through
+ * its function name.
+ *
+ */
 public class FunctionTypeFactory {
 
     public static AggregateFunction get(String functionName) {

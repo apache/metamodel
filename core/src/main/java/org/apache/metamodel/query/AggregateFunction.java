@@ -18,6 +18,11 @@
  */
 package org.apache.metamodel.query;
 
+/**
+ * Interface that contains the aggregation specific methods
+ * related to the AggregateBuilder.
+ *
+ */
 public interface AggregateFunction extends FunctionType {
 
     Object evaluate(Iterable<?> values);

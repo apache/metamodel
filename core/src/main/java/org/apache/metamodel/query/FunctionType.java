@@ -20,6 +20,11 @@ package org.apache.metamodel.query;
 
 import org.apache.metamodel.util.AggregateBuilder;
 
+/**
+ * Represents a generic function to use in a SelectItem.
+ *
+ * @see SelectItem
+*/
 public interface FunctionType extends Function {
 
     public static final AggregateFunction COUNT = new DefaultAggregateFunction<Long>("COUNT");
