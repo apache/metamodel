@@ -92,7 +92,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     public static boolean isCountAllItem(SelectItem item) {
-        if (item != null && item.getFunction() == FunctionType.COUNT && item.getExpression() == "*") {
+        if (item != null && item.getFunction()!= null && item.getFunction().toString().equals("COUNT") && item.getExpression() == "*") {
             return true;
         }
         return false;

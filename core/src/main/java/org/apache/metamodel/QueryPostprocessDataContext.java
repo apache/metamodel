@@ -219,8 +219,8 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
     /**
      * Determines if all the select items are 'simple' meaning that they just
      * represent scans of values in columns.
-     * 
-     * @param selectItems
+     *
+     * @param clause
      * @return
      */
     private boolean isSimpleSelect(SelectClause clause) {

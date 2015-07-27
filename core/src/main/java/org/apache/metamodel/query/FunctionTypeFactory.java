@@ -18,18 +18,21 @@
  */
 package org.apache.metamodel.query;
 
-import org.apache.metamodel.util.AggregateBuilder;
+public class FunctionTypeFactory {
 
-public interface FunctionType<T> extends Function {
-
-    public static final AggregateFunction COUNT = new DefaultAggregateFunction(new CountAggregateBuilder());
-    public static final AggregateFunction AVG = new DefaultAggregateFunction(new AverageAggregateBuilder());
-    public static final AggregateFunction SUM = new DefaultAggregateFunction(new SumAggregateBuilder());
-    public static final AggregateFunction MAX = new DefaultAggregateFunction(new MaxAggregateBuilder());
-    public static final AggregateFunction MIN = new DefaultAggregateFunction(new MinAggregateBuilder());
-
-    //TODO: Create a generic builder
-    public AggregateBuilder<T> build();
-
-    public Object evaluate(Object... values);
+    public static AggregateFunction get(String functionName) {
+        if (functionName.equals("COUNT")) {
+            return new DefaultAggregateFunction(new CountAggregateBuilder());
+        } else if (functionName.equals("AVG")) {
+            return new DefaultAggregateFunction(new AverageAggregateBuilder());
+        } else if (functionName.equals("SUM")) {
+            return new DefaultAggregateFunction(new SumAggregateBuilder());
+        } else if (functionName.equals("MAX")) {
+            return new DefaultAggregateFunction(new MaxAggregateBuilder());
+        } else if (functionName.equals("MIN")) {
+            return new DefaultAggregateFunction(new MinAggregateBuilder());
+        } else {
+            return null;
+        }
+    }
 }
