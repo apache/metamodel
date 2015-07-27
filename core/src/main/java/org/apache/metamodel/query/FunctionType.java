@@ -20,16 +20,15 @@ package org.apache.metamodel.query;
 
 import org.apache.metamodel.util.AggregateBuilder;
 
-public interface FunctionType<T> extends Function {
+public interface FunctionType extends Function {
 
-    public static final AggregateFunction COUNT = new DefaultAggregateFunction(new CountAggregateBuilder());
-    public static final AggregateFunction AVG = new DefaultAggregateFunction(new AverageAggregateBuilder());
-    public static final AggregateFunction SUM = new DefaultAggregateFunction(new SumAggregateBuilder());
-    public static final AggregateFunction MAX = new DefaultAggregateFunction(new MaxAggregateBuilder());
-    public static final AggregateFunction MIN = new DefaultAggregateFunction(new MinAggregateBuilder());
+    public static final AggregateFunction COUNT = new DefaultAggregateFunction<Long>("COUNT");
+    public static final AggregateFunction AVG = new DefaultAggregateFunction<Double>("AVG");
+    public static final AggregateFunction SUM = new DefaultAggregateFunction<Double>("SUM");
+    public static final AggregateFunction MAX = new DefaultAggregateFunction<Object>("MAX");
+    public static final AggregateFunction MIN = new DefaultAggregateFunction<Object>("MIN");
 
-    //TODO: Create a generic builder
-    public AggregateBuilder<T> build();
+    public AggregateBuilder<?> build();
 
     public Object evaluate(Object... values);
 }

@@ -22,15 +22,15 @@ public class FunctionTypeFactory {
 
     public static AggregateFunction get(String functionName) {
         if (functionName.equals("COUNT")) {
-            return new DefaultAggregateFunction(new CountAggregateBuilder());
+            return new DefaultAggregateFunction<Long>("COUNT");
         } else if (functionName.equals("AVG")) {
-            return new DefaultAggregateFunction(new AverageAggregateBuilder());
+            return new DefaultAggregateFunction<Double>("AVG");
         } else if (functionName.equals("SUM")) {
-            return new DefaultAggregateFunction(new SumAggregateBuilder());
+            return new DefaultAggregateFunction<Double>("SUM");
         } else if (functionName.equals("MAX")) {
-            return new DefaultAggregateFunction(new MaxAggregateBuilder());
+            return new DefaultAggregateFunction<Object>("MAX");
         } else if (functionName.equals("MIN")) {
-            return new DefaultAggregateFunction(new MinAggregateBuilder());
+            return new DefaultAggregateFunction<Object>("MIN");
         } else {
             return null;
         }

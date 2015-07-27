@@ -23,7 +23,7 @@ import org.apache.metamodel.util.AbstractNumberAggregateBuilder;
 /**
  * Aggregate builder for the {@link FunctionType#AVG} function
  */
-final class AverageAggregateBuilder extends AbstractNumberAggregateBuilder<Double> {
+final class AverageAggregateBuilder<T> extends AbstractNumberAggregateBuilder<Double> {
 
 	public double _average;
 	public int _numValues;

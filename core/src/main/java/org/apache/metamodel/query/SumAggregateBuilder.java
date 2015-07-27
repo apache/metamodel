@@ -23,7 +23,7 @@ import org.apache.metamodel.util.AbstractNumberAggregateBuilder;
 /**
  * Aggregate builder for the {@link FunctionType#SUM} function
  */
-final class SumAggregateBuilder extends AbstractNumberAggregateBuilder<Double> {
+final class SumAggregateBuilder<T> extends AbstractNumberAggregateBuilder<Double> {
 
     private double sum;
 

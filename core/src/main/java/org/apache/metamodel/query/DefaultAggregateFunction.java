@@ -28,20 +28,32 @@ import org.apache.metamodel.util.AggregateBuilder;
  */
 public class DefaultAggregateFunction<T> implements AggregateFunction {
 
-    AggregateBuilder<T> builder;
+    String functionType;
 
-    public DefaultAggregateFunction(AggregateBuilder<T> _builder) {
-        builder = _builder;
+    public DefaultAggregateFunction(String _functionType) {
+        functionType = _functionType;
     }
 
     public AggregateBuilder<T> build() {
-        return builder;
+        if (functionType.equals("COUNT")) {
+            return new CountAggregateBuilder();
+        } else if (functionType.equals("AVG")) {
+            return new AverageAggregateBuilder();
+        } else if (functionType.equals("SUM")) {
+            return new SumAggregateBuilder();
+        } else if (functionType.equals("MAX")) {
+            return new MaxAggregateBuilder();
+        } else if (functionType.equals("MIN")) {
+            return new MinAggregateBuilder();
+        } else {
+            return null;
+        }
     }
 
     public ColumnType getExpectedColumnType(ColumnType type) {
-        if (builder instanceof CountAggregateBuilder) {
+        if (functionType.equals("COUNT")) {
             return ColumnType.BIGINT;
-        } else if (builder instanceof SumAggregateBuilder) {
+        } else if (functionType.equals("SUM")) {
             return ColumnType.DOUBLE;
         } else {
             return type;
@@ -77,18 +89,6 @@ public class DefaultAggregateFunction<T> implements AggregateFunction {
 
     @Override
     public String toString() {
-        if (builder instanceof CountAggregateBuilder) {
-            return "COUNT";
-        } else if (builder instanceof AverageAggregateBuilder) {
-            return "AVG";
-        } else if (builder instanceof SumAggregateBuilder) {
-            return "SUM";
-        } else if (builder instanceof MaxAggregateBuilder) {
-            return "MAX";
-        } else if (builder instanceof MinAggregateBuilder) {
-            return "MIN";
-        } else {
-            return null;
-        }
+        return functionType;
     }
 }

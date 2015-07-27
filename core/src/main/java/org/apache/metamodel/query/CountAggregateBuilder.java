@@ -20,7 +20,7 @@ package org.apache.metamodel.query;
 
 import org.apache.metamodel.util.AggregateBuilder;
 
-final class CountAggregateBuilder implements AggregateBuilder<Long> {
+final class CountAggregateBuilder<T> implements AggregateBuilder<Long> {
 
 	private long counter = 0;
 
