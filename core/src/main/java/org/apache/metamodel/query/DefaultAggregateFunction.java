@@ -24,39 +24,15 @@ import org.apache.metamodel.util.AggregateBuilder;
 /**
  * Implementation of the {@link org.apache.metamodel.query.AggregateFunction}.
  */
-public class DefaultAggregateFunction<T> implements AggregateFunction {
+public abstract class DefaultAggregateFunction<T>  {
 
     String functionType;
 
-    public DefaultAggregateFunction(String _functionType) {
-        functionType = _functionType;
-    }
+    public DefaultAggregateFunction() {}
 
-    public AggregateBuilder<T> build() {
-        if (functionType.equals("COUNT")) {
-            return new CountAggregateBuilder();
-        } else if (functionType.equals("AVG")) {
-            return new AverageAggregateBuilder();
-        } else if (functionType.equals("SUM")) {
-            return new SumAggregateBuilder();
-        } else if (functionType.equals("MAX")) {
-            return new MaxAggregateBuilder();
-        } else if (functionType.equals("MIN")) {
-            return new MinAggregateBuilder();
-        } else {
-            return null;
-        }
-    }
+    public abstract AggregateBuilder<T> build();
 
-    public ColumnType getExpectedColumnType(ColumnType type) {
-        if (functionType.equals("COUNT")) {
-            return ColumnType.BIGINT;
-        } else if (functionType.equals("SUM")) {
-            return ColumnType.DOUBLE;
-        } else {
-            return type;
-        }
-    }
+    public abstract ColumnType getExpectedColumnType(ColumnType type);
 
     public Object evaluate(Iterable<?> values) {
         AggregateBuilder<?> builder = build();
@@ -86,7 +62,5 @@ public class DefaultAggregateFunction<T> implements AggregateFunction {
     }
 
     @Override
-    public String toString() {
-        return functionType;
-    }
+    public String toString() { return functionType; }
 }

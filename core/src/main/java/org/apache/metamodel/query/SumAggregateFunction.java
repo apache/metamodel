@@ -18,26 +18,18 @@
  */
 package org.apache.metamodel.query;
 
-/**
- * Factory to create AggregateFunctions through
- * its function name.
- *
- */
-public class FunctionTypeFactory {
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.util.AggregateBuilder;
 
-    public static AggregateFunction get(String functionName) {
-        if (functionName.equals("COUNT")) {
-            return new CountAggregateFunction();
-        } else if (functionName.equals("AVG")) {
-            return new AverageAggregateFunction();
-        } else if (functionName.equals("SUM")) {
-            return new SumAggregateFunction();
-        } else if (functionName.equals("MAX")) {
-            return new MaxAggregateFunction();
-        } else if (functionName.equals("MIN")) {
-            return new MinAggregateFunction();
-        } else {
-            return null;
-        }
+public class SumAggregateFunction extends DefaultAggregateFunction<Double> implements AggregateFunction {
+
+    public SumAggregateFunction() {
+        functionType = "SUM";
     }
+
+    public AggregateBuilder<Double> build() {
+        return new SumAggregateBuilder();
+    }
+
+    public ColumnType getExpectedColumnType(ColumnType type) { return ColumnType.DOUBLE; }
 }

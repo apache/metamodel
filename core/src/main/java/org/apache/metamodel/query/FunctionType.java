@@ -27,11 +27,11 @@ import org.apache.metamodel.util.AggregateBuilder;
 */
 public interface FunctionType extends Function {
 
-    public static final AggregateFunction COUNT = new DefaultAggregateFunction<Long>("COUNT");
-    public static final AggregateFunction AVG = new DefaultAggregateFunction<Double>("AVG");
-    public static final AggregateFunction SUM = new DefaultAggregateFunction<Double>("SUM");
-    public static final AggregateFunction MAX = new DefaultAggregateFunction<Object>("MAX");
-    public static final AggregateFunction MIN = new DefaultAggregateFunction<Object>("MIN");
+    public static final AggregateFunction COUNT = new CountAggregateFunction();
+    public static final AggregateFunction AVG = new AverageAggregateFunction();
+    public static final AggregateFunction SUM = new SumAggregateFunction();
+    public static final AggregateFunction MAX = new MaxAggregateFunction();
+    public static final AggregateFunction MIN = new MinAggregateFunction();
 
     public AggregateBuilder<?> build();
 
