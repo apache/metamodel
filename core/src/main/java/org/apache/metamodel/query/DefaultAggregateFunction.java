@@ -28,8 +28,6 @@ public abstract class DefaultAggregateFunction<T>  {
 
     String functionType;
 
-    public DefaultAggregateFunction() {}
-
     public abstract AggregateBuilder<T> build();
 
     public abstract ColumnType getExpectedColumnType(ColumnType type);
