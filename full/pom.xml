@@ -82,12 +82,17 @@ under the License.
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-cassandra</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.metamodel</groupId>
 			<artifactId>MetaModel-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-pojo</artifactId>
+			<artifactId>MetaModel-couchdb</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -97,7 +102,37 @@ under the License.
 		</dependency>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-elasticsearch</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-excel</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.metamodel</groupId>
 			<artifactId>MetaModel-fixedwidth</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-hadoop</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-hbase</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-jdbc</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-json</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -107,7 +142,12 @@ under the License.
 		</dependency>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-json</artifactId>
+			<artifactId>MetaModel-openoffice</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-pojo</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -122,37 +162,7 @@ under the License.
 		</dependency>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-excel</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-jdbc</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-couchdb</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-openoffice</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.metamodel</groupId>
 			<artifactId>MetaModel-xml</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-elasticsearch</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-cassandra</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<!-- Test dependencies -->
