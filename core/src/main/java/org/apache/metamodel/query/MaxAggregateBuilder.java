@@ -21,7 +21,7 @@ package org.apache.metamodel.query;
 import org.apache.metamodel.util.AggregateBuilder;
 import org.apache.metamodel.util.ObjectComparator;
 
-final class MaxAggregateBuilder<T> implements AggregateBuilder<Object> {
+final class MaxAggregateBuilder implements AggregateBuilder<Object> {
 
 	private Object max;
 
