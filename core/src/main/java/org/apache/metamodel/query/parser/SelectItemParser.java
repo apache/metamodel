@@ -113,7 +113,7 @@ public final class SelectItemParser implements QueryPartProcessor {
             function = FunctionTypeFactory.get(functionName.toUpperCase());
             if (function != null) {
                 expression = expression.substring(startParenthesis + 1, expression.length() - 1).trim();
-                if (function.toString().equals("COUNT") && "*".equals(expression)) {
+                if (function instanceof CountAggregateFunction && "*".equals(expression)) {
                     return SelectItem.getCountAllItem();
                 }
             }
