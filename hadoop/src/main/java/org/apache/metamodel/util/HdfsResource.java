@@ -46,6 +46,21 @@ public class HdfsResource implements Resource, Serializable {
     private final int _port;
     private final String _filepath;
     private Path _path;
+    private boolean _overwriteIfExists = false;
+    private Configuration _hadoopConfiguration;
+
+    /**
+     * Creates a {@link HdfsResource}
+     * 
+     * @param url
+     *            a URL of the form: hdfs://hostname:port/path/to/file
+     * @param overwriteIfExits
+     *            If true overwrites the file if exists. Default is false
+     */
+    public HdfsResource(String url, boolean overwriteIfExists) {
+        this(url);
+        _overwriteIfExists = overwriteIfExists;
+    }
 
     /**
      * Creates a {@link HdfsResource}
@@ -65,6 +80,24 @@ public class HdfsResource implements Resource, Serializable {
         _hostname = matcher.group(1);
         _port = Integer.parseInt(matcher.group(2));
         _filepath = '/' + matcher.group(3);
+    }
+
+    /**
+     * Creates a {@link HdfsResource}
+     * 
+     * @param hostname
+     *            the HDFS (namenode) hostname
+     * @param port
+     *            the HDFS (namenode) port number
+     * @param filepath
+     *            the path on HDFS to the file, starting with slash ('/')
+     * 
+     * @param overwriteIfExits
+     *            If true overwrites the file if exists. Default is false
+     */
+    public HdfsResource(String hostname, int port, String filepath, boolean overwriteIfExists) {
+        this(hostname, port, filepath);
+        _overwriteIfExists = overwriteIfExists;
     }
 
     /**
@@ -151,11 +184,15 @@ public class HdfsResource implements Resource, Serializable {
         }
     }
 
+    /**
+     * Creates a HDFS file with 1 replica. If the file exists it can be
+     * overwritten if the {@link _overwriteIfExists} is set to true
+     */
     @Override
     public void write(final Action<OutputStream> writeCallback) throws ResourceException {
         final FileSystem fs = getHadoopFileSystem();
         try {
-            final FSDataOutputStream out = fs.create(getHadoopPath(), true);
+            final FSDataOutputStream out = fs.create(getHadoopPath(), getOverwriteIfExits());
             try {
                 writeCallback.run(out);
             } finally {
@@ -168,6 +205,9 @@ public class HdfsResource implements Resource, Serializable {
         }
     }
 
+    /**
+     * Can append only if the number of replicas is 1 (Hadoop condition).
+     */
     @Override
     public void append(Action<OutputStream> appendCallback) throws ResourceException {
         final FileSystem fs = getHadoopFileSystem();
@@ -289,10 +329,18 @@ public class HdfsResource implements Resource, Serializable {
         return new MetaModelException(e);
     }
 
+    /**
+     * The number of replicas is set to 1 so that we can append to the file that
+     * is created. If we do not specify the number of replicas the default is 3
+     */
     public Configuration getHadoopConfiguration() {
-        final Configuration conf = new Configuration();
-        conf.set("fs.defaultFS", "hdfs://" + _hostname + ":" + _port);
-        return conf;
+        if (_hadoopConfiguration == null) {
+            final Configuration conf = new Configuration();
+            conf.set("fs.defaultFS", "hdfs://" + _hostname + ":" + _port);
+            conf.set("dfs.replication", "1");
+            _hadoopConfiguration = conf;
+        }
+        return _hadoopConfiguration;
     }
 
     public FileSystem getHadoopFileSystem() {
@@ -337,5 +385,27 @@ public class HdfsResource implements Resource, Serializable {
         if (_port != other._port)
             return false;
         return true;
+    }
+
+    public boolean getOverwriteIfExits() {
+        return _overwriteIfExists;
+    }
+
+    public void setOverwriteIfExits(boolean overwriteIfExits) {
+        _overwriteIfExists = overwriteIfExits;
+    }
+
+    public void setHadoopConfiguration(Configuration hadoopConfiguration) {
+        _hadoopConfiguration = hadoopConfiguration;
+    }
+
+    public void replicateFile(int replicationFactor) {
+        try {
+            final FileSystem fs = getHadoopFileSystem();
+            fs.setReplication(getHadoopPath(), (short) replicationFactor);
+        } catch (IOException e) {
+            throw new MetaModelException("Could not create replicas for Hdfs file  : " + getHadoopFileSystem() + " "
+                    + e.getMessage(), e);
+        }
     }
 }
