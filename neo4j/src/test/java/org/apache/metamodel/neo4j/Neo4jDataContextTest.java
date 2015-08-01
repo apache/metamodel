@@ -86,7 +86,7 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
     }
 
     @Test
-    public void testExecuteQuery() throws Exception {
+    public void testSelectQuery() throws Exception {
         if (!isConfigured()) {
             System.err.println(getInvalidConfigurationMessage());
             return;
@@ -108,9 +108,28 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         assertEquals("Row[values=[1, 2]]", dataSet2.getRow().toString());
         assertFalse(dataSet2.next());
     }
+    
+    @Test
+    public void testWhereClause() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+        
+        requestWrapper.executeCypherQuery("CREATE (n:JUnitLabel { property1: 1, property2: 2 })");
+        requestWrapper.executeCypherQuery("CREATE (n:JUnitLabel { property1: 10, property2: 20 })");
+
+        Neo4jDataContext strategy = new Neo4jDataContext(getHostname(), getPort());
+
+        CompiledQuery query1 = strategy.query().from("JUnitLabel").select("property1").where("property2").eq(20).compile();
+        DataSet dataSet1 = strategy.executeQuery(query1);
+        assertTrue(dataSet1.next());
+        assertEquals("Row[values=[10]]", dataSet1.getRow().toString());
+        assertFalse(dataSet1.next());
+    }
 
     @Test
-    public void testExecuteUpdate() throws Exception {
+    public void testInsert() throws Exception {
         if (!isConfigured()) {
             System.err.println(getInvalidConfigurationMessage());
             return;

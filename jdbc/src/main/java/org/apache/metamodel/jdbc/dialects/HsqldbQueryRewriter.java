@@ -36,11 +36,14 @@ public class HsqldbQueryRewriter extends DefaultQueryRewriter {
     }
 
     @Override
-    public String rewriteColumnType(ColumnType columnType) {
+    public String rewriteColumnType(ColumnType columnType, Integer columnSize) {
+        if (columnType == ColumnType.BIT) {
+            return "BOOLEAN";
+        }
         if (columnType == ColumnType.BLOB) {
             return "LONGVARBINARY";
         }
-        return super.rewriteColumnType(columnType);
+        return super.rewriteColumnType(columnType, columnSize);
     }
 
     @Override

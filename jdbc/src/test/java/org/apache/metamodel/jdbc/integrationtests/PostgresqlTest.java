@@ -53,15 +53,32 @@ import org.junit.Ignore;
  * Test case that tests postgresql interaction. The test requires the
  * "dellstore2" sample database that can be found at pgfoundry.
  * 
- * @see http://pgfoundry.org/projects/dbsamples/
+ * @see http://mirrors.dotsrc.org/postgresql/projects/pgFoundry/dbsamples/
  */
 public class PostgresqlTest extends AbstractJdbIntegrationTest {
 
     private static final String PROPERTY_LONGRUNNINGTESTS = "jdbc.postgresql.longrunningtests";
+    private static final double DELTA = 1E-15;
 
     @Override
     protected String getPropertyPrefix() {
         return "postgresql";
+    }
+
+    public void testCreateInsertAndUpdate() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(getDataContext(), "metamodel_test_simple");
+    }
+
+    public void testCompositePrimaryKeyCreation() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcTestTemplates.compositeKeyCreation(getDataContext(), "metamodel_test_composite_keys");
     }
 
     public void testInterpretationOfNull() throws Exception {
@@ -345,6 +362,65 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         });
     }
 
+    /**
+     * Tests type rewriting for double type.
+     * 
+     * @see https://issues.apache.org/jira/browse/METAMODEL-151
+     */
+    public void testDouble() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcDataContext dc = new JdbcDataContext(getConnection());
+
+        final Schema schema = dc.getDefaultSchema();
+
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback cb) {
+                Table table = cb.createTable(schema, "my_table").withColumn("id").ofType(ColumnType.INTEGER)
+                        .ofNativeType("SERIAL").nullable(false).withColumn("some_double").ofType(ColumnType.DOUBLE)
+                        .nullable(false).execute();
+                assertEquals("my_table", table.getName());
+
+                cb.insertInto(table).value("id", 1).value("some_double", Double.MIN_VALUE).execute();
+                cb.insertInto(table).value("id", 2).value("some_double", Double.MAX_VALUE).execute();
+                cb.insertInto(table).value("id", 3).value("some_double", Double.NEGATIVE_INFINITY).execute();
+                cb.insertInto(table).value("id", 4).value("some_double", Double.POSITIVE_INFINITY).execute();
+                cb.insertInto(table).value("id", 5).value("some_double", Double.NaN).execute();
+            }
+        });
+
+        try {
+            DataSet ds = dc.query().from("my_table").select("some_double").execute();
+            assertTrue(ds.next());
+            Double minVal = (Double) ds.getRow().getValue(ds.getSelectItems()[0]);
+            assertTrue(ds.next());
+            Double maxVal = (Double) ds.getRow().getValue(ds.getSelectItems()[0]);
+            assertTrue(ds.next());
+            Double negInf = (Double) ds.getRow().getValue(ds.getSelectItems()[0]);
+            assertTrue(ds.next());
+            Double posInf = (Double) ds.getRow().getValue(ds.getSelectItems()[0]);
+            assertTrue(ds.next());
+            Double nAn = (Double) ds.getRow().getValue(ds.getSelectItems()[0]);
+            assertFalse(ds.next());
+    
+            assertEquals(Double.MIN_VALUE, minVal, DELTA);
+            assertEquals(Double.MAX_VALUE, maxVal, DELTA);
+            assertTrue(Double.isInfinite(negInf));
+            assertTrue(Double.isInfinite(posInf));
+            assertTrue(Double.isNaN(nAn));
+        } finally {
+            dc.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback cb) {
+                    cb.dropTable("my_table").execute();
+                }
+            });
+        }
+    }
+    
     public void testBlob() throws Exception {
         if (!isConfigured()) {
             return;
@@ -406,6 +482,16 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                 }
             });
         }
+    }
+
+    public void testCreateInsertAndUpdateDateTypes() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcDataContext dataContext = getDataContext();
+        JdbcTestTemplates.createInsertAndUpdateDateTypes(dataContext, dataContext.getDefaultSchema(),
+                "metamodel_postgresql_test");
     }
 
     public void testCreateTableAndWriteRecords() throws Exception {

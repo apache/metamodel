@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.jdbc;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -44,16 +45,16 @@ final class JdbcDropTableBuilder extends AbstractTableDropBuilder implements Tab
 
     @Override
     public void execute() {
-        String sql = createSqlStatement();
-
-        PreparedStatement statement = _updateCallback.getPreparedStatement(sql, false);
+        final String sql = createSqlStatement();
+        final PreparedStatement statement = _updateCallback.getPreparedStatement(sql, false);
         try {
             _updateCallback.executePreparedStatement(statement, false);
 
             // remove the table reference from the schema
             final Schema schema = getTable().getSchema();
             if (schema instanceof JdbcSchema) {
-                ((JdbcSchema) schema).refreshTables();
+                final Connection connection = _updateCallback.getConnection();
+                ((JdbcSchema) schema).refreshTables(connection);
             }
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "execute drop table statement: " + sql);
