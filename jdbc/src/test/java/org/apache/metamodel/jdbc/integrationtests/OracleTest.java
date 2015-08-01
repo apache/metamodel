@@ -27,6 +27,9 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.jdbc.JdbcTestTemplates;
+import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
+import org.apache.metamodel.jdbc.dialects.OracleQueryRewriter;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.JoinType;
 import org.apache.metamodel.query.Query;
@@ -66,6 +69,31 @@ public class OracleTest extends AbstractJdbIntegrationTest {
     @Override
     protected String getPropertyPrefix() {
         return "oracle";
+    }
+    
+    public void testGetQueryRewriter() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        IQueryRewriter queryRewriter = getDataContext().getQueryRewriter();
+        assertEquals(OracleQueryRewriter.class, queryRewriter.getClass());
+    }
+
+    public void testCreateInsertAndUpdate() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(getDataContext(), "metamodel_test_simple");
+    }
+
+    public void testCompositePrimaryKeyCreation() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        JdbcTestTemplates.compositeKeyCreation(getDataContext(), "metamodel_test_composite_keys");
     }
 
     /**

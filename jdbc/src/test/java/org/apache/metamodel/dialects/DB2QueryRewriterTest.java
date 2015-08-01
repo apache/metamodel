@@ -114,9 +114,9 @@ public class DB2QueryRewriterTest extends TestCase {
     }
 
     public void testRewriteColumnType() throws Exception {
-        assertEquals("SMALLINT", new DB2QueryRewriter(null).rewriteColumnType(ColumnType.BOOLEAN));
+        assertEquals("SMALLINT", new DB2QueryRewriter(null).rewriteColumnType(ColumnType.BOOLEAN, null));
 
-        assertEquals("VARCHAR", new DB2QueryRewriter(null).rewriteColumnType(ColumnType.VARCHAR));
+        assertEquals("VARCHAR", new DB2QueryRewriter(null).rewriteColumnType(ColumnType.VARCHAR, null));
     }
 
     public void testRewriteSelectItems() throws Exception {

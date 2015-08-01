@@ -490,4 +490,60 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         dc.refreshSchemas();
         assertEquals(0, defaultSchema.getTableCount());
     }
+
+    public void testSelectWithLikeOperator() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        DBCollection col = db.createCollection(getCollectionName(), null);
+
+        // delete if already exists
+        {
+            col.drop();
+            col = db.createCollection(getCollectionName(), null);
+        }
+
+        final BasicDBObject dbRow = new BasicDBObject();
+        dbRow.append("name", new BasicDBObject().append("first", "John").append("last", "Doe"));
+        dbRow.append("gender", "MALE");
+        col.insert(dbRow);
+
+        final BasicDBObject dbRow2 = new BasicDBObject();
+        dbRow2.append("name", new BasicDBObject().append("first", "Mary").append("last", "Johnson"));
+        dbRow2.append("gender", "FEMALE");
+        col.insert(dbRow2);
+
+        final BasicDBObject dbRow3 = new BasicDBObject();
+        dbRow3.append("name", new BasicDBObject().append("first", "X").append("last", "Unknown"));
+        dbRow3.append("gender", "UNKNOWN");
+        col.insert(dbRow3);
+
+        final MongoDbDataContext dc = new MongoDbDataContext(db, new SimpleTableDef(getCollectionName(), new String[] {
+                "name.first", "name.last", "gender", "addresses", "addresses[0].city", "addresses[0].country",
+                "addresses[5].foobar" }));
+
+        final DataSet ds1 = dc.executeQuery("select * from my_collection where gender LIKE '%MALE%'");
+        final DataSet ds2 = dc.executeQuery("select * from my_collection where gender LIKE 'MALE%'");
+        final DataSet ds3 = dc.executeQuery("select * from my_collection where gender LIKE '%NK%OW%'");
+        final DataSet ds4 = dc.executeQuery("select * from my_collection where gender LIKE '%MALE'");
+        try {
+            assertTrue(ds1.next());
+            assertTrue(ds1.next());
+            assertFalse(ds1.next());
+            assertTrue(ds2.next());
+            assertFalse(ds2.next());
+            assertTrue(ds3.next());
+            assertFalse(ds3.next());
+            assertTrue(ds4.next());
+            assertTrue(ds4.next());
+            assertFalse(ds4.next());
+        } finally {
+            ds1.close();
+            ds2.close();
+            ds3.close();
+            ds4.close();
+        }
+    }
 }

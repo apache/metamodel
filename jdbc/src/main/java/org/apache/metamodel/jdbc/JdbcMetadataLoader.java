@@ -73,6 +73,15 @@ final class JdbcMetadataLoader implements MetadataLoader {
     public void loadTables(JdbcSchema schema) {
         final Connection connection = _dataContext.getConnection();
         try {
+            loadTables(schema, connection);
+        } finally {
+            _dataContext.close(connection, null, null);
+        }
+    }
+
+    @Override
+    public void loadTables(JdbcSchema schema, Connection connection) {
+        try {
             final DatabaseMetaData metaData = connection.getMetaData();
 
             // Creates string array to represent the table types
@@ -80,8 +89,6 @@ final class JdbcMetadataLoader implements MetadataLoader {
             loadTables(schema, metaData, types);
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "retrieve table metadata for " + schema.getName());
-        } finally {
-            _dataContext.close(connection, null, null);
         }
     }
 
@@ -139,9 +146,19 @@ final class JdbcMetadataLoader implements MetadataLoader {
             _dataContext.close(null, rs, null);
         }
     }
+    
+    @Override
+    public void loadIndexes(JdbcTable jdbcTable) {
+        final Connection connection = _dataContext.getConnection();
+        try {
+            loadIndexes(jdbcTable, connection);
+        } finally {
+            _dataContext.close(connection, null, null);
+        }
+    }
 
     @Override
-    public void loadIndexes(JdbcTable table) {
+    public void loadIndexes(JdbcTable table, Connection connection) {
         final int identity = System.identityHashCode(table);
         if (_loadedIndexes.contains(identity)) {
             return;
@@ -151,21 +168,28 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 return;
             }
 
-            final Connection connection = _dataContext.getConnection();
             try {
                 DatabaseMetaData metaData = connection.getMetaData();
                 loadIndexes(table, metaData);
                 _loadedIndexes.add(identity);
             } catch (SQLException e) {
                 throw JdbcUtils.wrapException(e, "load indexes");
-            } finally {
-                _dataContext.close(connection, null, null);
             }
+        }
+    }
+    
+    @Override
+    public void loadPrimaryKeys(JdbcTable jdbcTable) {
+        final Connection connection = _dataContext.getConnection();
+        try {
+            loadPrimaryKeys(jdbcTable, connection);
+        } finally {
+            _dataContext.close(connection, null, null);
         }
     }
 
     @Override
-    public void loadPrimaryKeys(JdbcTable table) {
+    public void loadPrimaryKeys(JdbcTable table, Connection connection) {
         final int identity = System.identityHashCode(table);
         if (_loadedPrimaryKeys.contains(identity)) {
             return;
@@ -174,15 +198,12 @@ final class JdbcMetadataLoader implements MetadataLoader {
             if (_loadedPrimaryKeys.contains(identity)) {
                 return;
             }
-            final Connection connection = _dataContext.getConnection();
             try {
                 DatabaseMetaData metaData = connection.getMetaData();
                 loadPrimaryKeys(table, metaData);
                 _loadedPrimaryKeys.add(identity);
             } catch (SQLException e) {
                 throw JdbcUtils.wrapException(e, "load primary keys");
-            } finally {
-                _dataContext.close(connection, null, null);
             }
         }
     }
@@ -244,6 +265,16 @@ final class JdbcMetadataLoader implements MetadataLoader {
             _dataContext.close(null, rs, null);
         }
     }
+    
+    @Override
+    public void loadColumns(JdbcTable jdbcTable) {
+        final Connection connection = _dataContext.getConnection();
+        try {
+            loadColumns(jdbcTable, connection);
+        } finally {
+            _dataContext.close(connection, null, null);
+        }
+    }
 
     /**
      * Loads column metadata (no indexes though) for a table
@@ -251,7 +282,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
      * @param table
      */
     @Override
-    public void loadColumns(JdbcTable table) {
+    public void loadColumns(JdbcTable table, Connection connection) {
         final int identity = System.identityHashCode(table);
         if (_loadedColumns.contains(identity)) {
             return;
@@ -261,15 +292,12 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 return;
             }
 
-            final Connection connection = _dataContext.getConnection();
             try {
                 DatabaseMetaData metaData = connection.getMetaData();
                 loadColumns(table, metaData);
                 _loadedColumns.add(identity);
             } catch (Exception e) {
                 logger.error("Could not load columns for table: " + table, e);
-            } finally {
-                _dataContext.close(connection, null, null);
             }
         }
     }
@@ -353,9 +381,19 @@ final class JdbcMetadataLoader implements MetadataLoader {
             _dataContext.close(null, rs, null);
         }
     }
+    
+    @Override
+    public void loadRelations(JdbcSchema jdbcSchema) {
+        final Connection connection = _dataContext.getConnection();
+        try {
+            loadRelations(jdbcSchema, connection);
+        } finally {
+            _dataContext.close(connection, null, null);
+        }
+    }
 
     @Override
-    public void loadRelations(JdbcSchema schema) {
+    public void loadRelations(JdbcSchema schema, Connection connection) {
         final int identity = System.identityHashCode(schema);
         if (_loadedRelations.contains(identity)) {
             return;
@@ -364,7 +402,6 @@ final class JdbcMetadataLoader implements MetadataLoader {
             if (_loadedRelations.contains(identity)) {
                 return;
             }
-            final Connection connection = _dataContext.getConnection();
             try {
                 final Table[] tables = schema.getTables();
                 final DatabaseMetaData metaData = connection.getMetaData();
@@ -374,8 +411,6 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 _loadedRelations.add(identity);
             } catch (Exception e) {
                 logger.error("Could not load relations for schema: " + schema, e);
-            } finally {
-                _dataContext.close(connection, null, null);
             }
         }
     }

@@ -58,6 +58,11 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
     public JdbcDataContext getDataContext() {
         return _dataContext;
     }
+    
+    @Override
+    public boolean isTransactional() {
+        return true;
+    }
 
     @Override
     public ColumnType getColumnType(int jdbcType, String nativeType, Integer columnSize) {
@@ -96,8 +101,19 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
     }
 
     @Override
-    public String rewriteColumnType(ColumnType columnType) {
-        return columnType.toString();
+    public String rewriteColumnType(ColumnType columnType, Integer columnSize) {
+        return rewriteColumnTypeInternal(columnType.toString(), columnSize);
+    }
+    
+    protected String rewriteColumnTypeInternal(String columnType, Object columnParameter) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(columnType);
+        if (columnParameter != null) {
+            sb.append('(');
+            sb.append(columnParameter);
+            sb.append(')');
+        }
+        return sb.toString();
     }
 
     protected String rewriteOrderByClause(Query query, OrderByClause orderByClause) {

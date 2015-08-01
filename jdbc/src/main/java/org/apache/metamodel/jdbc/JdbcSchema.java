@@ -19,6 +19,7 @@
 package org.apache.metamodel.jdbc;
 
 import java.io.ObjectStreamException;
+import java.sql.Connection;
 
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
@@ -29,41 +30,49 @@ import org.apache.metamodel.schema.Schema;
  */
 final class JdbcSchema extends MutableSchema {
 
-	private static final long serialVersionUID = 7543633400859277467L;
-	private transient MetadataLoader _metadataLoader;
+    private static final long serialVersionUID = 7543633400859277467L;
+    private transient MetadataLoader _metadataLoader;
 
-	public JdbcSchema(String name, MetadataLoader metadataLoader) {
-		super(name);
-		_metadataLoader = metadataLoader;
-	}
+    public JdbcSchema(String name, MetadataLoader metadataLoader) {
+        super(name);
+        _metadataLoader = metadataLoader;
+    }
 
-	protected void refreshTables() {
-		if (_metadataLoader != null) {
-			_metadataLoader.loadTables(this);
-		}
-	}
+    protected void refreshTables(Connection connection) {
+        if (_metadataLoader != null) {
+            _metadataLoader.loadTables(this, connection);
+        }
+    }
 
-	public void loadRelations() {
-		if (_metadataLoader != null) {
-			_metadataLoader.loadRelations(this);
-		}
-	}
+    public void loadRelations(Connection connection) {
+        if (_metadataLoader != null) {
+            if (connection == null) {
+                _metadataLoader.loadRelations(this);
+            } else {
+                _metadataLoader.loadRelations(this, connection);
+            }
+        }
+    }
+    
+    public void loadRelations() {
+        loadRelations(null);
+    }
 
-	public Schema toSerializableForm() {
-		MutableTable[] tables = getTables();
-		for (MutableTable table : tables) {
-			table.getColumns();
-			table.getIndexedColumns();
-			table.getPrimaryKeys();
-		}
-		loadRelations();
-		return this;
-	}
+    public Schema toSerializableForm() {
+        MutableTable[] tables = getTables();
+        for (MutableTable table : tables) {
+            table.getColumns();
+            table.getIndexedColumns();
+            table.getPrimaryKeys();
+        }
+        loadRelations();
+        return this;
+    }
 
-	/**
-	 * Called by the Java Serialization API to serialize the object.
-	 */
-	private Object writeReplace() throws ObjectStreamException {
-		return toSerializableForm();
-	}
+    /**
+     * Called by the Java Serialization API to serialize the object.
+     */
+    private Object writeReplace() throws ObjectStreamException {
+        return toSerializableForm();
+    }
 }

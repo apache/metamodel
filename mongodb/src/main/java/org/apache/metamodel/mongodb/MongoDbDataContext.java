@@ -25,6 +25,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
@@ -391,7 +392,12 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
             final BasicDBObject existingFilterObject = (BasicDBObject) query.get(columnName);
             if (existingFilterObject == null) {
                 if (operatorName == null) {
-                    query.put(columnName, operand);
+                    if (item.getOperator().equals(OperatorType.LIKE)) {
+                        query.put(columnName, turnOperandIntoRegExp(operand));
+                    }
+                    else {
+                        query.put(columnName, operand);
+                    }
                 } else {
                     query.put(columnName, new BasicDBObject(operatorName, operand));
                 }
@@ -409,6 +415,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
         final String operatorName;
         switch (item.getOperator()) {
         case EQUALS_TO:
+        case LIKE:
             operatorName = null;
             break;
         case LESS_THAN:
@@ -433,6 +440,16 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
             throw new IllegalStateException("Unsupported operator type: " + item.getOperator());
         }
         return operatorName;
+    }
+
+    private Pattern turnOperandIntoRegExp(Object operand) {
+        StringBuilder operandAsRegExp = new StringBuilder(replaceWildCardLikeChars(operand.toString()));
+        operandAsRegExp.insert(0, "^").append("$");
+        return Pattern.compile(operandAsRegExp.toString(), Pattern.CASE_INSENSITIVE);
+    }
+
+    private String replaceWildCardLikeChars(String operand) {
+        return operand.replaceAll("%", ".*");
     }
 
     @Override

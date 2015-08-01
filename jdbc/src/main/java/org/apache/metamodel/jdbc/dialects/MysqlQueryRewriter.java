@@ -19,6 +19,7 @@
 package org.apache.metamodel.jdbc.dialects;
 
 import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.schema.ColumnType;
 
 /**
  * Query rewriter for MySQL
@@ -32,5 +33,21 @@ public class MysqlQueryRewriter extends LimitOffsetQueryRewriter implements IQue
     @Override
     public String escapeQuotes(String filterItemOperand) {
         return filterItemOperand.replaceAll("\\'", "\\\\'");
+    }
+
+    @Override
+    public String rewriteColumnType(ColumnType columnType, Integer columnSize) {
+        if (columnType == ColumnType.NUMERIC) {
+            return super.rewriteColumnType(ColumnType.DECIMAL, columnSize);
+        }
+        if (columnType.isLiteral() && columnSize == null) {
+            if (columnType == ColumnType.STRING || columnType == ColumnType.VARCHAR
+                    || columnType == ColumnType.NVARCHAR) {
+                // MySQL requires size to be specified, so instead we choose the
+                // text type
+                return "TEXT";
+            }
+        }
+        return super.rewriteColumnType(columnType, columnSize);
     }
 }

@@ -71,6 +71,18 @@ public class HsqldbTest extends TestCase {
         _connection.close();
     }
 
+    public void testCreateInsertAndUpdate() throws Exception {
+        Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:" + getName(), USERNAME, PASSWORD);
+        JdbcDataContext dc = new JdbcDataContext(connection);
+        JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(dc, "metamodel_test_simple");
+    }
+
+    public void testCompositePrimaryKeyCreation() throws Exception {
+        Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:" + getName(), USERNAME, PASSWORD);
+        JdbcDataContext dc = new JdbcDataContext(connection);
+        JdbcTestTemplates.compositeKeyCreation(dc, "metamodel_test_composite_keys");
+    }
+
     public void testGetSchemas() throws Exception {
         assertNotNull(_connection);
         JdbcDataContext dc = new JdbcDataContext(_connection);
@@ -81,26 +93,31 @@ public class HsqldbTest extends TestCase {
         assertSame(defaultSchema, publicSchema);
         Table[] tables = publicSchema.getTables();
         assertEquals(13, tables.length);
-        assertEquals("[Table[name=CUSTOMERS,type=TABLE,remarks=null], " + "Table[name=CUSTOMER_W_TER,type=TABLE,remarks=null], "
-                + "Table[name=DEPARTMENT_MANAGERS,type=TABLE,remarks=null], " + "Table[name=DIM_TIME,type=TABLE,remarks=null], "
-                + "Table[name=EMPLOYEES,type=TABLE,remarks=null], " + "Table[name=OFFICES,type=TABLE,remarks=null], "
-                + "Table[name=ORDERDETAILS,type=TABLE,remarks=null], " + "Table[name=ORDERFACT,type=TABLE,remarks=null], "
-                + "Table[name=ORDERS,type=TABLE,remarks=null], " + "Table[name=PAYMENTS,type=TABLE,remarks=null], "
-                + "Table[name=PRODUCTS,type=TABLE,remarks=null], " + "Table[name=QUADRANT_ACTUALS,type=TABLE,remarks=null], "
+        assertEquals("[Table[name=CUSTOMERS,type=TABLE,remarks=null], "
+                + "Table[name=CUSTOMER_W_TER,type=TABLE,remarks=null], "
+                + "Table[name=DEPARTMENT_MANAGERS,type=TABLE,remarks=null], "
+                + "Table[name=DIM_TIME,type=TABLE,remarks=null], " + "Table[name=EMPLOYEES,type=TABLE,remarks=null], "
+                + "Table[name=OFFICES,type=TABLE,remarks=null], "
+                + "Table[name=ORDERDETAILS,type=TABLE,remarks=null], "
+                + "Table[name=ORDERFACT,type=TABLE,remarks=null], " + "Table[name=ORDERS,type=TABLE,remarks=null], "
+                + "Table[name=PAYMENTS,type=TABLE,remarks=null], " + "Table[name=PRODUCTS,type=TABLE,remarks=null], "
+                + "Table[name=QUADRANT_ACTUALS,type=TABLE,remarks=null], "
                 + "Table[name=TRIAL_BALANCE,type=TABLE,remarks=null]]", Arrays.toString(tables));
 
         Table empTable = publicSchema.getTableByName("EMPLOYEES");
-        assertEquals("[Column[name=EMPLOYEENUMBER,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=0], "
-                + "Column[name=LASTNAME,columnNumber=1,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                + "Column[name=FIRSTNAME,columnNumber=2,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
-                + "Column[name=EXTENSION,columnNumber=3,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=10], "
-                + "Column[name=EMAIL,columnNumber=4,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=100], "
-                + "Column[name=OFFICECODE,columnNumber=5,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=20], "
-                + "Column[name=REPORTSTO,columnNumber=6,type=INTEGER,nullable=true,nativeType=INTEGER,columnSize=0], "
-                + "Column[name=JOBTITLE,columnNumber=7,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]]",
+        assertEquals(
+                "[Column[name=EMPLOYEENUMBER,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=0], "
+                        + "Column[name=LASTNAME,columnNumber=1,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+                        + "Column[name=FIRSTNAME,columnNumber=2,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
+                        + "Column[name=EXTENSION,columnNumber=3,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=10], "
+                        + "Column[name=EMAIL,columnNumber=4,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=100], "
+                        + "Column[name=OFFICECODE,columnNumber=5,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=20], "
+                        + "Column[name=REPORTSTO,columnNumber=6,type=INTEGER,nullable=true,nativeType=INTEGER,columnSize=0], "
+                        + "Column[name=JOBTITLE,columnNumber=7,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]]",
                 Arrays.toString(empTable.getColumns()));
 
-        assertEquals("[Column[name=EMPLOYEENUMBER,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=0]]",
+        assertEquals(
+                "[Column[name=EMPLOYEENUMBER,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=0]]",
                 Arrays.toString(empTable.getPrimaryKeys()));
 
         // Only a single relationship registered in the database
@@ -127,7 +144,8 @@ public class HsqldbTest extends TestCase {
         assertEquals(2, tableModel.getColumnCount());
         assertEquals(2996, tableModel.getRowCount());
 
-        assertEquals(110, MetaModelHelper.executeSingleRowQuery(dc, new Query().selectCount().from(productsTable)).getValue(0));
+        assertEquals(110, MetaModelHelper.executeSingleRowQuery(dc, new Query().selectCount().from(productsTable))
+                .getValue(0));
     }
 
     public void testLimit() throws Exception {
@@ -190,14 +208,16 @@ public class HsqldbTest extends TestCase {
         assertEquals("SELECT pro-ducts.\"PRODUCTCODE\" AS c|o|d|e FROM PUBLIC.\"PRODUCTS\" pro-ducts", q.toString());
 
         String queryString = queryRewriter.rewriteQuery(q);
-        assertEquals("SELECT TOP 5 \"pro-ducts\".\"PRODUCTCODE\" AS \"c|o|d|e\" FROM PUBLIC.\"PRODUCTS\" \"pro-ducts\"",
+        assertEquals(
+                "SELECT TOP 5 \"pro-ducts\".\"PRODUCTCODE\" AS \"c|o|d|e\" FROM PUBLIC.\"PRODUCTS\" \"pro-ducts\"",
                 queryString);
 
         // We have to test that no additional quoting characters are added every
         // time we run the rewriting
         queryString = queryRewriter.rewriteQuery(q);
         queryString = queryRewriter.rewriteQuery(q);
-        assertEquals("SELECT TOP 5 \"pro-ducts\".\"PRODUCTCODE\" AS \"c|o|d|e\" FROM PUBLIC.\"PRODUCTS\" \"pro-ducts\"",
+        assertEquals(
+                "SELECT TOP 5 \"pro-ducts\".\"PRODUCTCODE\" AS \"c|o|d|e\" FROM PUBLIC.\"PRODUCTS\" \"pro-ducts\"",
                 queryString);
 
         // Test that the original query is still the same (ie. it has been
@@ -214,12 +234,15 @@ public class HsqldbTest extends TestCase {
 
         Column column = dc.getDefaultSchema().getTableByName("PRODUCTS").getColumnByName("PRODUCTCODE");
         assertEquals("PUBLIC.PRODUCTS.PRODUCTCODE", column.getQualifiedLabel());
-        assertEquals("Table[name=PRODUCTS,type=TABLE,remarks=null]", dc.getTableByQualifiedLabel("PUBLIC.PRODUCTS").toString());
+        assertEquals("Table[name=PRODUCTS,type=TABLE,remarks=null]", dc.getTableByQualifiedLabel("PUBLIC.PRODUCTS")
+                .toString());
         assertEquals("Table[name=PRODUCTS,type=TABLE,remarks=null]", dc.getTableByQualifiedLabel("PRODUCTS").toString());
-        assertEquals("Column[name=PRODUCTCODE,columnNumber=0,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]", dc
-                .getColumnByQualifiedLabel("PUBLIC.PRODUCTS.PRODUCTCODE").toString());
-        assertEquals("Column[name=PRODUCTCODE,columnNumber=0,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]", dc
-                .getColumnByQualifiedLabel("PRODUCTS.PRODUCTCODE").toString());
+        assertEquals(
+                "Column[name=PRODUCTCODE,columnNumber=0,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]",
+                dc.getColumnByQualifiedLabel("PUBLIC.PRODUCTS.PRODUCTCODE").toString());
+        assertEquals(
+                "Column[name=PRODUCTCODE,columnNumber=0,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]",
+                dc.getColumnByQualifiedLabel("PRODUCTS.PRODUCTCODE").toString());
     }
 
     public void testQuoteInWhereClause() throws Exception {
@@ -256,8 +279,8 @@ public class HsqldbTest extends TestCase {
         q = dc.query().from(table).selectCount().where("name").isEquals("m'jello").toQuery();
 
         assertEquals("SELECT COUNT(*) FROM PUBLIC.\"TESTTABLE\" WHERE \"TESTTABLE\".\"NAME\" = 'm'jello'", q.toSql());
-        assertEquals("SELECT COUNT(*) FROM PUBLIC.\"TESTTABLE\" WHERE \"TESTTABLE\".\"NAME\" = 'm''jello'", dc.getQueryRewriter()
-                .rewriteQuery(q));
+        assertEquals("SELECT COUNT(*) FROM PUBLIC.\"TESTTABLE\" WHERE \"TESTTABLE\".\"NAME\" = 'm''jello'", dc
+                .getQueryRewriter().rewriteQuery(q));
 
         row = MetaModelHelper.executeSingleRowQuery(dc, q);
         assertEquals(1, ((Number) row.getValue(0)).intValue());
@@ -298,7 +321,8 @@ public class HsqldbTest extends TestCase {
     }
 
     public void testInsertOfDifferentTypes() throws Exception {
-        Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:different_types_insert", USERNAME, PASSWORD);
+        Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:different_types_insert", USERNAME,
+                PASSWORD);
 
         try {
             connection.createStatement().execute("DROP TABLE my_table");
@@ -313,9 +337,9 @@ public class HsqldbTest extends TestCase {
             @Override
             public void run(UpdateCallback cb) {
                 Table table = cb.createTable(schema, "my_table").withColumn("id").ofType(ColumnType.INTEGER)
-                        .ofNativeType("IDENTITY").nullable(false).withColumn("name").ofType(ColumnType.VARCHAR).ofSize(10)
-                        .withColumn("foo").ofType(ColumnType.BOOLEAN).nullable(true).withColumn("bar").ofType(ColumnType.BOOLEAN)
-                        .nullable(true).execute();
+                        .ofNativeType("IDENTITY").nullable(false).withColumn("name").ofType(ColumnType.VARCHAR)
+                        .ofSize(10).withColumn("foo").ofType(ColumnType.BOOLEAN).nullable(true).withColumn("bar")
+                        .ofType(ColumnType.BOOLEAN).nullable(true).execute();
 
                 assertEquals("MY_TABLE", table.getName());
             }
@@ -335,11 +359,14 @@ public class HsqldbTest extends TestCase {
 
                     callback.insertInto("my_table").value("name", "row 5").value("bar", true).execute();
 
-                    callback.insertInto("my_table").value("name", "row 6").value("foo", true).value("bar", true).execute();
+                    callback.insertInto("my_table").value("name", "row 6").value("foo", true).value("bar", true)
+                            .execute();
 
-                    callback.insertInto("my_table").value("name", "row 7").value("foo", true).value("bar", true).execute();
+                    callback.insertInto("my_table").value("name", "row 7").value("foo", true).value("bar", true)
+                            .execute();
 
-                    callback.insertInto("my_table").value("name", "row 8").value("foo", false).value("bar", false).execute();
+                    callback.insertInto("my_table").value("name", "row 8").value("foo", false).value("bar", false)
+                            .execute();
                 }
             });
 

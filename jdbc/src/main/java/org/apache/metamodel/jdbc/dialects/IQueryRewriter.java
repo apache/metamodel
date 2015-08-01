@@ -37,57 +37,70 @@ import org.apache.metamodel.schema.ColumnType;
  */
 public interface IQueryRewriter {
 
-	public String rewriteFromItem(FromItem item);
+    public String rewriteFromItem(FromItem item);
 
-	public String rewriteQuery(Query query);
+    public String rewriteQuery(Query query);
 
-	public String rewriteFilterItem(FilterItem whereItem);
+    public String rewriteFilterItem(FilterItem whereItem);
 
-	/**
-	 * Gets whether this query rewriter is able to write the "Max rows" query
-	 * property to the query string.
-	 * 
-	 * @return whether this query rewriter is able to write the "Max rows" query
-	 *         property to the query string.
-	 */
-	public boolean isMaxRowsSupported();
+    /**
+     * Gets whether this query rewriter is able to write the "Max rows" query
+     * property to the query string.
+     * 
+     * @return whether this query rewriter is able to write the "Max rows" query
+     *         property to the query string.
+     */
+    public boolean isMaxRowsSupported();
 
-	/**
-	 * Gets whether this query rewriter is able to write the "First row" query
-	 * property to the query string.
-	 * 
-	 * @return whether this query rewriter is able to write the "First row"
-	 *         query property to the query string.
-	 */
-	public boolean isFirstRowSupported();
+    /**
+     * Gets whether this query rewriter is able to write the "First row" query
+     * property to the query string.
+     * 
+     * @return whether this query rewriter is able to write the "First row"
+     *         query property to the query string.
+     */
+    public boolean isFirstRowSupported();
 
-	/**
-	 * Escapes the quotes within a String literal of a query item.
-	 * 
-	 * @return String item with quotes escaped.
-	 */
-	public String escapeQuotes(String item);
+    /**
+     * Escapes the quotes within a String literal of a query item.
+     * 
+     * @return String item with quotes escaped.
+     */
+    public String escapeQuotes(String item);
 
-	/**
-	 * Rewrites the name of a column type, as it is written in CREATE TABLE
-	 * statements. Some databases dont support all column types, or have
-	 * different names for them. The implementation of this method will do that
-	 * conversion.
-	 * 
-	 * @param columnType
-	 * @return
-	 */
-	public String rewriteColumnType(ColumnType columnType);
+    /**
+     * Rewrites the name of a column type, as it is written in CREATE TABLE
+     * statements. Some databases dont support all column types, or have
+     * different names for them. The implementation of this method will do that
+     * conversion.
+     * 
+     * @param columnType
+     *            the (non-null) {@link ColumnType} to rewrite
+     * @param columnSize
+     *            the (possibly null) column size that may or may not have been
+     *            specified
+     * @return
+     */
+    public String rewriteColumnType(ColumnType columnType, Integer columnSize);
 
-	/**
-	 * Gets the column type for a specific JDBC type (as defined in
-	 * {@link Types}), native type name and column size.
-	 * 
-	 * @param jdbcType
-	 * @param nativeType
-	 * @param columnSize
-	 * @return
-	 */
-	public ColumnType getColumnType(int jdbcType, String nativeType, Integer columnSize);
+    /**
+     * Gets the column type for a specific JDBC type (as defined in
+     * {@link Types}), native type name and column size.
+     * 
+     * @param jdbcType
+     * @param nativeType
+     * @param columnSize
+     * @return
+     */
+    public ColumnType getColumnType(int jdbcType, String nativeType, Integer columnSize);
 
+    /**
+     * Determines if the JDBC data source supports transactions or not. Usually
+     * this is the case since JDBC is designed for ACID compliant databases, but
+     * in some cases the JDBC interface is used also to facilitate connectivity
+     * to non-transactional data source such as Apache Hive and others.
+     * 
+     * @return
+     */
+    public boolean isTransactional();
 }

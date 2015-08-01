@@ -22,9 +22,8 @@ import java.util.Arrays;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.client.HTableInterface;
-import org.apache.hadoop.hbase.client.HTablePool;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.ColumnType;
@@ -140,37 +139,37 @@ public class HBaseDataContextTest extends HBaseTestCase {
     }
 
     private void insertRecordsNatively() throws Exception {
-        final HTablePool tablePool = _dataContext.getTablePool();
-        final HTableInterface hTable = tablePool.getTable(EXAMPLE_TABLE_NAME);
+        final org.apache.hadoop.hbase.client.Table hTable = _dataContext.getHTable(EXAMPLE_TABLE_NAME);
         try {
             final Put put1 = new Put("junit1".getBytes());
-            put1.add("foo".getBytes(), "hello".getBytes(), "world".getBytes());
-            put1.add("bar".getBytes(), "hi".getBytes(), "there".getBytes());
-            put1.add("bar".getBytes(), "hey".getBytes(), "yo".getBytes());
+            put1.addColumn("foo".getBytes(), "hello".getBytes(), "world".getBytes());
+            put1.addColumn("bar".getBytes(), "hi".getBytes(), "there".getBytes());
+            put1.addColumn("bar".getBytes(), "hey".getBytes(), "yo".getBytes());
 
             final Put put2 = new Put("junit2".getBytes());
-            put2.add("bar".getBytes(), "bah".getBytes(), new byte[] { 1, 2, 3 });
-            put2.add("bar".getBytes(), "hi".getBytes(), "you".getBytes());
+            put2.addColumn("bar".getBytes(), "bah".getBytes(), new byte[] { 1, 2, 3 });
+            put2.addColumn("bar".getBytes(), "hi".getBytes(), "you".getBytes());
 
-            hTable.batch(Arrays.asList(put1, put2));
+            final Object[] result = new Object[2];
+            hTable.batch(Arrays.asList(put1, put2), result);
         } finally {
             hTable.close();
-            tablePool.closeTablePool(EXAMPLE_TABLE_NAME);
-            tablePool.close();
         }
     }
 
     private void createTableNatively() throws Exception {
+        final TableName tableName = TableName.valueOf(EXAMPLE_TABLE_NAME);
+        
         // check if the table exists
-        if (_dataContext.getHBaseAdmin().isTableAvailable(EXAMPLE_TABLE_NAME)) {
+        if (_dataContext.getAdmin().isTableAvailable(tableName)) {
             System.out.println("Unittest table already exists: " + EXAMPLE_TABLE_NAME);
             // table already exists
             return;
         }
 
-        HBaseAdmin admin = _dataContext.getHBaseAdmin();
+        Admin admin = _dataContext.getAdmin();
         System.out.println("Creating table");
-        final HTableDescriptor tableDescriptor = new HTableDescriptor(EXAMPLE_TABLE_NAME.getBytes());
+        final HTableDescriptor tableDescriptor = new HTableDescriptor(tableName);
         tableDescriptor.addFamily(new HColumnDescriptor("foo".getBytes()));
         tableDescriptor.addFamily(new HColumnDescriptor("bar".getBytes()));
         admin.createTable(tableDescriptor);
