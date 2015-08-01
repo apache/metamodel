@@ -5,16 +5,11 @@ jdk:
   - oraclejdk8
   
 before_install:
-- export NEO4J_PORT="7474"
-- sudo service neo4j stop || true
-- sleep 3
-- ./install_local_neo4j.bash $NEO4J_VERSION
-- ./lib/neo4j/bin/neo4j start || ( cat ./lib/neo4j/data/log/*.log && exit 1 )
-- curl http://localhost:$NEO4J_PORT/db/data/
-- curl -X DELETE 'http://localhost:7474/cleandb/supersecretdebugkey!'
-
-env:
-- NEO4J_VERSION="2.1.5"
+  # install Neo4j locally:
+  - wget dist.neo4j.org/neo4j-community-2.2.3-unix.tar.gz
+  - tar -xzf neo4j-community-2.2.3-unix.tar.gz
+  - sed -i.bak s/dbms.security.auth_enabled=true/dbms.security.auth_enabled=false/g neo4j-community-2.2.3/conf/neo4j-server.properties
+  - neo4j-community-2.2.3/bin/neo4j start
 
 services:
   - couchdb
