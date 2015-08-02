@@ -175,7 +175,7 @@ under the License.
 					<encoding>utf-8</encoding>
 				</configuration>
 			</plugin>
-			<!-- <plugin>
+			<plugin>
 				<groupId>org.apache.rat</groupId>
 				<artifactId>apache-rat-plugin</artifactId>
 				<executions>
@@ -187,7 +187,7 @@ under the License.
 						</goals>
 					</execution>
 				</executions>
-			</plugin> -->
+			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -378,6 +378,7 @@ under the License.
 							<exclude>**/.idea/**</exclude>
 							<exclude>DEPENDENCIES</exclude>
 							<exclude>DISCLAIMER</exclude>
+							<exclude>neo4j-community-*/**</exclude>
 						</excludes>
 					</configuration>
 				</plugin>
