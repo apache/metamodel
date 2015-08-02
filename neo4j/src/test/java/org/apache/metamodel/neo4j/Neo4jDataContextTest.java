@@ -31,6 +31,8 @@ import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.CompiledQuery;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.junit.Test;
@@ -39,164 +41,233 @@ import org.slf4j.LoggerFactory;
 
 public class Neo4jDataContextTest extends Neo4jTestCase {
 
-    private static final Logger logger = LoggerFactory.getLogger(Neo4jDataContextTest.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(Neo4jDataContextTest.class);
 
-    Neo4jRequestWrapper requestWrapper;
+	Neo4jRequestWrapper requestWrapper;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
 
-        if (isConfigured()) {
-            CloseableHttpClient httpClient = HttpClients.createDefault();
-            HttpHost httpHost = new HttpHost(getHostname(), getPort());
-            requestWrapper = new Neo4jRequestWrapper(httpClient, httpHost);
-        }
-    }
+		if (isConfigured()) {
+			CloseableHttpClient httpClient = HttpClients.createDefault();
+			HttpHost httpHost = new HttpHost(getHostname(), getPort());
+			requestWrapper = new Neo4jRequestWrapper(httpClient, httpHost);
+		}
+	}
 
-    @Test
-    public void testTableDetection() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
-        
-        // Insert a node
-        requestWrapper.executeCypherQuery("CREATE (n:JUnitLabel { property1: 1, property2: 2 })");
+	@Test
+	public void testTableDetection() throws Exception {
+		if (!isConfigured()) {
+			System.err.println(getInvalidConfigurationMessage());
+			return;
+		}
 
-        // Adding a node, but deleting it afterwards - should not be included in
-        // the schema as the table would be empty
-        requestWrapper.executeCypherQuery("CREATE (n:JUnitLabelTemp { property1: 3, property2: 4 })");
-        requestWrapper.executeCypherQuery("MATCH (n:JUnitLabelTemp) DELETE n;");
+		// Insert a node
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitLabel { property1: 1, property2: 2 })");
 
-        Neo4jDataContext strategy = new Neo4jDataContext(getHostname(), getPort());
-        Schema schema = strategy.getSchemaByName(strategy.getDefaultSchemaName());
+		// Adding a node, but deleting it afterwards - should not be included in
+		// the schema as the table would be empty
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitLabelTemp { property1: 3, property2: 4 })");
+		requestWrapper.executeCypherQuery("MATCH (n:JUnitLabelTemp) DELETE n;");
 
-        // Do not check the precise count, Neo4j keeps labels forever, there are
-        // probably many more than you imagine...
-        List<String> tableNames = Arrays.asList(schema.getTableNames());
-        logger.info("Tables (labels) detected: " + tableNames);
-        assertTrue(tableNames.contains("JUnitLabel"));
-        assertFalse(tableNames.contains("JUnitLabelTemp"));
+		Neo4jDataContext strategy = new Neo4jDataContext(getHostname(),
+				getPort());
+		Schema schema = strategy.getSchemaByName(strategy
+				.getDefaultSchemaName());
 
-        Table table = schema.getTableByName("JUnitLabel");
-        List<String> columnNames = Arrays.asList(table.getColumnNames());
-        assertTrue(columnNames.contains("property1"));
-        assertTrue(columnNames.contains("property2"));
-    }
+		// Do not check the precise count, Neo4j keeps labels forever, there are
+		// probably many more than you imagine...
+		List<String> tableNames = Arrays.asList(schema.getTableNames());
+		logger.info("Tables (labels) detected: " + tableNames);
+		assertTrue(tableNames.contains("JUnitLabel"));
+		assertFalse(tableNames.contains("JUnitLabelTemp"));
 
-    @Test
-    public void testSelectQuery() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
-        
-        requestWrapper.executeCypherQuery("CREATE (n:JUnitLabel { property1: 1, property2: 2 })");
+		Table table = schema.getTableByName("JUnitLabel");
+		List<String> columnNames = Arrays.asList(table.getColumnNames());
+		assertTrue(columnNames.contains("property1"));
+		assertTrue(columnNames.contains("property2"));
+	}
 
-        Neo4jDataContext strategy = new Neo4jDataContext(getHostname(), getPort());
+	@Test
+	public void testSelectQuery() throws Exception {
+		if (!isConfigured()) {
+			System.err.println(getInvalidConfigurationMessage());
+			return;
+		}
 
-        CompiledQuery query1 = strategy.query().from("JUnitLabel").select("property1").compile();
-        DataSet dataSet1 = strategy.executeQuery(query1);
-        assertTrue(dataSet1.next());
-        assertEquals("Row[values=[1]]", dataSet1.getRow().toString());
-        assertFalse(dataSet1.next());
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitLabel { property1: 1, property2: 2 })");
 
-        CompiledQuery query2 = strategy.query().from("JUnitLabel").select("property1").select("property2").compile();
-        DataSet dataSet2 = strategy.executeQuery(query2);
-        assertTrue(dataSet2.next());
-        assertEquals("Row[values=[1, 2]]", dataSet2.getRow().toString());
-        assertFalse(dataSet2.next());
-    }
-    
-    @Test
-    public void testWhereClause() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
-        
-        requestWrapper.executeCypherQuery("CREATE (n:JUnitLabel { property1: 1, property2: 2 })");
-        requestWrapper.executeCypherQuery("CREATE (n:JUnitLabel { property1: 10, property2: 20 })");
+		Neo4jDataContext strategy = new Neo4jDataContext(getHostname(),
+				getPort());
 
-        Neo4jDataContext strategy = new Neo4jDataContext(getHostname(), getPort());
+		CompiledQuery query1 = strategy.query().from("JUnitLabel")
+				.select("property1").compile();
+		DataSet dataSet1 = strategy.executeQuery(query1);
+		assertTrue(dataSet1.next());
+		assertEquals("Row[values=[1]]", dataSet1.getRow().toString());
+		assertFalse(dataSet1.next());
 
-        CompiledQuery query1 = strategy.query().from("JUnitLabel").select("property1").where("property2").eq(20).compile();
-        DataSet dataSet1 = strategy.executeQuery(query1);
-        assertTrue(dataSet1.next());
-        assertEquals("Row[values=[10]]", dataSet1.getRow().toString());
-        assertFalse(dataSet1.next());
-    }
+		CompiledQuery query2 = strategy.query().from("JUnitLabel")
+				.select("property1").select("property2").compile();
+		DataSet dataSet2 = strategy.executeQuery(query2);
+		assertTrue(dataSet2.next());
+		assertEquals("Row[values=[1, 2]]", dataSet2.getRow().toString());
+		assertFalse(dataSet2.next());
+	}
 
-    @Test
-    public void testInsert() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
-        
-        UpdateableDataContext dataContext = new Neo4jDataContext(getHostname(), getPort());
-        try {
-            dataContext.executeUpdate(new UpdateScript() {
+	@Test
+	public void testWhereClause() throws Exception {
+		if (!isConfigured()) {
+			System.err.println(getInvalidConfigurationMessage());
+			return;
+		}
 
-                @Override
-                public void run(UpdateCallback callback) {
-                    callback.insertInto("JUnitLabel").value("property1", "updatedValue").execute();
-                }
-            });
-            fail();
-        } catch (UnsupportedOperationException e) {
-            assertNotNull(e);
-        }
-    }
-    
-    @Test
-    public void testFirstRowAndLastRow() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitLabel { property1: 1, property2: 2 })");
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitLabel { property1: 10, property2: 20 })");
 
-        // insert a few records
-        {
-            requestWrapper.executeCypherQuery("CREATE (n:JUnitLabel { name: 'John Doe', age: 30 })");
-            requestWrapper.executeCypherQuery("CREATE (n:JUnitLabel { name: 'Jane Doe', gender: 'F' })");
-        }
+		Neo4jDataContext strategy = new Neo4jDataContext(getHostname(),
+				getPort());
 
-        // create datacontext using detected schema
-        final DataContext dc = new Neo4jDataContext(getHostname(), getPort());
+		CompiledQuery query1 = strategy.query().from("JUnitLabel")
+				.select("property1").where("property2").eq(20).compile();
+		DataSet dataSet1 = strategy.executeQuery(query1);
+		assertTrue(dataSet1.next());
+		assertEquals("Row[values=[10]]", dataSet1.getRow().toString());
+		assertFalse(dataSet1.next());
+	}
 
-        final DataSet ds1 = dc.query().from("JUnitLabel").select("name").and("age").firstRow(2).execute();
-        final DataSet ds2 = dc.query().from("JUnitLabel").select("name").and("age").maxRows(1).execute();
+	@Test
+	public void testJoin() throws Exception {
+		if (!isConfigured()) {
+			System.err.println(getInvalidConfigurationMessage());
+			return;
+		}
 
-        assertTrue("Class: " + ds1.getClass().getName(), ds1 instanceof Neo4jDataSet);
-        assertTrue("Class: " + ds2.getClass().getName(), ds2 instanceof Neo4jDataSet);
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitLabel1 { id2: 1, propertyTable1: \"prop-table1-row1\" })");
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitLabel1 { id2: 2, propertyTable1: \"prop-table1-row2\" })");
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitLabel2 { id1: 2, propertyTable2: \"prop-table2-row2\" })");
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitLabel2 { id1: 1, propertyTable2: \"prop-table2-row1\" })");
 
-        assertTrue(ds1.next());
-        assertTrue(ds2.next());
+		Neo4jDataContext strategy = new Neo4jDataContext(getHostname(),
+				getPort());
 
-        final Row row1 = ds1.getRow();
-        final Row row2 = ds2.getRow();
+		Table table1 = strategy.getTableByQualifiedLabel("JUnitLabel1");
+		Table table2 = strategy.getTableByQualifiedLabel("JUnitLabel2");
+		Column id1Column = table2.getColumnByName("id1");
+		Column id2Column = table1.getColumnByName("id2");
 
-        assertFalse(ds1.next());
-        assertFalse(ds2.next());
+		CompiledQuery query1 = strategy.query().from(table1)
+				.and(table2).selectAll().where(id1Column).eq(id2Column)
+				.compile();
+		DataSet dataSet1 = null;
+		try {
+			dataSet1 = strategy.executeQuery(query1);
+			assertTrue(dataSet1.next());
+			assertEquals("Row[values=[2, prop-table1-row2, prop-table2-row2, 2]]",
+			dataSet1.getRow().toString());
+			assertTrue(dataSet1.next());
+			assertEquals("Row[values=[1, prop-table1-row1, prop-table2-row1, 1]]",
+			dataSet1.getRow().toString());
+			assertFalse(dataSet1.next());
+		} finally {
+			if (dataSet1 != null) {
+				dataSet1.close();
+			}
+		}
 
-        assertEquals("Row[values=[Jane Doe, null]]", row1.toString());
-        assertEquals("Row[values=[John Doe, 30]]", row2.toString());
+	}
 
-        ds1.close();
-        ds2.close();
-    }
+	@Test
+	public void testInsert() throws Exception {
+		if (!isConfigured()) {
+			System.err.println(getInvalidConfigurationMessage());
+			return;
+		}
 
-    @Override
-    protected void tearDown() throws Exception {
-        if (isConfigured()) {
-            // Delete the test nodes
-            requestWrapper.executeCypherQuery("MATCH (n:JUnitLabel) DELETE n");
-            requestWrapper.executeCypherQuery("MATCH (n:JUnitLabelTemp) DELETE n");
-        }
+		UpdateableDataContext dataContext = new Neo4jDataContext(getHostname(),
+				getPort());
+		try {
+			dataContext.executeUpdate(new UpdateScript() {
 
-        super.tearDown();
-    }
+				@Override
+				public void run(UpdateCallback callback) {
+					callback.insertInto("JUnitLabel")
+							.value("property1", "updatedValue").execute();
+				}
+			});
+			fail();
+		} catch (UnsupportedOperationException e) {
+			assertNotNull(e);
+		}
+	}
+
+	@Test
+	public void testFirstRowAndLastRow() throws Exception {
+		if (!isConfigured()) {
+			System.err.println(getInvalidConfigurationMessage());
+			return;
+		}
+
+		// insert a few records
+		{
+			requestWrapper
+					.executeCypherQuery("CREATE (n:JUnitLabel { name: 'John Doe', age: 30 })");
+			requestWrapper
+					.executeCypherQuery("CREATE (n:JUnitLabel { name: 'Jane Doe', gender: 'F' })");
+		}
+
+		// create datacontext using detected schema
+		final DataContext dc = new Neo4jDataContext(getHostname(), getPort());
+
+		final DataSet ds1 = dc.query().from("JUnitLabel").select("name")
+				.and("age").firstRow(2).execute();
+		final DataSet ds2 = dc.query().from("JUnitLabel").select("name")
+				.and("age").maxRows(1).execute();
+
+		assertTrue("Class: " + ds1.getClass().getName(),
+				ds1 instanceof Neo4jDataSet);
+		assertTrue("Class: " + ds2.getClass().getName(),
+				ds2 instanceof Neo4jDataSet);
+
+		assertTrue(ds1.next());
+		assertTrue(ds2.next());
+
+		final Row row1 = ds1.getRow();
+		final Row row2 = ds2.getRow();
+
+		assertFalse(ds1.next());
+		assertFalse(ds2.next());
+
+		assertEquals("Row[values=[Jane Doe, null]]", row1.toString());
+		assertEquals("Row[values=[John Doe, 30]]", row2.toString());
+
+		ds1.close();
+		ds2.close();
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		if (isConfigured()) {
+			// Delete the test nodes
+			requestWrapper.executeCypherQuery("MATCH (n:JUnitLabel) DELETE n");
+			requestWrapper
+					.executeCypherQuery("MATCH (n:JUnitLabelTemp) DELETE n");
+			requestWrapper.executeCypherQuery("MATCH (n:JUnitLabel1) DELETE n");
+			requestWrapper.executeCypherQuery("MATCH (n:JUnitLabel2) DELETE n");
+		}
+
+		super.tearDown();
+	}
 
 }
