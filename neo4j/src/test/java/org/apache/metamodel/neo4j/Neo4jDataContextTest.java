@@ -32,7 +32,6 @@ import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.junit.Test;
@@ -166,26 +165,33 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 		Table table2 = strategy.getTableByQualifiedLabel("JUnitLabel2");
 		Column id1Column = table2.getColumnByName("id1");
 		Column id2Column = table1.getColumnByName("id2");
+		Column propertyTable1Column = table1.getColumnByName("propertyTable1");
+		Column propertyTable2Column = table2.getColumnByName("propertyTable2");
 
-		CompiledQuery query1 = strategy.query().from(table1)
-				.and(table2).selectAll().where(id1Column).eq(id2Column)
+		CompiledQuery query = strategy
+				.query()
+				.from(table1)
+				.and(table2)
+				.select(id1Column, id2Column, propertyTable1Column,
+						propertyTable2Column).where(id1Column).eq(id2Column)
 				.compile();
-		DataSet dataSet1 = null;
+		DataSet dataSet = null;
 		try {
-			dataSet1 = strategy.executeQuery(query1);
-			assertTrue(dataSet1.next());
-			assertEquals("Row[values=[2, prop-table1-row2, prop-table2-row2, 2]]",
-			dataSet1.getRow().toString());
-			assertTrue(dataSet1.next());
-			assertEquals("Row[values=[1, prop-table1-row1, prop-table2-row1, 1]]",
-			dataSet1.getRow().toString());
-			assertFalse(dataSet1.next());
+			dataSet = strategy.executeQuery(query);
+			assertTrue(dataSet.next());
+			assertEquals(
+					"Row[values=[1, 1, prop-table1-row1, prop-table2-row1]]",
+					dataSet.getRow().toString());
+			assertTrue(dataSet.next());
+			assertEquals(
+					"Row[values=[2, 2, prop-table1-row2, prop-table2-row2]]",
+					dataSet.getRow().toString());
+			assertFalse(dataSet.next());
 		} finally {
-			if (dataSet1 != null) {
-				dataSet1.close();
+			if (dataSet != null) {
+				dataSet.close();
 			}
 		}
-
 	}
 
 	@Test
