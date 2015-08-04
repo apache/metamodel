@@ -92,6 +92,46 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 	}
 
 	@Test
+	public void testTableDetectionWithRelationships() throws Exception {
+		if (!isConfigured()) {
+			System.err.println(getInvalidConfigurationMessage());
+			return;
+		}
+
+		// Insert nodes
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitPerson { name: 'Tomasz', age: 26})");
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitPerson { name: 'Philomeena', age: 18})");
+		requestWrapper
+		.executeCypherQuery("CREATE (n:JUnitBook { title: 'Introduction to algorithms'})");
+		requestWrapper
+				.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
+						+ "WHERE a.name = 'Tomasz' AND b.title = 'Introduction to algorithms'"
+						+ "CREATE (a)-[r:HAS_READ { rating : 5 }]->(b)");
+
+		Neo4jDataContext strategy = new Neo4jDataContext(getHostname(),
+				getPort());
+		Schema schema = strategy.getSchemaByName(strategy
+				.getDefaultSchemaName());
+
+		// Do not check the precise count, Neo4j keeps labels forever, there are
+		// probably many more than you imagine...
+		List<String> tableNames = Arrays.asList(schema.getTableNames());
+		logger.info("Tables (labels) detected: " + tableNames);
+		assertTrue(tableNames.contains("JUnitPerson"));
+		assertTrue(tableNames.contains("JUnitBook"));
+
+		Table tablePerson = schema.getTableByName("JUnitPerson");
+		List<String> personColumnNames = Arrays.asList(tablePerson.getColumnNames());
+		assertEquals("[name, age, rel_HAS_READ]", personColumnNames.toString());
+		
+		Table tableBook = schema.getTableByName("JUnitBook");
+		List<String> bookColumnNames = Arrays.asList(tableBook.getColumnNames());
+		assertEquals("[title]", bookColumnNames.toString());
+	}
+
+	@Test
 	public void testSelectQuery() throws Exception {
 		if (!isConfigured()) {
 			System.err.println(getInvalidConfigurationMessage());
@@ -271,6 +311,9 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 					.executeCypherQuery("MATCH (n:JUnitLabelTemp) DELETE n");
 			requestWrapper.executeCypherQuery("MATCH (n:JUnitLabel1) DELETE n");
 			requestWrapper.executeCypherQuery("MATCH (n:JUnitLabel2) DELETE n");
+			requestWrapper.executeCypherQuery("MATCH (n:JUnitPerson)-[r]-() DELETE n,r");
+			requestWrapper.executeCypherQuery("MATCH (n:JUnitPerson) DELETE n");
+			requestWrapper.executeCypherQuery("MATCH (n:JUnitBook) DELETE n");
 		}
 
 		super.tearDown();
