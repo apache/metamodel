@@ -23,9 +23,7 @@ import org.apache.metamodel.util.AggregateBuilder;
 
 public class SumAggregateFunction extends DefaultAggregateFunction<Double> implements AggregateFunction {
 
-    public SumAggregateFunction() {
-        functionType = "SUM";
-    }
+    public String getFunctionType() { return "SUM"; }
 
     public AggregateBuilder<Double> build() {
         return new SumAggregateBuilder();

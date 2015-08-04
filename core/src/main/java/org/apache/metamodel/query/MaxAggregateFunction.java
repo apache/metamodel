@@ -23,9 +23,7 @@ import org.apache.metamodel.util.AggregateBuilder;
 
 public class MaxAggregateFunction extends DefaultAggregateFunction<Object> implements AggregateFunction {
 
-    public MaxAggregateFunction() {
-        functionType = "MAX";
-    }
+    public String getFunctionType() { return "MAX"; }
 
     public AggregateBuilder<Object> build() {
         return new MaxAggregateBuilder();

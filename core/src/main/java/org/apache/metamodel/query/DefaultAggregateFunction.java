@@ -26,8 +26,6 @@ import org.apache.metamodel.util.AggregateBuilder;
  */
 public abstract class DefaultAggregateFunction<T>  {
 
-    String functionType;
-
     public abstract AggregateBuilder<T> build();
 
     public abstract ColumnType getExpectedColumnType(ColumnType type);
@@ -59,6 +57,9 @@ public abstract class DefaultAggregateFunction<T>  {
         return builder.getAggregate();
     }
 
+    public abstract String getFunctionType();
+
     @Override
-    public String toString() { return functionType; }
+    public String toString() { return getFunctionType(); }
+
 }

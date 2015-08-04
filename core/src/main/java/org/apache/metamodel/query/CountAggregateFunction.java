@@ -23,9 +23,7 @@ import org.apache.metamodel.util.AggregateBuilder;
 
 public class CountAggregateFunction extends DefaultAggregateFunction<Long> implements AggregateFunction {
 
-    public CountAggregateFunction() {
-        functionType = "COUNT";
-    }
+    public String getFunctionType() { return "COUNT"; }
 
     public AggregateBuilder<Long> build() {
         return new CountAggregateBuilder();
