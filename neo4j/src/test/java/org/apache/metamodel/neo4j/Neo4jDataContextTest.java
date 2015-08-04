@@ -124,7 +124,7 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 
 		Table tablePerson = schema.getTableByName("JUnitPerson");
 		List<String> personColumnNames = Arrays.asList(tablePerson.getColumnNames());
-		assertEquals("[name, age, rel_HAS_READ]", personColumnNames.toString());
+		assertEquals("[name, age, rel_HAS_READ, rel_HAS_READ_rating]", personColumnNames.toString());
 		
 		Table tableBook = schema.getTableByName("JUnitBook");
 		List<String> bookColumnNames = Arrays.asList(tableBook.getColumnNames());

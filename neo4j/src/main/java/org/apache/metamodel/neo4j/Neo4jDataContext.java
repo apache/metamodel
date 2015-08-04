@@ -154,16 +154,8 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements
 						}
 
 						// Add all the relationship properties as table columns
-//						List<String> propertiesPerRelationship = getAllPropertiesPerRelationship(relationship);
-//						for (String relationshipProperty : propertiesPerRelationship) {
-//							String relationshipPropertyName = relationshipNameProperty
-//									+ "_" + relationshipProperty;
-//							if (!relationshipPropertiesPerLabel
-//									.contains(relationshipProperty)) {
-//								relationshipPropertiesPerLabel
-//										.add(relationshipProperty);
-//							}
-//						}
+						List<String> propertiesPerRelationship = getAllPropertiesPerRelationship(relationship);
+						relationshipPropertiesPerLabel.addAll(propertiesPerRelationship);
 					}
 				}
 				propertiesPerLabel.addAll(relationshipPropertiesPerLabel);
@@ -182,6 +174,27 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements
 		} catch (JSONException e) {
 			logger.error(
 					"Error occured in parsing JSON while detecting the schema: ",
+					e);
+			throw new IllegalStateException(e);
+		}
+	}
+
+	private List<String> getAllPropertiesPerRelationship(JSONObject relationship) {
+		List<String> propertyNames = new ArrayList<String>();
+		try {
+			String relationshipName = "rel_" + relationship.getJSONObject("metadata").getString("type");
+			JSONObject relationshipPropertiesJSONObject = relationship.getJSONObject("data");
+			JSONArray relationshipPropertiesNamesJSONArray = relationshipPropertiesJSONObject.names();
+			for (int i = 0; i < relationshipPropertiesNamesJSONArray.length(); i++) {
+				String propertyName = relationshipName + "_" + relationshipPropertiesNamesJSONArray.getString(i);
+				if (!propertyNames.contains(propertyName)) {
+					propertyNames.add(propertyName);
+				}
+			}
+			return propertyNames;
+		} catch (JSONException e) {
+			logger.error(
+					"Error occured in parsing JSON while getting relationship properties: ",
 					e);
 			throw new IllegalStateException(e);
 		}
