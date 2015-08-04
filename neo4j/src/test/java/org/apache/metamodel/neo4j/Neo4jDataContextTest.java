@@ -109,6 +109,10 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 				.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
 						+ "WHERE a.name = 'Tomasz' AND b.title = 'Introduction to algorithms'"
 						+ "CREATE (a)-[r:HAS_READ { rating : 5 }]->(b)");
+		requestWrapper
+		.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
+				+ "WHERE a.name = 'Philomeena' AND b.title = 'Introduction to algorithms'"
+				+ "CREATE (a)-[r:HAS_BROWSED]->(b)");
 
 		Neo4jDataContext strategy = new Neo4jDataContext(getHostname(),
 				getPort());
@@ -124,7 +128,7 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 
 		Table tablePerson = schema.getTableByName("JUnitPerson");
 		List<String> personColumnNames = Arrays.asList(tablePerson.getColumnNames());
-		assertEquals("[name, age, rel_HAS_READ, rel_HAS_READ_rating]", personColumnNames.toString());
+		assertEquals("[name, age, rel_HAS_READ, rel_HAS_READ_rating, rel_HAS_BROWSED]", personColumnNames.toString());
 		
 		Table tableBook = schema.getTableByName("JUnitBook");
 		List<String> bookColumnNames = Arrays.asList(tableBook.getColumnNames());

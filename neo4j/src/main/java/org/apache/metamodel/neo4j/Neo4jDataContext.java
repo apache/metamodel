@@ -142,20 +142,25 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements
 				// TODO: Get all relationships for label
 				List<String> relationshipPropertiesPerLabel = new ArrayList<String>();
 				for (JSONObject node : nodesPerLabel) {
-					Integer nodeId = (Integer) node.getJSONObject("metadata").get("id");
+					Integer nodeId = (Integer) node.getJSONObject("metadata")
+							.get("id");
 					List<JSONObject> relationshipsPerNode = getOutgoingRelationshipsPerNode(nodeId);
 					for (JSONObject relationship : relationshipsPerNode) {
 						// Add the relationship as a column in the table
-						String relationshipName = relationship.getString("type");
-						String relationshipNameProperty = "rel_" + relationshipName;
+						String relationshipName = relationship
+								.getString("type");
+						String relationshipNameProperty = "rel_"
+								+ relationshipName;
 						if (!relationshipPropertiesPerLabel
 								.contains(relationshipNameProperty)) {
-							relationshipPropertiesPerLabel.add(relationshipNameProperty);
+							relationshipPropertiesPerLabel
+									.add(relationshipNameProperty);
 						}
 
 						// Add all the relationship properties as table columns
 						List<String> propertiesPerRelationship = getAllPropertiesPerRelationship(relationship);
-						relationshipPropertiesPerLabel.addAll(propertiesPerRelationship);
+						relationshipPropertiesPerLabel
+								.addAll(propertiesPerRelationship);
 					}
 				}
 				propertiesPerLabel.addAll(relationshipPropertiesPerLabel);
@@ -182,13 +187,20 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements
 	private List<String> getAllPropertiesPerRelationship(JSONObject relationship) {
 		List<String> propertyNames = new ArrayList<String>();
 		try {
-			String relationshipName = "rel_" + relationship.getJSONObject("metadata").getString("type");
-			JSONObject relationshipPropertiesJSONObject = relationship.getJSONObject("data");
-			JSONArray relationshipPropertiesNamesJSONArray = relationshipPropertiesJSONObject.names();
-			for (int i = 0; i < relationshipPropertiesNamesJSONArray.length(); i++) {
-				String propertyName = relationshipName + "_" + relationshipPropertiesNamesJSONArray.getString(i);
-				if (!propertyNames.contains(propertyName)) {
-					propertyNames.add(propertyName);
+			String relationshipName = "rel_"
+					+ relationship.getJSONObject("metadata").getString("type");
+			JSONObject relationshipPropertiesJSONObject = relationship
+					.getJSONObject("data");
+			if (relationshipPropertiesJSONObject.length() > 0) {
+			JSONArray relationshipPropertiesNamesJSONArray = relationshipPropertiesJSONObject
+					.names();
+				for (int i = 0; i < relationshipPropertiesNamesJSONArray
+						.length(); i++) {
+					String propertyName = relationshipName + "_"
+							+ relationshipPropertiesNamesJSONArray.getString(i);
+					if (!propertyNames.contains(propertyName)) {
+						propertyNames.add(propertyName);
+					}
 				}
 			}
 			return propertyNames;
@@ -204,14 +216,16 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements
 		List<JSONObject> outgoingRelationshipsPerNode = new ArrayList<JSONObject>();
 
 		String outgoingRelationshipsPerNodeJsonString = _requestWrapper
-				.executeRestRequest(new HttpGet("/db/data/node/" + nodeId + "/relationships/out"));
-		
+				.executeRestRequest(new HttpGet("/db/data/node/" + nodeId
+						+ "/relationships/out"));
+
 		JSONArray outgoingRelationshipsPerNodeJsonArray;
 		try {
 			outgoingRelationshipsPerNodeJsonArray = new JSONArray(
 					outgoingRelationshipsPerNodeJsonString);
 			for (int i = 0; i < outgoingRelationshipsPerNodeJsonArray.length(); i++) {
-				JSONObject relationship = outgoingRelationshipsPerNodeJsonArray.getJSONObject(i);
+				JSONObject relationship = outgoingRelationshipsPerNodeJsonArray
+						.getJSONObject(i);
 				if (!outgoingRelationshipsPerNode.contains(relationship)) {
 					outgoingRelationshipsPerNode.add(relationship);
 				}
