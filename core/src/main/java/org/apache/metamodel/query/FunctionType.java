@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.query;
 
-import org.apache.metamodel.util.AggregateBuilder;
-
 /**
  * Represents a generic function to use in a SelectItem.
  *
@@ -32,8 +30,4 @@ public interface FunctionType extends Function {
     public static final AggregateFunction SUM = new SumAggregateFunction();
     public static final AggregateFunction MAX = new MaxAggregateFunction();
     public static final AggregateFunction MIN = new MinAggregateFunction();
-
-    public AggregateBuilder<?> build();
-
-    public Object evaluate(Object... values);
 }

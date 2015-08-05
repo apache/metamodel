@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.query;
 
+import org.apache.metamodel.util.AggregateBuilder;
+
 /**
  * Interface that contains the aggregation specific methods
  * related to the AggregateBuilder.
@@ -27,4 +29,7 @@ public interface AggregateFunction extends FunctionType {
 
     Object evaluate(Iterable<?> values);
 
+    public AggregateBuilder<?> build();
+
+    public Object evaluate(Object... values);
 }
