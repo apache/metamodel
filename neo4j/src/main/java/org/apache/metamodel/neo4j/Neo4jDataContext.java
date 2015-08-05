@@ -60,6 +60,8 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements
 
 	public static final int DEFAULT_PORT = 7474;
 
+	private static final String RELATIONSHIP_COLUMN_PREFIX = "rel_";
+
 	private final SimpleTableDef[] _tableDefs;
 
 	private final Neo4jRequestWrapper _requestWrapper;
@@ -149,7 +151,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements
 						// Add the relationship as a column in the table
 						String relationshipName = relationship
 								.getString("type");
-						String relationshipNameProperty = "rel_"
+						String relationshipNameProperty = RELATIONSHIP_COLUMN_PREFIX
 								+ relationshipName;
 						if (!relationshipPropertiesPerLabel
 								.contains(relationshipNameProperty)) {
@@ -187,13 +189,13 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements
 	private List<String> getAllPropertiesPerRelationship(JSONObject relationship) {
 		List<String> propertyNames = new ArrayList<String>();
 		try {
-			String relationshipName = "rel_"
+			String relationshipName = RELATIONSHIP_COLUMN_PREFIX
 					+ relationship.getJSONObject("metadata").getString("type");
 			JSONObject relationshipPropertiesJSONObject = relationship
 					.getJSONObject("data");
 			if (relationshipPropertiesJSONObject.length() > 0) {
-			JSONArray relationshipPropertiesNamesJSONArray = relationshipPropertiesJSONObject
-					.names();
+				JSONArray relationshipPropertiesNamesJSONArray = relationshipPropertiesJSONObject
+						.names();
 				for (int i = 0; i < relationshipPropertiesNamesJSONArray
 						.length(); i++) {
 					String propertyName = relationshipName + "_"
@@ -296,23 +298,48 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements
 	protected DataSet materializeMainSchemaTable(Table table, Column[] columns,
 			int firstRow, int maxRows) {
 		if ((columns != null) && (columns.length > 0)) {
-			try {
-				String selectQuery = Neo4jCypherQueryBuilder.buildSelectQuery(
-						table, columns, firstRow, maxRows);
-				String responseJSONString = _requestWrapper
-						.executeCypherQuery(selectQuery);
-				JSONObject resultJSONObject = new JSONObject(responseJSONString);
-				final SelectItem[] selectItems = MetaModelHelper
-						.createSelectItems(columns);
-				Neo4jDataSet neo4jDataSet = new Neo4jDataSet(selectItems,
-						resultJSONObject);
-				return neo4jDataSet;
-			} catch (JSONException e) {
-				logger.error(
-						"Error occured in parsing JSON while materializing the schema: ",
-						e);
-				throw new IllegalStateException(e);
+			// Split property columns and relationship columns
+			List<Column> propertyColumns = new ArrayList<Column>();
+			List<Column> relationshipColumns = new ArrayList<Column>();
+			for (Column column : columns) {
+				if (column.getName().startsWith(RELATIONSHIP_COLUMN_PREFIX)) {
+					relationshipColumns.add(column);
+				} else {
+					propertyColumns.add(column);
+				}
 			}
+
+			Neo4jDataSet propertyDataSet = null;
+			if (propertyColumns.size() > 0) {
+				try {
+					String selectQuery = Neo4jCypherQueryBuilder
+							.buildSelectQuery(table,
+									propertyColumns
+											.toArray(new Column[propertyColumns
+													.size()]), firstRow,
+									maxRows);
+					String responseJSONString = _requestWrapper
+							.executeCypherQuery(selectQuery);
+					JSONObject resultJSONObject = new JSONObject(
+							responseJSONString);
+					final SelectItem[] selectItems = MetaModelHelper
+							.createSelectItems(propertyColumns.toArray(new Column[propertyColumns.size()]));
+					propertyDataSet = new Neo4jDataSet(selectItems,
+							resultJSONObject);
+				} catch (JSONException e) {
+					logger.error(
+							"Error occured in parsing JSON while materializing the schema: ",
+							e);
+					throw new IllegalStateException(e);
+				}
+			}
+
+			// TODO: Query for relationships and their properties
+			Neo4jDataSet relationshipDataSet = null;
+			
+			// TODO: Merge property and relationship data sets
+			Neo4jDataSet mergedDataSet = propertyDataSet;
+			return mergedDataSet;
 		} else {
 			logger.error("Encountered null or empty columns array for materializing main schema table.");
 			throw new IllegalArgumentException(

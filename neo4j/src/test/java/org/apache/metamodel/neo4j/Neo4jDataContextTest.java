@@ -34,6 +34,7 @@ import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,15 +105,15 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 		requestWrapper
 				.executeCypherQuery("CREATE (n:JUnitPerson { name: 'Philomeena', age: 18})");
 		requestWrapper
-		.executeCypherQuery("CREATE (n:JUnitBook { title: 'Introduction to algorithms'})");
+				.executeCypherQuery("CREATE (n:JUnitBook { title: 'Introduction to algorithms'})");
 		requestWrapper
 				.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
 						+ "WHERE a.name = 'Tomasz' AND b.title = 'Introduction to algorithms'"
 						+ "CREATE (a)-[r:HAS_READ { rating : 5 }]->(b)");
 		requestWrapper
-		.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
-				+ "WHERE a.name = 'Philomeena' AND b.title = 'Introduction to algorithms'"
-				+ "CREATE (a)-[r:HAS_BROWSED]->(b)");
+				.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
+						+ "WHERE a.name = 'Philomeena' AND b.title = 'Introduction to algorithms'"
+						+ "CREATE (a)-[r:HAS_BROWSED]->(b)");
 
 		Neo4jDataContext strategy = new Neo4jDataContext(getHostname(),
 				getPort());
@@ -127,11 +128,15 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 		assertTrue(tableNames.contains("JUnitBook"));
 
 		Table tablePerson = schema.getTableByName("JUnitPerson");
-		List<String> personColumnNames = Arrays.asList(tablePerson.getColumnNames());
-		assertEquals("[name, age, rel_HAS_READ, rel_HAS_READ_rating, rel_HAS_BROWSED]", personColumnNames.toString());
-		
+		List<String> personColumnNames = Arrays.asList(tablePerson
+				.getColumnNames());
+		assertEquals(
+				"[name, age, rel_HAS_READ, rel_HAS_READ_rating, rel_HAS_BROWSED]",
+				personColumnNames.toString());
+
 		Table tableBook = schema.getTableByName("JUnitBook");
-		List<String> bookColumnNames = Arrays.asList(tableBook.getColumnNames());
+		List<String> bookColumnNames = Arrays
+				.asList(tableBook.getColumnNames());
 		assertEquals("[title]", bookColumnNames.toString());
 	}
 
@@ -160,6 +165,58 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 		DataSet dataSet2 = strategy.executeQuery(query2);
 		assertTrue(dataSet2.next());
 		assertEquals("Row[values=[1, 2]]", dataSet2.getRow().toString());
+		assertFalse(dataSet2.next());
+	}
+
+	@Test
+	public void testSelectQueryWithRelationships() throws Exception {
+		if (!isConfigured()) {
+			System.err.println(getInvalidConfigurationMessage());
+			return;
+		}
+
+		// Insert nodes
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitPerson { name: 'Tomasz', age: 26})");
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitPerson { name: 'Philomeena', age: 18})");
+		requestWrapper
+				.executeCypherQuery("CREATE (n:JUnitBook { title: 'Introduction to algorithms'})");
+		requestWrapper
+				.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
+						+ "WHERE a.name = 'Tomasz' AND b.title = 'Introduction to algorithms'"
+						+ "CREATE (a)-[r:HAS_READ { rating : 5 }]->(b)");
+		requestWrapper
+				.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
+						+ "WHERE a.name = 'Philomeena' AND b.title = 'Introduction to algorithms'"
+						+ "CREATE (a)-[r:HAS_BROWSED]->(b)");
+
+		String bookNodeIdJSONObject = requestWrapper
+				.executeCypherQuery("MATCH (n:JUnitBook)"
+						+ " WHERE n.title = 'Introduction to algorithms'"
+						+ " RETURN id(n);");
+		String bookNodeId = new JSONObject(bookNodeIdJSONObject)
+				.getJSONArray("results").getJSONObject(0).getJSONArray("data")
+				.getJSONObject(0).getJSONArray("row").getString(0);
+
+		Neo4jDataContext strategy = new Neo4jDataContext(getHostname(),
+				getPort());
+
+		CompiledQuery query1 = strategy.query().from("JUnitPerson")
+				.select("name", "rel_HAS_READ").compile();
+		DataSet dataSet1 = strategy.executeQuery(query1);
+		assertTrue(dataSet1.next());
+		assertEquals("Row[values=[Tomasz, " + bookNodeId + "]]", dataSet1
+				.getRow().toString());
+		assertFalse(dataSet1.next());
+
+		// TODO: Test with just a property query and just a relationship query
+
+		CompiledQuery query2 = strategy.query().from("JUnitPerson")
+				.select("rel_HAS_READ_rating").compile();
+		DataSet dataSet2 = strategy.executeQuery(query2);
+		assertTrue(dataSet2.next());
+		assertEquals("Row[values=[5]]", dataSet2.getRow().toString());
 		assertFalse(dataSet2.next());
 	}
 
@@ -315,7 +372,8 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 					.executeCypherQuery("MATCH (n:JUnitLabelTemp) DELETE n");
 			requestWrapper.executeCypherQuery("MATCH (n:JUnitLabel1) DELETE n");
 			requestWrapper.executeCypherQuery("MATCH (n:JUnitLabel2) DELETE n");
-			requestWrapper.executeCypherQuery("MATCH (n:JUnitPerson)-[r]-() DELETE n,r");
+			requestWrapper
+					.executeCypherQuery("MATCH (n:JUnitPerson)-[r]-() DELETE n,r");
 			requestWrapper.executeCypherQuery("MATCH (n:JUnitPerson) DELETE n");
 			requestWrapper.executeCypherQuery("MATCH (n:JUnitBook) DELETE n");
 		}
