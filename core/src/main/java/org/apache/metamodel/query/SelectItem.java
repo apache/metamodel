@@ -211,6 +211,13 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
         return _function;
     }
 
+    public AggregateFunction getAggregateFunction() {
+        if (_function instanceof AggregateFunction)
+            return (AggregateFunction) _function;
+        else
+            return null;
+    }
+
     /**
      * @return if this is a function based SelectItem where function calculation
      *         is allowed to be approximated (if the datastore type has an

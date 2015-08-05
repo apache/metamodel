@@ -374,7 +374,7 @@ public final class MetaModelHelper {
                         // value
                         List<Object> objects = functionInput.get(item);
                         if (objects != null) {
-                            Object functionResult = item.getFunction().evaluate(objects.toArray());
+                            Object functionResult = item.getAggregateFunction().evaluate(objects.toArray());
                             resultRow[i] = functionResult;
                         } else {
                             if (item.getFunction() != null) {
@@ -416,7 +416,7 @@ public final class MetaModelHelper {
 
         final Map<SelectItem, AggregateBuilder<?>> aggregateBuilders = new HashMap<SelectItem, AggregateBuilder<?>>();
         for (SelectItem item : functionItems) {
-            aggregateBuilders.put(item, item.getFunction().build());
+            aggregateBuilders.put(item, item.getAggregateFunction().build());
         }
 
         final DataSetHeader header;
