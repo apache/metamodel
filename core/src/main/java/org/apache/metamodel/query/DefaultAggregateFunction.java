@@ -24,14 +24,14 @@ import org.apache.metamodel.util.AggregateBuilder;
 /**
  * Implementation of the {@link org.apache.metamodel.query.AggregateFunction}.
  */
-public abstract class DefaultAggregateFunction<T>  {
+public abstract class DefaultAggregateFunction<T> implements AggregateFunction {
 
-    public abstract AggregateBuilder<T> build();
+    public abstract AggregateBuilder<T> createAggregateBuilder();
 
     public abstract ColumnType getExpectedColumnType(ColumnType type);
 
     public Object evaluate(Iterable<?> values) {
-        AggregateBuilder<?> builder = build();
+        AggregateBuilder<?> builder = createAggregateBuilder();
         for (Object object : values) {
             builder.add(object);
         }
@@ -50,16 +50,14 @@ public abstract class DefaultAggregateFunction<T>  {
      *         yields the type of the provided values.
      */
     public Object evaluate(Object... values) {
-        AggregateBuilder<?> builder = build();
+        AggregateBuilder<?> builder = createAggregateBuilder();
         for (Object object : values) {
             builder.add(object);
         }
         return builder.getAggregate();
     }
 
-    public abstract String getFunctionType();
-
     @Override
-    public String toString() { return getFunctionType(); }
+    public String toString() { return getFunctionName(); }
 
 }

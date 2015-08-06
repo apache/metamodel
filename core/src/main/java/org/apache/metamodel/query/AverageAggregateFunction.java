@@ -23,9 +23,9 @@ import org.apache.metamodel.util.AggregateBuilder;
 
 public class AverageAggregateFunction extends DefaultAggregateFunction<Double> implements AggregateFunction {
 
-    public String getFunctionType() { return "AVG"; }
+    public String getFunctionName() { return "AVG"; }
 
-    public AggregateBuilder<Double> build() {
+    public AggregateBuilder<Double> createAggregateBuilder() {
         return new AverageAggregateBuilder();
     }
 

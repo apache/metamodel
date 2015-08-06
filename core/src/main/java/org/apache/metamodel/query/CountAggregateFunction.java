@@ -21,11 +21,11 @@ package org.apache.metamodel.query;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.AggregateBuilder;
 
-public class CountAggregateFunction extends DefaultAggregateFunction<Long> implements AggregateFunction {
+public class CountAggregateFunction extends DefaultAggregateFunction<Long> {
 
-    public String getFunctionType() { return "COUNT"; }
+    public String getFunctionName() { return "COUNT"; }
 
-    public AggregateBuilder<Long> build() {
+    public AggregateBuilder<Long> createAggregateBuilder() {
         return new CountAggregateBuilder();
     }
 

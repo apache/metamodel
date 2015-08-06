@@ -23,9 +23,9 @@ import org.apache.metamodel.util.AggregateBuilder;
 
 public class MinAggregateFunction extends DefaultAggregateFunction<Object> implements AggregateFunction {
 
-    public String getFunctionType() { return "MIN"; }
+    public String getFunctionName() { return "MIN"; }
 
-    public AggregateBuilder<Object> build() {
+    public AggregateBuilder<Object> createAggregateBuilder() {
         return new MinAggregateBuilder();
     }
 

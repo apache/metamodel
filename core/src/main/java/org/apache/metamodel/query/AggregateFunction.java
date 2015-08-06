@@ -27,9 +27,7 @@ import org.apache.metamodel.util.AggregateBuilder;
  */
 public interface AggregateFunction extends FunctionType {
 
-    Object evaluate(Iterable<?> values);
-
-    public AggregateBuilder<?> build();
+    public AggregateBuilder<?> createAggregateBuilder();
 
     public Object evaluate(Object... values);
 }

@@ -18,16 +18,22 @@
  */
 package org.apache.metamodel.query;
 
+import org.apache.metamodel.schema.ColumnType;
+
 /**
  * Represents a generic function to use in a SelectItem.
  *
  * @see SelectItem
 */
-public interface FunctionType extends Function {
+public interface FunctionType {
 
     public static final AggregateFunction COUNT = new CountAggregateFunction();
     public static final AggregateFunction AVG = new AverageAggregateFunction();
     public static final AggregateFunction SUM = new SumAggregateFunction();
     public static final AggregateFunction MAX = new MaxAggregateFunction();
     public static final AggregateFunction MIN = new MinAggregateFunction();
+
+    public ColumnType getExpectedColumnType(ColumnType type);
+
+    public String getFunctionName();
 }

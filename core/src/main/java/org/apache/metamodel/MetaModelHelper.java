@@ -416,7 +416,7 @@ public final class MetaModelHelper {
 
         final Map<SelectItem, AggregateBuilder<?>> aggregateBuilders = new HashMap<SelectItem, AggregateBuilder<?>>();
         for (SelectItem item : functionItems) {
-            aggregateBuilders.put(item, item.getAggregateFunction().build());
+            aggregateBuilders.put(item, item.getAggregateFunction().createAggregateBuilder());
         }
 
         final DataSetHeader header;
