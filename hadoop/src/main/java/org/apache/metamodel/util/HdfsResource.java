@@ -18,18 +18,22 @@
  */
 package org.apache.metamodel.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.metamodel.MetaModelException;
 
 /**
@@ -37,6 +41,104 @@ import org.apache.metamodel.MetaModelException;
  * distributed file system.
  */
 public class HdfsResource implements Resource, Serializable {
+    private static class HdfsFileInputStream extends InputStream {
+        private final InputStream _in;
+        private final FileSystem _fs;
+
+        public HdfsFileInputStream(final InputStream in, final FileSystem fs) {
+            _in = in;
+            _fs = fs;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return _in.read();
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            return _in.read(b, off, len);
+        }
+
+        @Override
+        public int read(byte[] b) throws IOException {
+            return _in.read(b);
+        }
+
+        @Override
+        public boolean markSupported() {
+            return _in.markSupported();
+        }
+
+        @Override
+        public synchronized void mark(int readLimit) {
+            _in.mark(readLimit);
+        }
+
+        @Override
+        public int available() throws IOException {
+            return _in.available();
+        }
+
+        @Override
+        public synchronized void reset() throws IOException {
+            _in.reset();
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            return _in.skip(n);
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            // need to close 'fs' when input stream is closed
+            FileHelper.safeClose(_fs);
+        }
+    }
+
+    private class HdfsDirectoryInputStream extends AbstractDirectoryInputStream<FileStatus> {
+        private final Path _hadoopPath;
+        private final FileSystem _fs;
+
+        public HdfsDirectoryInputStream(final Path hadoopPath,
+                final FileSystem fs) {
+            _hadoopPath = hadoopPath;
+            _fs = fs;
+            FileStatus[] fileStatuses;
+            try {
+                fileStatuses = _fs.listStatus(_hadoopPath, new PathFilter() {
+                    @Override
+                    public boolean accept(final Path path) {
+                        try {
+                            return _fs.isFile(path);
+                        } catch (IOException e) {
+                            return false;
+                        }
+                    }
+                });
+                // Natural ordering is the URL
+                Arrays.sort(fileStatuses);
+
+            } catch (IOException e) {
+                fileStatuses = new FileStatus[0];
+            }
+            _files = fileStatuses;
+        }
+
+        @Override
+        InputStream openStream(final int index) throws IOException {
+            final Path nextPath = _files[index].getPath();
+            return _fs.open(nextPath);
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            FileHelper.safeClose(_fs);
+        }
+    }
 
     private static final long serialVersionUID = 1L;
 
@@ -49,7 +151,7 @@ public class HdfsResource implements Resource, Serializable {
 
     /**
      * Creates a {@link HdfsResource}
-     * 
+     *
      * @param url
      *            a URL of the form: hdfs://hostname:port/path/to/file
      */
@@ -69,7 +171,7 @@ public class HdfsResource implements Resource, Serializable {
 
     /**
      * Creates a {@link HdfsResource}
-     * 
+     *
      * @param hostname
      *            the HDFS (namenode) hostname
      * @param port
@@ -190,69 +292,27 @@ public class HdfsResource implements Resource, Serializable {
         final FileSystem fs = getHadoopFileSystem();
         final InputStream in;
         try {
-            in = fs.open(getHadoopPath());
+            final Path hadoopPath = getHadoopPath();
+            // return a wrapper InputStream which manages the 'fs' closeable
+            if (fs.isFile(hadoopPath)) {
+                in = fs.open(hadoopPath);
+                return new HdfsFileInputStream(in, fs);
+            } else {
+                return new HdfsDirectoryInputStream(hadoopPath, fs);
+            }
         } catch (Exception e) {
             // we can close 'fs' in case of an exception
             FileHelper.safeClose(fs);
             throw wrapException(e);
         }
 
-        // return a wrappper InputStream which manages the 'fs' closeable
-        return new InputStream() {
-            @Override
-            public int read() throws IOException {
-                return in.read();
-            }
-
-            @Override
-            public int read(byte[] b, int off, int len) throws IOException {
-                return in.read(b, off, len);
-            }
-
-            @Override
-            public int read(byte[] b) throws IOException {
-                return in.read(b);
-            }
-
-            @Override
-            public boolean markSupported() {
-                return in.markSupported();
-            }
-
-            @Override
-            public synchronized void mark(int readlimit) {
-                in.mark(readlimit);
-            }
-
-            @Override
-            public int available() throws IOException {
-                return in.available();
-            }
-
-            @Override
-            public synchronized void reset() throws IOException {
-                in.reset();
-            }
-
-            @Override
-            public long skip(long n) throws IOException {
-                return in.skip(n);
-            }
-
-            @Override
-            public void close() throws IOException {
-                super.close();
-                // need to close 'fs' when input stream is closed
-                FileHelper.safeClose(fs);
-            }
-        };
     }
 
     @Override
     public void read(Action<InputStream> readCallback) throws ResourceException {
         final FileSystem fs = getHadoopFileSystem();
         try {
-            final InputStream in = fs.open(getHadoopPath());
+            final InputStream in = read();
             try {
                 readCallback.run(in);
             } finally {
@@ -269,7 +329,7 @@ public class HdfsResource implements Resource, Serializable {
     public <E> E read(Func<InputStream, E> readCallback) throws ResourceException {
         final FileSystem fs = getHadoopFileSystem();
         try {
-            final InputStream in = fs.open(getHadoopPath());
+            final InputStream in = read();
             try {
                 return readCallback.eval(in);
             } finally {
