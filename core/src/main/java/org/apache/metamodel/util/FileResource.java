@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Comparator;
 
 /**
  * {@link File} based {@link Resource} implementation.
@@ -34,7 +33,7 @@ public class FileResource implements Resource, Serializable {
 
     private class DirectoryInputStream extends AbstractDirectoryInputStream<File> {
 
-        public DirectoryInputStream(){
+        public DirectoryInputStream() {
             final File[] unsortedFiles = _file.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(final File pathname) {
@@ -42,7 +41,7 @@ public class FileResource implements Resource, Serializable {
                 }
             });
 
-            if(unsortedFiles == null){
+            if (unsortedFiles == null) {
                 _files = new File[0];
             } else {
                 Arrays.sort(unsortedFiles);
@@ -66,7 +65,7 @@ public class FileResource implements Resource, Serializable {
     public FileResource(File file) {
         _file = file;
     }
-    
+
     @Override
     public String toString() {
         return "FileResource[" + _file.getPath() + "]";
@@ -169,7 +168,7 @@ public class FileResource implements Resource, Serializable {
 
     @Override
     public InputStream read() throws ResourceException {
-        if(_file.isDirectory()){
+        if (_file.isDirectory()) {
             return new DirectoryInputStream();
         }
         final InputStream in = FileHelper.getInputStream(_file);

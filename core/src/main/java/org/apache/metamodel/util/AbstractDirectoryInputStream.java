@@ -1,8 +1,3 @@
-package org.apache.metamodel.util;
-
-import java.io.IOException;
-import java.io.InputStream;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,6 +16,11 @@ import java.io.InputStream;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.metamodel.util;
+
+import java.io.IOException;
+import java.io.InputStream;
+
 public abstract class AbstractDirectoryInputStream<T> extends InputStream {
     protected T[] _files;
     private int _currentFileIndex = -1;
@@ -36,7 +36,7 @@ public abstract class AbstractDirectoryInputStream<T> extends InputStream {
             }
         }
 
-        if (!openNextFile()){
+        if (!openNextFile()) {
             return -1; // No more files.
         }
 
@@ -51,8 +51,8 @@ public abstract class AbstractDirectoryInputStream<T> extends InputStream {
     @Override
     public int read() throws IOException {
         final byte[] b = new byte[1];
-        int count = read(b, 0 , 1);
-        if(count < 0){
+        int count = read(b, 0, 1);
+        if (count < 0) {
             return -1;
         }
         return (int) b[0];
@@ -60,7 +60,7 @@ public abstract class AbstractDirectoryInputStream<T> extends InputStream {
 
     @Override
     public int available() throws IOException {
-        if(_currentInputStream != null){
+        if (_currentInputStream != null) {
             return _currentInputStream.available();
         } else {
             return 0;
@@ -68,7 +68,7 @@ public abstract class AbstractDirectoryInputStream<T> extends InputStream {
     }
 
     private boolean openNextFile() throws IOException {
-        if(_currentInputStream != null){
+        if (_currentInputStream != null) {
             FileHelper.safeClose(_currentInputStream);
             _currentInputStream = null;
         }
@@ -90,7 +90,7 @@ public abstract class AbstractDirectoryInputStream<T> extends InputStream {
 
     @Override
     public void close() throws IOException {
-        if(_currentInputStream != null){
+        if (_currentInputStream != null) {
             FileHelper.safeClose(_currentInputStream);
         }
     }
