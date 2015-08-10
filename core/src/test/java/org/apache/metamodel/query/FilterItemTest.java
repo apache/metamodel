@@ -374,6 +374,7 @@ public class FilterItemTest extends TestCase {
 
             @Override
             public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+                // we expect 3 columns to be materialized because the query has column references in both SELECT and WHERE clause
                 assertEquals(3, columns.length);
                 assertEquals("column_number", columns[0].getName());
                 assertEquals("name", columns[1].getName());

@@ -18,12 +18,14 @@
  */
 package org.apache.metamodel.elasticsearch;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.elasticsearch.action.search.ClearScrollRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -46,6 +48,14 @@ final class ElasticSearchDataSet extends AbstractDataSet {
     private SearchHit _currentHit;
     private int _hitIndex = 0;
 
+    public ElasticSearchDataSet(Client client, SearchResponse searchResponse, List<SelectItem> selectItems,
+            boolean queryPostProcessed) {
+        super(selectItems);
+        _client = client;
+        _searchResponse = searchResponse;
+        _closed = new AtomicBoolean(false);
+    }
+    
     public ElasticSearchDataSet(Client client, SearchResponse searchResponse, Column[] columns,
             boolean queryPostProcessed) {
         super(columns);

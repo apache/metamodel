@@ -38,13 +38,16 @@ import org.apache.metamodel.BatchUpdateScript;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.create.ColumnCreationBuilder;
+import org.apache.metamodel.create.CreateTable;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.drop.DropTable;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.update.Update;
 import org.apache.metamodel.util.DateUtils;
 import org.apache.metamodel.util.Month;
 import org.junit.Ignore;
@@ -63,41 +66,45 @@ public class JdbcTestTemplates {
             dc.executeUpdate(new DropTable(schema, "test_table"));
         }
 
-        dc.executeUpdate(new UpdateScript() {
-            @Override
-            public void run(UpdateCallback cb) {
-                ColumnCreationBuilder createTableBuilder = cb.createTable(schema, "test_table").withColumn("id")
-                        .ofType(ColumnType.FLOAT).withColumn("code").ofType(ColumnType.VARCHAR).ofSize(10);
-                Table table = createTableBuilder.execute();
-
-                cb.insertInto(table).value("id", 1.0).value("code", "C01").execute();
-                cb.insertInto(table).value("id", 2.0).value("code", "C02").execute();
-                cb.insertInto(table).value("id", 3.0).value("code", null).execute();
-                cb.insertInto(table).value("id", 4.0).value("code", "C02").execute();
-            }
-        });
-
-        assertEquals(1, getCount(dc.query().from("test_table").selectCount().where("code").isNull().execute()));
-        assertEquals(3, getCount(dc.query().from("test_table").selectCount().where("code").isNotNull().execute()));
-        assertEquals(2, getCount(dc.query().from("test_table").selectCount().where("code").ne("C02").execute()));
-
-        // we put the results into a map, because databases are not in agreement
-        // wrt. if NULL is greater than or less than other values, so ordering
-        // does not help
         final Map<Object, Object> map = new HashMap<Object, Object>();
+        try {
+            dc.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback cb) {
+                    ColumnCreationBuilder createTableBuilder = cb.createTable(schema, "test_table").withColumn("id")
+                            .ofType(ColumnType.FLOAT).withColumn("code").ofType(ColumnType.VARCHAR).ofSize(10);
+                    Table table = createTableBuilder.execute();
 
-        DataSet ds = dc.query().from("test_table").select("code").selectCount().groupBy("code").execute();
-        assertTrue(ds.next());
-        map.put(ds.getRow().getValue(0), ds.getRow().getValue(1));
-        assertTrue(ds.next());
-        map.put(ds.getRow().getValue(0), ds.getRow().getValue(1));
-        assertTrue(ds.next());
-        map.put(ds.getRow().getValue(0), ds.getRow().getValue(1));
-        assertFalse(ds.next());
+                    cb.insertInto(table).value("id", 1.0).value("code", "C01").execute();
+                    cb.insertInto(table).value("id", 2.0).value("code", "C02").execute();
+                    cb.insertInto(table).value("id", 3.0).value("code", null).execute();
+                    cb.insertInto(table).value("id", 4.0).value("code", "C02").execute();
+                }
+            });
 
-        ds.close();
+            assertEquals(1, getCount(dc.query().from("test_table").selectCount().where("code").isNull().execute()));
+            assertEquals(3, getCount(dc.query().from("test_table").selectCount().where("code").isNotNull().execute()));
+            assertEquals(2, getCount(dc.query().from("test_table").selectCount().where("code").ne("C02").execute()));
 
-        dc.executeUpdate(new DropTable(schema, "test_table"));
+            // we put the results into a map, because databases are not in
+            // agreement
+            // wrt. if NULL is greater than or less than other values, so
+            // ordering
+            // does not help
+
+            DataSet ds = dc.query().from("test_table").select("code").selectCount().groupBy("code").execute();
+            assertTrue(ds.next());
+            map.put(ds.getRow().getValue(0), ds.getRow().getValue(1));
+            assertTrue(ds.next());
+            map.put(ds.getRow().getValue(0), ds.getRow().getValue(1));
+            assertTrue(ds.next());
+            map.put(ds.getRow().getValue(0), ds.getRow().getValue(1));
+            assertFalse(ds.next());
+
+            ds.close();
+        } finally {
+            dc.executeUpdate(new DropTable(schema, "test_table"));
+        }
 
         assertEquals(1, ((Number) map.get(null)).intValue());
         assertEquals(1, ((Number) map.get("C01")).intValue());
@@ -375,85 +382,89 @@ public class JdbcTestTemplates {
             }
         });
 
-        dc.executeUpdate(new UpdateScript() {
-            @Override
-            public void run(UpdateCallback cb) {
-                cb.insertInto(schema.getTableByName(tableName)).value("id", 3).value("birthdate", "2011-12-21")
-                        .value("wakemeup", "12:00").execute();
-            }
-        });
+        try {
 
-        DataSet ds = dc.query().from(schema.getTableByName(tableName)).select("id", "birthdate", "wakemeup")
-                .orderBy("id").execute();
-        assertTrue(ds.next());
-        assertEquals("1", ds.getRow().getValue(0).toString());
-        assertEquals("1982-04-20", ds.getRow().getValue(1).toString());
-        assertTrue("Actual value was: " + ds.getRow().getValue(2),
-                ds.getRow().getValue(2).toString().startsWith("07:55:00"));
+            dc.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback cb) {
+                    cb.insertInto(schema.getTableByName(tableName)).value("id", 3).value("birthdate", "2011-12-21")
+                            .value("wakemeup", "12:00").execute();
+                }
+            });
 
-        assertTrue(ds.next());
-        assertEquals("2", ds.getRow().getValue(0).toString());
-        assertEquals("1982-04-21", ds.getRow().getValue(1).toString());
-        assertTrue("Actual value was: " + ds.getRow().getValue(2),
-                ds.getRow().getValue(2).toString().startsWith("18:35:00"));
+            DataSet ds = dc.query().from(schema.getTableByName(tableName)).select("id", "birthdate", "wakemeup")
+                    .orderBy("id").execute();
+            assertTrue(ds.next());
+            assertEquals("1", ds.getRow().getValue(0).toString());
+            assertEquals("1982-04-20", ds.getRow().getValue(1).toString());
+            assertTrue("Actual value was: " + ds.getRow().getValue(2),
+                    ds.getRow().getValue(2).toString().startsWith("07:55:00"));
 
-        assertTrue(ds.next());
-        assertEquals("3", ds.getRow().getValue(0).toString());
-        assertEquals("2011-12-21", ds.getRow().getValue(1).toString());
-        assertTrue("Actual value was: " + ds.getRow().getValue(2),
-                ds.getRow().getValue(2).toString().startsWith("12:00"));
+            assertTrue(ds.next());
+            assertEquals("2", ds.getRow().getValue(0).toString());
+            assertEquals("1982-04-21", ds.getRow().getValue(1).toString());
+            assertTrue("Actual value was: " + ds.getRow().getValue(2),
+                    ds.getRow().getValue(2).toString().startsWith("18:35:00"));
 
-        assertFalse(ds.next());
-        ds.close();
+            assertTrue(ds.next());
+            assertEquals("3", ds.getRow().getValue(0).toString());
+            assertEquals("2011-12-21", ds.getRow().getValue(1).toString());
+            assertTrue("Actual value was: " + ds.getRow().getValue(2),
+                    ds.getRow().getValue(2).toString().startsWith("12:00"));
 
-        dc.executeUpdate(new UpdateScript() {
-            @Override
-            public void run(UpdateCallback callback) {
-                // update record 1
+            assertFalse(ds.next());
+            ds.close();
 
-                // create a 08:00 time.
-                Calendar cal = Calendar.getInstance();
-                cal.setTimeInMillis(0);
-                cal.set(Calendar.HOUR_OF_DAY, 8);
-                cal.set(Calendar.MINUTE, 00);
-                Date wakeUpTime = cal.getTime();
-
-                callback.update(schema.getTableByName(tableName))
-                        .value("birthdate", DateUtils.get(1982, Month.APRIL, 21)).value("wakemeup", wakeUpTime)
-                        .where("birthdate").isEquals(DateUtils.get(1982, Month.APRIL, 20)).execute();
-            }
-        });
-
-        ds = dc.query().from(schema.getTableByName(tableName)).select("id", "birthdate", "wakemeup").orderBy("id")
-                .execute();
-        assertTrue(ds.next());
-        assertEquals("1", ds.getRow().getValue(0).toString());
-        assertEquals("1982-04-21", ds.getRow().getValue(1).toString());
-        assertTrue("Actual value was: " + ds.getRow().getValue(2),
-                ds.getRow().getValue(2).toString().startsWith("08:00:00"));
-
-        assertTrue(ds.next());
-        assertEquals("2", ds.getRow().getValue(0).toString());
-        assertEquals("1982-04-21", ds.getRow().getValue(1).toString());
-        assertTrue("Actual value was: " + ds.getRow().getValue(2),
-                ds.getRow().getValue(2).toString().startsWith("18:35:00"));
-
-        assertTrue(ds.next());
-        assertEquals("3", ds.getRow().getValue(0).toString());
-        assertEquals("2011-12-21", ds.getRow().getValue(1).toString());
-        assertTrue("Actual value was: " + ds.getRow().getValue(2),
-                ds.getRow().getValue(2).toString().startsWith("12:00"));
-
-        assertFalse(ds.next());
-        ds.close();
-
-        if (schema.getTableByName(tableName) != null) {
             dc.executeUpdate(new UpdateScript() {
                 @Override
                 public void run(UpdateCallback callback) {
-                    callback.dropTable(schema.getTableByName(tableName)).execute();
+                    // update record 1
+
+                    // create a 08:00 time.
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTimeInMillis(0);
+                    cal.set(Calendar.HOUR_OF_DAY, 8);
+                    cal.set(Calendar.MINUTE, 00);
+                    Date wakeUpTime = cal.getTime();
+
+                    callback.update(schema.getTableByName(tableName))
+                            .value("birthdate", DateUtils.get(1982, Month.APRIL, 21)).value("wakemeup", wakeUpTime)
+                            .where("birthdate").isEquals(DateUtils.get(1982, Month.APRIL, 20)).execute();
                 }
             });
+
+            ds = dc.query().from(schema.getTableByName(tableName)).select("id", "birthdate", "wakemeup").orderBy("id")
+                    .execute();
+            assertTrue(ds.next());
+            assertEquals("1", ds.getRow().getValue(0).toString());
+            assertEquals("1982-04-21", ds.getRow().getValue(1).toString());
+            assertTrue("Actual value was: " + ds.getRow().getValue(2),
+                    ds.getRow().getValue(2).toString().startsWith("08:00:00"));
+
+            assertTrue(ds.next());
+            assertEquals("2", ds.getRow().getValue(0).toString());
+            assertEquals("1982-04-21", ds.getRow().getValue(1).toString());
+            assertTrue("Actual value was: " + ds.getRow().getValue(2),
+                    ds.getRow().getValue(2).toString().startsWith("18:35:00"));
+
+            assertTrue(ds.next());
+            assertEquals("3", ds.getRow().getValue(0).toString());
+            assertEquals("2011-12-21", ds.getRow().getValue(1).toString());
+            assertTrue("Actual value was: " + ds.getRow().getValue(2),
+                    ds.getRow().getValue(2).toString().startsWith("12:00"));
+
+            assertFalse(ds.next());
+            ds.close();
+
+        } finally {
+            if (schema.getTableByName(tableName) != null) {
+                dc.executeUpdate(new UpdateScript() {
+                    @Override
+                    public void run(UpdateCallback callback) {
+                        callback.dropTable(schema.getTableByName(tableName)).execute();
+                    }
+                });
+            }
         }
     }
 
@@ -510,5 +521,105 @@ public class JdbcTestTemplates {
         });
 
         System.setProperty(JdbcDataContext.SYSTEM_PROPERTY_CONVERT_LOBS, "");
+    }
+
+    public static void simpleCreateInsertUpdateAndDrop(final JdbcDataContext dataContext, final String testTableName) {
+        final Schema defaultSchema = dataContext.getDefaultSchema();
+
+        if (defaultSchema.getTableByName(testTableName) != null) {
+            // clean up before
+            dataContext.executeUpdate(new DropTable(defaultSchema, testTableName));
+        }
+
+        dataContext.executeUpdate(new CreateTable(defaultSchema, testTableName).withColumn("mykey")
+                .ofType(ColumnType.INTEGER).nullable(false).asPrimaryKey().withColumn("name")
+                .ofType(ColumnType.VARCHAR).ofSize(20));
+        try {
+            final Table table = defaultSchema.getTableByName(testTableName);
+            assertNotNull(table);
+
+            // insert
+            dataContext.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback callback) {
+                    callback.insertInto(table).value("mykey", 1).value("name", "Apache").execute();
+                    callback.insertInto(table).value("mykey", 2).value("name", "MetaModel").execute();
+                }
+            });
+
+            // update
+            dataContext.executeUpdate(new Update(table).value("name", "MM").where("mykey").eq(2));
+
+            DataSet ds = dataContext.query().from(table).selectAll().orderBy("mykey").execute();
+            assertTrue(ds.next());
+            assertEquals("Row[values=[1, Apache]]", ds.getRow().toString());
+            assertTrue(ds.next());
+            assertEquals("Row[values=[2, MM]]", ds.getRow().toString());
+            assertFalse(ds.next());
+            ds.close();
+
+        } finally {
+            // clean up after
+            dataContext.executeUpdate(new DropTable(defaultSchema, testTableName));
+        }
+    }
+
+    public static void compositeKeyCreation(JdbcDataContext dataContext, String testTableName) {
+        final Schema defaultSchema = dataContext.getDefaultSchema();
+
+        if (defaultSchema.getTableByName(testTableName) != null) {
+            // clean up before
+            dataContext.executeUpdate(new DropTable(defaultSchema, testTableName));
+        }
+
+        dataContext.executeUpdate(new CreateTable(defaultSchema, testTableName).withColumn("mykey1")
+                .ofType(ColumnType.INTEGER).nullable(false).asPrimaryKey().withColumn("mykey2").ofType(ColumnType.INTEGER)
+                .nullable(false).asPrimaryKey().withColumn("name").ofType(ColumnType.VARCHAR).ofSize(20));
+        try {
+            final Table table = defaultSchema.getTableByName(testTableName);
+            assertNotNull(table);
+
+            Column[] primaryKeys = table.getPrimaryKeys();
+            assertEquals(2, primaryKeys.length);
+            assertEquals("mykey1", primaryKeys[0].getName().toLowerCase());
+            assertEquals("mykey2", primaryKeys[1].getName().toLowerCase());
+
+            // insert two records with unique values on both keys
+            dataContext.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback callback) {
+                    callback.insertInto(table).value("mykey1", 1).value("mykey2", 100).value("name", "Apache")
+                            .execute();
+                    callback.insertInto(table).value("mykey1", 2).value("mykey2", 101).value("name", "MetaModel")
+                            .execute();
+                }
+            });
+
+            // insert a record with non-unique value on key 2 only
+            dataContext.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback callback) {
+                    callback.insertInto(table).value("mykey1", 3).value("mykey2", 100).value("name", "Foo bar")
+                            .execute();
+                }
+            });
+
+            // update
+            dataContext.executeUpdate(new Update(table).value("name", "MM").where("mykey1").eq(2));
+
+            DataSet ds = dataContext.query().from(table).selectAll().orderBy("mykey1").execute();
+            assertTrue(ds.next());
+            assertEquals("Row[values=[1, 100, Apache]]", ds.getRow().toString());
+            assertTrue(ds.next());
+            assertEquals("Row[values=[2, 101, MM]]", ds.getRow().toString());
+            assertTrue(ds.next());
+            assertEquals("Row[values=[3, 100, Foo bar]]", ds.getRow().toString());
+            assertFalse(ds.next());
+            ds.close();
+
+        } finally {
+            // clean up after
+            dataContext.executeUpdate(new DropTable(defaultSchema, testTableName));
+        }
     }
 }

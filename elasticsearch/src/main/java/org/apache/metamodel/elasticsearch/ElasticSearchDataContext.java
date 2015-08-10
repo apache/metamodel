@@ -29,11 +29,15 @@ import java.util.Map;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.LogicalOperator;
+import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.MutableColumn;
@@ -41,6 +45,7 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.CollectionUtils;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.elasticsearch.Version;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateRequestBuilder;
@@ -56,6 +61,8 @@ import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.hppc.ObjectLookupContainer;
 import org.elasticsearch.common.hppc.cursors.ObjectCursor;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +84,7 @@ import org.slf4j.LoggerFactory;
  * This implementation supports either automatic discovery of a schema or manual
  * specification of a schema, through the {@link SimpleTableDef} class.
  */
-public class ElasticSearchDataContext extends QueryPostprocessDataContext implements DataContext {
+public class ElasticSearchDataContext extends QueryPostprocessDataContext implements DataContext, UpdateableDataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
 
@@ -222,9 +229,19 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         }
         final Map<String, Object> mp = mappingMetaData.getSourceAsMap();
         final Iterator<Map.Entry<String, Object>> it = mp.entrySet().iterator();
-        final Map.Entry<String, Object> pair = it.next();
-        final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(pair.getValue());
-        return new SimpleTableDef(documentType, metaData.getColumnNames(), metaData.getColumnTypes());
+        SimpleTableDef std = null;
+        while (it.hasNext()) {
+            final Map.Entry<String, Object> pair = it.next();
+            if (pair.getKey().equals("properties")) {
+                final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(pair.getValue());
+                std = new SimpleTableDef(documentType, metaData.getColumnNames(), metaData.getColumnTypes());
+            }
+        }
+        if (std == null) {
+            throw new IllegalArgumentException("No properties defined for document type '" + documentType
+                    + "' in index: " + indexName);
+        }
+        return std;
     }
 
     @Override
@@ -248,17 +265,126 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     }
 
     @Override
+    protected DataSet materializeMainSchemaTable(Table table, List<SelectItem> selectItems,
+            List<FilterItem> whereItems, int firstRow, int maxRows) {
+        final QueryBuilder queryBuilder = createQueryBuilderForSimpleWhere(table, whereItems, LogicalOperator.AND);
+        if (queryBuilder != null) {
+            // where clause can be pushed down to an ElasticSearch query
+            final SearchRequestBuilder searchRequest = createSearchRequest(table, firstRow, maxRows, queryBuilder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            return new ElasticSearchDataSet(elasticSearchClient, response, selectItems, false);
+        }
+        return super.materializeMainSchemaTable(table, selectItems, whereItems, firstRow, maxRows);
+    }
+
+    @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+        final SearchRequestBuilder searchRequest = createSearchRequest(table, 1, maxRows, null);
+        final SearchResponse response = searchRequest.execute().actionGet();
+        return new ElasticSearchDataSet(elasticSearchClient, response, columns, false);
+    }
+
+    private SearchRequestBuilder createSearchRequest(Table table, int firstRow, int maxRows, QueryBuilder queryBuilder) {
         final String documentType = table.getName();
-        final SearchRequestBuilder requestBuilder = elasticSearchClient.prepareSearch(indexName).setTypes(documentType);
+        final SearchRequestBuilder searchRequest = elasticSearchClient.prepareSearch(indexName).setTypes(documentType);
+        if (firstRow > 1) {
+            final int zeroBasedFrom = firstRow - 1;
+            searchRequest.setFrom(zeroBasedFrom);
+        }
         if (limitMaxRowsIsSet(maxRows)) {
-            requestBuilder.setSize(maxRows);
+            searchRequest.setSize(maxRows);
         } else {
-            requestBuilder.setScroll(TIMEOUT_SCROLL);
+            searchRequest.setScroll(TIMEOUT_SCROLL);
         }
 
-        final SearchResponse response = requestBuilder.execute().actionGet();
-        return new ElasticSearchDataSet(elasticSearchClient, response, columns, false);
+        if (queryBuilder != null) {
+            searchRequest.setQuery(queryBuilder);
+        }
+
+        return searchRequest;
+    }
+
+    /**
+     * Creates, if possible, a {@link QueryBuilder} object which can be used to
+     * push down one or more {@link FilterItem}s to ElasticSearch's backend.
+     * 
+     * @param table
+     * @param whereItems
+     * @param logicalOperator
+     * @return a {@link QueryBuilder} if one was produced, or null if the items
+     *         could not be pushed down to an ElasticSearch query
+     */
+    protected QueryBuilder createQueryBuilderForSimpleWhere(Table table, List<FilterItem> whereItems,
+            LogicalOperator logicalOperator) {
+        if (whereItems.isEmpty()) {
+            return QueryBuilders.matchAllQuery();
+        }
+
+        List<QueryBuilder> children = new ArrayList<QueryBuilder>(whereItems.size());
+        for (FilterItem item : whereItems) {
+            final QueryBuilder itemQueryBuilder;
+
+            if (item.isCompoundFilter()) {
+                final List<FilterItem> childItems = Arrays.asList(item.getChildItems());
+                itemQueryBuilder = createQueryBuilderForSimpleWhere(table, childItems, item.getLogicalOperator());
+                if (itemQueryBuilder == null) {
+                    // something was not supported, so we have to forfeit here
+                    // too.
+                    return null;
+                }
+            } else {
+                final Column column = item.getSelectItem().getColumn();
+                if (column == null) {
+                    // unsupport type of where item - must have a column
+                    // reference
+                    return null;
+                }
+                final String fieldName = column.getName();
+                final Object operand = item.getOperand();
+                final OperatorType operator = item.getOperator();
+
+                switch (operator) {
+                case EQUALS_TO:
+                    itemQueryBuilder = QueryBuilders.termQuery(fieldName, operand);
+                    break;
+                case DIFFERENT_FROM:
+                    itemQueryBuilder = QueryBuilders.boolQuery().mustNot(QueryBuilders.termQuery(fieldName, operand));
+                    break;
+                case IN:
+                    final List<?> operands = CollectionUtils.toList(operand);
+                    itemQueryBuilder = QueryBuilders.termsQuery(fieldName, operands);
+                    break;
+                case LIKE:
+                case GREATER_THAN_OR_EQUAL:
+                case GREATER_THAN:
+                case LESS_THAN:
+                case LESS_THAN_OR_EQUAL:
+                default:
+                    // not (yet) support operator types
+                    return null;
+                }
+            }
+
+            children.add(itemQueryBuilder);
+        }
+
+        // just one where item - just return the child query builder
+        if (children.size() == 1) {
+            return children.get(0);
+        }
+
+        // build a bool query
+        final BoolQueryBuilder result = QueryBuilders.boolQuery();
+        for (QueryBuilder child : children) {
+            switch (logicalOperator) {
+            case AND:
+                result.must(child);
+            case OR:
+                result.should(child);
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -299,5 +425,30 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     private boolean limitMaxRowsIsSet(int maxRows) {
         return (maxRows != -1);
+    }
+
+    @Override
+    public void executeUpdate(UpdateScript update) {
+        final ElasticSearchUpdateCallback callback = new ElasticSearchUpdateCallback(this);
+        update.run(callback);
+        callback.onExecuteUpdateFinished();
+    }
+
+    /**
+     * Gets the {@link Client} that this {@link DataContext} is wrapping.
+     * 
+     * @return
+     */
+    public Client getElasticSearchClient() {
+        return elasticSearchClient;
+    }
+
+    /**
+     * Gets the name of the index that this {@link DataContext} is working on.
+     * 
+     * @return
+     */
+    public String getIndexName() {
+        return indexName;
     }
 }

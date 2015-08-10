@@ -28,6 +28,7 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectClause;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.DateUtils;
 
 public class SQLServerQueryRewriter extends DefaultQueryRewriter {
@@ -64,6 +65,22 @@ public class SQLServerQueryRewriter extends DefaultQueryRewriter {
         }
 
         return result;
+    }
+
+    @Override
+    public String rewriteColumnType(ColumnType columnType, Integer columnSize) {
+        if (columnType == ColumnType.DOUBLE) {
+            return "FLOAT";
+        }
+        if (columnType == ColumnType.BOOLEAN) {
+            return "BIT";
+        }
+        if (columnType.isLiteral() && columnSize == null) {
+            // SQL server provides the convenient MAX parameter. If not
+            // specified, the default size of e.g. a VARCHAR is 1!
+            return rewriteColumnTypeInternal(columnType.getName(), "MAX");
+        }
+        return super.rewriteColumnType(columnType, columnSize);
     }
 
     @Override

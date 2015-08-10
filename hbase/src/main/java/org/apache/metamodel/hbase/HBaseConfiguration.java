@@ -35,12 +35,18 @@ public class HBaseConfiguration extends BaseObject implements Serializable {
     public static final String DEFAULT_SCHEMA_NAME = "HBase";
     public static final String DEFAULT_ZOOKEEPER_HOSTNAME = "127.0.0.1";
     public static final int DEFAULT_ZOOKEEPER_PORT = 2181;
+    public static final int DEFAULT_HBASE_CLIENT_RETRIES = 1;
+    public static final int DEFAULT_ZOOKEEPER_SESSION_TIMEOUT = 5000;
+    public static final int DEFAULT_ZOOKEEPER_RECOVERY_RETRIES = 1;
 
     private final String _schemaName;
     private final int _zookeeperPort;
     private final String _zookeeperHostname;
     private final SimpleTableDef[] _tableDefinitions;
     private final ColumnType _defaultRowKeyType;
+    private final int _hbaseClientRetries;
+    private final int _zookeeperSessionTimeout;
+    private final int _zookeeperRecoveryRetries;
 
     /**
      * Creates a {@link HBaseConfiguration} using default values.
@@ -52,7 +58,7 @@ public class HBaseConfiguration extends BaseObject implements Serializable {
     public HBaseConfiguration(String zookeeperHostname, int zookeeperPort) {
         this(DEFAULT_SCHEMA_NAME, zookeeperHostname, zookeeperPort, null, ColumnType.BINARY);
     }
-    
+
     public HBaseConfiguration(String zookeeperHostname, int zookeeperPort, ColumnType defaultRowKeyType) {
         this(DEFAULT_SCHEMA_NAME, zookeeperHostname, zookeeperPort, null, defaultRowKeyType);
     }
@@ -69,11 +75,34 @@ public class HBaseConfiguration extends BaseObject implements Serializable {
      */
     public HBaseConfiguration(String schemaName, String zookeeperHostname, int zookeeperPort,
             SimpleTableDef[] tableDefinitions, ColumnType defaultRowKeyType) {
+        this(schemaName, zookeeperHostname, zookeeperPort, tableDefinitions, defaultRowKeyType,
+                DEFAULT_HBASE_CLIENT_RETRIES, DEFAULT_ZOOKEEPER_SESSION_TIMEOUT, DEFAULT_ZOOKEEPER_RECOVERY_RETRIES);
+    }
+
+    /**
+     * Creates a {@link HBaseConfiguration} using detailed configuration
+     * properties.
+     * 
+     * @param schemaName
+     * @param zookeeperHostname
+     * @param zookeeperPort
+     * @param tableDefinitions
+     * @param defaultRowKeyType
+     * @param hbaseClientRetries
+     * @param zookeeperSessionTimeout
+     * @param zookeeperRecoveryRetries
+     */
+    public HBaseConfiguration(String schemaName, String zookeeperHostname, int zookeeperPort,
+            SimpleTableDef[] tableDefinitions, ColumnType defaultRowKeyType, int hbaseClientRetries,
+            int zookeeperSessionTimeout, int zookeeperRecoveryRetries) {
         _schemaName = schemaName;
         _zookeeperHostname = zookeeperHostname;
         _zookeeperPort = zookeeperPort;
         _tableDefinitions = tableDefinitions;
         _defaultRowKeyType = defaultRowKeyType;
+        _hbaseClientRetries = hbaseClientRetries;
+        _zookeeperSessionTimeout = zookeeperSessionTimeout;
+        _zookeeperRecoveryRetries = zookeeperRecoveryRetries;
     }
 
     public String getSchemaName() {
@@ -91,7 +120,7 @@ public class HBaseConfiguration extends BaseObject implements Serializable {
     public SimpleTableDef[] getTableDefinitions() {
         return _tableDefinitions;
     }
-    
+
     public ColumnType getDefaultRowKeyType() {
         return _defaultRowKeyType;
     }
@@ -103,5 +132,17 @@ public class HBaseConfiguration extends BaseObject implements Serializable {
         list.add(_zookeeperPort);
         list.add(_tableDefinitions);
         list.add(_defaultRowKeyType);
+    }
+
+    public int getHBaseClientRetries() {
+        return _hbaseClientRetries;
+    }
+
+    public int getZookeeperSessionTimeout() {
+        return _zookeeperSessionTimeout;
+    }
+
+    public int getZookeeperRecoveryRetries() {
+        return _zookeeperRecoveryRetries;
     }
 }

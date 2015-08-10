@@ -19,6 +19,7 @@
 package org.apache.metamodel.query.parser;
 
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
@@ -61,7 +62,7 @@ public final class SelectItemParser implements QueryPartProcessor {
         final int indexOfAlias = itemToken.toUpperCase().lastIndexOf(" AS ");
         if (indexOfAlias != -1) {
             alias = itemToken.substring(indexOfAlias + " AS ".length());
-            itemToken = itemToken.substring(0, indexOfAlias);
+            itemToken = itemToken.substring(0, indexOfAlias).trim();
         }
 
         try {
@@ -84,7 +85,7 @@ public final class SelectItemParser implements QueryPartProcessor {
             }
         }
     }
-    
+
     /**
      * Finds/creates a SelectItem based on the given expression. Unlike the
      * {@link #parse(String, String)} method, this method will not actually add
@@ -106,11 +107,13 @@ public final class SelectItemParser implements QueryPartProcessor {
             return SelectItem.getCountAllItem();
         }
 
+        final String unmodifiedExpression = expression;
+
         final FunctionType function;
         final int startParenthesis = expression.indexOf('(');
         if (startParenthesis > 0 && expression.endsWith(")")) {
             String functionName = expression.substring(0, startParenthesis);
-            function = FunctionType.get(functionName);
+            function = FunctionType.get(functionName.toUpperCase());
             if (function != null) {
                 expression = expression.substring(startParenthesis + 1, expression.length() - 1).trim();
                 if (function == FunctionType.COUNT && "*".equals(expression)) {
@@ -153,12 +156,20 @@ public final class SelectItemParser implements QueryPartProcessor {
                 }
             } else if (fromItem.getSubQuery() != null) {
                 final Query subQuery = fromItem.getSubQuery();
-                final SelectItem subQuerySelectItem = new SelectItemParser(subQuery, _allowExpressionBasedSelectItems).findSelectItem(columnName);
+                final SelectItem subQuerySelectItem = new SelectItemParser(subQuery, _allowExpressionBasedSelectItems)
+                        .findSelectItem(columnName);
                 if (subQuerySelectItem == null) {
                     return null;
                 }
                 return new SelectItem(subQuerySelectItem, fromItem);
             }
+        }
+
+        // if the expression is alias of some select item defined return that
+        // select item
+        final SelectItem aliasSelectItem = MetaModelHelper.getSelectItemByAlias(_query, unmodifiedExpression);
+        if (aliasSelectItem != null) {
+            return aliasSelectItem;
         }
 
         if (_allowExpressionBasedSelectItems) {

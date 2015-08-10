@@ -18,6 +18,11 @@
  */
 package org.apache.metamodel.query.parser;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.JoinType;
@@ -66,7 +71,7 @@ final class FromItemParser implements QueryPartProcessor {
                 fromItem.setAlias(alias);
             }
         } else if (itemToken.toUpperCase().indexOf(" JOIN ") != -1) {
-            fromItem = parseJoinItem(itemToken);
+            fromItem = parseAllJoinItems(itemToken);
         } else {
             fromItem = parseTableItem(itemToken);
         }
@@ -95,10 +100,32 @@ final class FromItemParser implements QueryPartProcessor {
         result.setQuery(_query);
         return result;
     }
+    
+    private FromItem parseAllJoinItems(final String itemToken) {
+        String[] joinSplit = itemToken.split("(?i) JOIN ");
+        List<String> joinsList = new ArrayList<String>();
+        for(int i = 0 ; i < joinSplit.length -1  ; i++) {
+            joinSplit[i] = joinSplit[i].trim();
+            joinSplit[i+1] = joinSplit[i+1].trim();
+            String leftPart = joinSplit[i].substring(0, joinSplit[i].lastIndexOf(" "));
+            String joinType = joinSplit[i].substring(joinSplit[i].lastIndexOf(" "));
+            String rightPart = (i+1 == joinSplit.length-1) ? joinSplit[i+1] : joinSplit[i+1].substring(0, joinSplit[i+1].lastIndexOf(" "));
+            joinsList.add((leftPart + " " + joinType + " JOIN " + rightPart).replaceAll(" +", " "));
+            String rightTable = rightPart.substring(0, rightPart.toUpperCase().lastIndexOf(" ON "));
+            String nextJoinType = joinSplit[i+1].substring(joinSplit[i+1].lastIndexOf(" "));
+            joinSplit[i+1] = rightTable + " " + nextJoinType;
+        }
+        Set<FromItem> fromItems = new HashSet<FromItem>();
+        FromItem leftFromItem = null;
+        for(String token : joinsList) {
+            leftFromItem = parseJoinItem(leftFromItem, token, fromItems);
+        }
+        return leftFromItem;
+    }
 
     // this method will be documented based on this example itemToken: FOO f
     // INNER JOIN BAR b ON f.id = b.id
-    private FromItem parseJoinItem(final String itemToken) {
+    private FromItem parseJoinItem(final FromItem leftFromItem, final String itemToken, Set<FromItem> fromItems) {
         final int indexOfJoin = itemToken.toUpperCase().indexOf(" JOIN ");
 
         // firstPart = "FOO f INNER"
@@ -123,6 +150,9 @@ final class FromItemParser implements QueryPartProcessor {
 
         final FromItem leftSide = parseTableItem(firstTableToken);
         final FromItem rightSide = parseTableItem(secondTableToken);
+        
+        fromItems.add(leftSide);
+        fromItems.add(rightSide);
 
         // onClausess = ["f.id = b.id"]
         final String[] onClauses = secondPart.substring(indexOfOn + " ON ".length()).split(" AND ");
@@ -136,16 +166,17 @@ final class FromItemParser implements QueryPartProcessor {
             // rightPart = "b.id"
             final String rightPart = onClause.substring(indexOfEquals + 1).trim();
 
-            leftOn[i] = findSelectItem(leftPart, leftSide, rightSide);
-            rightOn[i] = findSelectItem(rightPart, leftSide, rightSide);
+            leftOn[i] = findSelectItem(leftPart, fromItems.toArray(new FromItem[fromItems.size()]));
+            rightOn[i] = findSelectItem(rightPart, fromItems.toArray(new FromItem[fromItems.size()]));
         }
-
-        final FromItem result = new FromItem(joinType, leftSide, rightSide, leftOn, rightOn);
+        
+        final FromItem leftItem = (leftFromItem != null) ? leftFromItem : leftSide;
+        final FromItem result = new FromItem(joinType, leftItem, rightSide, leftOn, rightOn);
         result.setQuery(_query);
         return result;
     }
 
-    private SelectItem findSelectItem(String token, FromItem leftSide, FromItem rightSide) {
+    private SelectItem findSelectItem(String token, FromItem[] joinTables) {
         // first look in the original query
         SelectItemParser selectItemParser = new SelectItemParser(_query, false);
         SelectItem result = selectItemParser.findSelectItem(token);
@@ -153,18 +184,15 @@ final class FromItemParser implements QueryPartProcessor {
         if (result == null) {
             // fail over and try with the from items available in the join that
             // is being built.
-            final Query temporaryQuery = new Query().from(leftSide, rightSide);
+            final Query temporaryQuery = new Query().from(joinTables);
             selectItemParser = new SelectItemParser(temporaryQuery, false);
             result = selectItemParser.findSelectItem(token);
-
             if (result == null) {
                 throw new QueryParserException("Not capable of parsing ON token: " + token);
             }
 
             // set the query on the involved query parts (since they have been
             // temporarily moved to the searched query).
-            leftSide.setQuery(_query);
-            rightSide.setQuery(_query);
             result.setQuery(_query);
         }
         return result;

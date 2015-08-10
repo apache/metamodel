@@ -30,12 +30,12 @@ package org.apache.metamodel.util;
  */
 public interface Func<I, O> {
 
-	/**
-	 * Evaluates an element and transforms it using this function.
-	 * 
-	 * @param arg
-	 *            the input given to the function
-	 * @return the output result of the function
-	 */
-	public O eval(I arg);
+    /**
+     * Evaluates an element and transforms it using this function.
+     * 
+     * @param arg
+     *            the input given to the function
+     * @return the output result of the function
+     */
+    public O eval(I arg);
 }

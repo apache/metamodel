@@ -88,7 +88,7 @@ public class QueryParser {
 
         {
             String selectClause = getSubstring(getLastEndIndex(selectIndices), fromIndices[0]);
-            if (selectClause.startsWith("DISTINCT ")) {
+            if (selectClause.toUpperCase().startsWith("DISTINCT ")) {
                 query.selectDistinct();
                 selectClause = selectClause.substring("DISTINCT ".length());
             }

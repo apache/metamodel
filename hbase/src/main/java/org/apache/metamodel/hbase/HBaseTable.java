@@ -21,8 +21,6 @@ package org.apache.metamodel.hbase;
 import java.util.List;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
@@ -42,13 +40,13 @@ final class HBaseTable extends MutableTable {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = LoggerFactory.getLogger(HBaseTable.class);
 
-    private final transient HBaseAdmin _admin;
+    private final transient HBaseDataContext _dataContext;
     private final transient ColumnType _defaultRowKeyColumnType;
 
-    public HBaseTable(SimpleTableDef tableDef, MutableSchema schema, HBaseAdmin admin,
+    public HBaseTable(HBaseDataContext dataContext, SimpleTableDef tableDef, MutableSchema schema,
             ColumnType defaultRowKeyColumnType) {
         super(tableDef.getName(), TableType.TABLE, schema);
-        _admin = admin;
+        _dataContext = dataContext;
         _defaultRowKeyColumnType = defaultRowKeyColumnType;
 
         final String[] columnNames = tableDef.getColumnNames();
@@ -72,8 +70,8 @@ final class HBaseTable extends MutableTable {
 
             if (columnNumber == 1) {
                 // insert a default definition of the id column
-                final MutableColumn idColumn = new MutableColumn(HBaseDataContext.FIELD_ID,
-                        defaultRowKeyColumnType).setPrimaryKey(true).setColumnNumber(columnNumber).setTable(this);
+                final MutableColumn idColumn = new MutableColumn(HBaseDataContext.FIELD_ID, defaultRowKeyColumnType)
+                        .setPrimaryKey(true).setColumnNumber(columnNumber).setTable(this);
                 addColumn(idColumn);
                 columnNumber++;
             }
@@ -96,19 +94,19 @@ final class HBaseTable extends MutableTable {
     @Override
     protected List<Column> getColumnsInternal() {
         final List<Column> columnsInternal = super.getColumnsInternal();
-        if (columnsInternal.isEmpty() && _admin != null) {
+        if (columnsInternal.isEmpty() && _dataContext != null) {
             try {
-                HTableDescriptor tableDescriptor = _admin.getTableDescriptor(getName().getBytes());
+                final org.apache.hadoop.hbase.client.Table table = _dataContext.getHTable(getName());
                 int columnNumber = 1;
 
-                final MutableColumn idColumn = new MutableColumn(HBaseDataContext.FIELD_ID,
-                        _defaultRowKeyColumnType).setPrimaryKey(true).setColumnNumber(columnNumber).setTable(this);
+                final MutableColumn idColumn = new MutableColumn(HBaseDataContext.FIELD_ID, _defaultRowKeyColumnType)
+                        .setPrimaryKey(true).setColumnNumber(columnNumber).setTable(this);
                 addColumn(idColumn);
                 columnNumber++;
 
                 // What about timestamp?
 
-                final HColumnDescriptor[] columnFamilies = tableDescriptor.getColumnFamilies();
+                final HColumnDescriptor[] columnFamilies = table.getTableDescriptor().getColumnFamilies();
                 for (int i = 0; i < columnFamilies.length; i++) {
                     final HColumnDescriptor columnDescriptor = columnFamilies[i];
                     final String columnFamilyName = columnDescriptor.getNameAsString();
