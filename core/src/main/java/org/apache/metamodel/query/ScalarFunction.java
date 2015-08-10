@@ -18,7 +18,13 @@
  */
 package org.apache.metamodel.query;
 
-
+/**
+ * Interface that contains scalar specific methods.
+ *
+ * Scalar functions returns only a single value, based
+ * on the input value.
+ *
+ */
 public interface ScalarFunction extends FunctionType {
 
     //TODO: Add scalar function methods

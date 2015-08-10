@@ -212,10 +212,12 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     public AggregateFunction getAggregateFunction() {
-        if (_function instanceof AggregateFunction)
+        if (_function instanceof AggregateFunction) {
             return (AggregateFunction) _function;
-        else
+        }
+        else {
             return null;
+        }
     }
 
     /**

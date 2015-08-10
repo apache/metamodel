@@ -28,7 +28,9 @@ public abstract class DefaultAggregateFunction<T> implements AggregateFunction {
 
     public abstract AggregateBuilder<T> createAggregateBuilder();
 
-    public abstract ColumnType getExpectedColumnType(ColumnType type);
+    public ColumnType getExpectedColumnType(ColumnType type) {
+        return type;
+    }
 
     public Object evaluate(Iterable<?> values) {
         AggregateBuilder<?> builder = createAggregateBuilder();
@@ -58,6 +60,8 @@ public abstract class DefaultAggregateFunction<T> implements AggregateFunction {
     }
 
     @Override
-    public String toString() { return getFunctionName(); }
+    public String toString() {
+        return getFunctionName();
+    }
 
 }

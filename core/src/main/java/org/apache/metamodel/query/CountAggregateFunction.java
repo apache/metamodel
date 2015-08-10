@@ -23,12 +23,15 @@ import org.apache.metamodel.util.AggregateBuilder;
 
 public class CountAggregateFunction extends DefaultAggregateFunction<Long> {
 
-    public String getFunctionName() { return "COUNT"; }
+    public String getFunctionName() {
+        return "COUNT";
+    }
 
     public AggregateBuilder<Long> createAggregateBuilder() {
         return new CountAggregateBuilder();
     }
 
+    @Override
     public ColumnType getExpectedColumnType(ColumnType type) {
         return ColumnType.BIGINT;
     }

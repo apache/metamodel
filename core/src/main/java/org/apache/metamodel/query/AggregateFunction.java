@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.query;
 
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.AggregateBuilder;
 
 /**
@@ -27,7 +28,27 @@ import org.apache.metamodel.util.AggregateBuilder;
  */
 public interface AggregateFunction extends FunctionType {
 
+    /**
+     * Creates a specific aggregate builder.
+     *
+     * @return an AggregateBuilder instance
+     */
     public AggregateBuilder<?> createAggregateBuilder();
 
+    /**
+     * Shorthand for creating an aggregate builder, adding all
+     * the values and then calculating the value.
+     *
+     * @param values
+     * @return the aggregated value
+     */
     public Object evaluate(Object... values);
+
+    /**
+     * Returns the function ColumnType.
+     *
+     * @param type
+     * @return the ColumnType
+     */
+    public ColumnType getExpectedColumnType(ColumnType type);
 }

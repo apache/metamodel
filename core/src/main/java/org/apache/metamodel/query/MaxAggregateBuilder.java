@@ -42,7 +42,7 @@ final class MaxAggregateBuilder implements AggregateBuilder<Object> {
 
 	@Override
 	public Object getAggregate() {
-		return max;
+        return max;
 	}
 
 }

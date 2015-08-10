@@ -18,18 +18,16 @@
  */
 package org.apache.metamodel.query;
 
-import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.AggregateBuilder;
 
 public class MinAggregateFunction extends DefaultAggregateFunction<Object> implements AggregateFunction {
 
-    public String getFunctionName() { return "MIN"; }
+    public String getFunctionName() {
+        return "MIN";
+    }
 
     public AggregateBuilder<Object> createAggregateBuilder() {
         return new MinAggregateBuilder();
     }
 
-    public ColumnType getExpectedColumnType(ColumnType type) {
-        return type;
-    }
 }

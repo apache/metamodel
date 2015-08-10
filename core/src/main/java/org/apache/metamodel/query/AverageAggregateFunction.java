@@ -18,18 +18,16 @@
  */
 package org.apache.metamodel.query;
 
-import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.AggregateBuilder;
 
 public class AverageAggregateFunction extends DefaultAggregateFunction<Double> implements AggregateFunction {
 
-    public String getFunctionName() { return "AVG"; }
+    public String getFunctionName() {
+        return "AVG";
+    }
 
     public AggregateBuilder<Double> createAggregateBuilder() {
         return new AverageAggregateBuilder();
     }
 
-    public ColumnType getExpectedColumnType(ColumnType type) {
-        return type;
-    }
 }

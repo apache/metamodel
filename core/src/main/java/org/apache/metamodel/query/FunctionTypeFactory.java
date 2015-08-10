@@ -27,15 +27,15 @@ public class FunctionTypeFactory {
 
     public static AggregateFunction get(String functionName) {
         if (functionName.equals("COUNT")) {
-            return new CountAggregateFunction();
+            return FunctionType.COUNT;
         } else if (functionName.equals("AVG")) {
-            return new AverageAggregateFunction();
+            return FunctionType.AVG;
         } else if (functionName.equals("SUM")) {
-            return new SumAggregateFunction();
+            return FunctionType.SUM;
         } else if (functionName.equals("MAX")) {
-            return new MaxAggregateFunction();
+            return FunctionType.MAX;
         } else if (functionName.equals("MIN")) {
-            return new MinAggregateFunction();
+            return FunctionType.MIN;
         } else {
             return null;
         }
