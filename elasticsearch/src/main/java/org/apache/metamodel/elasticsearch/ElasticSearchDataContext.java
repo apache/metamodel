@@ -22,7 +22,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -228,20 +227,17 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
             throw new IllegalArgumentException("No such document type in index '" + indexName + "': " + documentType);
         }
         final Map<String, Object> mp = mappingMetaData.getSourceAsMap();
-        final Iterator<Map.Entry<String, Object>> it = mp.entrySet().iterator();
-        SimpleTableDef std = null;
-        while (it.hasNext()) {
-            final Map.Entry<String, Object> pair = it.next();
-            if (pair.getKey().equals("properties")) {
-                final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(pair.getValue());
-                std = new SimpleTableDef(documentType, metaData.getColumnNames(), metaData.getColumnTypes());
-            }
+        final Object metadataProperties = mp.get("properties");
+        if (metadataProperties != null && metadataProperties instanceof Map) {
+            @SuppressWarnings("unchecked")
+            final Map<String, ?> metadataPropertiesMap = (Map<String, ?>) metadataProperties;
+            final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(metadataPropertiesMap);
+            final SimpleTableDef std = new SimpleTableDef(documentType, metaData.getColumnNames(),
+                    metaData.getColumnTypes());
+            return std;
         }
-        if (std == null) {
-            throw new IllegalArgumentException("No properties defined for document type '" + documentType
-                    + "' in index: " + indexName);
-        }
-        return std;
+        throw new IllegalArgumentException("No mapping properties defined for document type '" + documentType
+                + "' in index: " + indexName);
     }
 
     @Override
