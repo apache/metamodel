@@ -5,6 +5,7 @@
  * [METAMODEL-162] - Made HdfsResource Serializable and added property getters
  * [METAMODEL-163] - Made FileResource and HdfsResource work with folders containing file chunks instead of only single files
  * [METAMODEL-104] - Added 'hadoop' and 'hbase' modules to dependencies of 'MetaModel-full'.
+ * [METAMODEL-164] - Fixed a bug in data type parsing of ElasticSearch mapping document.
 
 ### Apache MetaModel 4.3.5
 
