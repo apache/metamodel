@@ -88,6 +88,19 @@ public interface Resource extends HasName {
     public void write(Action<OutputStream> writeCallback) throws ResourceException;
 
     /**
+     * Opens up an {@link OutputStream} to write to the resource. Consumers of
+     * this method are expected to invoke the {@link OutputStream#close()}
+     * method manually.
+     * 
+     * If possible, the other write(...) method is preferred over this one,
+     * since it guarantees proper closing of the resource's handles.
+     * 
+     * @return
+     * @throws ResourceException
+     */
+    public OutputStream write() throws ResourceException;
+
+    /**
      * Opens up an {@link InputStream} to append (write at the end of the
      * existing stream) to the resource.
      * 
@@ -97,6 +110,19 @@ public interface Resource extends HasName {
      *             if an error occurs while appending
      */
     public void append(Action<OutputStream> appendCallback) throws ResourceException;
+
+    /**
+     * Opens up an {@link OutputStream} to append to the resource. Consumers of
+     * this method are expected to invoke the {@link OutputStream#close()}
+     * method manually.
+     * 
+     * If possible, the other append(...) method is preferred over this one,
+     * since it guarantees proper closing of the resource's handles.
+     * 
+     * @return
+     * @throws ResourceException
+     */
+    public OutputStream append() throws ResourceException;
 
     /**
      * Opens up an {@link InputStream} to read from the resource. Consumers of

@@ -29,7 +29,7 @@ import java.util.Arrays;
 /**
  * {@link File} based {@link Resource} implementation.
  */
-public class FileResource implements Resource, Serializable {
+public class FileResource extends AbstractResource implements Serializable {
 
     private class DirectoryInputStream extends AbstractDirectoryInputStream<File> {
 
@@ -95,52 +95,13 @@ public class FileResource implements Resource, Serializable {
     }
 
     @Override
-    public void write(Action<OutputStream> writeCallback) throws ResourceException {
-        final OutputStream out = FileHelper.getOutputStream(_file);
-        try {
-            writeCallback.run(out);
-        } catch (Exception e) {
-            throw new ResourceException(this, "Error occurred in write callback", e);
-        } finally {
-            FileHelper.safeClose(out);
-        }
+    public OutputStream write() throws ResourceException {
+        return FileHelper.getOutputStream(_file);
     }
 
     @Override
-    public void append(Action<OutputStream> appendCallback) {
-        final OutputStream out = FileHelper.getOutputStream(_file, true);
-        try {
-            appendCallback.run(out);
-        } catch (Exception e) {
-            throw new ResourceException(this, "Error occurred in append callback", e);
-        } finally {
-            FileHelper.safeClose(out);
-        }
-    }
-
-    @Override
-    public void read(Action<InputStream> readCallback) {
-        final InputStream in = read();
-        try {
-            readCallback.run(in);
-        } catch (Exception e) {
-            throw new ResourceException(this, "Error occurred in read callback", e);
-        } finally {
-            FileHelper.safeClose(in);
-        }
-    }
-
-    @Override
-    public <E> E read(Func<InputStream, E> readCallback) {
-        final InputStream in = read();
-        try {
-            final E result = readCallback.eval(in);
-            return result;
-        } catch (Exception e) {
-            throw new ResourceException(this, "Error occurred in read callback", e);
-        } finally {
-            FileHelper.safeClose(in);
-        }
+    public OutputStream append() throws ResourceException {
+        return FileHelper.getOutputStream(_file, true);
     }
 
     public File getFile() {

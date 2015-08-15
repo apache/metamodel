@@ -38,8 +38,10 @@ import org.apache.metamodel.MetaModelException;
  * A {@link Resource} implementation that connects to Apache Hadoop's HDFS
  * distributed file system.
  */
-public class HdfsResource implements Resource, Serializable {
+public class HdfsResource extends AbstractResource implements Serializable {
+
     private static class HdfsFileInputStream extends InputStream {
+
         private final InputStream _in;
         private final FileSystem _fs;
 
@@ -96,12 +98,49 @@ public class HdfsResource implements Resource, Serializable {
         }
     }
 
+    private static class HdfsFileOutputStream extends OutputStream {
+
+        private final OutputStream _out;
+        private final FileSystem _fs;
+
+        public HdfsFileOutputStream(final OutputStream out, final FileSystem fs) {
+            _out = out;
+            _fs = fs;
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            _out.write(b);
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            _out.write(b, off, len);
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+            _out.write(b);
+        }
+
+        @Override
+        public void flush() throws IOException {
+            _out.flush();
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            // need to close 'fs' when output stream is closed
+            FileHelper.safeClose(_fs);
+        }
+    }
+
     private class HdfsDirectoryInputStream extends AbstractDirectoryInputStream<FileStatus> {
         private final Path _hadoopPath;
         private final FileSystem _fs;
 
-        public HdfsDirectoryInputStream(final Path hadoopPath,
-                final FileSystem fs) {
+        public HdfsDirectoryInputStream(final Path hadoopPath, final FileSystem fs) {
             _hadoopPath = hadoopPath;
             _fs = fs;
             FileStatus[] fileStatuses;
@@ -252,36 +291,28 @@ public class HdfsResource implements Resource, Serializable {
     }
 
     @Override
-    public void write(final Action<OutputStream> writeCallback) throws ResourceException {
+    public OutputStream write() throws ResourceException {
         final FileSystem fs = getHadoopFileSystem();
         try {
             final FSDataOutputStream out = fs.create(getHadoopPath(), true);
-            try {
-                writeCallback.run(out);
-            } finally {
-                FileHelper.safeClose(out);
-            }
-        } catch (Exception e) {
-            throw wrapException(e);
-        } finally {
+            return new HdfsFileOutputStream(out, fs);
+        } catch (IOException e) {
+            // we can close 'fs' in case of an exception
             FileHelper.safeClose(fs);
+            throw wrapException(e);
         }
     }
 
     @Override
-    public void append(Action<OutputStream> appendCallback) throws ResourceException {
+    public OutputStream append() throws ResourceException {
         final FileSystem fs = getHadoopFileSystem();
         try {
             final FSDataOutputStream out = fs.append(getHadoopPath());
-            try {
-                appendCallback.run(out);
-            } finally {
-                FileHelper.safeClose(out);
-            }
-        } catch (Exception e) {
-            throw wrapException(e);
-        } finally {
+            return new HdfsFileOutputStream(out, fs);
+        } catch (IOException e) {
+            // we can close 'fs' in case of an exception
             FileHelper.safeClose(fs);
+            throw wrapException(e);
         }
     }
 
@@ -302,41 +333,6 @@ public class HdfsResource implements Resource, Serializable {
             // we can close 'fs' in case of an exception
             FileHelper.safeClose(fs);
             throw wrapException(e);
-        }
-
-    }
-
-    @Override
-    public void read(Action<InputStream> readCallback) throws ResourceException {
-        final FileSystem fs = getHadoopFileSystem();
-        try {
-            final InputStream in = read();
-            try {
-                readCallback.run(in);
-            } finally {
-                FileHelper.safeClose(in);
-            }
-        } catch (Exception e) {
-            throw wrapException(e);
-        } finally {
-            FileHelper.safeClose(fs);
-        }
-    }
-
-    @Override
-    public <E> E read(Func<InputStream, E> readCallback) throws ResourceException {
-        final FileSystem fs = getHadoopFileSystem();
-        try {
-            final InputStream in = read();
-            try {
-                return readCallback.eval(in);
-            } finally {
-                FileHelper.safeClose(in);
-            }
-        } catch (Exception e) {
-            throw wrapException(e);
-        } finally {
-            FileHelper.safeClose(fs);
         }
     }
 

@@ -20,6 +20,7 @@ package org.apache.metamodel.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -27,7 +28,7 @@ import java.io.Serializable;
 /**
  * An entirely in-memory kept {@link Resource}.
  */
-public class InMemoryResource implements Resource, Serializable {
+public class InMemoryResource extends AbstractResource implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -57,7 +58,7 @@ public class InMemoryResource implements Resource, Serializable {
         _contents = contents;
         _lastModified = lastModified;
     }
-    
+
     @Override
     public String toString() {
         return "InMemoryResource[" + _path + "]";
@@ -113,53 +114,36 @@ public class InMemoryResource implements Resource, Serializable {
     }
 
     @Override
-    public void write(Action<OutputStream> writeCallback) throws ResourceException {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            writeCallback.run(baos);
-            _contents = baos.toByteArray();
-            _lastModified = System.currentTimeMillis();
-        } catch (Exception e) {
-            throw new ResourceException(this, e);
-        }
+    public OutputStream write() throws ResourceException {
+        return createOutputStream(false);
     }
 
     @Override
-    public void append(Action<OutputStream> appendCallback) throws ResourceException {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            baos.write(_contents);
-            appendCallback.run(baos);
-            _contents = baos.toByteArray();
-            _lastModified = System.currentTimeMillis();
-        } catch (Exception e) {
-            throw new ResourceException(this, e);
+    public OutputStream append() throws ResourceException {
+        return createOutputStream(true);
+    }
+
+    private OutputStream createOutputStream(boolean append) throws ResourceException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream() {
+            @Override
+            public void flush() throws IOException {
+                super.flush();
+                _contents = toByteArray();
+                _lastModified = System.currentTimeMillis();
+            }
+        };
+        if (append) {
+            try {
+                out.write(_contents);
+            } catch (IOException e) {
+                throw new ResourceException(this, e);
+            }
         }
+        return out;
     }
 
     @Override
     public InputStream read() throws ResourceException {
         return new ByteArrayInputStream(_contents);
     }
-
-    @Override
-    public void read(Action<InputStream> readCallback) throws ResourceException {
-        final InputStream inputStream = read();
-        try {
-            readCallback.run(inputStream);
-        } catch (Exception e) {
-            throw new ResourceException(this, e);
-        }
-    }
-
-    @Override
-    public <E> E read(Func<InputStream, E> readCallback) throws ResourceException {
-        final InputStream inputStream = read();
-        try {
-            return readCallback.eval(inputStream);
-        } catch (Exception e) {
-            throw new ResourceException(this, e);
-        }
-    }
-
 }
