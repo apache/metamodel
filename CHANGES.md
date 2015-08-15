@@ -1,4 +1,4 @@
-### Apache MetaModel (work in progress)
+### Apache MetaModel 4.3.6
 
  * [METAMODEL-161] - Upgraded HBase client API to version 1.1.1
  * [METAMODEL-160] - Added support for Apache Hive via the JDBC module of MetaModel.
