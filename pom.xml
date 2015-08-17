@@ -164,7 +164,7 @@ under the License.
 	<build>
 		<plugins>
 			<plugin>
-				<!-- Ensures java 6 compatibility -->
+				<!-- Ensures java 7 compatibility -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
