@@ -1,3 +1,7 @@
+### Apache MetaModel (latest)
+
+ * [METAMODEL-170] - Dropped support for Java 6.
+
 ### Apache MetaModel 4.3.6
 
  * [METAMODEL-161] - Upgraded HBase client API to version 1.1.1
