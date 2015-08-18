@@ -525,13 +525,6 @@ public class ElasticSearchDataContextTest {
 
     @Test
     public void testNonDynamicMapingTableNames() throws Exception {
-        if (Version.CURRENT.major == 0) {
-            // this test is omitted on v. 0.x versions of ElasticSearch since
-            // the put mapping API is incompatible with 1.x so we cannot create
-            // the same prerequisites in the test.
-            return;
-        }
-
         createIndex();
 
         ElasticSearchDataContext dataContext2 = new ElasticSearchDataContext(client, indexName2);

@@ -18,31 +18,22 @@
  */
 package org.apache.metamodel.query;
 
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.AggregateBuilder;
-import org.apache.metamodel.util.ObjectComparator;
 
-final class MaxAggregateBuilder implements AggregateBuilder<Object> {
+public class CountAggregateFunction extends DefaultAggregateFunction<Long> {
 
-	private Object max;
+    public String getFunctionName() {
+        return "COUNT";
+    }
 
-	@Override
-	public void add(Object o) {
-		if (o == null) {
-			return;
-		}
-		if (max == null) {
-			max = o;
-		} else {
-			Comparable<Object> comparable = ObjectComparator.getComparable(max);
-			if (comparable.compareTo(o) < 0) {
-				max = o;
-			}
-		}
-	}
+    public AggregateBuilder<Long> createAggregateBuilder() {
+        return new CountAggregateBuilder();
+    }
 
-	@Override
-	public Object getAggregate() {
-        return max;
-	}
+    @Override
+    public ColumnType getExpectedColumnType(ColumnType type) {
+        return ColumnType.BIGINT;
+    }
 
 }

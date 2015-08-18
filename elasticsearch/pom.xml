@@ -20,8 +20,7 @@
 	<name>MetaModel module for Elasticsearch analytics engine</name>
 
 	<properties>
-		<elasticsearch.latest.version>1.4.4</elasticsearch.latest.version>
-		<elasticsearch.jdk6.version>0.90.13</elasticsearch.jdk6.version>
+		<elasticsearch.version>1.4.4</elasticsearch.version>
 	</properties>
 
 	<dependencies>
@@ -34,6 +33,14 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
+		
+		<!-- elasticsearch -->
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<version>${elasticsearch.version}</version>
+		</dependency>
+		
 		<!-- test -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -47,36 +54,4 @@
 		</dependency>
 	</dependencies>
 
-	<profiles>
-		<profile>
-			<id>latest</id>
-			<activation>
-				<jdk>!1.6</jdk>
-			</activation>
-			<dependencies>
-				<!-- elasticsearch -->
-				<dependency>
-					<groupId>org.elasticsearch</groupId>
-					<artifactId>elasticsearch</artifactId>
-					<version>${elasticsearch.latest.version}</version>
-				</dependency>
-			</dependencies>
-		</profile>
-
-		<profile>
-			<id>jdk6</id>
-			<activation>
-				<jdk>1.6</jdk>
-			</activation>
-			<dependencies>
-				<!-- elasticsearch -->
-				<dependency>
-					<groupId>org.elasticsearch</groupId>
-					<artifactId>elasticsearch</artifactId>
-					<version>${elasticsearch.jdk6.version}</version>
-				</dependency>
-			</dependencies>
-		</profile>
-
-	</profiles>
 </project>

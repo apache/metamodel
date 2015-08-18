@@ -18,31 +18,26 @@
  */
 package org.apache.metamodel.query;
 
-import org.apache.metamodel.util.AggregateBuilder;
-import org.apache.metamodel.util.ObjectComparator;
+/**
+ * Factory to create AggregateFunctions through
+ * its function name.
+ *
+ */
+public class FunctionTypeFactory {
 
-final class MaxAggregateBuilder implements AggregateBuilder<Object> {
-
-	private Object max;
-
-	@Override
-	public void add(Object o) {
-		if (o == null) {
-			return;
-		}
-		if (max == null) {
-			max = o;
-		} else {
-			Comparable<Object> comparable = ObjectComparator.getComparable(max);
-			if (comparable.compareTo(o) < 0) {
-				max = o;
-			}
-		}
-	}
-
-	@Override
-	public Object getAggregate() {
-        return max;
-	}
-
+    public static AggregateFunction get(String functionName) {
+        if (functionName.equals("COUNT")) {
+            return FunctionType.COUNT;
+        } else if (functionName.equals("AVG")) {
+            return FunctionType.AVG;
+        } else if (functionName.equals("SUM")) {
+            return FunctionType.SUM;
+        } else if (functionName.equals("MAX")) {
+            return FunctionType.MAX;
+        } else if (functionName.equals("MIN")) {
+            return FunctionType.MIN;
+        } else {
+            return null;
+        }
+    }
 }
