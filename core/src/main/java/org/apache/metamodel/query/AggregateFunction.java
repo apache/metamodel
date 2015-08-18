@@ -18,31 +18,37 @@
  */
 package org.apache.metamodel.query;
 
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.AggregateBuilder;
-import org.apache.metamodel.util.ObjectComparator;
 
-final class MaxAggregateBuilder implements AggregateBuilder<Object> {
+/**
+ * Interface that contains the aggregation specific methods
+ * related to the AggregateBuilder.
+ *
+ */
+public interface AggregateFunction extends FunctionType {
 
-	private Object max;
+    /**
+     * Creates a specific aggregate builder.
+     *
+     * @return an AggregateBuilder instance
+     */
+    public AggregateBuilder<?> createAggregateBuilder();
 
-	@Override
-	public void add(Object o) {
-		if (o == null) {
-			return;
-		}
-		if (max == null) {
-			max = o;
-		} else {
-			Comparable<Object> comparable = ObjectComparator.getComparable(max);
-			if (comparable.compareTo(o) < 0) {
-				max = o;
-			}
-		}
-	}
+    /**
+     * Shorthand for creating an aggregate builder, adding all
+     * the values and then calculating the value.
+     *
+     * @param values
+     * @return the aggregated value
+     */
+    public Object evaluate(Object... values);
 
-	@Override
-	public Object getAggregate() {
-        return max;
-	}
-
+    /**
+     * Returns the function ColumnType.
+     *
+     * @param type
+     * @return the ColumnType
+     */
+    public ColumnType getExpectedColumnType(ColumnType type);
 }

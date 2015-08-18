@@ -18,31 +18,14 @@
  */
 package org.apache.metamodel.query;
 
-import org.apache.metamodel.util.AggregateBuilder;
-import org.apache.metamodel.util.ObjectComparator;
+/**
+ * Interface that contains scalar specific methods.
+ *
+ * Scalar functions returns only a single value, based
+ * on the input value.
+ *
+ */
+public interface ScalarFunction extends FunctionType {
 
-final class MaxAggregateBuilder implements AggregateBuilder<Object> {
-
-	private Object max;
-
-	@Override
-	public void add(Object o) {
-		if (o == null) {
-			return;
-		}
-		if (max == null) {
-			max = o;
-		} else {
-			Comparable<Object> comparable = ObjectComparator.getComparable(max);
-			if (comparable.compareTo(o) < 0) {
-				max = o;
-			}
-		}
-	}
-
-	@Override
-	public Object getAggregate() {
-        return max;
-	}
-
+    //TODO: Add scalar function methods
 }
