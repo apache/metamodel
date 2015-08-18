@@ -140,6 +140,7 @@ public class DerbyTest extends TestCase {
         assertTrue(dataSet.next());
         assertTrue(dataSet.next());
         assertFalse(dataSet.next());
+        dataSet.close();
     }
 
     public void testGetSchemaNormalTableTypes() throws Exception {

@@ -156,42 +156,49 @@ public class JdbcTestTemplates {
         assertTrue(ds.next());
         assertEquals("1", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // regular NOT EQUALS
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("code").ne("C02").execute();
         assertTrue(ds.next());
         assertEquals("3", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // regular GREATER THAN
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("id").gt(2).execute();
         assertTrue(ds.next());
         assertEquals("2", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // regular LESS THAN
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("id").lt(2).execute();
         assertTrue(ds.next());
         assertEquals("1", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // IS NULL
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("code").isNull().execute();
         assertTrue(ds.next());
         assertEquals("1", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // IS NOT NULL
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("code").isNotNull().execute();
         assertTrue(ds.next());
         assertEquals("3", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // LIKE
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("code").like("C%").execute();
         assertTrue(ds.next());
         assertEquals("3", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // regular IN (with string)
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("code").in("C01", "C02")
@@ -199,12 +206,14 @@ public class JdbcTestTemplates {
         assertTrue(ds.next());
         assertEquals("2", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // regular IN (with decimals)
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("id").in(1.0, 2.0, 4.0).execute();
         assertTrue(ds.next());
         assertEquals("3", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // irregular IN (with null value) - (currently uses SQL's standard way
         // of understanding NULL - see ticket #1058)
@@ -217,6 +226,7 @@ public class JdbcTestTemplates {
         assertTrue(ds.next());
         assertEquals("0", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
     }
 
     public static void meaningOfOneSizeChar(Connection conn) throws Exception {
@@ -259,6 +269,7 @@ public class JdbcTestTemplates {
         assertTrue(ds.next());
         assertNull(ds.getRow().getValue(0));
         assertFalse(ds.next());
+        ds.close();
     }
 
     public static void automaticConversionWhenInsertingString(Connection conn) throws Exception {
