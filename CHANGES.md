@@ -2,6 +2,7 @@
 
  * [METAMODEL-173] - Improved CSV writing to non-file destinations. Added .write() and .append() methods to Resource interface.
  * [METAMODEL-170] - Dropped support for Java 6.
+ * [METAMODEL-178] - Added AggregateFunction and ScalarFunction interfaces. Changed FunctionType enum to be super-interface of those. Compatibility is retained but a recompile of code using FunctionType is needed.
 
 ### Apache MetaModel 4.3.6
 

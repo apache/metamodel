@@ -19,30 +19,15 @@
 package org.apache.metamodel.query;
 
 import org.apache.metamodel.util.AggregateBuilder;
-import org.apache.metamodel.util.ObjectComparator;
 
-final class MaxAggregateBuilder implements AggregateBuilder<Object> {
+public class AverageAggregateFunction extends DefaultAggregateFunction<Double> implements AggregateFunction {
 
-	private Object max;
+    public String getFunctionName() {
+        return "AVG";
+    }
 
-	@Override
-	public void add(Object o) {
-		if (o == null) {
-			return;
-		}
-		if (max == null) {
-			max = o;
-		} else {
-			Comparable<Object> comparable = ObjectComparator.getComparable(max);
-			if (comparable.compareTo(o) < 0) {
-				max = o;
-			}
-		}
-	}
-
-	@Override
-	public Object getAggregate() {
-        return max;
-	}
+    public AggregateBuilder<Double> createAggregateBuilder() {
+        return new AverageAggregateBuilder();
+    }
 
 }

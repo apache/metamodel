@@ -454,6 +454,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
                 q.toString());
 
         DataContext dc = getDataContext();
+
         DataSet data = dc.executeQuery(q);
         assertEquals(1, data.getSelectItems().length);
         assertEquals("SUM(r.project_id)", data.getSelectItems()[0].toString());

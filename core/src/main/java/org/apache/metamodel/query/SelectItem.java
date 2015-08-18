@@ -92,7 +92,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     public static boolean isCountAllItem(SelectItem item) {
-        if (item != null && item.getFunction() == FunctionType.COUNT && item.getExpression() == "*") {
+        if (item != null && item.getFunction()!= null && item.getFunction().toString().equals("COUNT") && item.getExpression() == "*") {
             return true;
         }
         return false;
@@ -209,6 +209,15 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
 
     public FunctionType getFunction() {
         return _function;
+    }
+
+    public AggregateFunction getAggregateFunction() {
+        if (_function instanceof AggregateFunction) {
+            return (AggregateFunction) _function;
+        }
+        else {
+            return null;
+        }
     }
 
     /**
