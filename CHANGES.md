@@ -1,5 +1,6 @@
 ### Apache MetaModel (latest)
 
+ * [METAMODEL-173] - Improved CSV writing to non-file destinations. Added .write() and .append() methods to Resource interface.
  * [METAMODEL-170] - Dropped support for Java 6.
 
 ### Apache MetaModel 4.3.6
