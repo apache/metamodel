@@ -18,13 +18,17 @@
  */
 package org.apache.metamodel.cassandra;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Arrays;
 import java.util.List;
+
 import javax.swing.table.TableModel;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
-import junit.framework.TestCase;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.data.FilteredDataSet;
@@ -32,27 +36,34 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-public class CassandraDataContextTest extends TestCase {
-    private CassandraSimpleClient client = new CassandraSimpleClient();
-    private Cluster cluster;
-    private CassandraDataContext dc;
-    private int defaultCassandraPort = 9142;
-    private String cassandraNode = "127.0.0.1";
-    private String keyspaceName = "my_keyspace";
-    private String testTableName = "songs";
-    private String testCounterTableName = "counter";
-    private String firstRowId = "756716f7-2e54-4715-9f00-91dcbea6cf51";
-    private String secondRowId = "756716f7-2e54-4715-9f00-91dcbea6cf52";
-    private String thirdRowId = "756716f7-2e54-4715-9f00-91dcbea6cf53";
-    private String firstRowTitle = "My first song";
-    private String secondRowTitle = "My second song";
-    private String thirdRowTitle = "My third song";
-    private String urlName = "my_url";
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+public class CassandraDataContextTest {
+
+    private static CassandraSimpleClient client = new CassandraSimpleClient();
+    private static Cluster cluster;
+    private static CassandraDataContext dc;
+    
+    private static final int defaultCassandraPort = 9142;
+    private static final String cassandraNode = "127.0.0.1";
+    private static String keyspaceName = "my_keyspace";
+    private static String testTableName = "songs";
+    private static String testCounterTableName = "counter";
+    private static String firstRowId = "756716f7-2e54-4715-9f00-91dcbea6cf51";
+    private static String secondRowId = "756716f7-2e54-4715-9f00-91dcbea6cf52";
+    private static String thirdRowId = "756716f7-2e54-4715-9f00-91dcbea6cf53";
+    private static String firstRowTitle = "My first song";
+    private static String secondRowTitle = "My second song";
+    private static String thirdRowTitle = "My third song";
+    private static String urlName = "my_url";
+
+    @BeforeClass
+    public static void setUpCluster() throws Exception {
         EmbeddedCassandraServerHelper.startEmbeddedCassandra();
         client.connect(cassandraNode, defaultCassandraPort);
         cluster = client.getCluster();
@@ -63,12 +74,12 @@ public class CassandraDataContextTest extends TestCase {
         dc = new CassandraDataContext(cluster, keyspaceName);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @AfterClass
+    public static void tearDownCluster() throws Exception {
         client.close();
     }
 
+    @Test
     public void testSchemaAndSimpleQuery() throws Exception {
         String existingTables = Arrays.toString(dc.getDefaultSchema().getTableNames());
         assertTrue(existingTables.contains(testTableName));
@@ -99,6 +110,7 @@ public class CassandraDataContextTest extends TestCase {
         }
     }
 
+    @Test
     public void testWhereColumnEqualsValues() throws Exception {
         DataSet ds = dc.query().from(testTableName).select("id").and("title").where("id").isEquals(firstRowId)
                 .execute();
@@ -113,6 +125,7 @@ public class CassandraDataContextTest extends TestCase {
         }
     }
 
+    @Test
     public void testWhereColumnInValues() throws Exception {
         DataSet ds = dc.query().from(testTableName).select("id").and("title").where("title")
                 .in(firstRowTitle, secondRowTitle).orderBy("id").execute();
@@ -127,6 +140,7 @@ public class CassandraDataContextTest extends TestCase {
         }
     }
 
+    @Test
     public void testMaxRows() throws Exception {
         Table table = dc.getDefaultSchema().getTableByName(testTableName);
         Query query = new Query().from(table).select(table.getColumns()).setMaxRows(2);
@@ -136,6 +150,7 @@ public class CassandraDataContextTest extends TestCase {
         assertEquals(2, tableModel.getRowCount());
     }
 
+    @Test
     public void testCountQuery() throws Exception {
         Table table = dc.getDefaultSchema().getTableByName(testTableName);
         Query q = new Query().selectCount().from(table);
@@ -147,6 +162,7 @@ public class CassandraDataContextTest extends TestCase {
         assertEquals("[3]", Arrays.toString(row));
     }
 
+    @Test
     public void testQueryForANonExistingTable() throws Exception {
         boolean thrown = false;
         try {
@@ -157,6 +173,7 @@ public class CassandraDataContextTest extends TestCase {
         assertTrue(thrown);
     }
 
+    @Test
     public void testQueryForAnExistingTableAndNonExistingField() throws Exception {
         boolean thrown = false;
         try {
@@ -167,6 +184,7 @@ public class CassandraDataContextTest extends TestCase {
         assertTrue(thrown);
     }
 
+    @Test
     public void testNonExistentKeystore() {
         try {
             new CassandraDataContext(cluster, "nonExistentKeyspace");
@@ -176,6 +194,7 @@ public class CassandraDataContextTest extends TestCase {
         }
     }
 
+    @Test
     public void testCounterDataType() throws Exception {
         Table table = dc.getDefaultSchema().getTableByName(testCounterTableName);
 
@@ -194,7 +213,7 @@ public class CassandraDataContextTest extends TestCase {
         }
     }
 
-    private void createCassandraKeySpaceAndTable(Session session) {
+    private static void createCassandraKeySpaceAndTable(Session session) {
         session.execute("CREATE KEYSPACE IF NOT EXISTS " + keyspaceName + " WITH replication "
                 + "= {'class':'SimpleStrategy', 'replication_factor':1};");
         session.execute("DROP TABLE IF EXISTS " + keyspaceName + "." + testTableName + ";");
@@ -206,7 +225,7 @@ public class CassandraDataContextTest extends TestCase {
                 + "counter_value counter, url_name varchar, PRIMARY KEY (url_name)" + ");");
     }
 
-    private void populateCassandraTableWithSomeData(Session session) {
+    private static void populateCassandraTableWithSomeData(Session session) {
         session.execute("INSERT INTO " + keyspaceName + "." + testTableName
                 + " (id, title, hit, duration, position, creationtime) " + "VALUES (" + firstRowId + ","
                 + "'My first song'," + "false," + "2.15," + "1," + "dateof(now()))" + ";");
@@ -218,7 +237,7 @@ public class CassandraDataContextTest extends TestCase {
                 + "'My third song'," + "false," + "3.15," + "3," + "dateof(now()))" + ";");
     }
 
-    private void populateCassandraCounterTableWithSomeData(Session session) {
+    private static void populateCassandraCounterTableWithSomeData(Session session) {
         session.execute("UPDATE " + keyspaceName + "." + testCounterTableName
                 + " SET counter_value = counter_value + 1 WHERE url_name='" + urlName + "';");
     }
