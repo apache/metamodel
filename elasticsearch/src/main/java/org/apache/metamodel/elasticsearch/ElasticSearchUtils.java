@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.elasticsearch;
 
+import java.util.Date;
 import java.util.Map;
 
 import org.apache.metamodel.data.DataSetHeader;
@@ -25,6 +26,8 @@ import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.util.TimeComparator;
 
 /**
  * Shared/common util functions for the ElasticSearch MetaModel module.
@@ -44,8 +47,17 @@ final class ElasticSearchUtils {
                 values[i] = documentId;
             } else {
                 Object value = sourceMap.get(column.getName());
-                
-                values[i] = value;
+
+                if (column.getType() == ColumnType.DATE) {
+                    Date valueToDate = TimeComparator.toDate(value);
+                    if (valueToDate == null) {
+                        values[i] = value;
+                    } else {
+                        values[i] = valueToDate;
+                    }
+                } else {
+                    values[i] = value;
+                }
             }
         }
 
