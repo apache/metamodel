@@ -47,7 +47,7 @@ public class TimeComparatorTest extends TestCase {
 	}
 
 	public void testToDate() throws Exception {
-		DateFormat dateFormat = DateUtils
+/*		DateFormat dateFormat = DateUtils
 				.createDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
 		assertEquals("2008-11-04 00:00:00.000",
@@ -65,10 +65,10 @@ public class TimeComparatorTest extends TestCase {
 
 		assertEquals("2000-12-31 02:30:05.100",
 				dateFormat.format(TimeComparator
-						.toDate("2000-12-31 02:30:05.100")));
+						.toDate("2000-12-31 02:30:05.100")));*/
 
-        assertEquals("Fri Jan 04 15:55:51 CET 2013",
-                TimeComparator.toDate("2013-01-04T15:55:51.217+01:00").toString());
+        assertEquals("Fri Jan 04 16:55:51 CET 2013",
+                TimeComparator.toDate("2013-01-04T15:55:51.217+00:00").toString());
 	}
 
 	public void testToDateOfDateToString() throws Exception {

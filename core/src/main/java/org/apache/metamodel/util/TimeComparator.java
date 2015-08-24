@@ -128,9 +128,9 @@ public final class TimeComparator implements Comparator<Object> {
             // do nothing, proceed to dateFormat parsing
         }
 
-        DateFormatSymbols dateFormatSymbols = DateFormatSymbols.getInstance(Locale.US);
         // try with Date.toString() date format first
         try {
+            DateFormatSymbols dateFormatSymbols = DateFormatSymbols.getInstance(Locale.US);
             SimpleDateFormat dateFormat = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", dateFormatSymbols);
             return dateFormat.parse(value);
         } catch (ParseException e) {
@@ -139,7 +139,7 @@ public final class TimeComparator implements Comparator<Object> {
 
         // try with time-zone pattern
         try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", dateFormatSymbols);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.US);
             return dateFormat.parse(value);
         } catch (ParseException e) {
             // do noting
