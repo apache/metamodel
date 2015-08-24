@@ -351,7 +351,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
 
     public FileSystem getHadoopFileSystem() {
         try {
-            return FileSystem.newInstance(getHadoopConfiguration());
+            return FileSystem.get(getHadoopConfiguration());
         } catch (IOException e) {
             throw new MetaModelException("Could not connect to HDFS: " + e.getMessage(), e);
         }
