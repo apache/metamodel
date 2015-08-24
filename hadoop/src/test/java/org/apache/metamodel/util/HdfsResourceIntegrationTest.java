@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -67,19 +66,6 @@ public class HdfsResourceIntegrationTest {
             configured = false;
         }
         Assume.assumeTrue(configured);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        final Configuration conf = new Configuration();
-        conf.set("fs.defaultFS", "hdfs://" + _hostname + ":" + _port);
-        final FileSystem fileSystem = FileSystem.newInstance(conf);
-        final Path path = new Path(_filePath);
-        final boolean exists = fileSystem.exists(path);
-
-        if (exists) {
-            fileSystem.delete(path, true);
-        }
     }
 
     private String getPropertyFilePath() {
@@ -202,42 +188,53 @@ public class HdfsResourceIntegrationTest {
 
     @Test
     public void testFileSystemNotBeingClosed() throws IOException {
-        HdfsResource resourceToRead = new HdfsResource(_hostname, _port, _filePath);
-        resourceToRead.write(new Action<OutputStream>() {
-
-            @Override
-            public void run(OutputStream out) throws Exception {
-                FileHelper.writeString(out, "testFileSystemNotBeingClosed");
-            }
-        });
-
-        Thread.UncaughtExceptionHandler exceptionHandler = new Thread.UncaughtExceptionHandler() {
-            public void uncaughtException(Thread th, Throwable ex) {
-                Assert.fail("Caught exception in the thread: " + ex);
-            }
-        };
-
-        for (int i = 0; i < 10; i++) {
-            final HdfsResource res = new HdfsResource(_hostname, _port, _filePath);
-
-            Thread thread = new Thread(new Runnable() {
+        HdfsResource resourceToRead = null;
+        try {
+            resourceToRead = new HdfsResource(_hostname, _port, _filePath);
+            resourceToRead.write(new Action<OutputStream>() {
 
                 @Override
-                public void run() {
-                    res.read(new Action<InputStream>() {
-
-                        @Override
-                        public void run(InputStream is) throws Exception {
-                            String readAsString = FileHelper.readAsString(FileHelper.getReader(is, "UTF-8"));
-                            Assert.assertNotNull(readAsString);
-                            Assert.assertEquals("testFileSystemNotBeingClosed", readAsString);
-                        }
-                    });
-
+                public void run(OutputStream out) throws Exception {
+                    FileHelper.writeString(out, "testFileSystemNotBeingClosed");
                 }
             });
-            thread.setUncaughtExceptionHandler(exceptionHandler);
-            thread.start();
+
+            Thread.UncaughtExceptionHandler exceptionHandler = new Thread.UncaughtExceptionHandler() {
+                public void uncaughtException(Thread th, Throwable ex) {
+                    Assert.fail("Caught exception in the thread: " + ex);
+                }
+            };
+
+            for (int i = 0; i < 10; i++) {
+                final HdfsResource res = new HdfsResource(_hostname, _port, _filePath);
+
+                Thread thread = new Thread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        res.read(new Action<InputStream>() {
+
+                            @Override
+                            public void run(InputStream is) throws Exception {
+                                String readAsString = FileHelper.readAsString(FileHelper.getReader(is, "UTF-8"));
+                                Assert.assertNotNull(readAsString);
+                                Assert.assertEquals("testFileSystemNotBeingClosed", readAsString);
+                            }
+                        });
+
+                    }
+                });
+                thread.setUncaughtExceptionHandler(exceptionHandler);
+                thread.start();
+            }
+        } finally {
+            if (resourceToRead != null) {
+                final FileSystem fileSystem = resourceToRead.getHadoopFileSystem();
+                final Path resourceToReadPath = new Path(resourceToRead.getFilepath());
+                if (fileSystem.exists(resourceToReadPath)) {
+                    fileSystem.delete(resourceToReadPath, true);
+                }
+            }
         }
     }
 
