@@ -27,6 +27,7 @@ under the License.
 		<junit.version>4.11</junit.version>
 		<guava.version>16.0.1</guava.version>
 		<hadoop.version>2.6.0</hadoop.version>
+		<jackson.version>2.6.1</jackson.version>
 		<easymock.version>3.2</easymock.version>
 		<httpcomponents.version>4.3.1</httpcomponents.version>
 		<checksum-maven-plugin.version>1.2</checksum-maven-plugin.version>
@@ -470,17 +471,17 @@ under the License.
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-core</artifactId>
-				<version>2.4.1.1</version>
+				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
-				<version>2.4.1.3</version>
+				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-annotations</artifactId>
-				<version>2.4.1</version>
+				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>hsqldb</groupId>
