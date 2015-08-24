@@ -73,7 +73,7 @@ public class HdfsResourceIntegrationTest {
     public void tearDown() throws Exception {
         final Configuration conf = new Configuration();
         conf.set("fs.defaultFS", "hdfs://" + _hostname + ":" + _port);
-        final FileSystem fileSystem = FileSystem.get(conf);
+        final FileSystem fileSystem = FileSystem.newInstance(conf);
         final Path path = new Path(_filePath);
         final boolean exists = fileSystem.exists(path);
 
@@ -95,7 +95,7 @@ public class HdfsResourceIntegrationTest {
 
         final Configuration conf = new Configuration();
         conf.set("fs.defaultFS", "hdfs://" + _hostname + ":" + _port);
-        final FileSystem fileSystem = FileSystem.get(conf);
+        final FileSystem fileSystem = FileSystem.newInstance(conf);
         final Path path = new Path(_filePath);
         final boolean exists = fileSystem.exists(path);
 
