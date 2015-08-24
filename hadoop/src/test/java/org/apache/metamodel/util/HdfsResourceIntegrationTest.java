@@ -202,8 +202,7 @@ public class HdfsResourceIntegrationTest {
 
     @Test
     public void testFileSystemNotBeingClosed() throws IOException {
-        HdfsResource resourceToRead = null;
-        resourceToRead = new HdfsResource(_hostname, _port, _filePath);
+        HdfsResource resourceToRead = new HdfsResource(_hostname, _port, _filePath);
         resourceToRead.write(new Action<OutputStream>() {
 
             @Override
