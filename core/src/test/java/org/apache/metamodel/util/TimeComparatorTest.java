@@ -66,6 +66,10 @@ public class TimeComparatorTest extends TestCase {
 		assertEquals("2000-12-31 02:30:05.100",
 				dateFormat.format(TimeComparator
 						.toDate("2000-12-31 02:30:05.100")));
+
+        assertEquals("2013-01-04 15:55:51.217",
+                dateFormat.format(TimeComparator
+                        .toDate("2013-01-04T15:55:51.217+01:00")));
 	}
 
 	public void testToDateOfDateToString() throws Exception {

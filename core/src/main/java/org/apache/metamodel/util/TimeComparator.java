@@ -137,6 +137,14 @@ public final class TimeComparator implements Comparator<Object> {
             // do noting
         }
 
+        // try with time-zone pattern
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+            return dateFormat.parse(value);
+        } catch (ParseException e) {
+            // do noting
+        }
+
         for (String prototypePattern : prototypePatterns) {
             if (prototypePattern.length() == value.length()) {
                 DateFormat dateFormat;
