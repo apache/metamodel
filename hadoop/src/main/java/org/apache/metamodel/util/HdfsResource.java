@@ -184,7 +184,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
     private final String _hostname;
     private final int _port;
     private final String _filepath;
-    private Path _path;
+    private transient Path _path;
 
     /**
      * Creates a {@link HdfsResource}
@@ -351,7 +351,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
 
     public FileSystem getHadoopFileSystem() {
         try {
-            return FileSystem.get(getHadoopConfiguration());
+            return FileSystem.newInstance(getHadoopConfiguration());
         } catch (IOException e) {
             throw new MetaModelException("Could not connect to HDFS: " + e.getMessage(), e);
         }
