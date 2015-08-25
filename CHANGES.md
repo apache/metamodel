@@ -6,6 +6,7 @@
  * [METAMODEL-178] - Added AggregateFunction and ScalarFunction interfaces. Changed FunctionType enum to be super-interface of those. Compatibility is retained but a recompile of code using FunctionType is needed.
  * [METAMODEL-179] - Ensured that HdfsResource is not closing a shared HDFS file system reference.
  * [METAMODEL-171] - Made integration tests for Cassandra module function properly in all environments.
+ * [METAMODEL-177] - Fixed a bug pertaining to the serializability of HdfsResource
 
 ### Apache MetaModel 4.3.6
 
