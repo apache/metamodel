@@ -184,7 +184,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
     private final String _hostname;
     private final int _port;
     private final String _filepath;
-    private Path _path;
+    private transient Path _path;
 
     /**
      * Creates a {@link HdfsResource}
