@@ -23,12 +23,12 @@ import junit.framework.TestCase;
 public class OperatorTypeTest extends TestCase {
 
     public void testConvertOperatorType() throws Exception {
-        assertEquals(OperatorType.EQUALS_TO, OperatorType.convertOperatorType("="));
-        assertEquals(OperatorType.GREATER_THAN, OperatorType.convertOperatorType(">"));
-        assertEquals(OperatorType.LESS_THAN, OperatorType.convertOperatorType("<"));
-        assertEquals(OperatorType.DIFFERENT_FROM, OperatorType.convertOperatorType("<>"));
-        assertEquals(OperatorType.LIKE, OperatorType.convertOperatorType("LIKE"));
-        assertEquals(OperatorType.IN, OperatorType.convertOperatorType("IN"));
-        assertEquals(null, OperatorType.convertOperatorType("foo"));
+        assertEquals(OperatorType.EQUALS_TO, OperatorTypeImpl.convertOperatorType("="));
+        assertEquals(OperatorType.GREATER_THAN, OperatorTypeImpl.convertOperatorType(">"));
+        assertEquals(OperatorType.LESS_THAN, OperatorTypeImpl.convertOperatorType("<"));
+        assertEquals(OperatorType.DIFFERENT_FROM, OperatorTypeImpl.convertOperatorType("<>"));
+        assertEquals(OperatorType.LIKE, OperatorTypeImpl.convertOperatorType("LIKE"));
+        assertEquals(OperatorType.IN, OperatorTypeImpl.convertOperatorType("IN"));
+        assertEquals(null, OperatorTypeImpl.convertOperatorType("foo"));
     }
 }

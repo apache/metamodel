@@ -320,7 +320,7 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
         final String rightSide;
         {
             String rightSideCandidate = null;
-            final OperatorType[] operators = OperatorType.values();
+            final OperatorType[] operators = OperatorType.BUILT_IN_OPERATORS;
             for (OperatorType operatorCandidate : operators) {
                 final String searchStr;
                 if (operatorCandidate.isSpaceDelimited()) {
