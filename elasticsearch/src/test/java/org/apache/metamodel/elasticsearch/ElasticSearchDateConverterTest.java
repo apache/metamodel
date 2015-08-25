@@ -26,10 +26,9 @@ public class ElasticSearchDateConverterTest extends TestCase {
 
     public void testConvertDateOptionalTime() throws Exception {
         String dateToConvert = "2013-01-04T15:55:51.217+01:00";
-        String expectedDateString = "Fri Jan 04 15:55:51 CET 2013";
         Date date = ElasticSearchDateConverter.tryToConvert(dateToConvert);
 
         assertNotNull(date);
-        assertEquals(date.toString(), expectedDateString);
+        assertTrue(date.toString().startsWith("Fri Jan 04"));
     }
 }
