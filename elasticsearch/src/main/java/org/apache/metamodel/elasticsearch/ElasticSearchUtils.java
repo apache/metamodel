@@ -49,7 +49,7 @@ final class ElasticSearchUtils {
                 Object value = sourceMap.get(column.getName());
 
                 if (column.getType() == ColumnType.DATE) {
-                    Date valueToDate = TimeComparator.toDate(value);
+                    Date valueToDate = ElasticSearchDateConverter.tryToConvert((String) value);
                     if (valueToDate == null) {
                         values[i] = value;
                     } else {
