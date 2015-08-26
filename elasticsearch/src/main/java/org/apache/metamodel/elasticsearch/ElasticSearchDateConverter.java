@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.elasticsearch;
 
+import org.apache.metamodel.util.TimeComparator;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -33,7 +35,7 @@ final class ElasticSearchDateConverter {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
             return dateFormat.parse(dateAsString);
         } catch (ParseException e) {
-            return null;
+            return TimeComparator.toDate(dateAsString);
         }
     }
 }
