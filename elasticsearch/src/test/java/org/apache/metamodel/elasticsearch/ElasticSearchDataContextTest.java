@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.elasticsearch;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -93,7 +94,7 @@ public class ElasticSearchDataContextTest {
         System.out.println("Embedded ElasticSearch server created!");
     }
 
-    private static void insertPeopleDocuments() {
+    private static void insertPeopleDocuments() throws IOException {
         indexOnePeopleDocument("female", 20, 5);
         indexOnePeopleDocument("female", 17, 8);
         indexOnePeopleDocument("female", 18, 9);
@@ -124,14 +125,11 @@ public class ElasticSearchDataContextTest {
         assertEquals(ColumnType.DATE, table.getColumnByName("postDate").getType());
         assertEquals(ColumnType.BIGINT, table.getColumnByName("message").getType());
 
-        DataSet ds = dataContext.query().from(indexType1).select("user").and("message").execute();
-        assertEquals(ElasticSearchDataSet.class, ds.getClass());
+        try(DataSet ds = dataContext.query().from(indexType1).select("user").and("message").execute()) {
+            assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
-        try {
             assertTrue(ds.next());
             assertEquals("Row[values=[user1, 1]]", ds.getRow().toString());
-        } finally {
-            ds.close();
         }
     }
 
@@ -377,67 +375,54 @@ public class ElasticSearchDataContextTest {
 
     @Test
     public void testWhereColumnEqualsValues() throws Exception {
-        DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
-                .isEquals("user4").execute();
-        assertEquals(ElasticSearchDataSet.class, ds.getClass());
+        try (DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
+                .isEquals("user4").execute()) {
+            assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
-        try {
             assertTrue(ds.next());
             assertEquals("Row[values=[user4, 4]]", ds.getRow().toString());
             assertFalse(ds.next());
-        } finally {
-            ds.close();
         }
     }
 
     @Test
     public void testWhereColumnIsNullValues() throws Exception {
-        DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
-                .isNull().execute();
-        assertEquals(ElasticSearchDataSet.class, ds.getClass());
+        try(DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
+                .isNull().execute()){
+            assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
-        try {
             assertTrue(ds.next());
             assertEquals("Row[values=[2]]", ds.getRow().toString());
             assertFalse(ds.next());
-        } finally {
-            ds.close();
         }
     }
 
     @Test
     public void testWhereColumnIsNotNullValues() throws Exception {
-        DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
-                .isNotNull().execute();
-        assertEquals(ElasticSearchDataSet.class, ds.getClass());
+        try(DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
+                .isNotNull().execute()){
+            assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
-        try {
             assertTrue(ds.next());
             assertEquals("Row[values=[1]]", ds.getRow().toString());
             assertFalse(ds.next());
-        } finally {
-            ds.close();
         }
     }
 
     @Test
     public void testWhereMultiColumnsEqualValues() throws Exception {
-        DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
-                .isEquals("user4").and("message").ne(5).execute();
-        assertEquals(ElasticSearchDataSet.class, ds.getClass());
+        try(DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
+                .isEquals("user4").and("message").ne(5).execute()){
+            assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
-        try {
             assertTrue(ds.next());
             assertEquals("Row[values=[user4, 4]]", ds.getRow().toString());
             assertFalse(ds.next());
-        } finally {
-            ds.close();
         }
     }
 
     @Test
     public void testWhereColumnInValues() throws Exception {
-
         try (DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
                 .in("user4", "user5").orderBy("message").execute()) {
             assertTrue(ds.next());
@@ -548,50 +533,33 @@ public class ElasticSearchDataContextTest {
     private static void indexBulkDocuments(String indexName, String indexType, int numberOfDocuments) {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
 
-        try {
-            for (int i = 0; i < numberOfDocuments; i++) {
-                bulkRequest.add(client.prepareIndex(indexName, indexType, Integer.toString(i)).setSource(
-                        buildTweeterJson(i)));
-            }
-            bulkRequest.execute().actionGet();
-        } catch (Exception ex) {
-            System.out.println("Exception indexing documents!!!!!");
+        for (int i = 0; i < numberOfDocuments; i++) {
+            bulkRequest.add(client.prepareIndex(indexName, indexType, Integer.toString(i)).setSource(
+                    buildTweeterJson(i)));
         }
-
+        bulkRequest.execute().actionGet();
     }
 
     private static void indexTweeterDocument(String indexType, int id, Date date) {
-        try {
-            client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id, date))
-                    .setId("tweet_" + indexType + "_" + id).execute().actionGet();
-        } catch (Exception ex) {
-            System.out.println("Exception indexing documents!!!!!");
-        }
+        client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id, date))
+                .setId("tweet_" + indexType + "_" + id).execute().actionGet();
     }
 
     private static void indexTweeterDocument(String indexType, int id) {
-        try {
-            client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id))
-                    .setId("tweet_" + indexType + "_" + id).execute().actionGet();
-        } catch (Exception ex) {
-            System.out.println("Exception indexing documents!!!!!");
-        }
+        client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id))
+                .setId("tweet_" + indexType + "_" + id).execute().actionGet();
     }
 
-    private static void indexOnePeopleDocument(String gender, int age, int id) {
-        try {
-            client.prepareIndex(indexName, peopleIndexType).setSource(buildPeopleJson(gender, age, id)).execute()
-                    .actionGet();
-        } catch (Exception ex) {
-            System.out.println("Exception indexing documents!!!!!");
-        }
+    private static void indexOnePeopleDocument(String gender, int age, int id) throws IOException {
+        client.prepareIndex(indexName, peopleIndexType).setSource(buildPeopleJson(gender, age, id)).execute()
+                .actionGet();
     }
 
-    private static Map<String, Object> buildTweeterJson(int elementId) throws Exception {
+    private static Map<String, Object> buildTweeterJson(int elementId) {
         return buildTweeterJson(elementId, new Date());
     }
 
-    private static Map<String, Object> buildTweeterJson(int elementId, Date date) throws Exception {
+    private static Map<String, Object> buildTweeterJson(int elementId, Date date) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("user", "user" + elementId);
         map.put("postDate", date);
@@ -599,7 +567,7 @@ public class ElasticSearchDataContextTest {
         return map;
     }
 
-    private static XContentBuilder buildPeopleJson(String gender, int age, int elementId) throws Exception {
+    private static XContentBuilder buildPeopleJson(String gender, int age, int elementId) throws IOException {
         return jsonBuilder().startObject().field("gender", gender).field("age", age).field("id", elementId).endObject();
     }
 
