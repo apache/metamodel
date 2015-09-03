@@ -18,9 +18,6 @@
  */
 package org.apache.metamodel.elasticsearch;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.junit.Assert.*;
-
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -49,7 +46,6 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.Update;
-import org.elasticsearch.Version;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
@@ -59,8 +55,10 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
+
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static org.junit.Assert.*;
 
 public class ElasticSearchDataContextTest {
 
@@ -80,10 +78,11 @@ public class ElasticSearchDataContextTest {
     public static void beforeTests() throws Exception {
         embeddedElasticsearchServer = new EmbeddedElasticsearchServer();
         client = embeddedElasticsearchServer.getClient();
-        indexOneTweeterDocumentPerIndex(indexType1, 1);
-        indexOneTweeterDocumentPerIndex(indexType2, 1);
+        indexTweeterDocument(indexType1, 1);
+        indexTweeterDocument(indexType2, 1);
+        indexTweeterDocument(indexType2, 2, null);
         insertPeopleDocuments();
-        indexOneTweeterDocumentPerIndex(indexType2, 1);
+        indexTweeterDocument(indexType2, 1);
         indexBulkDocuments(indexName, bulkIndexType, 10);
 
         // The refresh API allows to explicitly refresh one or more index,
@@ -143,12 +142,9 @@ public class ElasticSearchDataContextTest {
         assertEquals(1, pks.length);
         assertEquals("_id", pks[0].getName());
 
-        DataSet ds = dataContext.query().from(table).select("user", "_id").orderBy("_id").asc().execute();
-        try {
+        try (DataSet ds = dataContext.query().from(table).select("user", "_id").orderBy("_id").asc().execute()) {
             assertTrue(ds.next());
             assertEquals("Row[values=[user1, tweet_tweet2_1]]", ds.getRow().toString());
-        } finally {
-            ds.close();
         }
     }
 
@@ -157,8 +153,7 @@ public class ElasticSearchDataContextTest {
         Table table = dataContext.getDefaultSchema().getTableByName("tweet2");
         Column[] pks = table.getPrimaryKeys();
 
-        DataSet ds = dataContext.query().from(table).selectAll().where(pks[0]).eq("tweet_tweet2_1").execute();
-        try {
+        try (DataSet ds = dataContext.query().from(table).selectAll().where(pks[0]).eq("tweet_tweet2_1").execute()) {
             assertTrue(ds.next());
             Object dateValue = ds.getRow().getValue(2);
             assertEquals("Row[values=[tweet_tweet2_1, 1, " + dateValue + ", user1]]", ds.getRow().toString());
@@ -166,14 +161,10 @@ public class ElasticSearchDataContextTest {
             assertFalse(ds.next());
 
             assertEquals(InMemoryDataSet.class, ds.getClass());
-        } finally {
-            ds.close();
         }
     }
 
-    // TODO: Un-ignore this test, and it wil fail - needs fixin'
     @Test
-    @Ignore
     public void testDateIsHandledAsDate() throws Exception {
         Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
         Column column = table.getColumnByName("postDate");
@@ -225,8 +216,7 @@ public class ElasticSearchDataContextTest {
             }
         });
 
-        final DataSet ds = dataContext.query().from(table).selectAll().orderBy("bar").execute();
-        try {
+        try (DataSet ds = dataContext.query().from(table).selectAll().orderBy("bar").execute()) {
             assertTrue(ds.next());
             assertEquals("hello", ds.getRow().getValue(fooColumn).toString());
             assertNotNull(ds.getRow().getValue(idColumn));
@@ -234,8 +224,6 @@ public class ElasticSearchDataContextTest {
             assertEquals("world", ds.getRow().getValue(fooColumn).toString());
             assertNotNull(ds.getRow().getValue(idColumn));
             assertFalse(ds.next());
-        } finally {
-            ds.close();
         }
 
         dataContext.executeUpdate(new DropTable(table));
@@ -403,6 +391,36 @@ public class ElasticSearchDataContextTest {
     }
 
     @Test
+    public void testWhereColumnIsNullValues() throws Exception {
+        DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
+                .isNull().execute();
+        assertEquals(ElasticSearchDataSet.class, ds.getClass());
+
+        try {
+            assertTrue(ds.next());
+            assertEquals("Row[values=[2]]", ds.getRow().toString());
+            assertFalse(ds.next());
+        } finally {
+            ds.close();
+        }
+    }
+
+    @Test
+    public void testWhereColumnIsNotNullValues() throws Exception {
+        DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
+                .isNotNull().execute();
+        assertEquals(ElasticSearchDataSet.class, ds.getClass());
+
+        try {
+            assertTrue(ds.next());
+            assertEquals("Row[values=[1]]", ds.getRow().toString());
+            assertFalse(ds.next());
+        } finally {
+            ds.close();
+        }
+    }
+
+    @Test
     public void testWhereMultiColumnsEqualValues() throws Exception {
         DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
                 .isEquals("user4").and("message").ne(5).execute();
@@ -419,10 +437,9 @@ public class ElasticSearchDataContextTest {
 
     @Test
     public void testWhereColumnInValues() throws Exception {
-        DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
-                .in("user4", "user5").orderBy("message").execute();
 
-        try {
+        try (DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
+                .in("user4", "user5").orderBy("message").execute()) {
             assertTrue(ds.next());
 
             String row1 = ds.getRow().toString();
@@ -433,8 +450,6 @@ public class ElasticSearchDataContextTest {
             assertEquals("Row[values=[user5, 5]]", row2);
 
             assertFalse(ds.next());
-        } finally {
-            ds.close();
         }
     }
 
@@ -498,29 +513,15 @@ public class ElasticSearchDataContextTest {
         assertEquals("[10]", Arrays.toString(row));
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testQueryForANonExistingTable() throws Exception {
-        boolean thrown = false;
-        try {
-            dataContext.query().from("nonExistingTable").select("user").and("message").execute();
-        } catch (IllegalArgumentException IAex) {
-            thrown = true;
-        }
-        assertTrue(thrown);
+        dataContext.query().from("nonExistingTable").select("user").and("message").execute();
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testQueryForAnExistingTableAndNonExistingField() throws Exception {
-        indexOneTweeterDocumentPerIndex(indexType1, 1);
-        boolean thrown = false;
-        try {
-            dataContext.query().from(indexType1).select("nonExistingField").execute();
-        } catch (IllegalArgumentException IAex) {
-            thrown = true;
-        } finally {
-            // ds.close();
-        }
-        assertTrue(thrown);
+        indexTweeterDocument(indexType1, 1);
+        dataContext.query().from(indexType1).select("nonExistingField").execute();
     }
 
     @Test
@@ -549,7 +550,7 @@ public class ElasticSearchDataContextTest {
 
         try {
             for (int i = 0; i < numberOfDocuments; i++) {
-                bulkRequest.add(client.prepareIndex(indexName, indexType, new Integer(i).toString()).setSource(
+                bulkRequest.add(client.prepareIndex(indexName, indexType, Integer.toString(i)).setSource(
                         buildTweeterJson(i)));
             }
             bulkRequest.execute().actionGet();
@@ -559,7 +560,16 @@ public class ElasticSearchDataContextTest {
 
     }
 
-    private static void indexOneTweeterDocumentPerIndex(String indexType, int id) {
+    private static void indexTweeterDocument(String indexType, int id, Date date) {
+        try {
+            client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id, date))
+                    .setId("tweet_" + indexType + "_" + id).execute().actionGet();
+        } catch (Exception ex) {
+            System.out.println("Exception indexing documents!!!!!");
+        }
+    }
+
+    private static void indexTweeterDocument(String indexType, int id) {
         try {
             client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id))
                     .setId("tweet_" + indexType + "_" + id).execute().actionGet();
@@ -578,9 +588,13 @@ public class ElasticSearchDataContextTest {
     }
 
     private static Map<String, Object> buildTweeterJson(int elementId) throws Exception {
-        Map<String, Object> map = new LinkedHashMap<String, Object>();
+        return buildTweeterJson(elementId, new Date());
+    }
+
+    private static Map<String, Object> buildTweeterJson(int elementId, Date date) throws Exception {
+        Map<String, Object> map = new LinkedHashMap<>();
         map.put("user", "user" + elementId);
-        map.put("postDate", new Date());
+        map.put("postDate", date);
         map.put("message", elementId);
         return map;
     }
