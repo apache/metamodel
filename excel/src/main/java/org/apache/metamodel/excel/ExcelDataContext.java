@@ -145,25 +145,19 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
 
     @Override
     public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-
-        Ref<InputStream> inputStreamRef = getInputStreamRef();
-        InputStream inputStream = null;
         try {
-            SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate(inputStreamRef);
-            inputStream = inputStreamRef.get();
+            SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate();
 
             // METAMODEL-47: Ensure that we have loaded the schema at this point
             getDefaultSchema();
 
-            DataSet dataSet = delegate.executeQuery(inputStream, table, columns, maxRows);
+            DataSet dataSet = delegate.executeQuery(_resource, table, columns, maxRows);
             return dataSet;
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             }
             throw new MetaModelException("Unexpected exception while materializing main schema table", e);
-        } finally {
-            FileHelper.safeClose(inputStream);
         }
     }
 
@@ -176,9 +170,9 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
         Ref<InputStream> inputStreamRef = getInputStreamRef();
         InputStream inputStream = null;
         try {
-            SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate(inputStreamRef);
+            SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate();
             inputStream = inputStreamRef.get();
-            Schema schema = delegate.createSchema(inputStream, getMainSchemaName());
+            Schema schema = delegate.createSchema(_resource, getMainSchemaName());
             assert getMainSchemaName().equals(schema.getName());
             return schema;
         } catch (Exception e) {
@@ -209,13 +203,13 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
         return null;
     }
 
-    private SpreadsheetReaderDelegate getSpreadsheetReaderDelegate(Ref<InputStream> inputStream)
+    private SpreadsheetReaderDelegate getSpreadsheetReaderDelegate()
             throws MetaModelException {
         if (_spreadsheetReaderDelegate == null) {
             synchronized (this) {
                 if (_spreadsheetReaderDelegate == null) {
                     try {
-                        if (POIXMLDocument.hasOOXMLHeader(inputStream.get())) {
+                        if (POIXMLDocument.hasOOXMLHeader(getInputStream())) {
                             _spreadsheetReaderDelegate = new XlsxSpreadsheetReaderDelegate(_configuration);
                         } else {
                             _spreadsheetReaderDelegate = new DefaultSpreadsheetReaderDelegate(_configuration);
@@ -252,7 +246,7 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
     protected void notifyTablesModified() {
         LazyRef<InputStream> inputStreamRef = getInputStreamRef();
         try {
-            getSpreadsheetReaderDelegate(inputStreamRef).notifyTablesModified(inputStreamRef);
+            getSpreadsheetReaderDelegate().notifyTablesModified(_resource);
         } finally {
             if (inputStreamRef.isFetched()) {
                 FileHelper.safeClose(inputStreamRef.get());

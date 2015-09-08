@@ -293,6 +293,27 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals("[bar, 4, 2010-01-04 00:00:00]", Arrays.toString(objectArrays.get(3)));
     }
 
+    public void testOpenHugeXlsx() throws Exception {
+        ExcelDataContext dc = new ExcelDataContext(new File("src/test/resources/big_memory_use.xlsx"));
+        Schema schema = dc.getDefaultSchema();
+        assertEquals("Schema[name=big_memory_use.xlsx]", schema.toString());
+
+        assertEquals("[Sheet1, Sheet2, Sheet3]", Arrays.toString(schema.getTableNames()));
+
+        Table table = schema.getTableByName("Sheet1");
+
+        assertEquals("[string, number, date]", Arrays.toString(table.getColumnNames()));
+
+        Query q = dc.query().from(table).select(table.getColumns()).orderBy(table.getColumnByName("number")).toQuery();
+        DataSet ds = dc.executeQuery(q);
+        List<Object[]> objectArrays = ds.toObjectArrays();
+        assertEquals(4, objectArrays.size());
+        assertEquals("[hello, 1, 2010-01-01 00:00:00]", Arrays.toString(objectArrays.get(0)));
+        assertEquals("[world, 2, 2010-01-02 00:00:00]", Arrays.toString(objectArrays.get(1)));
+        assertEquals("[foo, 3, 2010-01-03 00:00:00]", Arrays.toString(objectArrays.get(2)));
+        assertEquals("[bar, 4, 2010-01-04 00:00:00]", Arrays.toString(objectArrays.get(3)));
+    }
+
     public void testConfigurationWithoutHeader() throws Exception {
         File file = new File("src/test/resources/xls_people.xls");
         DataContext dc = new ExcelDataContext(file, new ExcelConfiguration(ExcelConfiguration.NO_COLUMN_NAME_LINE,

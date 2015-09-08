@@ -38,7 +38,8 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.AlphabeticSequence;
 import org.apache.metamodel.util.FileHelper;
-import org.apache.metamodel.util.Ref;
+import org.apache.metamodel.util.FileResource;
+import org.apache.metamodel.util.Resource;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.slf4j.Logger;
@@ -60,64 +61,101 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
 
     public XlsxSpreadsheetReaderDelegate(ExcelConfiguration configuration) {
         _configuration = configuration;
-        _tableNamesToInternalIds = new ConcurrentHashMap<String, String>();
+        _tableNamesToInternalIds = new ConcurrentHashMap<>();
     }
 
     @Override
-    public DataSet executeQuery(InputStream inputStream, Table table, Column[] columns, int maxRows) throws Exception {
-        final OPCPackage pkg = OPCPackage.open(inputStream);
-        final XSSFReader xssfReader = new XSSFReader(pkg);
-        final String relationshipId = _tableNamesToInternalIds.get(table.getName());
-        
-        if (relationshipId == null) {
-            throw new IllegalStateException("No internal relationshipId found for table: " + table);
+    public DataSet executeQuery(final Resource resource, Table table, Column[] columns, int maxRows) throws Exception {
+        InputStream inputStream = null;
+        try {
+            final OPCPackage pkg;
+            if (resource instanceof FileResource) {
+                pkg = OPCPackage.open(((FileResource) resource).getFile());
+            } else {
+                inputStream = resource.read();
+                pkg = OPCPackage.open(inputStream);
+            }
+
+            final XSSFReader xssfReader = new XSSFReader(pkg);
+            final String relationshipId = _tableNamesToInternalIds.get(table.getName());
+
+            if (relationshipId == null) {
+                throw new IllegalStateException("No internal relationshipId found for table: " + table);
+            }
+
+            return buildDataSet(columns, maxRows, relationshipId, xssfReader);
+        } finally {
+            if (inputStream != null) {
+                FileHelper.safeClose(inputStream);
+            }
+        }
+    }
+
+    @Override
+    public Schema createSchema(final Resource resource, String schemaName) throws Exception {
+        InputStream inputStream = null;
+        try {
+            final OPCPackage pkg;
+            if (resource instanceof FileResource) {
+                pkg = OPCPackage.open(((FileResource) resource).getFile());
+            } else {
+                inputStream = resource.read();
+                pkg = OPCPackage.open(inputStream);
+            }
+
+            final MutableSchema schema = new MutableSchema(schemaName);
+            final XSSFReader xssfReader = new XSSFReader(pkg);
+
+            final XlsxWorkbookToTablesHandler workbookToTables = new XlsxWorkbookToTablesHandler(schema,
+                    _tableNamesToInternalIds);
+            buildTables(xssfReader, workbookToTables);
+
+            for (Entry<String, String> entry : _tableNamesToInternalIds.entrySet()) {
+
+                final String tableName = entry.getKey();
+                final String relationshipId = entry.getValue();
+
+                final MutableTable table = (MutableTable) schema.getTableByName(tableName);
+
+                buildColumns(table, relationshipId, xssfReader);
+            }
+            return schema;
+        } finally {
+            if (inputStream != null) {
+                FileHelper.safeClose(inputStream);
+            }
         }
 
-        return buildDataSet(columns, maxRows, relationshipId, xssfReader);
     }
 
     @Override
-    public Schema createSchema(InputStream inputStream, String schemaName) throws Exception {
-        final MutableSchema schema = new MutableSchema(schemaName);
-        final OPCPackage pkg = OPCPackage.open(inputStream);
-        final XSSFReader xssfReader = new XSSFReader(pkg);
-
-        final XlsxWorkbookToTablesHandler workbookToTables = new XlsxWorkbookToTablesHandler(schema,
-                _tableNamesToInternalIds);
-        buildTables(xssfReader, workbookToTables);
-
-        for (Entry<String, String> entry : _tableNamesToInternalIds.entrySet()) {
-
-            final String tableName = entry.getKey();
-            final String relationshipId = entry.getValue();
-
-            final MutableTable table = (MutableTable) schema.getTableByName(tableName);
-
-            buildColumns(table, relationshipId, xssfReader);
-        }
-        return schema;
-    }
-
-    @Override
-    public void notifyTablesModified(Ref<InputStream> inputStreamRef) {
-        InputStream inputStream = inputStreamRef.get();
+    public void notifyTablesModified(final Resource resource) {
+        InputStream inputStream = null;
         final XlsxWorkbookToTablesHandler workbookToTables = new XlsxWorkbookToTablesHandler(null,
                 _tableNamesToInternalIds);
         try {
-            final OPCPackage pkg = OPCPackage.open(inputStream);
+            final OPCPackage pkg;
+            if (resource instanceof FileResource) {
+                pkg = OPCPackage.open(((FileResource) resource).getFile());
+            } else {
+                inputStream = resource.read();
+                pkg = OPCPackage.open(inputStream);
+            }
             final XSSFReader xssfReader = new XSSFReader(pkg);
             buildTables(xssfReader, workbookToTables);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         } finally {
-            FileHelper.safeClose(inputStream);
+            if (inputStream != null) {
+                FileHelper.safeClose(inputStream);
+            }
         }
     }
 
     private DataSet buildDataSet(final Column[] columns, int maxRows, final String relationshipId,
             final XSSFReader xssfReader) throws Exception {
 
-        List<SelectItem> selectItems = new ArrayList<SelectItem>(columns.length);
+        List<SelectItem> selectItems = new ArrayList<>(columns.length);
         for (Column column : columns) {
             selectItems.add(new SelectItem(column));
         }
@@ -137,7 +175,7 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
                 final int columnNameLineNumber = _configuration.getColumnNameLineNumber();
                 if (columnNameLineNumber == ExcelConfiguration.NO_COLUMN_NAME_LINE) {
                     AlphabeticSequence alphabeticSequence = new AlphabeticSequence();
-                    List<String> generatedColumnNames = new ArrayList<String>(values.size());
+                    List<String> generatedColumnNames = new ArrayList<>(values.size());
                     for (String originalColumnName : values) {
                         String columnName = alphabeticSequence.next();
                         if (originalColumnName == null) {
