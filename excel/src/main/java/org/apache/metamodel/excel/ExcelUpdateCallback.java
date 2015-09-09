@@ -45,8 +45,11 @@ import org.apache.metamodel.drop.TableDropBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class ExcelUpdateCallback extends AbstractUpdateCallback implements UpdateCallback {
+    private static final Logger logger = LoggerFactory.getLogger(ExcelUpdateCallback.class);
 
     private final ExcelDataContext _dataContext;
     private final ExcelConfiguration _configuration;
@@ -101,6 +104,12 @@ final class ExcelUpdateCallback extends AbstractUpdateCallback implements Update
 
             if(resource instanceof FileResource){
                 FileHelper.copy(((FileResource) resource).getFile(), ((FileResource)_dataContext.getResource()).getFile());
+            }
+
+            try {
+                _workbook.close();
+            } catch (IOException e) {
+                logger.warn("Could not close Excel workbook", e);
             }
 
             _workbook = null;
