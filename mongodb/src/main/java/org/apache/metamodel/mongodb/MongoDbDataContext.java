@@ -306,7 +306,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                         final SelectItem selectItem = whereItem.getSelectItem();
                         if (!whereItem.isCompoundFilter() && selectItem != null && selectItem.getColumn() != null) {
                             final Column column = selectItem.getColumn();
-                            if (column.isPrimaryKey() && whereItem.getOperator() == OperatorType.EQUALS_TO) {
+                            if (column.isPrimaryKey() && OperatorType.EQUALS_TO.equals(whereItem.getOperator())) {
                                 logger.debug("Query is a primary key lookup query. Trying executePrimaryKeyLookupQuery(...)");
                                 final Object operand = whereItem.getOperand();
                                 final Row row = executePrimaryKeyLookupQuery(table, selectItems, column, operand);
@@ -392,7 +392,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
             final BasicDBObject existingFilterObject = (BasicDBObject) query.get(columnName);
             if (existingFilterObject == null) {
                 if (operatorName == null) {
-                    if (item.getOperator().equals(OperatorType.LIKE)) {
+                    if (OperatorType.LIKE.equals(item.getOperator())) {
                         query.put(columnName, turnOperandIntoRegExp(operand));
                     } else {
                         query.put(columnName, operand);

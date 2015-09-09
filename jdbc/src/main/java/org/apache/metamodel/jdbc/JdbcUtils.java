@@ -229,7 +229,7 @@ public final class JdbcUtils {
      * @return
      */
     public static boolean isPreparedParameterCandidate(FilterItem whereItem) {
-        return !whereItem.isCompoundFilter() && whereItem.getOperator() != OperatorType.IN
+        return !whereItem.isCompoundFilter() && !OperatorType.IN.equals(whereItem.getOperator())
                 && whereItem.getOperand() != null;
     }
 
