@@ -58,12 +58,13 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
 
     private final Resource _resource;
     private final ExcelConfiguration _configuration;
+
     private SpreadsheetReaderDelegate _spreadsheetReaderDelegate;
 
     /**
      * Constructs an Excel DataContext based on a file, with default
      * configuration
-     * 
+     *
      * @param file
      */
     public ExcelDataContext(File file) {
@@ -91,6 +92,7 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
         if (file.exists() && !file.canRead()) {
             throw new IllegalArgumentException("Cannot read from file");
         }
+
         _resource = new FileResource(file);
         _configuration = configuration;
     }

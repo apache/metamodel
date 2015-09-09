@@ -159,8 +159,7 @@ final class ExcelUtils {
         return readWorkbook(resource);
     }
 
-    public static void writeWorkbook(ExcelDataContext dataContext, final Workbook wb) {
-        final Resource resource = dataContext.getResource();
+    public static void writeWorkbook(Resource resource, final Workbook wb) {
         resource.write(new Action<OutputStream>() {
             @Override
             public void run(OutputStream outputStream) throws Exception {

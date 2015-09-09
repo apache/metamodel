@@ -293,6 +293,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals("[bar, 4, 2010-01-04 00:00:00]", Arrays.toString(objectArrays.get(3)));
     }
 
+
     public void testOpenHugeXlsx() throws Exception {
         ExcelDataContext dc = new ExcelDataContext(new File("src/test/resources/big_memory_use.xlsx"));
         Schema schema = dc.getDefaultSchema();
@@ -302,17 +303,16 @@ public class ExcelDataContextTest extends TestCase {
 
         Table table = schema.getTableByName("Sheet1");
 
-        assertEquals("[string, number, date]", Arrays.toString(table.getColumnNames()));
+        assertEquals("[ECAD_ID, EIRCODE2, ADDR_LINE_1, ADDR_LINE_2, ADDR_LINE_3, ADDR_LINE_4, ADDR_LINE_5, ADDR_LINE_6, ADDR_LINE_7, ADDR_LINE_6, ADDR_LINE_9]", Arrays.toString(table.getColumnNames()));
 
-        Query q = dc.query().from(table).select(table.getColumns()).orderBy(table.getColumnByName("number")).toQuery();
+        Query q = dc.query().from(table).select(table.getColumns()).orderBy(table.getColumnByName("ECAD_ID")).toQuery();
         DataSet ds = dc.executeQuery(q);
-        List<Object[]> objectArrays = ds.toObjectArrays();
-        assertEquals(4, objectArrays.size());
-        assertEquals("[hello, 1, 2010-01-01 00:00:00]", Arrays.toString(objectArrays.get(0)));
-        assertEquals("[world, 2, 2010-01-02 00:00:00]", Arrays.toString(objectArrays.get(1)));
-        assertEquals("[foo, 3, 2010-01-03 00:00:00]", Arrays.toString(objectArrays.get(2)));
-        assertEquals("[bar, 4, 2010-01-04 00:00:00]", Arrays.toString(objectArrays.get(3)));
+        while(ds.next()){
+            // Just for making sure Java doesn't optimize away.
+            assertNotNull(ds.getRow());
+        }
     }
+
 
     public void testConfigurationWithoutHeader() throws Exception {
         File file = new File("src/test/resources/xls_people.xls");
