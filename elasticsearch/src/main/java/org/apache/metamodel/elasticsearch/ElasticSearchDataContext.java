@@ -61,6 +61,7 @@ import org.elasticsearch.common.hppc.ObjectLookupContainer;
 import org.elasticsearch.common.hppc.cursors.ObjectCursor;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.slf4j.Logger;
@@ -68,7 +69,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * DataContext implementation for ElasticSearch analytics engine.
- * 
+ *
  * ElasticSearch has a data storage structure hierarchy that briefly goes like
  * this:
  * <ul>
@@ -76,10 +77,10 @@ import org.slf4j.LoggerFactory;
  * <li>Document type (short: Type) (within an index)</li>
  * <li>Documents (of a particular type)</li>
  * </ul>
- * 
+ *
  * When instantiating this DataContext, an index name is provided. Within this
  * index, each document type is represented as a table.
- * 
+ *
  * This implementation supports either automatic discovery of a schema or manual
  * specification of a schema, through the {@link SimpleTableDef} class.
  */
@@ -123,7 +124,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     /**
      * Constructs a {@link ElasticSearchDataContext} and automatically detects
      * the schema structure/view on all indexes (see
-     * {@link #detectSchema(Client)}).
+     * {@link #detectSchema(Client, String)}).
      *
      * @param client
      *            the ElasticSearch client
@@ -143,7 +144,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *
      * @param client
      *            the client to inspect
-     * @param indexName2
+     * @param indexName
      * @return a mutable schema instance, useful for further fine tuning by the
      *         user.
      */
@@ -303,7 +304,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     /**
      * Creates, if possible, a {@link QueryBuilder} object which can be used to
      * push down one or more {@link FilterItem}s to ElasticSearch's backend.
-     * 
+     *
      * @param table
      * @param whereItems
      * @param logicalOperator
@@ -340,9 +341,18 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
                 final OperatorType operator = item.getOperator();
 
                 if (OperatorType.EQUALS_TO.equals(operator)) {
-                    itemQueryBuilder = QueryBuilders.termQuery(fieldName, operand);
+                    if (operand == null) {
+                        itemQueryBuilder = QueryBuilders.filteredQuery(null, FilterBuilders.missingFilter(fieldName));
+                    } else {
+                        itemQueryBuilder = QueryBuilders.termQuery(fieldName, operand);
+                    }
                 } else if (OperatorType.DIFFERENT_FROM.equals(operator)) {
-                    itemQueryBuilder = QueryBuilders.boolQuery().mustNot(QueryBuilders.termQuery(fieldName, operand));
+                    if (operand == null) {
+                        itemQueryBuilder = QueryBuilders.filteredQuery(null, FilterBuilders.existsFilter(fieldName));
+                    } else {
+                        itemQueryBuilder = QueryBuilders.boolQuery().mustNot(
+                                QueryBuilders.termQuery(fieldName, operand));
+                    }
                 } else if (OperatorType.IN.equals(operator)) {
                     final List<?> operands = CollectionUtils.toList(operand);
                     itemQueryBuilder = QueryBuilders.termsQuery(fieldName, operands);
@@ -423,7 +433,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     /**
      * Gets the {@link Client} that this {@link DataContext} is wrapping.
-     * 
+     *
      * @return
      */
     public Client getElasticSearchClient() {
@@ -432,7 +442,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     /**
      * Gets the name of the index that this {@link DataContext} is working on.
-     * 
+     *
      * @return
      */
     public String getIndexName() {

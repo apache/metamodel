@@ -7,6 +7,8 @@
  * [METAMODEL-179] - Ensured that HdfsResource is not closing a shared HDFS file system reference.
  * [METAMODEL-171] - Made integration tests for Cassandra module function properly in all environments.
  * [METAMODEL-177] - Fixed a bug pertaining to the serializability of HdfsResource.
+ * [METAMODEL-172] - ElasticSearch Date types should be converted properly.
+ * [METAMODEL-184] - ElasticSearch querying with "IS NULL" and "IS NOT NULL" now uses MissingFilter and ExistsFilter.
 
 ### Apache MetaModel 4.3.6
 
