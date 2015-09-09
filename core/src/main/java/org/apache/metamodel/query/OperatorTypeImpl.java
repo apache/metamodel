@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.query;
 
+import java.util.Objects;
+
 /**
  * Simple implementation of {@link OperatorType}
  */
@@ -39,6 +41,25 @@ public class OperatorTypeImpl implements OperatorType {
     @Override
     public String toSql() {
         return _sql;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof OperatorType) {
+            // we only require another OperatorType, not necesarily an _Impl_.
+            // This is to allow other implementations that wrap this. For
+            // instance the implementation provided by
+            // LegacyDeserializationObjectInputStream.
+            final OperatorType other = (OperatorType) obj;
+            return isSpaceDelimited() == other.isSpaceDelimited() && Objects.equals(toSql(), other.toSql());
+        }
+        return false;
     }
 
 /**

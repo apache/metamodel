@@ -181,7 +181,7 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
         private LegacyOperatorType(OperatorType delegate) {
             _delegate = delegate;
         }
-
+        
         @Override
         public boolean isSpaceDelimited() {
             return _delegate.isSpaceDelimited();
