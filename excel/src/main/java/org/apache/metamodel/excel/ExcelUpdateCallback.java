@@ -18,6 +18,12 @@
  */
 package org.apache.metamodel.excel;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FileResource;
+import org.apache.metamodel.util.Resource;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -78,7 +84,24 @@ final class ExcelUpdateCallback extends AbstractUpdateCallback implements Update
 
     protected void close() {
         if (_workbook != null) {
-            ExcelUtils.writeWorkbook(_dataContext, _workbook);
+
+            final Resource resource;
+            if(_dataContext.getResource() instanceof FileResource){
+                try {
+                    File tempFile = File.createTempFile("metamodel-", null);
+                    resource = new FileResource(tempFile);
+                } catch (IOException e) {
+                    throw new RuntimeException("Can't create temp file", e);
+                }
+            } else {
+                resource = _dataContext.getResource();
+            }
+
+            ExcelUtils.writeWorkbook(resource, _workbook);
+
+            if(resource instanceof FileResource){
+                FileHelper.copy(((FileResource) resource).getFile(), ((FileResource)_dataContext.getResource()).getFile());
+            }
 
             _workbook = null;
             _dateCellFormat = null;
@@ -93,7 +116,7 @@ final class ExcelUpdateCallback extends AbstractUpdateCallback implements Update
     protected Workbook getWorkbook(boolean streamingAllowed) {
         if (_workbook == null || (!streamingAllowed && _workbook instanceof SXSSFWorkbook)) {
             if (_workbook != null) {
-                ExcelUtils.writeWorkbook(_dataContext, _workbook);
+                ExcelUtils.writeWorkbook(_dataContext.getResource(), _workbook);
             }
             _workbook = ExcelUtils.readWorkbook(_dataContext);
             if (streamingAllowed && _workbook instanceof XSSFWorkbook) {
