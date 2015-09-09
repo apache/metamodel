@@ -293,27 +293,6 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals("[bar, 4, 2010-01-04 00:00:00]", Arrays.toString(objectArrays.get(3)));
     }
 
-
-    public void testOpenHugeXlsx() throws Exception {
-        ExcelDataContext dc = new ExcelDataContext(new File("src/test/resources/big_memory_use.xlsx"));
-        Schema schema = dc.getDefaultSchema();
-        assertEquals("Schema[name=big_memory_use.xlsx]", schema.toString());
-
-        assertEquals("[Sheet1, Sheet2, Sheet3]", Arrays.toString(schema.getTableNames()));
-
-        Table table = schema.getTableByName("Sheet1");
-
-        assertEquals("[ECAD_ID, EIRCODE2, ADDR_LINE_1, ADDR_LINE_2, ADDR_LINE_3, ADDR_LINE_4, ADDR_LINE_5, ADDR_LINE_6, ADDR_LINE_7, ADDR_LINE_6, ADDR_LINE_9]", Arrays.toString(table.getColumnNames()));
-
-        Query q = dc.query().from(table).select(table.getColumns()).orderBy(table.getColumnByName("ECAD_ID")).toQuery();
-        DataSet ds = dc.executeQuery(q);
-        while(ds.next()){
-            // Just for making sure Java doesn't optimize away.
-            assertNotNull(ds.getRow());
-        }
-    }
-
-
     public void testConfigurationWithoutHeader() throws Exception {
         File file = new File("src/test/resources/xls_people.xls");
         DataContext dc = new ExcelDataContext(file, new ExcelConfiguration(ExcelConfiguration.NO_COLUMN_NAME_LINE,
