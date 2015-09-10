@@ -22,7 +22,7 @@ import junit.framework.TestCase;
 
 public class OperatorTypeTest extends TestCase {
 
-    public void testConvertOperatorType() throws Exception {
+    public void testConvertOperatorTypeNormal() throws Exception {
         assertEquals(OperatorType.EQUALS_TO, OperatorTypeImpl.convertOperatorType("="));
         assertEquals(OperatorType.GREATER_THAN, OperatorTypeImpl.convertOperatorType(">"));
         assertEquals(OperatorType.LESS_THAN, OperatorTypeImpl.convertOperatorType("<"));
@@ -30,5 +30,34 @@ public class OperatorTypeTest extends TestCase {
         assertEquals(OperatorType.LIKE, OperatorTypeImpl.convertOperatorType("LIKE"));
         assertEquals(OperatorType.IN, OperatorTypeImpl.convertOperatorType("IN"));
         assertEquals(null, OperatorTypeImpl.convertOperatorType("foo"));
+    }
+    
+    public void testConvertOperatorTypeAliases() throws Exception {
+        assertEquals(OperatorType.EQUALS_TO, OperatorTypeImpl.convertOperatorType("eq"));
+        assertEquals(OperatorType.EQUALS_TO, OperatorTypeImpl.convertOperatorType("EQ"));
+        assertEquals(OperatorType.EQUALS_TO, OperatorTypeImpl.convertOperatorType("EQUALS_TO"));
+        assertEquals(OperatorType.EQUALS_TO, OperatorTypeImpl.convertOperatorType("=="));
+        assertEquals(OperatorType.DIFFERENT_FROM, OperatorTypeImpl.convertOperatorType("!="));
+        assertEquals(OperatorType.DIFFERENT_FROM, OperatorTypeImpl.convertOperatorType("DIFFERENT_FROM"));
+        assertEquals(OperatorType.DIFFERENT_FROM, OperatorTypeImpl.convertOperatorType("ne"));
+        assertEquals(OperatorType.DIFFERENT_FROM, OperatorTypeImpl.convertOperatorType("NOT_EQUALS_TO"));
+        assertEquals(OperatorType.DIFFERENT_FROM, OperatorTypeImpl.convertOperatorType("NOT_EQUAL_TO"));
+        assertEquals(OperatorType.IN, OperatorTypeImpl.convertOperatorType("in"));
+        assertEquals(OperatorType.IN, OperatorTypeImpl.convertOperatorType("IN"));
+        assertEquals(OperatorType.GREATER_THAN, OperatorTypeImpl.convertOperatorType("GREATER_THAN"));
+        assertEquals(OperatorType.GREATER_THAN, OperatorTypeImpl.convertOperatorType("GT"));
+        assertEquals(OperatorType.GREATER_THAN_OR_EQUAL, OperatorTypeImpl.convertOperatorType(">="));
+        assertEquals(OperatorType.GREATER_THAN_OR_EQUAL, OperatorTypeImpl.convertOperatorType("=>"));
+        assertEquals(OperatorType.GREATER_THAN_OR_EQUAL, OperatorTypeImpl.convertOperatorType("GREATER_THAN_OR_EQUAL"));
+        assertEquals(OperatorType.LESS_THAN, OperatorTypeImpl.convertOperatorType("lt"));
+        assertEquals(OperatorType.LESS_THAN, OperatorTypeImpl.convertOperatorType("LESS_THAN"));
+        assertEquals(OperatorType.LESS_THAN_OR_EQUAL, OperatorTypeImpl.convertOperatorType("<="));
+        assertEquals(OperatorType.LESS_THAN_OR_EQUAL, OperatorTypeImpl.convertOperatorType("=<"));
+        assertEquals(OperatorType.LESS_THAN_OR_EQUAL, OperatorTypeImpl.convertOperatorType("LESS_THAN_OR_EQUAL"));
+        assertEquals(OperatorType.LIKE, OperatorTypeImpl.convertOperatorType("like"));
+    }
+    
+    public void testConvertOperatorTypeTrimmed() throws Exception {
+        assertEquals(OperatorType.EQUALS_TO, OperatorTypeImpl.convertOperatorType("  =   "));
     }
 }
