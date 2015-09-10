@@ -164,12 +164,12 @@ final class CsvTable extends AbstractTable {
 
     private ColumnType[] getColumnTypes(CSVReader reader, int sampleSize) throws IOException {
         ColumnType[] columnTypes = new ColumnType[0];
-        final SortedMap<String, Set<ColumnType>> columnsAndTypes = new TreeMap<String, Set<ColumnType>>();
+        final LinkedHashMap<String, Set<ColumnType>> columnsAndTypes = new LinkedHashMap<String, Set<ColumnType>>();
         String[] columnHeader = reader.readNext();
         if (columnHeader != null) {
             String[] nextValuesLine = reader.readNext();
             while (nextValuesLine != null || sampleSize > 0) {
-                HashMap<String, ColumnType> values = new HashMap<String, ColumnType>();
+                LinkedHashMap<String, ColumnType> values = new LinkedHashMap<String, ColumnType>();
                 if(nextValuesLine != null) {
                     int columns = columnHeader.length;
                     if(nextValuesLine.length < columnHeader.length) columns = nextValuesLine.length;
@@ -203,7 +203,7 @@ final class CsvTable extends AbstractTable {
                 if (columnTypeSet.size() == 1) {
                     columnTypes[i] = columnTypeSet.iterator().next();
                 } else {
-                    columnTypes[i] = ColumnTypeImpl.convertColumnType(Object.class);
+                    columnTypes[i] = ColumnTypeImpl.convertColumnType(String.class);
                 }
                 i++;
             }

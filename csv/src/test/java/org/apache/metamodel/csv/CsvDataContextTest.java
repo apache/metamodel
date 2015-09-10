@@ -21,6 +21,7 @@ package org.apache.metamodel.csv;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,10 +45,7 @@ import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.MutableColumn;
-import org.apache.metamodel.schema.Schema;
-import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.*;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.MutableRef;
 
@@ -419,7 +417,7 @@ public class CsvDataContextTest extends TestCase {
         Table table = dc.getDefaultSchema().getTableByName("csv_people.csv");
 
         Query q = dc.query().from(table).as("t").select("name").and("age").where("age").in(18, 20).toQuery();
-        assertEquals("SELECT t.name, t.age FROM resources.csv_people.csv t WHERE t.age IN ('18' , '20')", q.toSql());
+        assertEquals("SELECT t.name, t.age FROM resources.csv_people.csv t WHERE t.age IN (18 , 20)", q.toSql());
 
         DataSet ds = dc.executeQuery(q);
         assertTrue(ds.next());
@@ -830,4 +828,28 @@ public class CsvDataContextTest extends TestCase {
     // e.getMessage());
     // }
     // }
+
+    public void testRightColumnTypes() throws Exception {
+        HashMap<String, ColumnType> columnAndTypes = new HashMap<String, ColumnType>();
+        columnAndTypes.put("id", ColumnType.INTEGER);
+        columnAndTypes.put("name", ColumnType.VARCHAR);
+        columnAndTypes.put("gender", ColumnType.VARCHAR);
+        columnAndTypes.put("age", ColumnType.INTEGER);
+
+        DataContext dc = new CsvDataContext(new File("src/test/resources/csv_people.csv"));
+
+        Table table = dc.getDefaultSchema().getTables()[0];
+        Query q = dc.query()
+                .from(table)
+                .select(table.getColumnByName("id"))
+                .and(table.getColumnByName("name"))
+                .and(table.getColumnByName("gender"))
+                .and(table.getColumnByName("age"))
+                .toQuery();
+
+        List<SelectItem> items = q.getSelectClause().getItems();
+        for(SelectItem item: items) {
+            assertEquals(item.getColumn().getType(), columnAndTypes.get(item.getColumn().getName()));
+        }
+    }
 }
