@@ -29,6 +29,7 @@ import java.util.Iterator;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFFont;
@@ -160,6 +161,22 @@ final class ExcelUtils {
     }
 
     public static void writeWorkbook(Resource resource, final Workbook wb) {
+        if(resource instanceof FileResource){
+            final FileResource tempResource;
+            try {
+                File tempFile = File.createTempFile("metamodel-", null);
+                tempResource = new FileResource(tempFile);
+                writeWorkbookInternal(tempResource, wb);
+                FileHelper.copy(tempFile, ((FileResource) resource).getFile());
+            } catch (IOException e) {
+                throw new RuntimeException("Can't create temp file", e);
+            }
+        } else {
+            writeWorkbookInternal(resource, wb);
+        }
+    }
+
+    private static void writeWorkbookInternal(final Resource resource, final Workbook wb) {
         resource.write(new Action<OutputStream>() {
             @Override
             public void run(OutputStream outputStream) throws Exception {

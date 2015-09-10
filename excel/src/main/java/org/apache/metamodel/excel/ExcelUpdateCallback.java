@@ -106,12 +106,6 @@ final class ExcelUpdateCallback extends AbstractUpdateCallback implements Update
                 FileHelper.copy(((FileResource) resource).getFile(), ((FileResource)_dataContext.getResource()).getFile());
             }
 
-            try {
-                _workbook.close();
-            } catch (IOException e) {
-                logger.warn("Could not close Excel workbook", e);
-            }
-
             _workbook = null;
             _dateCellFormat = null;
             _dateCellStyle = null;
