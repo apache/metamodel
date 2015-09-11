@@ -340,33 +340,23 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
                 final Object operand = item.getOperand();
                 final OperatorType operator = item.getOperator();
 
-                switch (operator) {
-                case EQUALS_TO:
+                if (OperatorType.EQUALS_TO.equals(operator)) {
                     if (operand == null) {
-                        itemQueryBuilder =
-                                QueryBuilders.filteredQuery(null, FilterBuilders.missingFilter(fieldName));
+                        itemQueryBuilder = QueryBuilders.filteredQuery(null, FilterBuilders.missingFilter(fieldName));
                     } else {
                         itemQueryBuilder = QueryBuilders.termQuery(fieldName, operand);
                     }
-                    break;
-                case DIFFERENT_FROM:
+                } else if (OperatorType.DIFFERENT_FROM.equals(operator)) {
                     if (operand == null) {
-                        itemQueryBuilder =
-                                QueryBuilders.filteredQuery(null, FilterBuilders.existsFilter(fieldName));
+                        itemQueryBuilder = QueryBuilders.filteredQuery(null, FilterBuilders.existsFilter(fieldName));
                     } else {
-                        itemQueryBuilder = QueryBuilders.boolQuery().mustNot(QueryBuilders.termQuery(fieldName, operand));
+                        itemQueryBuilder = QueryBuilders.boolQuery().mustNot(
+                                QueryBuilders.termQuery(fieldName, operand));
                     }
-                    break;
-                case IN:
+                } else if (OperatorType.IN.equals(operator)) {
                     final List<?> operands = CollectionUtils.toList(operand);
                     itemQueryBuilder = QueryBuilders.termsQuery(fieldName, operands);
-                    break;
-                case LIKE:
-                case GREATER_THAN_OR_EQUAL:
-                case GREATER_THAN:
-                case LESS_THAN:
-                case LESS_THAN_OR_EQUAL:
-                default:
+                } else {
                     // not (yet) support operator types
                     return null;
                 }

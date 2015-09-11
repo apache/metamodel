@@ -34,7 +34,6 @@ public class FormatHelperTest extends TestCase {
 		assertEquals("20.1", format.format(20.1));
 	}
 
-	@SuppressWarnings("unchecked")
 	public void testFormatSqlValue() throws Exception {
 		assertEquals("'foo'", FormatHelper.formatSqlValue(null, "foo"));
 		assertEquals("1", FormatHelper.formatSqlValue(null, 1));

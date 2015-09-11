@@ -117,7 +117,7 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
                 // operand is a set of values (typically in combination with an
                 // IN operator). Each individual element must be escaped.
 
-                assert item.getOperator() == OperatorType.IN;
+                assert OperatorType.IN.equals(item.getOperator());
 
                 @SuppressWarnings("unchecked")
                 final List<Object> elements = (List<Object>) CollectionUtils.toList(operand);

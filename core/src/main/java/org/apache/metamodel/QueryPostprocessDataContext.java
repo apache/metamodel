@@ -142,7 +142,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
                         final SelectItem selectItem = whereItem.getSelectItem();
                         if (!whereItem.isCompoundFilter() && selectItem != null && selectItem.getColumn() != null) {
                             final Column column = selectItem.getColumn();
-                            if (column.isPrimaryKey() && whereItem.getOperator() == OperatorType.EQUALS_TO) {
+                            if (column.isPrimaryKey() && OperatorType.EQUALS_TO.equals(whereItem.getOperator())) {
                                 logger.debug("Query is a primary key lookup query. Trying executePrimaryKeyLookupQuery(...)");
                                 if (table != null) {
                                     if (isMainSchemaTable(table)) {
@@ -430,7 +430,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         schemaNames[1] = getMainSchemaName();
         return schemaNames;
     }
-    
+
     @Override
     protected String getDefaultSchemaName() throws MetaModelException {
         return getMainSchemaName();
@@ -618,7 +618,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
     protected DataSet materializeMainSchemaTable(Table table, List<SelectItem> selectItems,
             List<FilterItem> whereItems, int firstRow, int maxRows) {
         final List<SelectItem> workingSelectItems = buildWorkingSelectItems(selectItems, whereItems);
-        DataSet dataSet; 
+        DataSet dataSet;
         if (whereItems.isEmpty()) {
             // paging is pushed down to materializeMainSchemaTable
             dataSet = materializeMainSchemaTable(table, workingSelectItems, firstRow, maxRows);

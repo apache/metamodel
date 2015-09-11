@@ -215,7 +215,7 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
         final String primaryFilterSql = item.toSql(isSchemaIncludedInColumnPaths());
 
         final OperatorType operator = item.getOperator();
-        if (operator == OperatorType.DIFFERENT_FROM) {
+        if (OperatorType.DIFFERENT_FROM.equals(operator)) {
             final Object operand = item.getOperand();
             if (operand != null) {
                 // special case in SQL where NULL is not treated as a value -
