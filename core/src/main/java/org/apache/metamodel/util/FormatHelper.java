@@ -45,6 +45,7 @@ public final class FormatHelper {
 		symbols.setDecimalSeparator('.');
 		DecimalFormat format = new DecimalFormat("###.##", symbols);
 		format.setGroupingUsed(false);
+		format.setMaximumFractionDigits(Integer.MAX_VALUE);
 		return format;
 	}
 
