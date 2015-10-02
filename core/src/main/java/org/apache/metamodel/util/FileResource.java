@@ -85,12 +85,18 @@ public class FileResource extends AbstractResource implements Serializable {
         if (!isExists()) {
             return false;
         }
+        if (_file.isDirectory()) {
+            return true;
+        }
         boolean canWrite = _file.canWrite();
         return !canWrite;
     }
 
     @Override
     public OutputStream write() throws ResourceException {
+        if (_file.isDirectory()) {
+            throw new ResourceException(this, "Cannot write to directory: " + _file);
+        }
         return FileHelper.getOutputStream(_file);
     }
 

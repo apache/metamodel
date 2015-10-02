@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.util;
 
+import static org.junit.Assert.*;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -33,14 +35,36 @@ public class FileResourceTest {
     public TemporaryFolder folder = new TemporaryFolder();
 
     @Test
+    public void testCannotWriteToDirectory() throws Exception {
+        FileResource dir = new FileResource(".");
+        assertTrue(dir.isReadOnly());
+        
+        try {
+            dir.write();
+            fail("Exception expected");
+        } catch (ResourceException e) {
+            assertEquals("Cannot write to directory: .", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSizeAndLastModifiedOfDirectory() throws Exception {
+        final FileResource dir = new FileResource(".");
+        assertTrue(dir.getLastModified() > 0);
+        assertTrue(dir.getSize() > 10);
+    }
+
+    @Test
     public void testReadDirectory() throws Exception {
         final String contentString = "fun and games with Apache MetaModel and Hadoop is what we do";
-        final String[] contents = new String[] { "fun ", "and ", "games ", "with ", "Apache ", "MetaModel ", "and ", "Hadoop ", "is ", "what ", "we ", "do" };
+        final String[] contents = new String[] { "fun ", "and ", "games ", "with ", "Apache ", "MetaModel ", "and ",
+                "Hadoop ", "is ", "what ", "we ", "do" };
 
-        // Reverse both filename and contents to make sure it is the name and not the creation order that is sorted on.
+        // Reverse both filename and contents to make sure it is the name and
+        // not the creation order that is sorted on.
         int i = contents.length;
         Collections.reverse(Arrays.asList(contents));
-        for(final String contentPart : contents){
+        for (final String contentPart : contents) {
             final FileResource partResource = new FileResource(folder.newFile("/part-" + String.format("%02d", i--)));
             partResource.write(new Action<OutputStream>() {
                 @Override
