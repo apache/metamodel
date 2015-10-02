@@ -63,6 +63,10 @@
 					<groupId>org.mortbay.jetty</groupId>
 				</exclusion>
 				<exclusion>
+						<groupId>com.github.stephenc.findbugs</groupId>
+						<artifactId>findbugs-annotations</artifactId>
+					</exclusion>
+				<exclusion>
 					<groupId>tomcat</groupId>
 					<artifactId>jasper-runtime</artifactId>
 				</exclusion>
@@ -131,6 +135,10 @@
 					<artifactId>jackson-xc</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.findbugs</groupId>
+			<artifactId>annotations</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
