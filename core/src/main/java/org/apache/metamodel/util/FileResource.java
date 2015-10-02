@@ -34,12 +34,7 @@ public class FileResource extends AbstractResource implements Serializable {
     private class DirectoryInputStream extends AbstractDirectoryInputStream<File> {
 
         public DirectoryInputStream() {
-            final File[] unsortedFiles = _file.listFiles(new FileFilter() {
-                @Override
-                public boolean accept(final File pathname) {
-                    return pathname.isFile();
-                }
-            });
+            final File[] unsortedFiles = getChildren();
 
             if (unsortedFiles == null) {
                 _files = new File[0];
@@ -115,11 +110,35 @@ public class FileResource extends AbstractResource implements Serializable {
 
     @Override
     public long getSize() {
+        if (_file.isDirectory()) {
+            long size = 0;
+            final File[] children = getChildren();
+            for (File file : children) {
+                final long length = file.length();
+                if (length == -1) {
+                    return -1;
+                }
+                size += length;
+            }
+            return size;
+        }
         return _file.length();
     }
 
     @Override
     public long getLastModified() {
+        if (_file.isDirectory()) {
+            long lastModified = -1;
+            final File[] children = getChildren();
+            for (File file : children) {
+                final long l = file.lastModified();
+                if (l != 0) {
+                    lastModified = Math.max(lastModified, l);
+                }
+            }
+            return lastModified;
+        }
+        
         final long lastModified = _file.lastModified();
         if (lastModified == 0) {
             return -1;
@@ -134,5 +153,14 @@ public class FileResource extends AbstractResource implements Serializable {
         }
         final InputStream in = FileHelper.getInputStream(_file);
         return in;
+    }
+
+    private File[] getChildren() {
+        return _file.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(final File pathname) {
+                return pathname.isFile();
+            }
+        });
     }
 }
