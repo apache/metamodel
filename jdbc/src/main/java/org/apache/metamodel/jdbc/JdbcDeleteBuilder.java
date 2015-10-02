@@ -70,7 +70,7 @@ final class JdbcDeleteBuilder extends AbstractRowDeletionBuilder {
                 for (FilterItem whereItem : whereItems) {
                     if (JdbcUtils.isPreparedParameterCandidate(whereItem)) {
                         Object operand = whereItem.getOperand();
-                        st.setObject(valueCounter, operand);
+                        JdbcUtils.setStatementValue(st, valueCounter, whereItem.getSelectItem().getColumn(), operand);
                         valueCounter++;
                     }
                 }
