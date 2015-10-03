@@ -24,7 +24,7 @@ import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.TimeComparator;
 
-public class ToDateFunction implements ScalarFunction {
+public class ToDateFunction extends DefaultScalarFunction {
 
     @Override
     public ColumnType getExpectedColumnType(ColumnType type) {

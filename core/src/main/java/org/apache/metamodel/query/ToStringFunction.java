@@ -21,7 +21,7 @@ package org.apache.metamodel.query;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.ColumnType;
 
-public class ToStringFunction implements ScalarFunction {
+public class ToStringFunction extends DefaultScalarFunction {
 
     @Override
     public ColumnType getExpectedColumnType(ColumnType type) {

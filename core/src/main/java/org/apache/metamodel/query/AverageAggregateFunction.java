@@ -20,12 +20,14 @@ package org.apache.metamodel.query;
 
 import org.apache.metamodel.util.AggregateBuilder;
 
-public class AverageAggregateFunction extends DefaultAggregateFunction<Double> implements AggregateFunction {
+public class AverageAggregateFunction extends DefaultAggregateFunction<Double> {
 
+    @Override
     public String getFunctionName() {
         return "AVG";
     }
 
+    @Override
     public AggregateBuilder<Double> createAggregateBuilder() {
         return new AverageAggregateBuilder();
     }

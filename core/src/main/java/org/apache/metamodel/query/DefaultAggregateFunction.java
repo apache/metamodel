@@ -26,18 +26,9 @@ import org.apache.metamodel.util.AggregateBuilder;
  */
 public abstract class DefaultAggregateFunction<T> implements AggregateFunction {
 
-    public abstract AggregateBuilder<T> createAggregateBuilder();
-
+    @Override
     public ColumnType getExpectedColumnType(ColumnType type) {
         return type;
-    }
-
-    public Object evaluate(Iterable<?> values) {
-        AggregateBuilder<?> builder = createAggregateBuilder();
-        for (Object object : values) {
-            builder.add(object);
-        }
-        return builder.getAggregate();
     }
 
     /**
@@ -51,6 +42,7 @@ public abstract class DefaultAggregateFunction<T> implements AggregateFunction {
      *         yields a Long, AVG and SUM yields Double values and MAX and MIN
      *         yields the type of the provided values.
      */
+    @Override
     public Object evaluate(Object... values) {
         AggregateBuilder<?> builder = createAggregateBuilder();
         for (Object object : values) {

@@ -398,7 +398,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             sb.append(_subQuerySelectItem.getSuperQueryAlias());
         }
         if (_function != null) {
-            sb.insert(0, _function + "(");
+            sb.insert(0, _function.getFunctionName() + "(");
             sb.append(")");
         }
         return sb;

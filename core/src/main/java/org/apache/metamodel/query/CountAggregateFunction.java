@@ -27,6 +27,7 @@ public class CountAggregateFunction extends DefaultAggregateFunction<Long> {
         return "COUNT";
     }
 
+    @Override
     public AggregateBuilder<Long> createAggregateBuilder() {
         return new CountAggregateBuilder();
     }

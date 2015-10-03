@@ -20,12 +20,14 @@ package org.apache.metamodel.query;
 
 import org.apache.metamodel.util.AggregateBuilder;
 
-public class MaxAggregateFunction extends DefaultAggregateFunction<Object> implements AggregateFunction {
+public class MaxAggregateFunction extends DefaultAggregateFunction<Object> {
 
+    @Override
     public String getFunctionName() {
         return "MAX";
     }
 
+    @Override
     public AggregateBuilder<Object> createAggregateBuilder() {
         return new MaxAggregateBuilder();
     }

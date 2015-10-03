@@ -22,7 +22,7 @@ import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.BooleanComparator;
 
-public class ToBooleanFunction implements ScalarFunction {
+public class ToBooleanFunction extends DefaultScalarFunction {
 
     @Override
     public ColumnType getExpectedColumnType(ColumnType type) {

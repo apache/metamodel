@@ -22,7 +22,7 @@ import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.NumberComparator;
 
-public class ToNumberFunction implements ScalarFunction {
+public class ToNumberFunction extends DefaultScalarFunction {
 
     @Override
     public ColumnType getExpectedColumnType(ColumnType type) {
