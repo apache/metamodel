@@ -107,8 +107,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
     public void testAggregateQueryRegularWhereClause() throws Exception {
         MockDataContext dc = new MockDataContext("sch", "tab", "1");
         Table table = dc.getDefaultSchema().getTables()[0];
-        assertSingleRowResult("Row[values=[3]]", dc.query().from(table).selectCount().where("baz").eq("world")
-                .execute());
+        assertSingleRowResult("Row[values=[3]]",
+                dc.query().from(table).selectCount().where("baz").eq("world").execute());
     }
 
     public void testApplyFunctionToNullValues() throws Exception {
@@ -214,6 +214,33 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         assertTrue(ds.next());
         assertEquals("Row[values=[4, yo]]", ds.getRow().toString());
         assertFalse(ds.next());
+    }
+
+    public void testScalarFunction() throws Exception {
+        MockDataContext dc = new MockDataContext("sch", "tab", "1");
+        Table table = dc.getDefaultSchema().getTables()[0];
+
+        Query query = dc.query().from(table).select(FunctionType.TO_NUMBER, "foo").select("bar").toQuery();
+        assertEquals("SELECT TO_NUMBER(tab.foo), tab.bar FROM sch.tab", query.toSql());
+
+        DataSet ds = dc.executeQuery(query);
+        assertTrue(ds.next());
+        Row row;
+        
+        row = ds.getRow();
+        assertEquals("Row[values=[1, hello]]", row.toString());
+        Object value1 = row.getValue(0);
+        assertEquals(Integer.class, value1.getClass());
+        
+        assertTrue(ds.next());
+        
+        row = ds.getRow();
+        assertEquals("Row[values=[2, 1]]", row.toString());
+        Object value2 = row.getValue(0);
+        assertEquals(Integer.class, value2.getClass());
+        
+        assertTrue(ds.next());
+        ds.close();
     }
 
     public void testSelectItemReferencesToFromItems() throws Exception {
@@ -702,8 +729,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         Query q = new Query();
         q.from(table1);
         q.select(table1.getColumns());
-        SelectItem countrySelectItem = q.getSelectClause().getSelectItem(
-                table1.getColumnByName(COLUMN_CONTRIBUTOR_COUNTRY));
+        SelectItem countrySelectItem = q.getSelectClause()
+                .getSelectItem(table1.getColumnByName(COLUMN_CONTRIBUTOR_COUNTRY));
         q.where(new FilterItem(countrySelectItem, OperatorType.EQUALS_TO, "denmark"));
 
         DataSet data = dc.executeQuery(q);

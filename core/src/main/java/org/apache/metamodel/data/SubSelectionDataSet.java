@@ -18,12 +18,14 @@
  */
 package org.apache.metamodel.data;
 
+import java.util.List;
+
 import org.apache.metamodel.query.SelectItem;
 
 /**
  * {@link DataSet} wrapper for doing subselection.
  */
-public final class SubSelectionDataSet extends AbstractDataSet {
+public final class SubSelectionDataSet extends AbstractDataSet implements WrappingDataSet {
 
     private final DataSet _dataSet;
 
@@ -32,6 +34,12 @@ public final class SubSelectionDataSet extends AbstractDataSet {
         _dataSet = dataSet;
     }
 
+    public SubSelectionDataSet(List<SelectItem> selectItems, DataSet dataSet) {
+        super(selectItems);
+        _dataSet = dataSet;
+    }
+
+    @Override
     public DataSet getWrappedDataSet() {
         return _dataSet;
     }

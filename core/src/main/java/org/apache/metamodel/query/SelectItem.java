@@ -39,7 +39,8 @@ import org.slf4j.LoggerFactory;
  * <li>expression function SELECTs (retrieves databased on a function and an
  * expression, only COUNT(*) is supported for non-JDBC datastores))</li>
  * <li>SELECTs from subqueries (works just like column selects, but in stead of
- * pointing to a column, it retrieves data from the select item of a subquery)</li>
+ * pointing to a column, it retrieves data from the select item of a subquery)
+ * </li>
  * </ul>
  * 
  * @see SelectClause
@@ -92,7 +93,8 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     public static boolean isCountAllItem(SelectItem item) {
-        if (item != null && item.getFunction()!= null && item.getFunction().toString().equals("COUNT") && item.getExpression() == "*") {
+        if (item != null && item.getFunction() != null && item.getFunction().toString().equals("COUNT")
+                && item.getExpression() == "*") {
             return true;
         }
         return false;
@@ -207,6 +209,13 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
         return this;
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated use {@link #getAggregateFunction()} or
+     *             {@link #getScalarFunction()} instead
+     */
+    @Deprecated
     public FunctionType getFunction() {
         return _function;
     }
@@ -215,9 +224,14 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
         if (_function instanceof AggregateFunction) {
             return (AggregateFunction) _function;
         }
-        else {
-            return null;
+        return null;
+    }
+
+    public ScalarFunction getScalarFunction() {
+        if (_function instanceof ScalarFunction) {
+            return (ScalarFunction) _function;
         }
+        return null;
     }
 
     /**

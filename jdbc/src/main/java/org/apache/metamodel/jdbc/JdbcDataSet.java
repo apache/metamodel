@@ -148,7 +148,7 @@ final class JdbcDataSet extends AbstractDataSet {
     private Object getValue(ResultSet resultSet, int i) throws SQLException {
         final SelectItem selectItem = getHeader().getSelectItem(i);
         final int columnIndex = i + 1;
-        if (selectItem.getFunction() == null) {
+        if (selectItem.getAggregateFunction() == null) {
             Column column = selectItem.getColumn();
             if (column != null) {
                 ColumnType type = column.getType();

@@ -40,6 +40,7 @@ import org.apache.metamodel.data.IRowFilter;
 import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.data.MaxRowsDataSet;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.ScalarFunctionDataSet;
 import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.data.SubSelectionDataSet;
 import org.apache.metamodel.query.FilterItem;
@@ -56,7 +57,6 @@ import org.apache.metamodel.schema.SuperColumnType;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.AggregateBuilder;
 import org.apache.metamodel.util.CollectionUtils;
-import org.apache.metamodel.util.EqualsBuilder;
 import org.apache.metamodel.util.Func;
 import org.apache.metamodel.util.ObjectComparator;
 import org.apache.metamodel.util.Predicate;
@@ -265,35 +265,39 @@ public final class MetaModelHelper {
     }
 
     public static DataSet getSelection(final List<SelectItem> selectItems, final DataSet dataSet) {
-        final SelectItem[] dataSetSelectItems = dataSet.getSelectItems();
+        final List<SelectItem> dataSetSelectItems = Arrays.asList(dataSet.getSelectItems());
 
         // check if the selection is already the same
-        if (selectItems.size() == dataSetSelectItems.length) {
-            boolean same = true;
-            int i = 0;
-            for (SelectItem selectItem : selectItems) {
-                if (!EqualsBuilder.equals(selectItem, dataSetSelectItems[i])) {
-                    same = false;
-                    break;
-                }
-                i++;
-            }
-
-            if (same) {
-                // return the dataSet unmodified
-                return dataSet;
-            }
+        if (selectItems.equals(dataSetSelectItems)) {
+            // return the DataSet unmodified
+            return dataSet;
         }
 
-        SelectItem[] selectItemsArray = selectItems.toArray(new SelectItem[selectItems.size()]);
-        return new SubSelectionDataSet(selectItemsArray, dataSet);
+        final List<SelectItem> scalarFunctionSelectItemsToEvaluate = new ArrayList<>();
+
+        for (SelectItem selectItem : selectItems) {
+            if (selectItem.getScalarFunction() != null) {
+                if (!dataSetSelectItems.contains(selectItem)
+                        && dataSetSelectItems.contains(selectItem.replaceFunction(null))) {
+                    scalarFunctionSelectItemsToEvaluate.add(selectItem);
+                }
+            }
+        }
+        
+        if (scalarFunctionSelectItemsToEvaluate.isEmpty()) {
+            return new SubSelectionDataSet(selectItems, dataSet);
+        }
+
+        final ScalarFunctionDataSet scalaFunctionDataSet = new ScalarFunctionDataSet(scalarFunctionSelectItemsToEvaluate, dataSet);
+        return new SubSelectionDataSet(selectItems, scalaFunctionDataSet);
     }
 
     public static DataSet getSelection(SelectItem[] selectItems, DataSet dataSet) {
         return getSelection(Arrays.asList(selectItems), dataSet);
     }
 
-    public static DataSet getGrouped(List<SelectItem> selectItems, DataSet dataSet, Collection<GroupByItem> groupByItems) {
+    public static DataSet getGrouped(List<SelectItem> selectItems, DataSet dataSet,
+            Collection<GroupByItem> groupByItems) {
         return getGrouped(selectItems, dataSet, groupByItems.toArray(new GroupByItem[groupByItems.size()]));
     }
 
@@ -377,7 +381,7 @@ public final class MetaModelHelper {
                             Object functionResult = item.getAggregateFunction().evaluate(objects.toArray());
                             resultRow[i] = functionResult;
                         } else {
-                            if (item.getFunction() != null) {
+                            if (item.getAggregateFunction() != null) {
                                 logger.error("No function input found for SelectItem: {}", item);
                             }
                         }
@@ -409,7 +413,7 @@ public final class MetaModelHelper {
      * @return
      */
     public static DataSet getAggregated(List<SelectItem> workSelectItems, DataSet dataSet) {
-        final List<SelectItem> functionItems = getFunctionSelectItems(workSelectItems);
+        final List<SelectItem> functionItems = getAggregateFunctionSelectItems(workSelectItems);
         if (functionItems.isEmpty()) {
             return dataSet;
         }
@@ -502,11 +506,38 @@ public final class MetaModelHelper {
         return new InMemoryDataSet(header, resultRows);
     }
 
+    /**
+     * 
+     * @param selectItems
+     * @return
+     * 
+     * @deprecated use {@link #getAggregateFunctionSelectItems(Iterable)} or
+     *             {@link #getScalarFunctionSelectItems(Iterable)} instead
+     */
+    @Deprecated
     public static List<SelectItem> getFunctionSelectItems(Iterable<SelectItem> selectItems) {
         return CollectionUtils.filter(selectItems, new Predicate<SelectItem>() {
             @Override
             public Boolean eval(SelectItem arg) {
                 return arg.getFunction() != null;
+            }
+        });
+    }
+
+    public static List<SelectItem> getAggregateFunctionSelectItems(Iterable<SelectItem> selectItems) {
+        return CollectionUtils.filter(selectItems, new Predicate<SelectItem>() {
+            @Override
+            public Boolean eval(SelectItem arg) {
+                return arg.getAggregateFunction() != null;
+            }
+        });
+    }
+
+    public static List<SelectItem> getScalarFunctionSelectItems(Iterable<SelectItem> selectItems) {
+        return CollectionUtils.filter(selectItems, new Predicate<SelectItem>() {
+            @Override
+            public Boolean eval(SelectItem arg) {
+                return arg.getScalarFunction() != null;
             }
         });
     }
@@ -683,9 +714,10 @@ public final class MetaModelHelper {
             List<Row> ds1rows = new ArrayList<Row>();
             ds1rows.add(ds1row);
 
-            DataSet carthesianProduct = getCarthesianProduct(new DataSet[] {
-                    new InMemoryDataSet(new CachingDataSetHeader(si1), ds1rows),
-                    new InMemoryDataSet(new CachingDataSetHeader(si2), ds2data) }, onConditions);
+            DataSet carthesianProduct = getCarthesianProduct(
+                    new DataSet[] { new InMemoryDataSet(new CachingDataSetHeader(si1), ds1rows),
+                            new InMemoryDataSet(new CachingDataSetHeader(si2), ds2data) },
+                    onConditions);
             List<Row> carthesianRows = readDataSetFull(carthesianProduct);
             if (carthesianRows.size() > 0) {
                 resultRows.addAll(carthesianRows);
