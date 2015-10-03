@@ -19,25 +19,31 @@
 package org.apache.metamodel.query;
 
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.util.BooleanComparator;
 
-/**
- * Interface that contains scalar specific methods.
- *
- * Scalar functions returns only a single value, based on the input value.
- *
- */
-public interface ScalarFunction extends FunctionType {
+public class ToBooleanFunction implements ScalarFunction {
 
-    /**
-     * Applies and evaluates the function on a particular row of data.
-     * 
-     * @param row
-     *            the row containing data
-     * @param operandItem
-     *            the select item which is the argument to this function. If a
-     *            function takes multiple select items, this will be the primary
-     *            one.
-     * @return
-     */
-    public Object evaluate(Row row, SelectItem operandItem);
+    @Override
+    public ColumnType getExpectedColumnType(ColumnType type) {
+        if (type.isBoolean()) {
+            return type;
+        }
+        return ColumnType.BOOLEAN;
+    }
+
+    @Override
+    public String getFunctionName() {
+        return "TO_BOOLEAN";
+    }
+
+    @Override
+    public Object evaluate(Row row, SelectItem item) {
+        final Object value = row.getValue(item);
+        if (value == null || value instanceof Boolean) {
+            return value;
+        }
+        return BooleanComparator.toBoolean(value);
+    }
+
 }

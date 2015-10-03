@@ -24,7 +24,7 @@ import org.apache.metamodel.schema.ColumnType;
  * Represents a generic function to use in a SelectItem.
  *
  * @see SelectItem
-*/
+ */
 public interface FunctionType {
 
     public static final AggregateFunction COUNT = new CountAggregateFunction();
@@ -32,6 +32,10 @@ public interface FunctionType {
     public static final AggregateFunction SUM = new SumAggregateFunction();
     public static final AggregateFunction MAX = new MaxAggregateFunction();
     public static final AggregateFunction MIN = new MinAggregateFunction();
+    public static final ScalarFunction TO_STRING = new ToStringFunction();
+    public static final ScalarFunction TO_NUMBER = new ToNumberFunction();
+    public static final ScalarFunction TO_DATE = new ToDateFunction();
+    public static final ScalarFunction TO_BOOLEAN = new ToBooleanFunction();
 
     public ColumnType getExpectedColumnType(ColumnType type);
 
