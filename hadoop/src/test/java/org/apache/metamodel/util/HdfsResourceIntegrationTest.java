@@ -60,8 +60,11 @@ public class HdfsResourceIntegrationTest {
             configured = _filePath != null && _hostname != null && portString != null;
             if (configured) {
                 _port = Integer.parseInt(portString);
+            } else {
+                System.out.println("Skipping test because HDFS file path, hostname and port is not set");
             }
         } else {
+            System.out.println("Skipping test because properties file does not exist");
             configured = false;
         }
         Assume.assumeTrue(configured);
@@ -106,32 +109,44 @@ public class HdfsResourceIntegrationTest {
         }
 
         final Stopwatch stopwatch = Stopwatch.createStarted();
-
         final HdfsResource res1 = new HdfsResource(_hostname, _port, _filePath);
+        try {
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - start");
 
-        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - start");
+            final String str1 = res1.read(new Func<InputStream, String>() {
+                @Override
+                public String eval(InputStream in) {
+                    return FileHelper.readInputStreamAsString(in, "UTF8");
+                }
+            });
 
-        final String str1 = res1.read(new Func<InputStream, String>() {
-            @Override
-            public String eval(InputStream in) {
-                return FileHelper.readInputStreamAsString(in, "UTF8");
+            Assert.assertEquals(contentString, str1);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read1");
+
+            final String str2 = res1.read(new Func<InputStream, String>() {
+                @Override
+                public String eval(InputStream in) {
+                    return FileHelper.readInputStreamAsString(in, "UTF8");
+                }
+            });
+            Assert.assertEquals(str1, str2);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read2");
+
+            final StringBuilder sb = new StringBuilder();
+            for (String token : contents) {
+                sb.append(token);
             }
-        });
+            final long expectedSize = sb.length();
+            Assert.assertEquals(expectedSize, res1.getSize());
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - getSize");
 
-        Assert.assertEquals(contentString, str1);
-        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read1");
+            Assert.assertTrue(res1.getLastModified() > System.currentTimeMillis() - 10000);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - getLastModified");
 
-        final String str2 = res1.read(new Func<InputStream, String>() {
-            @Override
-            public String eval(InputStream in) {
-                return FileHelper.readInputStreamAsString(in, "UTF8");
-            }
-        });
-        Assert.assertEquals(str1, str2);
-        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read2");
-
-        res1.getHadoopFileSystem().delete(res1.getHadoopPath(), true);
-        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - deleted");
+        } finally {
+            res1.getHadoopFileSystem().delete(res1.getHadoopPath(), true);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - deleted");
+        }
 
         Assert.assertFalse(res1.isExists());
 
