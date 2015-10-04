@@ -13,6 +13,7 @@
  * [METAMODEL-190] - Improved decimal number support in Excel module.
  * [METAMODEL-191] - Resolved a number of dependency conflicts/overlaps when combining multiple MetaModel modules.
  * [METAMODEL-157] - Fixed an issue in DELETE FROM statements with WHERE clauses requiring client-side data type conversion on JDBC databases.
+ * [METAMODEL-182] - Improved HdfsResource and FileResource directory-based implementations by adding also getSize() and getLastModified() directory-based implementations.
 
 ### Apache MetaModel 4.3.6
 
