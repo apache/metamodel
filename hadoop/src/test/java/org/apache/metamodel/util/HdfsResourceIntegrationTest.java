@@ -20,7 +20,6 @@ package org.apache.metamodel.util;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -202,7 +201,7 @@ public class HdfsResourceIntegrationTest {
     }
 
     @Test
-    public void testFileSystemNotBeingClosed() throws IOException {
+    public void testFileSystemNotBeingClosed() throws Throwable {
         HdfsResource resourceToRead = null;
         try {
             resourceToRead = new HdfsResource(_hostname, _port, _filePath);
@@ -214,13 +213,18 @@ public class HdfsResourceIntegrationTest {
                 }
             });
 
+            final MutableRef<Throwable> throwableRef = new MutableRef<>();
+
             Thread.UncaughtExceptionHandler exceptionHandler = new Thread.UncaughtExceptionHandler() {
                 public void uncaughtException(Thread th, Throwable ex) {
+                    throwableRef.set(ex);
                     Assert.fail("Caught exception in the thread: " + ex);
                 }
             };
 
-            for (int i = 0; i < 10; i++) {
+            Thread[] threads = new Thread[10];
+
+            for (int i = 0; i < threads.length; i++) {
                 final HdfsResource res = new HdfsResource(_hostname, _port, _filePath);
 
                 Thread thread = new Thread(new Runnable() {
@@ -239,9 +243,21 @@ public class HdfsResourceIntegrationTest {
 
                     }
                 });
+                
                 thread.setUncaughtExceptionHandler(exceptionHandler);
                 thread.start();
+                threads[i] = thread;
             }
+
+            for (int i = 0; i < threads.length; i++) {
+                threads[i].join();
+            }
+            
+            Throwable error = throwableRef.get();
+            if (error != null) {
+                throw error;
+            }
+            
         } finally {
             if (resourceToRead != null) {
                 final FileSystem fileSystem = resourceToRead.getHadoopFileSystem();

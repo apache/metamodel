@@ -46,6 +46,8 @@ public class CassandraSimpleClient {
     }
 
     public void close() {
-        cluster.close();
+        if (cluster != null) {            
+            cluster.close();
+        }
     }
 }
