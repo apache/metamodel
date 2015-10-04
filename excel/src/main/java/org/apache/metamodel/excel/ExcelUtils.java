@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.excel;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.NumberFormat;
@@ -27,10 +29,13 @@ import java.util.Iterator;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FileResource;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.formula.FormulaParseException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -92,6 +97,19 @@ final class ExcelUtils {
     }
 
     /**
+     * Initializes a workbook instance based on a {@link File}.
+     *
+     * @return a workbook instance based on the {@link File}..
+     */
+    public static Workbook readWorkbook(final File file) {
+        try {
+            return WorkbookFactory.create(file);
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not open workbook", e);
+        }
+    }
+
+    /**
      * Initializes a workbook instance based on a inputstream.
      * 
      * @return a workbook instance based on the inputstream.
@@ -106,12 +124,16 @@ final class ExcelUtils {
     }
 
     public static Workbook readWorkbook(Resource resource) {
-        return resource.read(new Func<InputStream, Workbook>() {
-            @Override
-            public Workbook eval(InputStream inputStream) {
-                return readWorkbook(inputStream);
-            }
-        });
+        if(resource instanceof FileResource){
+            return readWorkbook(((FileResource) resource).getFile());
+        } else {
+            return resource.read(new Func<InputStream, Workbook>() {
+                @Override
+                public Workbook eval(InputStream inputStream) {
+                    return readWorkbook(inputStream);
+                }
+            });
+        }
     }
 
     public static boolean isXlsxFile(Resource resource) {
@@ -138,8 +160,23 @@ final class ExcelUtils {
         return readWorkbook(resource);
     }
 
-    public static void writeWorkbook(ExcelDataContext dataContext, final Workbook wb) {
-        final Resource resource = dataContext.getResource();
+    public static void writeWorkbook(Resource resource, final Workbook wb) {
+        if(resource instanceof FileResource){
+            final FileResource tempResource;
+            try {
+                File tempFile = File.createTempFile("metamodel-", null);
+                tempResource = new FileResource(tempFile);
+                writeWorkbookInternal(tempResource, wb);
+                FileHelper.copy(tempFile, ((FileResource) resource).getFile());
+            } catch (IOException e) {
+                throw new RuntimeException("Can't create temp file", e);
+            }
+        } else {
+            writeWorkbookInternal(resource, wb);
+        }
+    }
+
+    private static void writeWorkbookInternal(final Resource resource, final Workbook wb) {
         resource.write(new Action<OutputStream>() {
             @Override
             public void run(OutputStream outputStream) throws Exception {

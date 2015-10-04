@@ -25,6 +25,7 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.Ref;
+import org.apache.metamodel.util.Resource;
 
 /**
  * Delegate for spreadsheet-implementation specific operations in an
@@ -32,12 +33,12 @@ import org.apache.metamodel.util.Ref;
  */
 interface SpreadsheetReaderDelegate {
 
-	public void notifyTablesModified(Ref<InputStream> inputStreamRef);
+	void notifyTablesModified(final Resource resource);
 
-	public Schema createSchema(InputStream inputStream, String schemaName)
+	Schema createSchema(final Resource resource, String schemaName)
 			throws Exception;
 
-	public DataSet executeQuery(InputStream inputStream, Table table,
+	DataSet executeQuery(final Resource resource, Table table,
 			Column[] columns, int maxRows) throws Exception;
 
 }

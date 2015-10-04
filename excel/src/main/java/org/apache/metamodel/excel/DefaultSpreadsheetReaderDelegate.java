@@ -18,9 +18,9 @@
  */
 package org.apache.metamodel.excel;
 
-import java.io.InputStream;
 import java.util.Iterator;
 
+import org.apache.metamodel.util.Resource;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -36,7 +36,6 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.AlphabeticSequence;
-import org.apache.metamodel.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,9 +54,9 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     @Override
-    public Schema createSchema(InputStream inputStream, String schemaName) {
+    public Schema createSchema(final Resource resource, String schemaName) {
         final MutableSchema schema = new MutableSchema(schemaName);
-        final Workbook wb = ExcelUtils.readWorkbook(inputStream);
+        final Workbook wb = ExcelUtils.readWorkbook(resource);
 
         for (int i = 0; i < wb.getNumberOfSheets(); i++) {
             final Sheet currentSheet = wb.getSheetAt(i);
@@ -70,8 +69,8 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     @Override
-    public DataSet executeQuery(InputStream inputStream, Table table, Column[] columns, int maxRows) {
-        final Workbook wb = ExcelUtils.readWorkbook(inputStream);
+    public DataSet executeQuery(final Resource resource, Table table, Column[] columns, int maxRows) {
+        final Workbook wb = ExcelUtils.readWorkbook(resource);
         final Sheet sheet = wb.getSheet(table.getName());
 
         if (sheet == null || sheet.getPhysicalNumberOfRows() == 0) {
@@ -87,7 +86,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     @Override
-    public void notifyTablesModified(Ref<InputStream> inputStreamRef) {
+    public void notifyTablesModified(final Resource resource) {
         // do nothing
     }
 
@@ -164,7 +163,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
 
     /**
      * Builds columns based on row/cell values.
-     * 
+     *
      * @param table
      * @param wb
      * @param row
@@ -194,7 +193,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
      * Gets the column offset (first column to include). This is dependent on
      * the row used for column processing and whether the skip empty columns
      * property is set.
-     * 
+     *
      * @param row
      * @return
      */
