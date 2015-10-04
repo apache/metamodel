@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.excel;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.NumberFormat;
@@ -60,8 +61,11 @@ import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.Action;
 import org.apache.metamodel.util.DateUtils;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.FormatHelper;
 import org.apache.metamodel.util.Func;
+import org.apache.metamodel.util.InMemoryResource;
 import org.apache.metamodel.util.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,6 +110,25 @@ final class ExcelUtils {
     }
 
     public static Workbook readWorkbook(Resource resource) {
+        if (!resource.isExists()) {
+            // resource does not exist- create a blank workbook
+            if (isXlsxFile(resource)) {
+                return new SXSSFWorkbook(1000);
+            } else {
+                return new HSSFWorkbook();
+            }
+        }
+
+        if (resource instanceof FileResource) {
+            final File file = ((FileResource) resource).getFile();
+            try {
+                return WorkbookFactory.create(file);
+            } catch (Exception e) {
+                logger.error("Could not open workbook", e);
+                throw new IllegalStateException("Could not open workbook", e);
+            }
+        }
+
         return resource.read(new Func<InputStream, Workbook>() {
             @Override
             public Workbook eval(InputStream inputStream) {
@@ -128,24 +151,23 @@ final class ExcelUtils {
      */
     public static Workbook readWorkbook(ExcelDataContext dataContext) {
         Resource resource = dataContext.getResource();
-        if (!resource.isExists()) {
-            if (isXlsxFile(resource)) {
-                return new SXSSFWorkbook(1000);
-            } else {
-                return new HSSFWorkbook();
-            }
-        }
         return readWorkbook(resource);
     }
 
     public static void writeWorkbook(ExcelDataContext dataContext, final Workbook wb) {
-        final Resource resource = dataContext.getResource();
-        resource.write(new Action<OutputStream>() {
+        // first write to a temp file to avoid that workbook source is the same
+        // as the target (will cause read+write cyclic overflow)
+
+        final Resource realResource = dataContext.getResource();
+        final Resource tempResource = new InMemoryResource(realResource.getQualifiedPath());
+        tempResource.write(new Action<OutputStream>() {
             @Override
             public void run(OutputStream outputStream) throws Exception {
                 wb.write(outputStream);
             }
         });
+
+        FileHelper.copy(tempResource, realResource);
     }
 
     public static String getCellValue(Workbook wb, Cell cell) {
@@ -240,8 +262,8 @@ final class ExcelUtils {
 
             return getCellValue(wb, evaluatedCell);
         } catch (RuntimeException e) {
-            logger.warn("Exception occurred while evaluating formula at position ({},{}): {}", new Object[] { cell.getRowIndex(),
-                    cell.getColumnIndex(), e.getMessage() });
+            logger.warn("Exception occurred while evaluating formula at position ({},{}): {}",
+                    new Object[] { cell.getRowIndex(), cell.getColumnIndex(), e.getMessage() });
             // Some exceptions we simply log - result will be then be the
             // actual formula
             if (e instanceof FormulaParseException) {
@@ -324,7 +346,8 @@ final class ExcelUtils {
                     styleBuilder.background(argb.substring(2));
                 }
             } else {
-                throw new IllegalStateException("Unexpected color type: " + (color == null ? "null" : color.getClass()) + ")");
+                throw new IllegalStateException(
+                        "Unexpected color type: " + (color == null ? "null" : color.getClass()) + ")");
             }
         }
 
@@ -408,6 +431,7 @@ final class ExcelUtils {
         final Iterator<Row> rowIterator = getRowIterator(sheet, configuration, true);
         if (!rowIterator.hasNext()) {
             // no more rows!
+            FileHelper.safeClose(workbook);
             return new EmptyDataSet(selectItems);
         }
 

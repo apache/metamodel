@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.excel;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,8 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.AlphabeticSequence;
 import org.apache.metamodel.util.FileHelper;
-import org.apache.metamodel.util.Ref;
+import org.apache.metamodel.util.FileResource;
+import org.apache.metamodel.util.Resource;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.slf4j.Logger;
@@ -55,76 +57,93 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
 
     private static final Logger logger = LoggerFactory.getLogger(XlsxSpreadsheetReaderDelegate.class);
 
+    private final Resource _resource;
     private final ExcelConfiguration _configuration;
     private final Map<String, String> _tableNamesToInternalIds;
 
-    public XlsxSpreadsheetReaderDelegate(ExcelConfiguration configuration) {
+    public XlsxSpreadsheetReaderDelegate(Resource resource, ExcelConfiguration configuration) {
+        _resource = resource;
         _configuration = configuration;
         _tableNamesToInternalIds = new ConcurrentHashMap<String, String>();
     }
 
     @Override
-    public DataSet executeQuery(InputStream inputStream, Table table, Column[] columns, int maxRows) throws Exception {
-        final OPCPackage pkg = OPCPackage.open(inputStream);
+    public DataSet executeQuery(Table table, Column[] columns, int maxRows) throws Exception {
+        final OPCPackage pkg = openOPCPackage();
         final XSSFReader xssfReader = new XSSFReader(pkg);
         final String relationshipId = _tableNamesToInternalIds.get(table.getName());
-        
+
         if (relationshipId == null) {
             throw new IllegalStateException("No internal relationshipId found for table: " + table);
         }
 
-        return buildDataSet(columns, maxRows, relationshipId, xssfReader);
+        return buildDataSet(columns, maxRows, relationshipId, xssfReader, pkg);
+    }
+
+    private OPCPackage openOPCPackage() throws Exception {
+        if (_resource instanceof FileResource) {
+            final File file = ((FileResource) _resource).getFile();
+            return OPCPackage.open(file);
+        }
+
+        return OPCPackage.open(_resource.read());
     }
 
     @Override
-    public Schema createSchema(InputStream inputStream, String schemaName) throws Exception {
+    public Schema createSchema(String schemaName) throws Exception {
         final MutableSchema schema = new MutableSchema(schemaName);
-        final OPCPackage pkg = OPCPackage.open(inputStream);
-        final XSSFReader xssfReader = new XSSFReader(pkg);
+        final OPCPackage pkg = openOPCPackage();
+        try {
+            final XSSFReader xssfReader = new XSSFReader(pkg);
 
-        final XlsxWorkbookToTablesHandler workbookToTables = new XlsxWorkbookToTablesHandler(schema,
-                _tableNamesToInternalIds);
-        buildTables(xssfReader, workbookToTables);
+            final XlsxWorkbookToTablesHandler workbookToTables = new XlsxWorkbookToTablesHandler(schema,
+                    _tableNamesToInternalIds);
+            buildTables(xssfReader, workbookToTables);
 
-        for (Entry<String, String> entry : _tableNamesToInternalIds.entrySet()) {
+            for (Entry<String, String> entry : _tableNamesToInternalIds.entrySet()) {
 
-            final String tableName = entry.getKey();
-            final String relationshipId = entry.getValue();
+                final String tableName = entry.getKey();
+                final String relationshipId = entry.getValue();
 
-            final MutableTable table = (MutableTable) schema.getTableByName(tableName);
+                final MutableTable table = (MutableTable) schema.getTableByName(tableName);
 
-            buildColumns(table, relationshipId, xssfReader);
+                buildColumns(table, relationshipId, xssfReader);
+            }
+        } finally {
+            pkg.close();
         }
         return schema;
     }
 
     @Override
-    public void notifyTablesModified(Ref<InputStream> inputStreamRef) {
-        InputStream inputStream = inputStreamRef.get();
+    public void notifyTablesModified() {
         final XlsxWorkbookToTablesHandler workbookToTables = new XlsxWorkbookToTablesHandler(null,
                 _tableNamesToInternalIds);
         try {
-            final OPCPackage pkg = OPCPackage.open(inputStream);
-            final XSSFReader xssfReader = new XSSFReader(pkg);
-            buildTables(xssfReader, workbookToTables);
+            final OPCPackage pkg = openOPCPackage();
+            try {
+                final XSSFReader xssfReader = new XSSFReader(pkg);
+                buildTables(xssfReader, workbookToTables);
+            } finally {
+                pkg.close();
+            }
         } catch (Exception e) {
             throw new IllegalStateException(e);
-        } finally {
-            FileHelper.safeClose(inputStream);
         }
     }
 
     private DataSet buildDataSet(final Column[] columns, int maxRows, final String relationshipId,
-            final XSSFReader xssfReader) throws Exception {
+            final XSSFReader xssfReader, final OPCPackage pkg) throws Exception {
 
         List<SelectItem> selectItems = new ArrayList<SelectItem>(columns.length);
         for (Column column : columns) {
             selectItems.add(new SelectItem(column));
         }
-        final XlsxRowPublisherAction publishAction = new XlsxRowPublisherAction(_configuration, columns,
-                relationshipId, xssfReader);
+        final XlsxRowPublisherAction publishAction = new XlsxRowPublisherAction(_configuration, columns, relationshipId,
+                xssfReader);
 
-        return new RowPublisherDataSet(selectItems.toArray(new SelectItem[selectItems.size()]), maxRows, publishAction);
+        return new RowPublisherDataSet(selectItems.toArray(new SelectItem[selectItems.size()]), maxRows, publishAction,
+                pkg);
     }
 
     private void buildColumns(final MutableTable table, final String relationshipId, final XSSFReader xssfReader)

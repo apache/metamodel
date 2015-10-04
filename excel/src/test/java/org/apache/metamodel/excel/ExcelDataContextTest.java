@@ -75,8 +75,8 @@ public class ExcelDataContextTest extends TestCase {
     }
 
     public void testEmptyFileNoHeaderLine() throws Exception {
-        DataContext dc = new ExcelDataContext(new File("src/test/resources/empty_file.xls"), new ExcelConfiguration(
-                ExcelConfiguration.NO_COLUMN_NAME_LINE, false, false));
+        DataContext dc = new ExcelDataContext(new File("src/test/resources/empty_file.xls"),
+                new ExcelConfiguration(ExcelConfiguration.NO_COLUMN_NAME_LINE, false, false));
         assertEquals(1, dc.getDefaultSchema().getTableCount());
 
         Table table = dc.getDefaultSchema().getTables()[0];
@@ -85,8 +85,8 @@ public class ExcelDataContextTest extends TestCase {
     }
 
     public void testUnexistingHeaderLine() throws Exception {
-        DataContext dc = new ExcelDataContext(new File("src/test/resources/xls_people.xls"), new ExcelConfiguration(20,
-                true, false));
+        DataContext dc = new ExcelDataContext(new File("src/test/resources/xls_people.xls"),
+                new ExcelConfiguration(20, true, false));
         assertEquals(1, dc.getDefaultSchema().getTableCount());
 
         Table table = dc.getDefaultSchema().getTables()[0];
@@ -163,8 +163,8 @@ public class ExcelDataContextTest extends TestCase {
 
         assertTrue(ds.next());
         row = ds.getRow();
-        assertEquals("TismmerswerskisMFSTLandsmeers                                                          ", row
-                .getValue(0).toString());
+        assertEquals("TismmerswerskisMFSTLandsmeers                                                          ",
+                row.getValue(0).toString());
 
         assertTrue(ds.next());
         row = ds.getRow();
@@ -172,8 +172,8 @@ public class ExcelDataContextTest extends TestCase {
 
         assertTrue(ds.next());
         row = ds.getRow();
-        assertEquals("TismmerswerskisMFSTLandsmeers                                                          ", row
-                .getValue(0).toString());
+        assertEquals("TismmerswerskisMFSTLandsmeers                                                          ",
+                row.getValue(0).toString());
 
         assertFalse(ds.next());
         ds.close();
@@ -295,8 +295,8 @@ public class ExcelDataContextTest extends TestCase {
 
     public void testConfigurationWithoutHeader() throws Exception {
         File file = new File("src/test/resources/xls_people.xls");
-        DataContext dc = new ExcelDataContext(file, new ExcelConfiguration(ExcelConfiguration.NO_COLUMN_NAME_LINE,
-                true, true));
+        DataContext dc = new ExcelDataContext(file,
+                new ExcelConfiguration(ExcelConfiguration.NO_COLUMN_NAME_LINE, true, true));
         Table table = dc.getDefaultSchema().getTables()[0];
 
         String[] columnNames = table.getColumnNames();
@@ -387,10 +387,11 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(1, schema.getTableCount());
 
         Table table = schema.getTables()[0];
-        assertEquals("[Column[name=a,columnNumber=0,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
-                + "Column[name=b,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
-                + "Column[name=c,columnNumber=2,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
-                + "Column[name=d,columnNumber=3,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]]",
+        assertEquals(
+                "[Column[name=a,columnNumber=0,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                        + "Column[name=b,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                        + "Column[name=c,columnNumber=2,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                        + "Column[name=d,columnNumber=3,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]]",
                 Arrays.toString(table.getColumns()));
 
         Query q = new Query().select(table.getColumns()).from(table);
@@ -411,10 +412,11 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(1, schema.getTableCount());
 
         Table table = schema.getTables()[0];
-        assertEquals("[Column[name=a,columnNumber=0,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
-                + "Column[name=b,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
-                + "Column[name=[Column 3],columnNumber=2,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
-                + "Column[name=d,columnNumber=3,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]]",
+        assertEquals(
+                "[Column[name=a,columnNumber=0,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                        + "Column[name=b,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                        + "Column[name=[Column 3],columnNumber=2,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                        + "Column[name=d,columnNumber=3,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]]",
                 Arrays.toString(table.getColumns()));
 
         Query q = new Query().select(table.getColumns()).from(table);
@@ -518,15 +520,15 @@ public class ExcelDataContextTest extends TestCase {
         Table table = schema.getTableByName("Sheet1");
         assertEquals(
 
-                "[Column[name=Pkg No.,columnNumber=0,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
-                        + "Column[name=Description,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
-                        + "Column[name=Room,columnNumber=2,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
-                        + "Column[name=Level,columnNumber=3,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]]",
+        "[Column[name=Pkg No.,columnNumber=0,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=Description,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=Room,columnNumber=2,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=Level,columnNumber=3,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]]",
                 Arrays.toString(table.getColumns()));
     }
 
     public void testInsertInto() throws Exception {
-        File file = new File("target/xls_people_modified.xls");
+        final File file = new File("target/xls_people_modified.xls");
 
         if (file.exists()) {
             assertTrue(file.delete());
@@ -536,7 +538,7 @@ public class ExcelDataContextTest extends TestCase {
 
         assertTrue(file.exists());
 
-        ExcelDataContext dc = new ExcelDataContext(file);
+        final ExcelDataContext dc = new ExcelDataContext(file);
         final Table table = dc.getDefaultSchema().getTables()[0];
         final Column nameColumn = table.getColumnByName("name");
         dc.executeUpdate(new UpdateScript() {
@@ -569,8 +571,8 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals("mike", ds.getRow().getValue(0).toString());
         assertTrue(ds.next());
         assertEquals("pennywise the [clown]", ds.getRow().getValue(0).toString());
-        assertEquals("font-weight: bold;color: rgb(255,0,0);background-color: rgb(0,0,255);", ds.getRow().getStyle(0)
-                .toString());
+        assertEquals("font-weight: bold;color: rgb(255,0,0);background-color: rgb(0,0,255);",
+                ds.getRow().getStyle(0).toString());
         assertTrue(ds.next());
         assertEquals("peter", ds.getRow().getValue(0).toString());
         assertTrue(ds.next());
@@ -581,8 +583,8 @@ public class ExcelDataContextTest extends TestCase {
         ds = dc.query().from(table).select("age").where("age").eq(30).execute();
         assertTrue(ds.next());
         assertEquals("30", ds.getRow().getValue(0));
-        assertEquals("font-style: italic;text-decoration: underline;text-align: center;color: rgb(0,0,255);", ds
-                .getRow().getStyle(0).toCSS());
+        assertEquals("font-style: italic;text-decoration: underline;text-align: center;color: rgb(0,0,255);",
+                ds.getRow().getStyle(0).toCSS());
         assertFalse(ds.next());
     }
 

@@ -90,7 +90,8 @@ public final class FileHelper {
                 logger.error("Could not create tempFile in order to find temporary dir", e);
                 result = new File("metamodel.tmp.dir");
                 if (!result.mkdir()) {
-                    throw new IllegalStateException("Could not create directory for temporary files: " + result.getName());
+                    throw new IllegalStateException(
+                            "Could not create directory for temporary files: " + result.getName());
                 }
                 result.deleteOnExit();
             }
@@ -110,7 +111,8 @@ public final class FileHelper {
         return getWriter(outputStream, encoding, false);
     }
 
-    public static Writer getWriter(OutputStream outputStream, String encoding, boolean insertBom) throws IllegalStateException {
+    public static Writer getWriter(OutputStream outputStream, String encoding, boolean insertBom)
+            throws IllegalStateException {
         if (!(outputStream instanceof BufferedOutputStream)) {
             outputStream = new BufferedOutputStream(outputStream);
         }
@@ -128,7 +130,8 @@ public final class FileHelper {
         }
     }
 
-    public static Writer getWriter(File file, String encoding, boolean append, boolean insertBom) throws IllegalStateException {
+    public static Writer getWriter(File file, String encoding, boolean append, boolean insertBom)
+            throws IllegalStateException {
         if (append && insertBom) {
             throw new IllegalArgumentException("Can not insert BOM into appending writer");
         }
@@ -144,13 +147,12 @@ public final class FileHelper {
     public static Reader getReader(InputStream inputStream, String encoding) throws IllegalStateException {
         try {
             if (encoding == null || encoding.toLowerCase().indexOf("utf") != -1) {
-                byte bom[] = new byte[4];
+                final byte bom[] = new byte[4];
                 int unread;
 
                 // auto-detect byte-order-mark
-                @SuppressWarnings("resource")
-                PushbackInputStream pushbackInputStream = new PushbackInputStream(inputStream, bom.length);
-                int n = pushbackInputStream.read(bom, 0, bom.length);
+                final PushbackInputStream pushbackInputStream = new PushbackInputStream(inputStream, bom.length);
+                final int n = pushbackInputStream.read(bom, 0, bom.length);
 
                 // Read ahead four bytes and check for BOM marks.
                 if ((bom[0] == (byte) 0xEF) && (bom[1] == (byte) 0xBB) && (bom[2] == (byte) 0xBF)) {
@@ -205,7 +207,8 @@ public final class FileHelper {
         return getReader(inputStream, encoding);
     }
 
-    public static String readInputStreamAsString(InputStream inputStream, String encoding) throws IllegalStateException {
+    public static String readInputStreamAsString(InputStream inputStream, String encoding)
+            throws IllegalStateException {
         Reader reader = getReader(inputStream, encoding);
         return readAsString(reader);
     }
@@ -324,7 +327,8 @@ public final class FileHelper {
         return new BufferedReader(reader);
     }
 
-    public static BufferedReader getBufferedReader(InputStream inputStream, String encoding) throws IllegalStateException {
+    public static BufferedReader getBufferedReader(InputStream inputStream, String encoding)
+            throws IllegalStateException {
         Reader reader = getReader(inputStream, encoding);
         return new BufferedReader(reader);
     }
@@ -349,7 +353,8 @@ public final class FileHelper {
         writeString(outputStream, string, DEFAULT_ENCODING);
     }
 
-    public static void writeString(OutputStream outputStream, String string, String encoding) throws IllegalStateException {
+    public static void writeString(OutputStream outputStream, String string, String encoding)
+            throws IllegalStateException {
         final Writer writer = getWriter(outputStream, encoding);
         writeString(writer, string, encoding);
     }
@@ -413,6 +418,19 @@ public final class FileHelper {
             }
         } catch (IOException e) {
             throw new IllegalStateException(e);
+        }
+    }
+
+    public static void copy(Resource from, Resource to) throws IllegalStateException {
+        assert from.isExists();
+
+        final InputStream fromStream = from.read();
+        final OutputStream toStream = to.write();
+
+        try {
+            copy(fromStream, toStream);
+        } finally {
+            safeClose(fromStream, toStream);
         }
     }
 

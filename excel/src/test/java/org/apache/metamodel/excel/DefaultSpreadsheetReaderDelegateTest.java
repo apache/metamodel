@@ -21,8 +21,6 @@ package org.apache.metamodel.excel;
 import java.io.File;
 import java.lang.reflect.Field;
 
-import junit.framework.TestCase;
-
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.Style;
@@ -31,214 +29,199 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
+import junit.framework.TestCase;
+
 public class DefaultSpreadsheetReaderDelegateTest extends TestCase {
 
-	public void testReadAllTestResourceFiles() {
-		File[] listFiles = new File("src/test/resources").listFiles();
-		for (File file : listFiles) {
-			if (file.isFile() && file.getName().indexOf(".xls") != -1) {
-				try {
-					runTest(file);
-				} catch (Throwable e) {
-					throw new IllegalStateException("Exception in file: "
-							+ file, e);
-				}
-			}
-		}
-	}
+    public void testReadAllTestResourceFiles() {
+        File[] listFiles = new File("src/test/resources").listFiles();
+        for (File file : listFiles) {
+            if (file.isFile() && file.getName().indexOf(".xls") != -1) {
+                try {
+                    runTest(file);
+                } catch (Throwable e) {
+                    throw new IllegalStateException("Exception in file: " + file, e);
+                }
+            }
+        }
+    }
 
-	private void runTest(File file) throws Exception {
-		ExcelDataContext mainDataContext = new ExcelDataContext(file);
-		applyReaderDelegate(mainDataContext);
+    private void runTest(File file) throws Exception {
+        ExcelDataContext mainDataContext = new ExcelDataContext(file);
+        applyReaderDelegate(mainDataContext);
 
-		ExcelDataContext comparedDataContext = null;
-		if (file.getName().endsWith(".xlsx")) {
-			comparedDataContext = new ExcelDataContext(file);
-		}
+        ExcelDataContext comparedDataContext = null;
+        if (file.getName().endsWith(".xlsx")) {
+            comparedDataContext = new ExcelDataContext(file);
+        }
 
-		Schema schema = mainDataContext.getDefaultSchema();
-		assertNotNull(schema);
-		assertEquals(file.getName(), schema.getName());
+        Schema schema = mainDataContext.getDefaultSchema();
+        assertNotNull(schema);
+        assertEquals(file.getName(), schema.getName());
 
-		if (comparedDataContext != null) {
-			assertEquals(comparedDataContext.getDefaultSchema().getName(),
-					schema.getName());
-		}
+        if (comparedDataContext != null) {
+            assertEquals(comparedDataContext.getDefaultSchema().getName(), schema.getName());
+        }
 
-		assertEquals(DefaultSpreadsheetReaderDelegate.class,
-				mainDataContext.getSpreadsheetReaderDelegateClass());
+        assertEquals(DefaultSpreadsheetReaderDelegate.class, mainDataContext.getSpreadsheetReaderDelegateClass());
 
-		Table[] tables = schema.getTables();
-		assertTrue(tables.length > 0);
+        Table[] tables = schema.getTables();
+        assertTrue(tables.length > 0);
 
-		Table[] comparedTables = null;
-		if (comparedDataContext != null) {
-			assertEquals(XlsxSpreadsheetReaderDelegate.class,
-					comparedDataContext.getSpreadsheetReaderDelegateClass());
-			comparedTables = comparedDataContext.getDefaultSchema().getTables();
-			assertEquals(comparedTables.length, tables.length);
-		}
+        Table[] comparedTables = null;
+        if (comparedDataContext != null) {
+            assertEquals(XlsxSpreadsheetReaderDelegate.class, comparedDataContext.getSpreadsheetReaderDelegateClass());
+            comparedTables = comparedDataContext.getDefaultSchema().getTables();
+            assertEquals(comparedTables.length, tables.length);
+        }
 
-		for (int i = 0; i < tables.length; i++) {
-			Table table = tables[i];
-			Column[] columns = table.getColumns();
-			Query query = mainDataContext.query().from(table).select(columns)
-					.toQuery();
-			DataSet dataSet = mainDataContext.executeQuery(query);
+        for (int i = 0; i < tables.length; i++) {
+            Table table = tables[i];
+            Column[] columns = table.getColumns();
+            Query query = mainDataContext.query().from(table).select(columns).toQuery();
+            DataSet dataSet = mainDataContext.executeQuery(query);
 
-			DataSet comparedDataSet = null;
-			if (comparedDataContext != null) {
-				Table comparedTable = comparedTables[i];
-				assertEquals(comparedTable.getName(), table.getName());
-				assertEquals(comparedTable.getColumnCount(),
-						table.getColumnCount());
+            DataSet comparedDataSet = null;
+            if (comparedDataContext != null) {
+                Table comparedTable = comparedTables[i];
+                assertEquals(comparedTable.getName(), table.getName());
+                assertEquals(comparedTable.getColumnCount(), table.getColumnCount());
 
-				Column[] comparedColumns = comparedTable.getColumns();
-				for (int j = 0; j < comparedColumns.length; j++) {
-					assertEquals(columns[j].getColumnNumber(),
-							comparedColumns[j].getColumnNumber());
-				}
+                Column[] comparedColumns = comparedTable.getColumns();
+                for (int j = 0; j < comparedColumns.length; j++) {
+                    assertEquals(columns[j].getColumnNumber(), comparedColumns[j].getColumnNumber());
+                }
 
-				Query comparedQuery = comparedDataContext.query()
-						.from(comparedTable).select(comparedColumns).toQuery();
-				comparedDataSet = comparedDataContext
-						.executeQuery(comparedQuery);
-			}
+                Query comparedQuery = comparedDataContext.query().from(comparedTable).select(comparedColumns).toQuery();
+                comparedDataSet = comparedDataContext.executeQuery(comparedQuery);
+            }
 
-			while (dataSet.next()) {
-				Row row = dataSet.getRow();
-				assertNotNull(row);
-				Object[] values = row.getValues();
+            while (dataSet.next()) {
+                Row row = dataSet.getRow();
+                assertNotNull(row);
+                Object[] values = row.getValues();
 
-				assertEquals(values.length, table.getColumnCount());
+                assertEquals(values.length, table.getColumnCount());
 
-				if (comparedDataSet != null) {
-					boolean next = comparedDataSet.next();
-					assertTrue("No comparable row exists for: " + row, next);
-					Row comparedRow = comparedDataSet.getRow();
-					assertNotNull(comparedRow);
-					Object[] comparedValues = comparedRow.getValues();
-					assertEquals(comparedValues.length, table.getColumnCount());
+                if (comparedDataSet != null) {
+                    boolean next = comparedDataSet.next();
+                    assertTrue("No comparable row exists for: " + row, next);
+                    Row comparedRow = comparedDataSet.getRow();
+                    assertNotNull(comparedRow);
+                    Object[] comparedValues = comparedRow.getValues();
+                    assertEquals(comparedValues.length, table.getColumnCount());
 
-					for (int j = 0; j < comparedValues.length; j++) {
-						assertEquals(comparedValues[j], values[j]);
-					}
+                    for (int j = 0; j < comparedValues.length; j++) {
+                        assertEquals(comparedValues[j], values[j]);
+                    }
 
-					// compare styles
-					for (int j = 0; j < comparedValues.length; j++) {
-						Style style1 = comparedRow.getStyle(j);
-						Style style2 = row.getStyle(j);
-						assertEquals("Diff in style on row: " + row
-								+ " (value index = " + j + ")\nStyle 1: "
-								+ style1 + "\nStyle 2: " + style2 + ". ",
-								style1, style2);
-					}
-				}
-			}
-			dataSet.close();
+                    // compare styles
+                    for (int j = 0; j < comparedValues.length; j++) {
+                        Style style1 = comparedRow.getStyle(j);
+                        Style style2 = row.getStyle(j);
+                        assertEquals("Diff in style on row: " + row + " (value index = " + j + ")\nStyle 1: " + style1
+                                + "\nStyle 2: " + style2 + ". ", style1, style2);
+                    }
+                }
+            }
+            dataSet.close();
 
-			if (comparedDataSet != null) {
-				assertFalse(comparedDataSet.next());
-				comparedDataSet.close();
-			}
-		}
-	}
+            if (comparedDataSet != null) {
+                assertFalse(comparedDataSet.next());
+                comparedDataSet.close();
+            }
+        }
+    }
 
-	/**
-	 * Applies the {@link DefaultSpreadsheetReaderDelegate} through reflection.
-	 * 
-	 * @param dataContext
-	 * @throws NoSuchFieldException
-	 * @throws IllegalAccessException
-	 */
-	private void applyReaderDelegate(ExcelDataContext dataContext)
-			throws NoSuchFieldException, IllegalAccessException {
-		Field field = ExcelDataContext.class
-				.getDeclaredField("_spreadsheetReaderDelegate");
-		assertNotNull(field);
-		field.setAccessible(true);
-		field.set(
-				dataContext,
-				new DefaultSpreadsheetReaderDelegate(dataContext
-						.getConfiguration()));
-	}
+    /**
+     * Applies the {@link DefaultSpreadsheetReaderDelegate} through reflection.
+     * 
+     * @param dataContext
+     * @throws NoSuchFieldException
+     * @throws IllegalAccessException
+     */
+    private void applyReaderDelegate(ExcelDataContext dataContext) throws NoSuchFieldException, IllegalAccessException {
+        final SpreadsheetReaderDelegate delegate = new DefaultSpreadsheetReaderDelegate(dataContext.getResource(),
+                dataContext.getConfiguration());
+        final Field field = ExcelDataContext.class.getDeclaredField("_spreadsheetReaderDelegate");
+        assertNotNull(field);
+        field.setAccessible(true);
+        field.set(dataContext, delegate);
+    }
 
-	public void testStylingOfDateCell() throws Exception {
-		ExcelDataContext dc = new ExcelDataContext(new File(
-				"src/test/resources/Spreadsheet2007.xlsx"));
-		applyReaderDelegate(dc);
+    public void testStylingOfDateCell() throws Exception {
+        ExcelDataContext dc = new ExcelDataContext(new File("src/test/resources/Spreadsheet2007.xlsx"));
+        applyReaderDelegate(dc);
 
-		Table table = dc.getDefaultSchema().getTables()[0];
+        Table table = dc.getDefaultSchema().getTables()[0];
 
-		final String expectedStyling = "";
+        final String expectedStyling = "";
 
-		DataSet dataSet = dc.query().from(table).select("date").execute();
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertFalse(dataSet.next());
-		dataSet.close();
-	}
+        DataSet dataSet = dc.query().from(table).select("date").execute();
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertFalse(dataSet.next());
+        dataSet.close();
+    }
 
-	public void testStylingOfNullCell() throws Exception {
-		ExcelDataContext dc = new ExcelDataContext(new File(
-				"src/test/resources/formulas.xlsx"));
-		applyReaderDelegate(dc);
+    public void testStylingOfNullCell() throws Exception {
+        ExcelDataContext dc = new ExcelDataContext(new File("src/test/resources/formulas.xlsx"));
+        applyReaderDelegate(dc);
 
-		Table table = dc.getDefaultSchema().getTables()[0];
+        Table table = dc.getDefaultSchema().getTables()[0];
 
-		DataSet dataSet = dc.query().from(table).select("Foo").and("Bar")
-				.where("Foo").isEquals("7").execute();
-		assertTrue(dataSet.next());
-		Row row = dataSet.getRow();
-		assertNotNull(row.getStyle(0));
+        DataSet dataSet = dc.query().from(table).select("Foo").and("Bar").where("Foo").isEquals("7").execute();
+        assertTrue(dataSet.next());
+        Row row = dataSet.getRow();
+        assertNotNull(row.getStyle(0));
 
-		final String expectedStyling = "";
+        final String expectedStyling = "";
 
-		assertEquals(expectedStyling, row.getStyle(0).toCSS());
-		assertNotNull(row.getStyle(1));
-		assertEquals(expectedStyling, row.getStyle(1).toCSS());
-		assertFalse(dataSet.next());
-		dataSet.close();
+        assertEquals(expectedStyling, row.getStyle(0).toCSS());
+        assertNotNull(row.getStyle(1));
+        assertEquals(expectedStyling, row.getStyle(1).toCSS());
+        assertFalse(dataSet.next());
+        dataSet.close();
 
-		dataSet = dc.query().from(table).select("Foo").and("Bar").execute();
-		assertTrue(dataSet.next());
-		row = dataSet.getRow();
-		assertNotNull(row.getStyle(0));
-		assertEquals(expectedStyling, row.getStyle(0).toCSS());
-		assertNotNull(row.getStyle(1));
-		assertEquals(expectedStyling, row.getStyle(1).toCSS());
+        dataSet = dc.query().from(table).select("Foo").and("Bar").execute();
+        assertTrue(dataSet.next());
+        row = dataSet.getRow();
+        assertNotNull(row.getStyle(0));
+        assertEquals(expectedStyling, row.getStyle(0).toCSS());
+        assertNotNull(row.getStyle(1));
+        assertEquals(expectedStyling, row.getStyle(1).toCSS());
 
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertTrue(dataSet.next());
-		assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
-		assertFalse(dataSet.next());
-		dataSet.close();
-	}
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertTrue(dataSet.next());
+        assertEquals(expectedStyling, dataSet.getRow().getStyle(0).toCSS());
+        assertFalse(dataSet.next());
+        dataSet.close();
+    }
 }
