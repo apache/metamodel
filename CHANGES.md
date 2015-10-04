@@ -11,6 +11,7 @@
  * [METAMODEL-172] - ElasticSearch Date types should be converted properly.
  * [METAMODEL-184] - ElasticSearch querying with "IS NULL" and "IS NOT NULL" now uses MissingFilter and ExistsFilter.
  * [METAMODEL-190] - Improved decimal number support in Excel module.
+ * [METAMODEL-191] - Resolved a number of dependency conflicts/overlaps when combining multiple MetaModel modules.
 
 ### Apache MetaModel 4.3.6
 
