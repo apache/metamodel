@@ -74,7 +74,7 @@ public class ExcelUpdateCallbackTest extends TestCase {
 
 			assertEquals(1000, rows.size());
 
-			ExcelUtils.writeWorkbook(dc, sheet.getWorkbook());
+			ExcelUtils.writeAndCloseWorkbook(dc, sheet.getWorkbook());
 		}
 
 		assertTrue("Usually the file size will be circa 42000, but it was: "

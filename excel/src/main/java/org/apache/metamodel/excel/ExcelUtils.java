@@ -95,20 +95,6 @@ final class ExcelUtils {
         }
     }
 
-    /**
-     * Initializes a workbook instance based on a inputstream.
-     * 
-     * @return a workbook instance based on the inputstream.
-     */
-    public static Workbook readWorkbook(InputStream inputStream) {
-        try {
-            return WorkbookFactory.create(inputStream);
-        } catch (Exception e) {
-            logger.error("Could not open workbook", e);
-            throw new IllegalStateException("Could not open workbook", e);
-        }
-    }
-
     public static Workbook readWorkbook(Resource resource) {
         if (!resource.isExists()) {
             // resource does not exist- create a blank workbook
@@ -132,7 +118,12 @@ final class ExcelUtils {
         return resource.read(new Func<InputStream, Workbook>() {
             @Override
             public Workbook eval(InputStream inputStream) {
-                return readWorkbook(inputStream);
+                try {
+                    return WorkbookFactory.create(inputStream);
+                } catch (Exception e) {
+                    logger.error("Could not open workbook", e);
+                    throw new IllegalStateException("Could not open workbook", e);
+                }
             }
         });
     }
@@ -154,7 +145,14 @@ final class ExcelUtils {
         return readWorkbook(resource);
     }
 
-    public static void writeWorkbook(ExcelDataContext dataContext, final Workbook wb) {
+    /**
+     * Writes the {@link Workbook} to a {@link Resource}. The {@link Workbook}
+     * will be closed as a result of this operation!
+     * 
+     * @param dataContext
+     * @param wb
+     */
+    public static void writeAndCloseWorkbook(ExcelDataContext dataContext, final Workbook wb) {
         // first write to a temp file to avoid that workbook source is the same
         // as the target (will cause read+write cyclic overflow)
 
@@ -166,6 +164,7 @@ final class ExcelUtils {
                 wb.write(outputStream);
             }
         });
+        FileHelper.safeClose(wb);
 
         FileHelper.copy(tempResource, realResource);
     }

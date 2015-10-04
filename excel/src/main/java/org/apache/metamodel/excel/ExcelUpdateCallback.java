@@ -18,6 +18,16 @@
  */
 package org.apache.metamodel.excel;
 
+import org.apache.metamodel.AbstractUpdateCallback;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.create.TableCreationBuilder;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Style.Color;
+import org.apache.metamodel.delete.RowDeletionBuilder;
+import org.apache.metamodel.drop.TableDropBuilder;
+import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -29,16 +39,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.apache.metamodel.AbstractUpdateCallback;
-import org.apache.metamodel.UpdateCallback;
-import org.apache.metamodel.create.TableCreationBuilder;
-import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.data.Style.Color;
-import org.apache.metamodel.delete.RowDeletionBuilder;
-import org.apache.metamodel.drop.TableDropBuilder;
-import org.apache.metamodel.insert.RowInsertionBuilder;
-import org.apache.metamodel.schema.Schema;
-import org.apache.metamodel.schema.Table;
 
 final class ExcelUpdateCallback extends AbstractUpdateCallback implements UpdateCallback {
 
@@ -57,8 +57,8 @@ final class ExcelUpdateCallback extends AbstractUpdateCallback implements Update
     }
 
     @Override
-    public TableCreationBuilder createTable(Schema schema, String name) throws IllegalArgumentException,
-            IllegalStateException {
+    public TableCreationBuilder createTable(Schema schema, String name)
+            throws IllegalArgumentException, IllegalStateException {
         return new ExcelTableCreationBuilder(this, schema, name);
     }
 
@@ -78,7 +78,7 @@ final class ExcelUpdateCallback extends AbstractUpdateCallback implements Update
 
     protected void close() {
         if (_workbook != null) {
-            ExcelUtils.writeWorkbook(_dataContext, _workbook);
+            ExcelUtils.writeAndCloseWorkbook(_dataContext, _workbook);
 
             _workbook = null;
             _dateCellFormat = null;
@@ -93,7 +93,7 @@ final class ExcelUpdateCallback extends AbstractUpdateCallback implements Update
     protected Workbook getWorkbook(boolean streamingAllowed) {
         if (_workbook == null || (!streamingAllowed && _workbook instanceof SXSSFWorkbook)) {
             if (_workbook != null) {
-                ExcelUtils.writeWorkbook(_dataContext, _workbook);
+                ExcelUtils.writeAndCloseWorkbook(_dataContext, _workbook);
             }
             _workbook = ExcelUtils.readWorkbook(_dataContext);
             if (streamingAllowed && _workbook instanceof XSSFWorkbook) {
