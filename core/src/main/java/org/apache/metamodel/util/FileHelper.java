@@ -39,6 +39,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -90,8 +92,8 @@ public final class FileHelper {
                 logger.error("Could not create tempFile in order to find temporary dir", e);
                 result = new File("metamodel.tmp.dir");
                 if (!result.mkdir()) {
-                    throw new IllegalStateException(
-                            "Could not create directory for temporary files: " + result.getName());
+                    throw new IllegalStateException("Could not create directory for temporary files: "
+                            + result.getName());
                 }
                 result.deleteOnExit();
             }
@@ -151,6 +153,7 @@ public final class FileHelper {
                 int unread;
 
                 // auto-detect byte-order-mark
+                @SuppressWarnings("resource")
                 final PushbackInputStream pushbackInputStream = new PushbackInputStream(inputStream, bom.length);
                 final int n = pushbackInputStream.read(bom, 0, bom.length);
 
@@ -207,8 +210,7 @@ public final class FileHelper {
         return getReader(inputStream, encoding);
     }
 
-    public static String readInputStreamAsString(InputStream inputStream, String encoding)
-            throws IllegalStateException {
+    public static String readInputStreamAsString(InputStream inputStream, String encoding) throws IllegalStateException {
         Reader reader = getReader(inputStream, encoding);
         return readAsString(reader);
     }
@@ -424,26 +426,42 @@ public final class FileHelper {
     public static void copy(Resource from, Resource to) throws IllegalStateException {
         assert from.isExists();
 
-        final InputStream fromStream = from.read();
-        final OutputStream toStream = to.write();
+        if (from instanceof FileResource && to instanceof FileResource) {
+            final File fromFile = ((FileResource) from).getFile();
+            final File toFile = ((FileResource) to).getFile();
+            copy(fromFile, toFile);
+            return;
+        }
 
+        final InputStream fromStream = from.read();
         try {
-            copy(fromStream, toStream);
+            if (to instanceof FileResource) {
+                File file = ((FileResource) to).getFile();
+                try {
+                    Files.copy(fromStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
+                }
+            } else {
+                final OutputStream toStream = to.write();
+                try {
+                    copy(fromStream, toStream);
+                } finally {
+                    safeClose(toStream);
+                }
+            }
         } finally {
-            safeClose(fromStream, toStream);
+            safeClose(fromStream);
         }
     }
 
     public static void copy(File from, File to) throws IllegalStateException {
         assert from.exists();
 
-        final InputStream fromStream = getInputStream(from);
-        final OutputStream toStream = getOutputStream(to);
-
         try {
-            copy(fromStream, toStream);
-        } finally {
-            safeClose(fromStream, toStream);
+            Files.copy(from.toPath(), to.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
         }
     }
 
