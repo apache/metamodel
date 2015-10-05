@@ -436,9 +436,9 @@ public final class FileHelper {
         final InputStream fromStream = from.read();
         try {
             if (to instanceof FileResource) {
-                File file = ((FileResource) to).getFile();
+                final File toFile = ((FileResource) to).getFile();
                 try {
-                    Files.copy(fromStream, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(fromStream, toFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException e) {
                     throw new IllegalStateException(e);
                 }

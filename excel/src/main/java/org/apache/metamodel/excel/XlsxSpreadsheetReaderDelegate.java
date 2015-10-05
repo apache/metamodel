@@ -18,7 +18,9 @@
  */
 package org.apache.metamodel.excel;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -110,7 +112,7 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
                 buildColumns(table, relationshipId, xssfReader);
             }
         } finally {
-            pkg.close();
+            pkg.revert();
         }
         return schema;
     }
@@ -125,7 +127,7 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
                 final XSSFReader xssfReader = new XSSFReader(pkg);
                 buildTables(xssfReader, workbookToTables);
             } finally {
-                pkg.close();
+                pkg.revert();
             }
         } catch (Exception e) {
             throw new IllegalStateException(e);
@@ -139,11 +141,16 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
         for (Column column : columns) {
             selectItems.add(new SelectItem(column));
         }
-        final XlsxRowPublisherAction publishAction = new XlsxRowPublisherAction(_configuration, columns, relationshipId,
-                xssfReader);
+        final XlsxRowPublisherAction publishAction = new XlsxRowPublisherAction(_configuration, columns,
+                relationshipId, xssfReader);
 
         return new RowPublisherDataSet(selectItems.toArray(new SelectItem[selectItems.size()]), maxRows, publishAction,
-                pkg);
+                new Closeable() {
+                    @Override
+                    public void close() throws IOException {
+                        pkg.revert();
+                    }
+                });
     }
 
     private void buildColumns(final MutableTable table, final String relationshipId, final XSSFReader xssfReader)
