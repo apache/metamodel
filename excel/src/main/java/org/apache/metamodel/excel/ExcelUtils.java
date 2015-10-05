@@ -158,12 +158,26 @@ final class ExcelUtils {
 
         final Resource realResource = dataContext.getResource();
         final Resource tempResource = new InMemoryResource(realResource.getQualifiedPath());
+
         tempResource.write(new Action<OutputStream>() {
             @Override
             public void run(OutputStream outputStream) throws Exception {
                 wb.write(outputStream);
             }
         });
+
+        if (wb instanceof HSSFWorkbook && realResource instanceof FileResource && realResource.isExists()) {
+            // TODO POI has a problem with closing a file-reference/channel
+            // after wb.write() is invoked. See POI issue to be fixed:
+            // https://bz.apache.org/bugzilla/show_bug.cgi?id=58480
+            System.gc();
+            System.runFinalization();
+            try {
+                Thread.sleep(800);
+            } catch (InterruptedException e) {
+            }
+        }
+
         FileHelper.safeClose(wb);
 
         FileHelper.copy(tempResource, realResource);
@@ -250,8 +264,8 @@ final class ExcelUtils {
         // evaluate cell first, if possible
         try {
             if (logger.isInfoEnabled()) {
-                logger.info("cell({},{}) is a formula. Attempting to evaluate: {}",
-                        new Object[] { cell.getRowIndex(), cell.getColumnIndex(), cell.getCellFormula() });
+                logger.info("cell({},{}) is a formula. Attempting to evaluate: {}", new Object[] { cell.getRowIndex(),
+                        cell.getColumnIndex(), cell.getCellFormula() });
             }
 
             final FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
@@ -345,8 +359,8 @@ final class ExcelUtils {
                     styleBuilder.background(argb.substring(2));
                 }
             } else {
-                throw new IllegalStateException(
-                        "Unexpected color type: " + (color == null ? "null" : color.getClass()) + ")");
+                throw new IllegalStateException("Unexpected color type: " + (color == null ? "null" : color.getClass())
+                        + ")");
             }
         }
 
