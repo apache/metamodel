@@ -39,22 +39,22 @@ abstract class GroupedQueryBuilderCallback extends BaseObject implements Grouped
     protected GroupedQueryBuilder getQueryBuilder() {
         return queryBuilder;
     }
-    
+
     @Override
     public SatisfiedQueryBuilder<GroupedQueryBuilder> firstRow(int firstRow) {
         return getQueryBuilder().firstRow(firstRow);
     }
-    
+
     @Override
     public SatisfiedQueryBuilder<GroupedQueryBuilder> limit(int maxRows) {
         return getQueryBuilder().limit(maxRows);
     }
-    
+
     @Override
     public SatisfiedQueryBuilder<GroupedQueryBuilder> offset(int offset) {
         return getQueryBuilder().offset(offset);
     }
-    
+
     @Override
     public SatisfiedQueryBuilder<GroupedQueryBuilder> maxRows(int maxRows) {
         return getQueryBuilder().maxRows(maxRows);
@@ -73,6 +73,11 @@ abstract class GroupedQueryBuilderCallback extends BaseObject implements Grouped
     @Override
     public ColumnSelectBuilder<GroupedQueryBuilder> select(Column column) {
         return getQueryBuilder().select(column);
+    }
+
+    @Override
+    public SatisfiedQueryBuilder<?> select(FunctionType function, String columnName) {
+        return getQueryBuilder().select(function, columnName);
     }
 
     @Override

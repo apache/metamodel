@@ -77,7 +77,9 @@ public interface SatisfiedQueryBuilder<B extends SatisfiedQueryBuilder<?>> {
      */
     public SatisfiedQueryBuilder<B> maxRows(int maxRows);
 
-    public FunctionSelectBuilder<B> select(FunctionType functionType, Column column);
+    public FunctionSelectBuilder<B> select(FunctionType function, Column column);
+
+    public SatisfiedQueryBuilder<?> select(FunctionType function, String columnName);
 
     public CountSelectBuilder<B> selectCount();
 

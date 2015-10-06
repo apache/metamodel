@@ -62,6 +62,15 @@ final class GroupedQueryBuilderImpl extends BaseObject implements GroupedQueryBu
     }
 
     @Override
+    public SatisfiedQueryBuilder<?> select(FunctionType function, String columnName) {
+        if (function == null) {
+            throw new IllegalArgumentException("function cannot be null");
+        }
+        final Column column = findColumn(columnName);
+        return new FunctionSelectBuilderImpl(function, column, _query, this);
+    }
+
+    @Override
     public FunctionSelectBuilder<GroupedQueryBuilder> select(FunctionType function, Column column) {
         if (function == null) {
             throw new IllegalArgumentException("function cannot be null");

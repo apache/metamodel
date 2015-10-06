@@ -220,25 +220,28 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         MockDataContext dc = new MockDataContext("sch", "tab", "1");
         Table table = dc.getDefaultSchema().getTables()[0];
 
-        Query query = dc.query().from(table).select(FunctionType.TO_NUMBER, "foo").select("bar").toQuery();
-        assertEquals("SELECT TO_NUMBER(tab.foo), tab.bar FROM sch.tab", query.toSql());
+        Query query = dc.query().from(table).select("foo").select(FunctionType.TO_NUMBER, "foo").select("bar")
+                .select(FunctionType.TO_STRING, "bar").select(FunctionType.TO_NUMBER, "bar").toQuery();
+        assertEquals("SELECT tab.foo, TO_NUMBER(tab.foo), tab.bar, TO_STRING(tab.bar), TO_NUMBER(tab.bar) FROM sch.tab", query.toSql());
 
         DataSet ds = dc.executeQuery(query);
         assertTrue(ds.next());
         Row row;
-        
+
         row = ds.getRow();
-        assertEquals("Row[values=[1, hello]]", row.toString());
-        Object value1 = row.getValue(0);
+        assertEquals("Row[values=[1, 1, hello, hello, null]]", row.toString());
+        Object value1 = row.getValue(1);
         assertEquals(Integer.class, value1.getClass());
-        
+
         assertTrue(ds.next());
-        
+
         row = ds.getRow();
-        assertEquals("Row[values=[2, 1]]", row.toString());
-        Object value2 = row.getValue(0);
+        assertEquals("Row[values=[2, 2, 1, 1, 1]]", row.toString());
+        Object value2 = row.getValue(1);
         assertEquals(Integer.class, value2.getClass());
-        
+        Object value3 = row.getValue(4);
+        assertEquals(Integer.class, value3.getClass());
+
         assertTrue(ds.next());
         ds.close();
     }
