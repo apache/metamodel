@@ -108,7 +108,7 @@ final class CsvDataSet extends AbstractDataSet {
             Column column = getHeader().getSelectItem(i).getColumn();
             int columnNumber = column.getColumnNumber();
             if (columnNumber < csvValues.length) {
-                rowValues[i] = csvValues[columnNumber];
+                rowValues[i] = CsvDataUtil.cast(csvValues[columnNumber]);
             } else {
                 // Ticket #125: Missing values should be enterpreted as
                 // null.
@@ -126,4 +126,5 @@ final class CsvDataSet extends AbstractDataSet {
 
         return true;
     }
+
 }

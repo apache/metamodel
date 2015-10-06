@@ -21,6 +21,7 @@ package org.apache.metamodel.csv;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,10 +45,7 @@ import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.MutableColumn;
-import org.apache.metamodel.schema.Schema;
-import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.*;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.MutableRef;
 
@@ -59,7 +57,7 @@ public class CsvDataContextTest extends TestCase {
     public void testEmptyFileNoColumnHeaderLine() throws Exception {
         final File file = new File("target/testEmptyFileNoColumnHeaderLine.csv");
         FileHelper.copy(new File("src/test/resources/empty_file.csv"), file);
-        
+
         CsvConfiguration csvConfiguration = new CsvConfiguration(CsvConfiguration.NO_COLUMN_NAME_LINE,
                 FileHelper.DEFAULT_ENCODING, CsvConfiguration.DEFAULT_SEPARATOR_CHAR, CsvConfiguration.NOT_A_CHAR,
                 CsvConfiguration.DEFAULT_ESCAPE_CHAR);
@@ -75,16 +73,16 @@ public class CsvDataContextTest extends TestCase {
                 callback.insertInto("new_table").value(0, "1").value(1, 2).execute();
             }
         });
-        
+
         CsvDataContext dc1 = new CsvDataContext(file, csvConfiguration);
 
         Table[] tables = dc1.getDefaultSchema().getTables();
         assertEquals(1, tables.length);
-        
+
         Table table = tables[0];
         assertEquals("testEmptyFileNoColumnHeaderLine.csv", table.getName());
         assertEquals(2, table.getColumnCount());
-        
+
         DataSet ds = dc1.query().from(table).selectAll().execute();
         assertTrue(ds.next());
         assertEquals("Row[values=[1, 2]]", ds.getRow().toString());
@@ -418,8 +416,8 @@ public class CsvDataContextTest extends TestCase {
         QueryPostprocessDataContext dc = new CsvDataContext(file, new CsvConfiguration(1, true, true));
         Table table = dc.getDefaultSchema().getTableByName("csv_people.csv");
 
-        Query q = dc.query().from(table).as("t").select("name").and("age").where("age").in("18", "20").toQuery();
-        assertEquals("SELECT t.name, t.age FROM resources.csv_people.csv t WHERE t.age IN ('18' , '20')", q.toSql());
+        Query q = dc.query().from(table).as("t").select("name").and("age").where("age").in(18, 20).toQuery();
+        assertEquals("SELECT t.name, t.age FROM resources.csv_people.csv t WHERE t.age IN (18 , 20)", q.toSql());
 
         DataSet ds = dc.executeQuery(q);
         assertTrue(ds.next());
@@ -719,6 +717,7 @@ public class CsvDataContextTest extends TestCase {
         assertFalse(file.exists());
     }
 
+    /* Commented because it seems not to have sense since correct object type returned.
     public void testOnlyNumberOneSymbol() throws Exception {
         DataContext dc = new CsvDataContext(new File("src/test/resources/csv_only_number_one.csv"));
         Map<Column, TypeConverter<?, ?>> converters = Converters.autoDetectConverters(dc, dc.getDefaultSchema()
@@ -748,6 +747,7 @@ public class CsvDataContextTest extends TestCase {
         }
         ds.close();
     }
+    */
 
     public void testWriteOddConfiguration() throws Exception {
         final File file = new File("target/csv_write_ex2.txt");
@@ -828,4 +828,28 @@ public class CsvDataContextTest extends TestCase {
     // e.getMessage());
     // }
     // }
+
+    public void testRightColumnTypes() throws Exception {
+        HashMap<String, ColumnType> columnAndTypes = new HashMap<String, ColumnType>();
+        columnAndTypes.put("id", ColumnType.INTEGER);
+        columnAndTypes.put("name", ColumnType.VARCHAR);
+        columnAndTypes.put("gender", ColumnType.VARCHAR);
+        columnAndTypes.put("age", ColumnType.INTEGER);
+
+        DataContext dc = new CsvDataContext(new File("src/test/resources/csv_people.csv"));
+
+        Table table = dc.getDefaultSchema().getTables()[0];
+        Query q = dc.query()
+                .from(table)
+                .select(table.getColumnByName("id"))
+                .and(table.getColumnByName("name"))
+                .and(table.getColumnByName("gender"))
+                .and(table.getColumnByName("age"))
+                .toQuery();
+
+        List<SelectItem> items = q.getSelectClause().getItems();
+        for(SelectItem item: items) {
+            assertEquals(item.getColumn().getType(), columnAndTypes.get(item.getColumn().getName()));
+        }
+    }
 }

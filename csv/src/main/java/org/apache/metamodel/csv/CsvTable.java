@@ -19,10 +19,13 @@
 package org.apache.metamodel.csv;
 
 import java.io.IOException;
+import java.lang.*;
+import java.util.*;
 
 import org.apache.metamodel.schema.AbstractTable;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.ColumnTypeImpl;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.Relationship;
 import org.apache.metamodel.schema.Schema;
@@ -106,6 +109,30 @@ final class CsvTable extends AbstractTable {
     }
 
     private Column[] buildColumns(final String[] columnNames) {
+        CSVReader reader = null;
+
+        if (columnNames == null) {
+            return new Column[0];
+        }
+
+        try {
+            reader = _schema.getDataContext().createCsvReader(0);
+
+            final int columnNameLineNumber = _schema.getDataContext().getConfiguration().getColumnNameLineNumber();
+            for (int i = 1; i < columnNameLineNumber; i++) {
+                reader.readNext();
+            }
+
+            return buildColumns(columnNames, getColumnTypes(reader, 1000));
+        } catch (IOException e) {
+            throw new IllegalStateException("Exception reading from resource: "
+                    + _schema.getDataContext().getResource().getName(), e);
+        } finally {
+            FileHelper.safeClose(reader);
+        }
+    }
+
+    private Column[] buildColumns(final String[] columnNames, final ColumnType[] columnTypes) {
         if (columnNames == null) {
             return new Column[0];
         }
@@ -118,16 +145,71 @@ final class CsvTable extends AbstractTable {
         final AlphabeticSequence sequence = new AlphabeticSequence();
         for (int i = 0; i < columnNames.length; i++) {
             final String columnName;
+            Column column;
             if (columnNameLineNumber == CsvConfiguration.NO_COLUMN_NAME_LINE) {
                 columnName = sequence.next();
             } else {
                 columnName = columnNames[i];
             }
-            Column column = new MutableColumn(columnName, ColumnType.STRING, this, i, null, null, nullable, null,
-                    false, null);
+            if(columnTypes.length > i)
+                column = new MutableColumn(columnName, columnTypes[i], this, i, null, null, nullable, null,
+                        false, null);
+            else column = new MutableColumn(columnName, ColumnType.VARCHAR, this, i, null, null, nullable, null,
+                        false, null);
             columns[i] = column;
+
         }
         return columns;
+    }
+
+    private ColumnType[] getColumnTypes(CSVReader reader, int sampleSize) throws IOException {
+        ColumnType[] columnTypes = new ColumnType[0];
+        final LinkedHashMap<String, Set<ColumnType>> columnsAndTypes = new LinkedHashMap<String, Set<ColumnType>>();
+        String[] columnHeader = reader.readNext();
+        if (columnHeader != null) {
+            String[] nextValuesLine = reader.readNext();
+            while (nextValuesLine != null || sampleSize > 0) {
+                LinkedHashMap<String, ColumnType> values = new LinkedHashMap<String, ColumnType>();
+                if(nextValuesLine != null) {
+                    int columns = columnHeader.length;
+                    if(nextValuesLine.length < columnHeader.length) columns = nextValuesLine.length;
+                    for (int i = 0; i < columns; i++) {
+                        values.put(columnHeader[i],
+                                ColumnTypeImpl.convertColumnType(CsvDataUtil.cast(nextValuesLine[i]).getClass()));
+                    }
+                }
+                for (String columnName : columnHeader) {
+                    Set<ColumnType> types = columnsAndTypes.get(columnName);
+                    if (types == null) {
+                        types = new HashSet<ColumnType>();
+                    }
+                    ColumnType value = values.get(columnName);
+
+                    if (value != null) {
+                        types.add(value);
+                    }
+                    columnsAndTypes.put(columnName, types);
+                }
+
+                sampleSize--;
+                nextValuesLine = reader.readNext();
+            }
+
+            columnTypes = new ColumnType[columnsAndTypes.size()];
+
+            int i = 0;
+            for (Map.Entry<String, Set<ColumnType>>  columnAndTypes : columnsAndTypes.entrySet()) {
+                final Set<ColumnType> columnTypeSet = columnAndTypes.getValue();
+                if (columnTypeSet.size() == 1) {
+                    columnTypes[i] = columnTypeSet.iterator().next();
+                } else {
+                    columnTypes[i] = ColumnTypeImpl.convertColumnType(String.class);
+                }
+                i++;
+            }
+        }
+
+        return columnTypes;
     }
 
     @Override
