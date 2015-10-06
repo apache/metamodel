@@ -36,11 +36,13 @@ import javax.sql.DataSource;
 import org.apache.metamodel.AbstractDataContext;
 import org.apache.metamodel.BatchUpdateScript;
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.data.MaxRowsDataSet;
+import org.apache.metamodel.data.ScalarFunctionDataSet;
 import org.apache.metamodel.jdbc.dialects.DB2QueryRewriter;
 import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.H2QueryRewriter;
@@ -53,6 +55,7 @@ import org.apache.metamodel.jdbc.dialects.PostgresqlQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.SQLServerQueryRewriter;
 import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.ColumnTypeImpl;
 import org.apache.metamodel.schema.Schema;
@@ -84,8 +87,8 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     public static final String DATABASE_PRODUCT_ORACLE = "Oracle";
     public static final String DATABASE_PRODUCT_HIVE = "Apache Hive";
 
-    public static final ColumnType COLUMN_TYPE_CLOB_AS_STRING = new ColumnTypeImpl("CLOB",
-            SuperColumnType.LITERAL_TYPE, String.class, true);
+    public static final ColumnType COLUMN_TYPE_CLOB_AS_STRING = new ColumnTypeImpl("CLOB", SuperColumnType.LITERAL_TYPE,
+            String.class, true);
     public static final ColumnType COLUMN_TYPE_BLOB_AS_BYTES = new ColumnTypeImpl("BLOB", SuperColumnType.BINARY_TYPE,
             byte[].class, true);
 
@@ -340,6 +343,16 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
 
         ResultSet resultSet = null;
 
+        final List<SelectItem> scalarFunctionSelectItems = MetaModelHelper
+                .getScalarFunctionSelectItems(query.getSelectClause().getItems());
+        boolean postProcessScalarSelectItems = false;
+        for (SelectItem selectItem : scalarFunctionSelectItems) {
+            if (!_queryRewriter.isScalarFunctionSupported(selectItem.getScalarFunction())) {
+                postProcessScalarSelectItems = true;
+                break;
+            }
+        }
+
         boolean postProcessFirstRow = false;
         final Integer firstRow = query.getFirstRow();
         if (firstRow != null) {
@@ -433,6 +446,11 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             if (postProcessMaxRows) {
                 dataSet = new MaxRowsDataSet(dataSet, maxRows);
             }
+            
+            if (postProcessScalarSelectItems) {
+                dataSet = new ScalarFunctionDataSet(scalarFunctionSelectItems, dataSet);
+            }
+            
         } catch (SQLException exception) {
             if (resultSet != null) {
                 resultSet.close();
@@ -451,11 +469,10 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "create statement for query");
         }
-        DataSet dataSet = null;
+
+        final DataSet dataSet;
         try {
-
             dataSet = execute(connection, query, statement, null, null, null);
-
         } catch (SQLException e) {
             // only close in case of an error - the JdbcDataSet will close
             // otherwise

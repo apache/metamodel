@@ -26,6 +26,7 @@ import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.CollectionUtils;
@@ -143,6 +144,11 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
             }
         }
         return super.rewriteFilterItem(item);
+    }
+    
+    @Override
+    public boolean isScalarFunctionSupported(ScalarFunction function) {
+        return false;
     }
 
     @Override
