@@ -426,42 +426,32 @@ public final class FileHelper {
     public static void copy(Resource from, Resource to) throws IllegalStateException {
         assert from.isExists();
 
-        if (from instanceof FileResource && to instanceof FileResource) {
-            final File fromFile = ((FileResource) from).getFile();
-            final File toFile = ((FileResource) to).getFile();
-            copy(fromFile, toFile);
-            return;
-        }
-
-        final InputStream fromStream = from.read();
+        final InputStream in = from.read();
         try {
-            if (to instanceof FileResource) {
-                final File toFile = ((FileResource) to).getFile();
-                try {
-                    Files.copy(fromStream, toFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                } catch (IOException e) {
-                    throw new IllegalStateException(e);
-                }
-            } else {
-                final OutputStream toStream = to.write();
-                try {
-                    copy(fromStream, toStream);
-                } finally {
-                    safeClose(toStream);
-                }
+            final OutputStream out = to.write();
+            try {
+                copy(in, out);
+            } finally {
+                safeClose(out);
             }
         } finally {
-            safeClose(fromStream);
+            safeClose(in);
         }
     }
 
     public static void copy(File from, File to) throws IllegalStateException {
         assert from.exists();
-
+        
+        final InputStream in = getInputStream(from);
         try {
-            Files.copy(from.toPath(), to.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
+            final OutputStream out = getOutputStream(to);
+            try {
+                copy(in, out);
+            } finally {
+                safeClose(out);
+            }
+        } finally {
+            safeClose(in);
         }
     }
 
