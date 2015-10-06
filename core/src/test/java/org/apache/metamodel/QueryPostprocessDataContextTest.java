@@ -216,7 +216,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         assertFalse(ds.next());
     }
 
-    public void testScalarFunction() throws Exception {
+    public void testScalarFunctionSelect() throws Exception {
         MockDataContext dc = new MockDataContext("sch", "tab", "1");
         Table table = dc.getDefaultSchema().getTables()[0];
 
@@ -243,6 +243,24 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         assertEquals(Integer.class, value3.getClass());
 
         assertTrue(ds.next());
+        ds.close();
+    }
+    
+    public void testScalarFunctionWhere() throws Exception {
+        MockDataContext dc = new MockDataContext("sch", "tab", "1");
+        Table table = dc.getDefaultSchema().getTables()[0];
+
+        Query query = dc.query().from(table).select("foo").where(FunctionType.TO_NUMBER, "bar").eq(1).toQuery();
+        assertEquals("SELECT tab.foo FROM sch.tab WHERE TO_NUMBER(tab.bar) = 1", query.toSql());
+
+        DataSet ds = dc.executeQuery(query);
+        assertTrue(ds.next());
+        Row row;
+
+        row = ds.getRow();
+        assertEquals("Row[values=[2]]", row.toString());
+
+        assertFalse(ds.next());
         ds.close();
     }
 
