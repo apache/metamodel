@@ -11,6 +11,7 @@
  * [METAMODEL-172] - ElasticSearch Date types should be converted properly.
  * [METAMODEL-184] - ElasticSearch querying with "IS NULL" and "IS NOT NULL" now uses MissingFilter and ExistsFilter.
  * [METAMODEL-190] - Improved decimal number support in Excel module.
+ * [METAMODEL-187] - Improved memory consumption of Excel module by passing random-access-file handles to POI when possible.
  * [METAMODEL-191] - Resolved a number of dependency conflicts/overlaps when combining multiple MetaModel modules.
  * [METAMODEL-157] - Fixed an issue in DELETE FROM statements with WHERE clauses requiring client-side data type conversion on JDBC databases.
  * [METAMODEL-182] - Improved HdfsResource and FileResource directory-based implementations by adding also getSize() and getLastModified() directory-based implementations.
