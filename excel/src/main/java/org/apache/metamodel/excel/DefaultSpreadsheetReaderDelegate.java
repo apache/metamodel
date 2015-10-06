@@ -18,13 +18,8 @@
  */
 package org.apache.metamodel.excel;
 
-import java.io.InputStream;
 import java.util.Iterator;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.data.MaxRowsDataSet;
@@ -36,7 +31,12 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.AlphabeticSequence;
-import org.apache.metamodel.util.Ref;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.Resource;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,30 +48,35 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultSpreadsheetReaderDelegate.class);
 
+    private final Resource _resource;
     private final ExcelConfiguration _configuration;
 
-    public DefaultSpreadsheetReaderDelegate(ExcelConfiguration configuration) {
+    public DefaultSpreadsheetReaderDelegate(Resource resource, ExcelConfiguration configuration) {
+        _resource = resource;
         _configuration = configuration;
     }
 
     @Override
-    public Schema createSchema(InputStream inputStream, String schemaName) {
+    public Schema createSchema(String schemaName) {
         final MutableSchema schema = new MutableSchema(schemaName);
-        final Workbook wb = ExcelUtils.readWorkbook(inputStream);
+        final Workbook wb = ExcelUtils.readWorkbook(_resource);
+        try {
+            for (int i = 0; i < wb.getNumberOfSheets(); i++) {
+                final Sheet currentSheet = wb.getSheetAt(i);
+                final MutableTable table = createTable(wb, currentSheet);
+                table.setSchema(schema);
+                schema.addTable(table);
+            }
 
-        for (int i = 0; i < wb.getNumberOfSheets(); i++) {
-            final Sheet currentSheet = wb.getSheetAt(i);
-            final MutableTable table = createTable(wb, currentSheet);
-            table.setSchema(schema);
-            schema.addTable(table);
+            return schema;
+        } finally {
+            FileHelper.safeClose(wb);
         }
-
-        return schema;
     }
 
     @Override
-    public DataSet executeQuery(InputStream inputStream, Table table, Column[] columns, int maxRows) {
-        final Workbook wb = ExcelUtils.readWorkbook(inputStream);
+    public DataSet executeQuery(Table table, Column[] columns, int maxRows) {
+        final Workbook wb = ExcelUtils.readWorkbook(_resource);
         final Sheet sheet = wb.getSheet(table.getName());
 
         if (sheet == null || sheet.getPhysicalNumberOfRows() == 0) {
@@ -87,7 +92,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     @Override
-    public void notifyTablesModified(Ref<InputStream> inputStreamRef) {
+    public void notifyTablesModified() {
         // do nothing
     }
 
@@ -105,7 +110,6 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             // no physical rows in sheet
             return table;
         }
-
 
         Row row = null;
 

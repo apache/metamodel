@@ -526,7 +526,7 @@ public class ExcelDataContextTest extends TestCase {
     }
 
     public void testInsertInto() throws Exception {
-        File file = new File("target/xls_people_modified.xls");
+        final File file = new File("target/xls_people_modified.xls");
 
         if (file.exists()) {
             assertTrue(file.delete());
@@ -536,9 +536,10 @@ public class ExcelDataContextTest extends TestCase {
 
         assertTrue(file.exists());
 
-        ExcelDataContext dc = new ExcelDataContext(file);
+        final ExcelDataContext dc = new ExcelDataContext(file);
         final Table table = dc.getDefaultSchema().getTables()[0];
         final Column nameColumn = table.getColumnByName("name");
+
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback cb) {

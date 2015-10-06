@@ -25,52 +25,62 @@ import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.util.FileHelper;
 
 /**
  * Stream {@link DataSet} implementation for Excel support.
  */
 final class XlsDataSet extends AbstractDataSet {
 
-	private final Iterator<org.apache.poi.ss.usermodel.Row> _rowIterator;
-	private final Workbook _workbook;
+    private final Iterator<org.apache.poi.ss.usermodel.Row> _rowIterator;
+    private final Workbook _workbook;
 
-	private volatile org.apache.poi.ss.usermodel.Row _row;
-	private volatile boolean _closed;
+    private volatile org.apache.poi.ss.usermodel.Row _row;
+    private volatile boolean _closed;
 
-	/**
-	 * Creates an XLS dataset
-	 * 
-	 * @param selectItems
-	 *            the selectitems representing the columns of the table
-	 * @param workbook
-	 * @param rowIterator
-	 */
-	public XlsDataSet(SelectItem[] selectItems, Workbook workbook,
-			Iterator<org.apache.poi.ss.usermodel.Row> rowIterator) {
-	    super(selectItems);
-		_workbook = workbook;
-		_rowIterator = rowIterator;
-		_closed = false;
-	}
+    /**
+     * Creates an XLS dataset
+     * 
+     * @param selectItems
+     *            the selectitems representing the columns of the table
+     * @param workbook
+     * @param rowIterator
+     */
+    public XlsDataSet(SelectItem[] selectItems, Workbook workbook,
+            Iterator<org.apache.poi.ss.usermodel.Row> rowIterator) {
+        super(selectItems);
+        _workbook = workbook;
+        _rowIterator = rowIterator;
+        _closed = false;
+    }
 
-	@Override
-	public boolean next() {
-		if (_rowIterator.hasNext()) {
-			_row = _rowIterator.next();
-			return true;
-		} else {
-			_row = null;
-			_closed = true;
-			return false;
-		}
-	}
+    @Override
+    public boolean next() {
+        if (_rowIterator.hasNext()) {
+            _row = _rowIterator.next();
+            return true;
+        } else {
+            _row = null;
+            close();
+            return false;
+        }
+    }
 
-	@Override
-	public Row getRow() {
-		if (_closed) {
-			return null;
-		}
+    @Override
+    public Row getRow() {
+        if (_closed) {
+            return null;
+        }
 
-		return ExcelUtils.createRow(_workbook, _row, getHeader());
-	}
+        return ExcelUtils.createRow(_workbook, _row, getHeader());
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        if (!_closed) {
+            FileHelper.safeClose(_workbook);
+            _closed = true;
+        }
+    }
 }
