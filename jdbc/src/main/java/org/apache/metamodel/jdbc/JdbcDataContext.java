@@ -27,6 +27,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -331,7 +332,6 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     private DataSet execute(Connection connection, Query query, Statement statement, JdbcCompiledQuery compiledQuery,
             JdbcCompiledQueryLease lease, Object[] values) throws SQLException {
         if (_databaseProductName.equals(DATABASE_PRODUCT_POSTGRESQL)) {
-
             try {
                 // this has to be done in order to make a result set not load
                 // all data in memory only for Postgres.
@@ -342,14 +342,14 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         }
 
         ResultSet resultSet = null;
-
+        
+        // build a list of select items whose scalar functions has to be evaluated client-side
         final List<SelectItem> scalarFunctionSelectItems = MetaModelHelper
                 .getScalarFunctionSelectItems(query.getSelectClause().getItems());
-        boolean postProcessScalarSelectItems = false;
-        for (SelectItem selectItem : scalarFunctionSelectItems) {
-            if (!_queryRewriter.isScalarFunctionSupported(selectItem.getScalarFunction())) {
-                postProcessScalarSelectItems = true;
-                break;
+        for (Iterator<SelectItem> it = scalarFunctionSelectItems.iterator(); it.hasNext();) {
+            final SelectItem selectItem = (SelectItem) it.next();
+            if (_queryRewriter.isScalarFunctionSupported(selectItem.getScalarFunction())) {
+                it.remove();
             }
         }
 
@@ -447,7 +447,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
                 dataSet = new MaxRowsDataSet(dataSet, maxRows);
             }
             
-            if (postProcessScalarSelectItems) {
+            if (!scalarFunctionSelectItems.isEmpty()) {
                 dataSet = new ScalarFunctionDataSet(scalarFunctionSelectItems, dataSet);
             }
             
