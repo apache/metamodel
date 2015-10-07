@@ -48,25 +48,12 @@ public class ScalarFunctionDataSet extends AbstractDataSet implements WrappingDa
 
     @Override
     public Row getRow() {
-        final DataSetHeader header = getHeader();
-        final Object[] values = new Object[header.size()];
-
         final Row row = _dataSet.getRow();
-
-        int i = 0;
-        for (SelectItem selectItem : _scalarFunctionSelectItemsToEvaluate) {
-            final SelectItem selectItemWithoutFunction = selectItem.replaceFunction(null);
-            final Object value = selectItem.getScalarFunction().evaluate(row, selectItemWithoutFunction);
-            values[i] = value;
-            i++;
-        }
-
-        // copy the values from the row to ensure that they are available
-        // downstream also
-        final Object[] rowValues = row.getValues();
-        System.arraycopy(rowValues, 0, values, i, rowValues.length);
-
-        return new DefaultRow(header, values);
+        return new ScalarFunctionRow(this, row);
+    }
+    
+    public List<SelectItem> getScalarFunctionSelectItemsToEvaluate() {
+        return _scalarFunctionSelectItemsToEvaluate;
     }
 
     @Override
