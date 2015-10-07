@@ -48,6 +48,7 @@ import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.GroupByItem;
 import org.apache.metamodel.query.OrderByItem;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.query.parser.QueryParser;
 import org.apache.metamodel.schema.Column;
@@ -283,12 +284,13 @@ public final class MetaModelHelper {
                 }
             }
         }
-        
+
         if (scalarFunctionSelectItemsToEvaluate.isEmpty()) {
             return new SubSelectionDataSet(selectItems, dataSet);
         }
 
-        final ScalarFunctionDataSet scalaFunctionDataSet = new ScalarFunctionDataSet(scalarFunctionSelectItemsToEvaluate, dataSet);
+        final ScalarFunctionDataSet scalaFunctionDataSet = new ScalarFunctionDataSet(
+                scalarFunctionSelectItemsToEvaluate, dataSet);
         return new SubSelectionDataSet(selectItems, scalaFunctionDataSet);
     }
 
@@ -856,5 +858,54 @@ public final class MetaModelHelper {
             }
         }
         return null;
+    }
+
+    /**
+     * Determines if a query contains {@link ScalarFunction}s in any clause of
+     * the query EXCEPT for the SELECT clause. This is a handy thing to
+     * determine because decorating with {@link ScalarFunctionDataSet} only
+     * gives you select-item evaluation so if the rest of the query is pushed to
+     * an underlying datastore, then it may create issues.
+     * 
+     * @param query
+     * @return
+     */
+    public static boolean containsNonSelectScalaFunctions(Query query) {
+        // check FROM clause
+        final List<FromItem> fromItems = query.getFromClause().getItems();
+        for (FromItem fromItem : fromItems) {
+            // check sub-queries
+            final Query subQuery = fromItem.getSubQuery();
+            if (subQuery != null) {
+                if (containsNonSelectScalaFunctions(subQuery)) {
+                    return true;
+                }
+                if (!getScalarFunctionSelectItems(subQuery.getSelectClause().getItems()).isEmpty()) {
+                    return true;
+                }
+            }
+        }
+
+        // check WHERE clause
+        if (!getScalarFunctionSelectItems(query.getWhereClause().getEvaluatedSelectItems()).isEmpty()) {
+            return true;
+        }
+
+        // check GROUP BY clause
+        if (!getScalarFunctionSelectItems(query.getGroupByClause().getEvaluatedSelectItems()).isEmpty()) {
+            return true;
+        }
+
+        // check HAVING clause
+        if (!getScalarFunctionSelectItems(query.getHavingClause().getEvaluatedSelectItems()).isEmpty()) {
+            return true;
+        }
+
+        // check ORDER BY clause
+        if (!getScalarFunctionSelectItems(query.getOrderByClause().getEvaluatedSelectItems()).isEmpty()) {
+            return true;
+        }
+
+        return false;
     }
 }

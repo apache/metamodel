@@ -232,6 +232,21 @@ public class JdbcDataContextTest extends JdbcTestCase {
         }
     }
 
+    public void testWhereScalarFunction() throws Exception {
+        final Connection connection = getTestDbConnection();
+        final JdbcDataContext dataContext = new JdbcDataContext(connection);
+        try {
+            dataContext.query().from("customers").select("customernumber").where(FunctionType.TO_BOOLEAN, "creditlimit")
+                    .eq(true).limit(2).execute();
+            fail("Exception expected");
+        } catch (MetaModelException e) {
+            assertEquals(
+                    "Scalar functions outside of SELECT clause is not supported for JDBC databases. Query rejected: "
+                            + "SELECT \"CUSTOMERS\".\"CUSTOMERNUMBER\" FROM PUBLIC.\"CUSTOMERS\" WHERE TO_BOOLEAN(\"CUSTOMERS\".\"CREDITLIMIT\") = TRUE",
+                    e.getMessage());
+        }
+    }
+
     public void testExecuteQueryWithComparisonGreaterThanOrEquals() throws Exception {
         Connection connection = getTestDbConnection();
         JdbcDataContext dataContext = new JdbcDataContext(connection,

@@ -324,13 +324,24 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             // otherwise
             jdbcCompiledQuery.returnLease(lease);
             throw JdbcUtils.wrapException(e, "execute compiled query");
+        } catch (RuntimeException e) {
+            // only close in case of an error - the JdbcDataSet will close
+            // otherwise
+            jdbcCompiledQuery.returnLease(lease);
+            throw e;
         }
 
         return dataSet;
     }
 
     private DataSet execute(Connection connection, Query query, Statement statement, JdbcCompiledQuery compiledQuery,
-            JdbcCompiledQueryLease lease, Object[] values) throws SQLException {
+            JdbcCompiledQueryLease lease, Object[] values) throws SQLException, MetaModelException {
+        if (MetaModelHelper.containsNonSelectScalaFunctions(query)) {
+            throw new MetaModelException(
+                    "Scalar functions outside of SELECT clause is not supported for JDBC databases. Query rejected: "
+                            + query);
+        }
+
         if (_databaseProductName.equals(DATABASE_PRODUCT_POSTGRESQL)) {
             try {
                 // this has to be done in order to make a result set not load
@@ -342,8 +353,9 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         }
 
         ResultSet resultSet = null;
-        
-        // build a list of select items whose scalar functions has to be evaluated client-side
+
+        // build a list of select items whose scalar functions has to be
+        // evaluated client-side
         final List<SelectItem> scalarFunctionSelectItems = MetaModelHelper
                 .getScalarFunctionSelectItems(query.getSelectClause().getItems());
         for (Iterator<SelectItem> it = scalarFunctionSelectItems.iterator(); it.hasNext();) {
@@ -446,11 +458,11 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             if (postProcessMaxRows) {
                 dataSet = new MaxRowsDataSet(dataSet, maxRows);
             }
-            
+
             if (!scalarFunctionSelectItems.isEmpty()) {
                 dataSet = new ScalarFunctionDataSet(scalarFunctionSelectItems, dataSet);
             }
-            
+
         } catch (SQLException exception) {
             if (resultSet != null) {
                 resultSet.close();
@@ -478,6 +490,11 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             // otherwise
             close(connection, null, statement);
             throw JdbcUtils.wrapException(e, "execute query");
+        } catch (RuntimeException e) {
+            // only close in case of an error - the JdbcDataSet will close
+            // otherwise
+            close(connection, null, statement);
+            throw e;
         }
 
         return dataSet;
