@@ -461,6 +461,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
 
             if (!scalarFunctionSelectItems.isEmpty()) {
                 dataSet = new ScalarFunctionDataSet(scalarFunctionSelectItems, dataSet);
+                dataSet = MetaModelHelper.getSelection(query.getSelectClause().getItems(), dataSet);
             }
 
         } catch (SQLException exception) {

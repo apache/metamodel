@@ -221,12 +221,19 @@ public class JdbcDataContextTest extends JdbcTestCase {
     public void testSelectScalarFunction() throws Exception {
         final Connection connection = getTestDbConnection();
         final JdbcDataContext dataContext = new JdbcDataContext(connection);
-        final DataSet dataSet = dataContext.query().from("customers").select(FunctionType.TO_DATE, "creditlimit")
-                .select("creditlimit").limit(2).execute();
+        final DataSet dataSet = dataContext.query().from("customers").select("creditlimit")
+                .select(FunctionType.TO_DATE, "creditlimit").select("creditlimit").limit(2).execute();
         try {
+            assertEquals("[_CUSTOMERS_._CREDITLIMIT_, TO_DATE(_CUSTOMERS_._CREDITLIMIT_), _CUSTOMERS_._CREDITLIMIT_]",
+                    Arrays.toString(dataSet.getSelectItems()).replaceAll("\"", "_"));
+
             assertTrue(dataSet.next());
-            final Object value = dataSet.getRow().getValue(0);
-            assertTrue("Expected a date but got: " + value, value instanceof Date);
+            final Object value0 = dataSet.getRow().getValue(0);
+            assertTrue("Expected a number but got: " + value0, value0 instanceof Number);
+            final Object value1 = dataSet.getRow().getValue(1);
+            assertTrue("Expected a date but got: " + value1, value1 instanceof Date);
+            final Object value2 = dataSet.getRow().getValue(2);
+            assertTrue("Expected a number but got: " + value2, value2 instanceof Number);
         } finally {
             dataSet.close();
         }
