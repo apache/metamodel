@@ -21,13 +21,20 @@ package org.apache.metamodel.query;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.AggregateBuilder;
 
-public class SumAggregateFunction extends DefaultAggregateFunction<Double> implements AggregateFunction {
+public class SumAggregateFunction extends DefaultAggregateFunction<Double> {
 
-    public String getFunctionName() { return "SUM"; }
+    @Override
+    public String getFunctionName() {
+        return "SUM";
+    }
 
+    @Override
     public AggregateBuilder<Double> createAggregateBuilder() {
         return new SumAggregateBuilder();
     }
 
-    public ColumnType getExpectedColumnType(ColumnType type) { return ColumnType.DOUBLE; }
+    @Override
+    public ColumnType getExpectedColumnType(ColumnType type) {
+        return ColumnType.DOUBLE;
+    }
 }

@@ -18,18 +18,31 @@
  */
 package org.apache.metamodel.query;
 
-import org.apache.metamodel.util.AggregateBuilder;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.schema.ColumnType;
 
-public class MinAggregateFunction extends DefaultAggregateFunction<Object> {
+public class ToStringFunction extends DefaultScalarFunction {
 
     @Override
-    public String getFunctionName() {
-        return "MIN";
+    public ColumnType getExpectedColumnType(ColumnType type) {
+        if (type.isLiteral()) {
+            return type;
+        }
+        return ColumnType.STRING;
     }
 
     @Override
-    public AggregateBuilder<Object> createAggregateBuilder() {
-        return new MinAggregateBuilder();
+    public String getFunctionName() {
+        return "TO_STRING";
+    }
+
+    @Override
+    public Object evaluate(Row row, SelectItem item) {
+        final Object value = row.getValue(item);
+        if (value == null || value instanceof String) {
+            return value;
+        }
+        return String.valueOf(value);
     }
 
 }

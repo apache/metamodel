@@ -32,6 +32,7 @@ import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.OrderByClause;
 import org.apache.metamodel.query.OrderByItem;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.query.SelectClause;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.ColumnType;
@@ -58,7 +59,7 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
     public JdbcDataContext getDataContext() {
         return _dataContext;
     }
-    
+
     @Override
     public boolean isTransactional() {
         return true;
@@ -104,7 +105,7 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
     public String rewriteColumnType(ColumnType columnType, Integer columnSize) {
         return rewriteColumnTypeInternal(columnType.toString(), columnSize);
     }
-    
+
     protected String rewriteColumnTypeInternal(String columnType, Object columnParameter) {
         final StringBuilder sb = new StringBuilder();
         sb.append(columnType);
@@ -264,6 +265,14 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
                 if (i != 0) {
                     sb.append(AbstractQueryClause.DELIM_COMMA);
                 }
+
+                final ScalarFunction scalarFunction = item.getScalarFunction();
+                if (scalarFunction != null && !isScalarFunctionSupported(scalarFunction)) {
+                    // replace with a SelectItem without the function - the
+                    // function will be applied in post-processing.
+                    item = item.replaceFunction(null);
+                }
+
                 sb.append(rewriteSelectItem(query, item));
             }
         }

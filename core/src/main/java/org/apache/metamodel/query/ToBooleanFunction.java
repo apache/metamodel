@@ -18,18 +18,32 @@
  */
 package org.apache.metamodel.query;
 
-import org.apache.metamodel.util.AggregateBuilder;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.util.BooleanComparator;
 
-public class MinAggregateFunction extends DefaultAggregateFunction<Object> {
+public class ToBooleanFunction extends DefaultScalarFunction {
 
     @Override
-    public String getFunctionName() {
-        return "MIN";
+    public ColumnType getExpectedColumnType(ColumnType type) {
+        if (type.isBoolean()) {
+            return type;
+        }
+        return ColumnType.BOOLEAN;
     }
 
     @Override
-    public AggregateBuilder<Object> createAggregateBuilder() {
-        return new MinAggregateBuilder();
+    public String getFunctionName() {
+        return "TO_BOOLEAN";
+    }
+
+    @Override
+    public Object evaluate(Row row, SelectItem item) {
+        final Object value = row.getValue(item);
+        if (value == null || value instanceof Boolean) {
+            return value;
+        }
+        return BooleanComparator.toBoolean(value);
     }
 
 }

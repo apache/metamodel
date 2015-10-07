@@ -27,6 +27,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -36,11 +37,13 @@ import javax.sql.DataSource;
 import org.apache.metamodel.AbstractDataContext;
 import org.apache.metamodel.BatchUpdateScript;
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.data.MaxRowsDataSet;
+import org.apache.metamodel.data.ScalarFunctionDataSet;
 import org.apache.metamodel.jdbc.dialects.DB2QueryRewriter;
 import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.H2QueryRewriter;
@@ -53,6 +56,7 @@ import org.apache.metamodel.jdbc.dialects.PostgresqlQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.SQLServerQueryRewriter;
 import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.ColumnTypeImpl;
 import org.apache.metamodel.schema.Schema;
@@ -84,8 +88,8 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     public static final String DATABASE_PRODUCT_ORACLE = "Oracle";
     public static final String DATABASE_PRODUCT_HIVE = "Apache Hive";
 
-    public static final ColumnType COLUMN_TYPE_CLOB_AS_STRING = new ColumnTypeImpl("CLOB",
-            SuperColumnType.LITERAL_TYPE, String.class, true);
+    public static final ColumnType COLUMN_TYPE_CLOB_AS_STRING = new ColumnTypeImpl("CLOB", SuperColumnType.LITERAL_TYPE,
+            String.class, true);
     public static final ColumnType COLUMN_TYPE_BLOB_AS_BYTES = new ColumnTypeImpl("BLOB", SuperColumnType.BINARY_TYPE,
             byte[].class, true);
 
@@ -320,15 +324,25 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             // otherwise
             jdbcCompiledQuery.returnLease(lease);
             throw JdbcUtils.wrapException(e, "execute compiled query");
+        } catch (RuntimeException e) {
+            // only close in case of an error - the JdbcDataSet will close
+            // otherwise
+            jdbcCompiledQuery.returnLease(lease);
+            throw e;
         }
 
         return dataSet;
     }
 
     private DataSet execute(Connection connection, Query query, Statement statement, JdbcCompiledQuery compiledQuery,
-            JdbcCompiledQueryLease lease, Object[] values) throws SQLException {
-        if (_databaseProductName.equals(DATABASE_PRODUCT_POSTGRESQL)) {
+            JdbcCompiledQueryLease lease, Object[] values) throws SQLException, MetaModelException {
+        if (MetaModelHelper.containsNonSelectScalaFunctions(query)) {
+            throw new MetaModelException(
+                    "Scalar functions outside of SELECT clause is not supported for JDBC databases. Query rejected: "
+                            + query);
+        }
 
+        if (_databaseProductName.equals(DATABASE_PRODUCT_POSTGRESQL)) {
             try {
                 // this has to be done in order to make a result set not load
                 // all data in memory only for Postgres.
@@ -339,6 +353,17 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         }
 
         ResultSet resultSet = null;
+
+        // build a list of select items whose scalar functions has to be
+        // evaluated client-side
+        final List<SelectItem> scalarFunctionSelectItems = MetaModelHelper
+                .getScalarFunctionSelectItems(query.getSelectClause().getItems());
+        for (Iterator<SelectItem> it = scalarFunctionSelectItems.iterator(); it.hasNext();) {
+            final SelectItem selectItem = (SelectItem) it.next();
+            if (_queryRewriter.isScalarFunctionSupported(selectItem.getScalarFunction())) {
+                it.remove();
+            }
+        }
 
         boolean postProcessFirstRow = false;
         final Integer firstRow = query.getFirstRow();
@@ -433,6 +458,12 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             if (postProcessMaxRows) {
                 dataSet = new MaxRowsDataSet(dataSet, maxRows);
             }
+
+            if (!scalarFunctionSelectItems.isEmpty()) {
+                dataSet = new ScalarFunctionDataSet(scalarFunctionSelectItems, dataSet);
+                dataSet = MetaModelHelper.getSelection(query.getSelectClause().getItems(), dataSet);
+            }
+
         } catch (SQLException exception) {
             if (resultSet != null) {
                 resultSet.close();
@@ -451,16 +482,20 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "create statement for query");
         }
-        DataSet dataSet = null;
+
+        final DataSet dataSet;
         try {
-
             dataSet = execute(connection, query, statement, null, null, null);
-
         } catch (SQLException e) {
             // only close in case of an error - the JdbcDataSet will close
             // otherwise
             close(connection, null, statement);
             throw JdbcUtils.wrapException(e, "execute query");
+        } catch (RuntimeException e) {
+            // only close in case of an error - the JdbcDataSet will close
+            // otherwise
+            close(connection, null, statement);
+            throw e;
         }
 
         return dataSet;

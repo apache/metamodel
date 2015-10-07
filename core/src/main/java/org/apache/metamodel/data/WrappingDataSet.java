@@ -16,20 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.query;
+package org.apache.metamodel.data;
 
-import org.apache.metamodel.util.AggregateBuilder;
+/**
+ * Sub-interface for {@link DataSet}s that wrap other {@link DataSet}s,
+ * typically to apply some client-side filtering or enhancement logic on raw
+ * data.
+ */
+public interface WrappingDataSet extends DataSet {
 
-public class MinAggregateFunction extends DefaultAggregateFunction<Object> {
-
-    @Override
-    public String getFunctionName() {
-        return "MIN";
-    }
-
-    @Override
-    public AggregateBuilder<Object> createAggregateBuilder() {
-        return new MinAggregateBuilder();
-    }
-
+    /**
+     * Gets the {@link DataSet} that is wrapped by this {@link WrappingDataSet}.
+     * 
+     * @return
+     */
+    public DataSet getWrappedDataSet();
 }

@@ -28,6 +28,7 @@ import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
@@ -59,6 +60,15 @@ final class GroupedQueryBuilderImpl extends BaseObject implements GroupedQueryBu
             throw new IllegalArgumentException("column cannot be null");
         }
         return new ColumnSelectBuilderImpl(column, _query, this);
+    }
+
+    @Override
+    public SatisfiedQueryBuilder<?> select(FunctionType function, String columnName) {
+        if (function == null) {
+            throw new IllegalArgumentException("function cannot be null");
+        }
+        final Column column = findColumn(columnName);
+        return new FunctionSelectBuilderImpl(function, column, _query, this);
     }
 
     @Override
@@ -114,8 +124,20 @@ final class GroupedQueryBuilderImpl extends BaseObject implements GroupedQueryBu
 
     @Override
     public WhereBuilder<GroupedQueryBuilder> where(String columnName) {
-        Column column = findColumn(columnName);
+        final Column column = findColumn(columnName);
         return where(column);
+    }
+    
+    @Override
+    public WhereBuilder<GroupedQueryBuilder> where(ScalarFunction function, Column column) {
+        final SelectItem selectItem = new SelectItem(function, column);
+        return new WhereBuilderImpl(selectItem, _query, this);
+    }
+    
+    @Override
+    public WhereBuilder<GroupedQueryBuilder> where(ScalarFunction function, String columnName) {
+        final Column column = findColumn(columnName);
+        return where(function, column);
     }
 
     @Override

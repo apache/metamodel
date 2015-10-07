@@ -18,18 +18,10 @@
  */
 package org.apache.metamodel.query;
 
-import org.apache.metamodel.util.AggregateBuilder;
-
-public class MinAggregateFunction extends DefaultAggregateFunction<Object> {
+public abstract class DefaultScalarFunction implements ScalarFunction {
 
     @Override
-    public String getFunctionName() {
-        return "MIN";
+    public String toString() {
+        return getFunctionName();
     }
-
-    @Override
-    public AggregateBuilder<Object> createAggregateBuilder() {
-        return new MinAggregateBuilder();
-    }
-
 }

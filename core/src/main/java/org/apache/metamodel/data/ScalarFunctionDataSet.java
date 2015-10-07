@@ -18,30 +18,27 @@
  */
 package org.apache.metamodel.data;
 
+import java.util.Arrays;
 import java.util.List;
 
+import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.util.CollectionUtils;
 
 /**
- * {@link DataSet} wrapper for doing subselection.
+ * A {@link DataSet} that enhances another {@link DataSet} with
+ * {@link ScalarFunction}s.
  */
-public final class SubSelectionDataSet extends AbstractDataSet implements WrappingDataSet {
+public class ScalarFunctionDataSet extends AbstractDataSet implements WrappingDataSet {
 
     private final DataSet _dataSet;
+    private final List<SelectItem> _scalarFunctionSelectItemsToEvaluate;
 
-    public SubSelectionDataSet(SelectItem[] selectItemsArray, DataSet dataSet) {
-        super(selectItemsArray);
+    public ScalarFunctionDataSet(List<SelectItem> scalarFunctionSelectItemsToEvaluate, DataSet dataSet) {
+        super(CollectionUtils.concat(false, scalarFunctionSelectItemsToEvaluate,
+                Arrays.<SelectItem> asList(dataSet.getSelectItems())));
+        _scalarFunctionSelectItemsToEvaluate = scalarFunctionSelectItemsToEvaluate;
         _dataSet = dataSet;
-    }
-
-    public SubSelectionDataSet(List<SelectItem> selectItems, DataSet dataSet) {
-        super(selectItems);
-        _dataSet = dataSet;
-    }
-
-    @Override
-    public DataSet getWrappedDataSet() {
-        return _dataSet;
     }
 
     @Override
@@ -51,13 +48,17 @@ public final class SubSelectionDataSet extends AbstractDataSet implements Wrappi
 
     @Override
     public Row getRow() {
-        final DataSetHeader header = getHeader();
-        return _dataSet.getRow().getSubSelection(header);
+        final Row row = _dataSet.getRow();
+        return new ScalarFunctionRow(this, row);
+    }
+    
+    public List<SelectItem> getScalarFunctionSelectItemsToEvaluate() {
+        return _scalarFunctionSelectItemsToEvaluate;
     }
 
     @Override
-    public void close() {
-        super.close();
-        _dataSet.close();
+    public DataSet getWrappedDataSet() {
+        return _dataSet;
     }
+
 }

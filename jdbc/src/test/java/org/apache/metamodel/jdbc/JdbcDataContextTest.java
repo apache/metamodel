@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -113,8 +114,8 @@ public class JdbcDataContextTest extends JdbcTestCase {
 
         EasyMock.verify(ds);
 
-        String assertionFailMsg = "Expected 5x true: " + con1.isClosed() + "," + con2.isClosed() + ","
-                + con3.isClosed() + "," + con4.isClosed() + "," + con5.isClosed();
+        String assertionFailMsg = "Expected 5x true: " + con1.isClosed() + "," + con2.isClosed() + "," + con3.isClosed()
+                + "," + con4.isClosed() + "," + con5.isClosed();
 
         assertTrue(assertionFailMsg, con1.isClosed());
         assertTrue(assertionFailMsg, con2.isClosed());
@@ -136,20 +137,22 @@ public class JdbcDataContextTest extends JdbcTestCase {
         assertEquals(
                 "SELECT a._CUSTOMERNUMBER_, a._CUSTOMERNAME_, a._CONTACTLASTNAME_, a._CONTACTFIRSTNAME_, a._PHONE_, "
                         + "a._ADDRESSLINE1_, a._ADDRESSLINE2_, a._CITY_, a._STATE_, a._POSTALCODE_, a._COUNTRY_, "
-                        + "a._SALESREPEMPLOYEENUMBER_, a._CREDITLIMIT_ FROM PUBLIC._CUSTOMERS_ a", q.toString()
-                        .replace('\"', '_'));
+                        + "a._SALESREPEMPLOYEENUMBER_, a._CREDITLIMIT_ FROM PUBLIC._CUSTOMERS_ a",
+                q.toString().replace('\"', '_'));
         DataSet result = strategy.executeQuery(q);
         assertTrue(result.next());
         assertEquals(
                 "Row[values=[103, Atelier graphique, Schmitt, Carine, 40.32.2555, 54, rue Royale, null, Nantes, null, "
-                        + "44000, France, 1370, 21000.0]]", result.getRow().toString());
+                        + "44000, France, 1370, 21000.0]]",
+                result.getRow().toString());
         assertTrue(result.next());
         assertTrue(result.next());
         assertTrue(result.next());
         assertTrue(result.next());
         assertEquals(
                 "Row[values=[121, Baane Mini Imports, Bergulfsen, Jonas, 07-98 9555, Erling Skakkes gate 78, null, "
-                        + "Stavern, null, 4110, Norway, 1504, 81700.0]]", result.getRow().toString());
+                        + "Stavern, null, 4110, Norway, 1504, 81700.0]]",
+                result.getRow().toString());
         result.close();
     }
 
@@ -181,12 +184,14 @@ public class JdbcDataContextTest extends JdbcTestCase {
                         + "a._ADDRESSLINE1_, a._ADDRESSLINE2_, a._CITY_, "
                         + "a._STATE_, a._POSTALCODE_, a._COUNTRY_, a._SALESREPEMPLOYEENUMBER_, "
                         + "a._CREDITLIMIT_ FROM PUBLIC._CUSTOMERS_ a WHERE a._CUSTOMERNUMBER_ = ? "
-                        + "AND a._CUSTOMERNAME_ = ?", compliedQueryString.replace('\"', '_'));
+                        + "AND a._CUSTOMERNAME_ = ?",
+                compliedQueryString.replace('\"', '_'));
         DataSet result1 = dataContext.executeQuery(compiledQuery, new Object[] { 103, "Atelier graphique" });
         assertTrue(result1.next());
         assertEquals(
                 "Row[values=[103, Atelier graphique, Schmitt, Carine, 40.32.2555, 54, rue Royale, null, Nantes, null, "
-                        + "44000, France, 1370, 21000.0]]", result1.getRow().toString());
+                        + "44000, France, 1370, 21000.0]]",
+                result1.getRow().toString());
         assertFalse(result1.next());
 
         assertEquals(1, jdbcCompiledQuery.getActiveLeases());
@@ -211,6 +216,42 @@ public class JdbcDataContextTest extends JdbcTestCase {
 
         assertEquals(0, jdbcCompiledQuery.getActiveLeases());
         assertEquals(0, jdbcCompiledQuery.getIdleLeases());
+    }
+
+    public void testSelectScalarFunction() throws Exception {
+        final Connection connection = getTestDbConnection();
+        final JdbcDataContext dataContext = new JdbcDataContext(connection);
+        final DataSet dataSet = dataContext.query().from("customers").select("creditlimit")
+                .select(FunctionType.TO_DATE, "creditlimit").select("creditlimit").limit(2).execute();
+        try {
+            assertEquals("[_CUSTOMERS_._CREDITLIMIT_, TO_DATE(_CUSTOMERS_._CREDITLIMIT_), _CUSTOMERS_._CREDITLIMIT_]",
+                    Arrays.toString(dataSet.getSelectItems()).replaceAll("\"", "_"));
+
+            assertTrue(dataSet.next());
+            final Object value0 = dataSet.getRow().getValue(0);
+            assertTrue("Expected a number but got: " + value0, value0 instanceof Number);
+            final Object value1 = dataSet.getRow().getValue(1);
+            assertTrue("Expected a date but got: " + value1, value1 instanceof Date);
+            final Object value2 = dataSet.getRow().getValue(2);
+            assertTrue("Expected a number but got: " + value2, value2 instanceof Number);
+        } finally {
+            dataSet.close();
+        }
+    }
+
+    public void testWhereScalarFunction() throws Exception {
+        final Connection connection = getTestDbConnection();
+        final JdbcDataContext dataContext = new JdbcDataContext(connection);
+        try {
+            dataContext.query().from("customers").select("customernumber").where(FunctionType.TO_BOOLEAN, "creditlimit")
+                    .eq(true).limit(2).execute();
+            fail("Exception expected");
+        } catch (MetaModelException e) {
+            assertEquals(
+                    "Scalar functions outside of SELECT clause is not supported for JDBC databases. Query rejected: "
+                            + "SELECT \"CUSTOMERS\".\"CUSTOMERNUMBER\" FROM PUBLIC.\"CUSTOMERS\" WHERE TO_BOOLEAN(\"CUSTOMERS\".\"CREDITLIMIT\") = TRUE",
+                    e.getMessage());
+        }
     }
 
     public void testExecuteQueryWithComparisonGreaterThanOrEquals() throws Exception {
@@ -341,8 +382,8 @@ public class JdbcDataContextTest extends JdbcTestCase {
 
     public void testParseColumns() throws Exception {
         Connection connection = getTestDbConnection();
-        JdbcDataContext dc = new JdbcDataContext(connection, new TableType[] { TableType.OTHER,
-                TableType.GLOBAL_TEMPORARY }, null);
+        JdbcDataContext dc = new JdbcDataContext(connection,
+                new TableType[] { TableType.OTHER, TableType.GLOBAL_TEMPORARY }, null);
         Schema schema = dc.getDefaultSchema();
         Table customersTable = schema.getTableByName("CUSTOMERS");
         Column[] columns = customersTable.getColumns();
@@ -406,24 +447,24 @@ public class JdbcDataContextTest extends JdbcTestCase {
 
         EasyMock.expect(mockCon.getAutoCommit()).andReturn(true);
 
-        EasyMock.expect(mockCon.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)).andReturn(
-                mockStatement);
+        EasyMock.expect(mockCon.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY))
+                .andReturn(mockStatement);
 
         EasyMock.expect(mockStatement.getFetchSize()).andReturn(10);
         mockStatement.setFetchSize(EasyMock.anyInt());
         mockStatement.setMaxRows(3);
         EasyMock.expectLastCall().andThrow(new SQLException("I wont allow max rows"));
 
-        EasyMock.expect(
-                mockStatement
-                        .executeQuery("SELECT a.\"CUSTOMERNUMBER\", a.\"CUSTOMERNAME\", a.\"CONTACTLASTNAME\", a.\"CONTACTFIRSTNAME\", "
-                                + "a.\"PHONE\", a.\"ADDRESSLINE1\", a.\"ADDRESSLINE2\", a.\"CITY\", a.\"STATE\", "
-                                + "a.\"POSTALCODE\", a.\"COUNTRY\", a.\"SALESREPEMPLOYEENUMBER\", "
-                                + "a.\"CREDITLIMIT\" FROM PUBLIC.\"CUSTOMERS\" a")).andReturn(
-                realStatement.executeQuery("SELECT a.\"CUSTOMERNUMBER\", a.\"CUSTOMERNAME\", a.\"CONTACTLASTNAME\", "
-                        + "a.\"CONTACTFIRSTNAME\", a.\"PHONE\", a.\"ADDRESSLINE1\", a.\"ADDRESSLINE2\", a.\"CITY\", "
-                        + "a.\"STATE\", a.\"POSTALCODE\", a.\"COUNTRY\", a.\"SALESREPEMPLOYEENUMBER\", "
-                        + "a.\"CREDITLIMIT\" FROM PUBLIC.\"CUSTOMERS\" a"));
+        EasyMock.expect(mockStatement.executeQuery(
+                "SELECT a.\"CUSTOMERNUMBER\", a.\"CUSTOMERNAME\", a.\"CONTACTLASTNAME\", a.\"CONTACTFIRSTNAME\", "
+                        + "a.\"PHONE\", a.\"ADDRESSLINE1\", a.\"ADDRESSLINE2\", a.\"CITY\", a.\"STATE\", "
+                        + "a.\"POSTALCODE\", a.\"COUNTRY\", a.\"SALESREPEMPLOYEENUMBER\", "
+                        + "a.\"CREDITLIMIT\" FROM PUBLIC.\"CUSTOMERS\" a"))
+                .andReturn(realStatement
+                        .executeQuery("SELECT a.\"CUSTOMERNUMBER\", a.\"CUSTOMERNAME\", a.\"CONTACTLASTNAME\", "
+                                + "a.\"CONTACTFIRSTNAME\", a.\"PHONE\", a.\"ADDRESSLINE1\", a.\"ADDRESSLINE2\", a.\"CITY\", "
+                                + "a.\"STATE\", a.\"POSTALCODE\", a.\"COUNTRY\", a.\"SALESREPEMPLOYEENUMBER\", "
+                                + "a.\"CREDITLIMIT\" FROM PUBLIC.\"CUSTOMERS\" a"));
 
         mockStatement.close();
 
@@ -437,15 +478,17 @@ public class JdbcDataContextTest extends JdbcTestCase {
         Table table = schema.getTables()[0];
         q.from(table, "a");
         q.select(table.getColumns());
-        assertEquals("SELECT a.\"CUSTOMERNUMBER\", a.\"CUSTOMERNAME\", a.\"CONTACTLASTNAME\", a.\"CONTACTFIRSTNAME\", "
-                + "a.\"PHONE\", a.\"ADDRESSLINE1\", a.\"ADDRESSLINE2\", a.\"CITY\", a.\"STATE\", a.\"POSTALCODE\", "
-                + "a.\"COUNTRY\", a.\"SALESREPEMPLOYEENUMBER\", a.\"CREDITLIMIT\" FROM PUBLIC.\"CUSTOMERS\" a",
+        assertEquals(
+                "SELECT a.\"CUSTOMERNUMBER\", a.\"CUSTOMERNAME\", a.\"CONTACTLASTNAME\", a.\"CONTACTFIRSTNAME\", "
+                        + "a.\"PHONE\", a.\"ADDRESSLINE1\", a.\"ADDRESSLINE2\", a.\"CITY\", a.\"STATE\", a.\"POSTALCODE\", "
+                        + "a.\"COUNTRY\", a.\"SALESREPEMPLOYEENUMBER\", a.\"CREDITLIMIT\" FROM PUBLIC.\"CUSTOMERS\" a",
                 q.toString());
         DataSet result = dc.executeQuery(q);
         assertTrue(result.next());
         assertEquals(
                 "Row[values=[103, Atelier graphique, Schmitt, Carine, 40.32.2555, 54, rue Royale, null, Nantes, null, "
-                        + "44000, France, 1370, 21000.0]]", result.getRow().toString());
+                        + "44000, France, 1370, 21000.0]]",
+                result.getRow().toString());
         assertTrue(result.next());
         assertTrue(result.next());
         assertFalse(result.next());
@@ -542,8 +585,8 @@ public class JdbcDataContextTest extends JdbcTestCase {
         q.select(countrySelect, new SelectItem(FunctionType.SUM, creditLimitColumn));
         q.groupBy(countryColumn);
         q.orderBy(new OrderByItem(countrySelect));
-        q.where(new FilterItem(new SelectItem(employeeNumberColumn1), OperatorType.EQUALS_TO, new SelectItem(
-                employeeNumberColumn2)));
+        q.where(new FilterItem(new SelectItem(employeeNumberColumn1), OperatorType.EQUALS_TO,
+                new SelectItem(employeeNumberColumn2)));
 
         assertEquals("SELECT c.\"COUNTRY\", SUM(c.\"CREDITLIMIT\") FROM PUBLIC.\"CUSTOMERS\" c, "
                 + "PUBLIC.\"EMPLOYEES\" o WHERE c.\"SALESREPEMPLOYEENUMBER\" = o.\"EMPLOYEENUMBER\" GROUP BY c"
@@ -576,8 +619,8 @@ public class JdbcDataContextTest extends JdbcTestCase {
         ds.setTimeBetweenEvictionRunsMillis(-1);
         ds.setDefaultTransactionIsolation(java.sql.Connection.TRANSACTION_READ_COMMITTED);
 
-        final JdbcDataContext dataContext = new JdbcDataContext(ds,
-                new TableType[] { TableType.TABLE, TableType.VIEW }, null);
+        final JdbcDataContext dataContext = new JdbcDataContext(ds, new TableType[] { TableType.TABLE, TableType.VIEW },
+                null);
 
         final JdbcCompiledQuery compiledQuery = (JdbcCompiledQuery) dataContext.query().from("CUSTOMERS")
                 .select("CUSTOMERNAME").where("CUSTOMERNUMBER").eq(new QueryParameter()).compile();
@@ -587,8 +630,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
 
         final String compliedQueryString = compiledQuery.toSql();
 
-        assertEquals(
-                "SELECT _CUSTOMERS_._CUSTOMERNAME_ FROM PUBLIC._CUSTOMERS_ WHERE _CUSTOMERS_._CUSTOMERNUMBER_ = ?",
+        assertEquals("SELECT _CUSTOMERS_._CUSTOMERNAME_ FROM PUBLIC._CUSTOMERS_ WHERE _CUSTOMERS_._CUSTOMERNUMBER_ = ?",
                 compliedQueryString.replace('\"', '_'));
 
         assertEquals(0, compiledQuery.getActiveLeases());

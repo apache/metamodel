@@ -18,18 +18,34 @@
  */
 package org.apache.metamodel.query;
 
-import org.apache.metamodel.util.AggregateBuilder;
+import java.util.Date;
 
-public class MinAggregateFunction extends DefaultAggregateFunction<Object> {
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.util.TimeComparator;
+
+public class ToDateFunction extends DefaultScalarFunction {
 
     @Override
-    public String getFunctionName() {
-        return "MIN";
+    public ColumnType getExpectedColumnType(ColumnType type) {
+        if (type.isTimeBased()) {
+            return type;
+        }
+        return ColumnType.TIMESTAMP;
     }
 
     @Override
-    public AggregateBuilder<Object> createAggregateBuilder() {
-        return new MinAggregateBuilder();
+    public String getFunctionName() {
+        return "TO_DATE";
+    }
+
+    @Override
+    public Object evaluate(Row row, SelectItem item) {
+        final Object value = row.getValue(item);
+        if (value == null || value instanceof Date) {
+            return value;
+        }
+        return TimeComparator.toDate(value);
     }
 
 }

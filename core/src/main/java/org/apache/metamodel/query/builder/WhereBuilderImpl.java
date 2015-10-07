@@ -36,7 +36,11 @@ final class WhereBuilderImpl extends AbstractQueryFilterBuilder<SatisfiedWhereBu
     private FilterItem _parentOrFilter;
 
     public WhereBuilderImpl(Column column, Query query, GroupedQueryBuilder queryBuilder) {
-        super(new SelectItem(column), queryBuilder);
+        this(new SelectItem(column), query, queryBuilder);
+    }
+    
+    public WhereBuilderImpl(SelectItem selectItem, Query query, GroupedQueryBuilder queryBuilder) {
+        super(selectItem, queryBuilder);
         _query = query;
         _orFilters = new ArrayList<FilterItem>();
     }
