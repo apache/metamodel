@@ -29,6 +29,7 @@ import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.SimpleDataSetHeader;
@@ -57,6 +58,15 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
     private final Schema schema = getExampleSchema();
     private final Table table1 = schema.getTableByName(TABLE_CONTRIBUTOR);
     private final Table table2 = schema.getTableByName(TABLE_ROLE);
+
+    public void testQueryMaxRows0() throws Exception {
+        final MockDataContext dc = new MockDataContext("sch", "tab", "1");
+        final Table table = dc.getDefaultSchema().getTables()[0];
+        final DataSet dataSet = dc.query().from(table).selectAll().limit(0).execute();
+        assertTrue(dataSet instanceof EmptyDataSet);
+        assertFalse(dataSet.next());
+        dataSet.close();
+    }
 
     // see issue METAMODEL-100
     public void testSelectFromColumnsWithSameName() throws Exception {
@@ -107,8 +117,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
     public void testAggregateQueryRegularWhereClause() throws Exception {
         MockDataContext dc = new MockDataContext("sch", "tab", "1");
         Table table = dc.getDefaultSchema().getTables()[0];
-        assertSingleRowResult("Row[values=[3]]",
-                dc.query().from(table).selectCount().where("baz").eq("world").execute());
+        assertSingleRowResult("Row[values=[3]]", dc.query().from(table).selectCount().where("baz").eq("world")
+                .execute());
     }
 
     public void testApplyFunctionToNullValues() throws Exception {
@@ -222,7 +232,9 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
 
         Query query = dc.query().from(table).select("foo").select(FunctionType.TO_NUMBER, "foo").select("bar")
                 .select(FunctionType.TO_STRING, "bar").select(FunctionType.TO_NUMBER, "bar").toQuery();
-        assertEquals("SELECT tab.foo, TO_NUMBER(tab.foo), tab.bar, TO_STRING(tab.bar), TO_NUMBER(tab.bar) FROM sch.tab", query.toSql());
+        assertEquals(
+                "SELECT tab.foo, TO_NUMBER(tab.foo), tab.bar, TO_STRING(tab.bar), TO_NUMBER(tab.bar) FROM sch.tab",
+                query.toSql());
 
         DataSet ds = dc.executeQuery(query);
         assertTrue(ds.next());
@@ -245,7 +257,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         assertTrue(ds.next());
         ds.close();
     }
-    
+
     public void testScalarFunctionWhere() throws Exception {
         MockDataContext dc = new MockDataContext("sch", "tab", "1");
         Table table = dc.getDefaultSchema().getTables()[0];
@@ -750,8 +762,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         Query q = new Query();
         q.from(table1);
         q.select(table1.getColumns());
-        SelectItem countrySelectItem = q.getSelectClause()
-                .getSelectItem(table1.getColumnByName(COLUMN_CONTRIBUTOR_COUNTRY));
+        SelectItem countrySelectItem = q.getSelectClause().getSelectItem(
+                table1.getColumnByName(COLUMN_CONTRIBUTOR_COUNTRY));
         q.where(new FilterItem(countrySelectItem, OperatorType.EQUALS_TO, "denmark"));
 
         DataSet data = dc.executeQuery(q);
