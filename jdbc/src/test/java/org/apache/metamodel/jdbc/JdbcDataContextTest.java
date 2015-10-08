@@ -38,7 +38,6 @@ import org.easymock.EasyMock;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.MockDataContext;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
