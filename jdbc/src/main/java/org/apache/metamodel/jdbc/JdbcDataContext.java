@@ -336,6 +336,13 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
 
     private DataSet execute(Connection connection, Query query, Statement statement, JdbcCompiledQuery compiledQuery,
             JdbcCompiledQueryLease lease, Object[] values) throws SQLException, MetaModelException {
+        Integer maxRows = query.getMaxRows();
+
+        final List<SelectItem> selectItems = query.getSelectClause().getItems();
+        if (maxRows != null && maxRows.intValue() == 0) {
+            return new EmptyDataSet(selectItems);
+        }
+
         if (MetaModelHelper.containsNonSelectScalaFunctions(query)) {
             throw new MetaModelException(
                     "Scalar functions outside of SELECT clause is not supported for JDBC databases. Query rejected: "
@@ -356,8 +363,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
 
         // build a list of select items whose scalar functions has to be
         // evaluated client-side
-        final List<SelectItem> scalarFunctionSelectItems = MetaModelHelper
-                .getScalarFunctionSelectItems(query.getSelectClause().getItems());
+        final List<SelectItem> scalarFunctionSelectItems = MetaModelHelper.getScalarFunctionSelectItems(selectItems);
         for (Iterator<SelectItem> it = scalarFunctionSelectItems.iterator(); it.hasNext();) {
             final SelectItem selectItem = (SelectItem) it.next();
             if (_queryRewriter.isScalarFunctionSupported(selectItem.getScalarFunction())) {
@@ -365,8 +371,8 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             }
         }
 
-        boolean postProcessFirstRow = false;
         final Integer firstRow = query.getFirstRow();
+        boolean postProcessFirstRow = false;
         if (firstRow != null) {
             if (_queryRewriter.isFirstRowSupported()) {
                 logger.debug("First row property will be treated by query rewriter");
@@ -376,7 +382,6 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         }
 
         boolean postProcessMaxRows = false;
-        Integer maxRows = query.getMaxRows();
         if (maxRows != null) {
             if (postProcessFirstRow) {
                 // if First row is being post processed, we need to
@@ -444,7 +449,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
                         if (resultSet != null) {
                             resultSet.close();
                         }
-                        return new EmptyDataSet(query.getSelectClause().getItems());
+                        return new EmptyDataSet(selectItems);
                     }
                 }
             }
@@ -461,7 +466,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
 
             if (!scalarFunctionSelectItems.isEmpty()) {
                 dataSet = new ScalarFunctionDataSet(scalarFunctionSelectItems, dataSet);
-                dataSet = MetaModelHelper.getSelection(query.getSelectClause().getItems(), dataSet);
+                dataSet = MetaModelHelper.getSelection(selectItems, dataSet);
             }
 
         } catch (SQLException exception) {

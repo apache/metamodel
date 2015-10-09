@@ -520,9 +520,6 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
     public Query setMaxRows(Integer maxRows) {
         if (maxRows != null) {
             final int maxRowsValue = maxRows.intValue();
-            if (maxRowsValue == 0) {
-                throw new IllegalArgumentException("Max rows cannot be zero");
-            }
             if (maxRowsValue < 0) {
                 throw new IllegalArgumentException("Max rows cannot be negative");
             }
