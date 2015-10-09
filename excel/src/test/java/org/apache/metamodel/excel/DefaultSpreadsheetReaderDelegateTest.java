@@ -28,10 +28,29 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.FileHelper;
 
 import junit.framework.TestCase;
 
 public class DefaultSpreadsheetReaderDelegateTest extends TestCase {
+
+    /**
+     * Creates a copy of a particular file - to avoid changing of Excel files
+     * under source control
+     * 
+     * @param path
+     * @return
+     */
+    private File copyOf(String path) {
+        final File srcFile = new File(path);
+        return copyOf(srcFile);
+    }
+
+    private File copyOf(File srcFile) {
+        final File destFile = new File("target/" + getName() + "-" + srcFile.getName());
+        FileHelper.copy(srcFile, destFile);
+        return destFile;
+    }
 
     public void testReadAllTestResourceFiles() {
         File[] listFiles = new File("src/test/resources").listFiles();
@@ -47,6 +66,7 @@ public class DefaultSpreadsheetReaderDelegateTest extends TestCase {
     }
 
     private void runTest(File file) throws Exception {
+        file = copyOf(file);
         ExcelDataContext mainDataContext = new ExcelDataContext(file);
         applyReaderDelegate(mainDataContext);
 
@@ -150,7 +170,7 @@ public class DefaultSpreadsheetReaderDelegateTest extends TestCase {
     }
 
     public void testStylingOfDateCell() throws Exception {
-        ExcelDataContext dc = new ExcelDataContext(new File("src/test/resources/Spreadsheet2007.xlsx"));
+        ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/Spreadsheet2007.xlsx"));
         applyReaderDelegate(dc);
 
         Table table = dc.getDefaultSchema().getTables()[0];
@@ -171,7 +191,7 @@ public class DefaultSpreadsheetReaderDelegateTest extends TestCase {
     }
 
     public void testStylingOfNullCell() throws Exception {
-        ExcelDataContext dc = new ExcelDataContext(new File("src/test/resources/formulas.xlsx"));
+        ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/formulas.xlsx"));
         applyReaderDelegate(dc);
 
         Table table = dc.getDefaultSchema().getTables()[0];
