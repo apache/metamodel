@@ -1,8 +1,10 @@
-### Apache MetaModel (latest)
+### Apache MetaModel 4.4.0
 
+ * [METAMODEL-192] - Added support for Scalar functions. We have a basic set of datatype conversion functions as well as support for UDF via implementing the ScalarFunction interface.
+ * [METAMODEL-194] - Added support for setting the "Max rows" flag of a query to 0. This will always return an empty dataset.
  * [METAMODEL-173] - Improved CSV writing to non-file destinations. Added .write() and .append() methods to Resource interface.
- * [METAMODEL-176] - Trimmed the transient dependencies of the JDBC module.
  * [METAMODEL-170] - Dropped support for Java 6.
+ * [METAMODEL-176] - Trimmed the transient dependencies of the JDBC module.
  * [METAMODEL-178] - Added AggregateFunction and ScalarFunction interfaces. Changed FunctionType enum to be super-interface of those. Compatibility is retained but a recompile of code using FunctionType is needed.
  * [METAMODEL-188] - Changed OperatorType enum to be an interface. Compatibility is retained but a recompile of code is needed.
  * [METAMODEL-179] - Ensured that HdfsResource is not closing a shared HDFS file system reference.
