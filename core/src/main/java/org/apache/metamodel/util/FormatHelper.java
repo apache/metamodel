@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.util;
 
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -201,6 +202,8 @@ public final class FormatHelper {
             }
             sb.append(')');
             return sb.toString();
+        } else if (isTimestampBased(columnType, value)) {
+            return "TIMESTAMP" + " \'" + value.toString() + "\'";
         } else if (isNumber(columnType, value)) {
             NumberFormat numberFormat = getSqlNumberFormat();
             Number n = NumberComparator.toNumber(value);
@@ -231,6 +234,13 @@ public final class FormatHelper {
             }
             throw new IllegalStateException("Column type not supported: " + columnType);
         }
+    }
+
+    private static boolean isTimestampBased(ColumnType columnType, Object value) {
+        if (isTimeBased(columnType, value) && value instanceof Timestamp) {
+            return true;
+        }
+        return false;
     }
 
     private static boolean isTimeBased(ColumnType columnType, Object operand) {

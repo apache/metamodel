@@ -18,6 +18,12 @@
  */
 package org.apache.metamodel.query;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
 import junit.framework.TestCase;
 
 import org.apache.metamodel.DataContext;
@@ -38,11 +44,6 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 public class FilterItemTest extends TestCase {
 
@@ -121,6 +122,12 @@ public class FilterItemTest extends TestCase {
         FilterItem c = new FilterItem(new SelectItem(timestampColumn), OperatorType.LESS_THAN,
                 "2000-12-31 02:30:05.007");
         assertEquals("TimestampCol < TIMESTAMP '2000-12-31 02:30:05'", c.toString());
+
+        final Timestamp timestamp = new Timestamp(1444947660082l);
+        timestamp.setNanos(42000);
+        c = new FilterItem(new SelectItem(timestampColumn), OperatorType.LESS_THAN,
+                timestamp);
+        assertEquals("TimestampCol < TIMESTAMP '2015-10-16 00:21:00.000042'", c.toString());
 
         c = new FilterItem(new SelectItem(timestampColumn), OperatorType.LESS_THAN, "2000-12-31 02:30:05");
         assertEquals("TimestampCol < TIMESTAMP '2000-12-31 02:30:05'", c.toString());
@@ -374,7 +381,8 @@ public class FilterItemTest extends TestCase {
 
             @Override
             public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-                // we expect 3 columns to be materialized because the query has column references in both SELECT and WHERE clause
+                // we expect 3 columns to be materialized because the query has
+                // column references in both SELECT and WHERE clause
                 assertEquals(3, columns.length);
                 assertEquals("column_number", columns[0].getName());
                 assertEquals("name", columns[1].getName());

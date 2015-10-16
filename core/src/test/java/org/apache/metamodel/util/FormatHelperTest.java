@@ -18,45 +18,54 @@
  */
 package org.apache.metamodel.util;
 
+import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.util.Arrays;
 
-import org.apache.metamodel.schema.ColumnType;
-
 import junit.framework.TestCase;
+
+import org.apache.metamodel.schema.ColumnType;
 
 public class FormatHelperTest extends TestCase {
 
-	public void testNumberFormat() throws Exception {
-		NumberFormat format = FormatHelper.getUiNumberFormat();
-		assertEquals("987643.213456343", format.format(987643.213456343));
-		assertEquals("0.218456343", format.format(0.218456343));
-		assertEquals("20.1", format.format(20.1));
-	}
+    public void testNumberFormat() throws Exception {
+        NumberFormat format = FormatHelper.getUiNumberFormat();
+        assertEquals("987643.213456343", format.format(987643.213456343));
+        assertEquals("0.218456343", format.format(0.218456343));
+        assertEquals("20.1", format.format(20.1));
+    }
 
-	public void testFormatSqlValue() throws Exception {
-		assertEquals("'foo'", FormatHelper.formatSqlValue(null, "foo"));
-		assertEquals("1", FormatHelper.formatSqlValue(null, 1));
-		assertEquals("NULL", FormatHelper.formatSqlValue(null, null));
-		assertEquals(
-				"TIMESTAMP '2011-07-24 00:00:00'",
-				FormatHelper.formatSqlValue(ColumnType.TIMESTAMP,
-						DateUtils.get(2011, Month.JULY, 24)));
-		assertEquals(
-				"DATE '2011-07-24'",
-				FormatHelper.formatSqlValue(ColumnType.DATE,
-						DateUtils.get(2011, Month.JULY, 24)));
-		assertEquals(
-				"TIME '00:00:00'",
-				FormatHelper.formatSqlValue(ColumnType.TIME,
-						DateUtils.get(2011, Month.JULY, 24)));
-		assertEquals(
-				"('foo' , 1 , 'bar' , 0.1234)",
-				FormatHelper.formatSqlValue(null,
-						Arrays.asList("foo", 1, "bar", 0.1234)));
-		assertEquals(
-				"('foo' , 1 , 'bar' , 0.1234)",
-				FormatHelper.formatSqlValue(null, new Object[] { "foo", 1,
-						"bar", 0.1234 }));
-	}
+    public void testFormatSqlValue() throws Exception {
+        assertEquals("'foo'", FormatHelper.formatSqlValue(null, "foo"));
+        assertEquals("1", FormatHelper.formatSqlValue(null, 1));
+        assertEquals("NULL", FormatHelper.formatSqlValue(null, null));
+        assertEquals(
+                "TIMESTAMP '2011-07-24 00:00:00'",
+                FormatHelper.formatSqlValue(ColumnType.TIMESTAMP,
+                        DateUtils.get(2011, Month.JULY, 24)));
+
+        final Timestamp timestamp = new Timestamp(1444947660082l);
+        timestamp.setNanos(42000);
+        assertEquals(
+                "TIMESTAMP '2015-10-16 00:21:00.000042'",
+                FormatHelper.formatSqlValue(ColumnType.TIMESTAMP,
+                        timestamp));
+
+        assertEquals(
+                "DATE '2011-07-24'",
+                FormatHelper.formatSqlValue(ColumnType.DATE,
+                        DateUtils.get(2011, Month.JULY, 24)));
+        assertEquals(
+                "TIME '00:00:00'",
+                FormatHelper.formatSqlValue(ColumnType.TIME,
+                        DateUtils.get(2011, Month.JULY, 24)));
+        assertEquals(
+                "('foo' , 1 , 'bar' , 0.1234)",
+                FormatHelper.formatSqlValue(null,
+                        Arrays.asList("foo", 1, "bar", 0.1234)));
+        assertEquals(
+                "('foo' , 1 , 'bar' , 0.1234)",
+                FormatHelper.formatSqlValue(null, new Object[] { "foo", 1,
+                        "bar", 0.1234 }));
+    }
 }
