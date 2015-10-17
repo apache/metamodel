@@ -46,6 +46,7 @@ import org.apache.metamodel.data.MaxRowsDataSet;
 import org.apache.metamodel.data.ScalarFunctionDataSet;
 import org.apache.metamodel.jdbc.dialects.DB2QueryRewriter;
 import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
+import org.apache.metamodel.jdbc.dialects.DerbyQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.H2QueryRewriter;
 import org.apache.metamodel.jdbc.dialects.HiveQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.HsqldbQueryRewriter;
@@ -87,6 +88,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     public static final String DATABASE_PRODUCT_DB2_PREFIX = "DB2/";
     public static final String DATABASE_PRODUCT_ORACLE = "Oracle";
     public static final String DATABASE_PRODUCT_HIVE = "Apache Hive";
+    public static final String DATABASE_PRODUCT_DERBY = "Apache Derby";
 
     public static final ColumnType COLUMN_TYPE_CLOB_AS_STRING = new ColumnTypeImpl("CLOB", SuperColumnType.LITERAL_TYPE,
             String.class, true);
@@ -234,6 +236,8 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             setQueryRewriter(new H2QueryRewriter(this));
         } else if (DATABASE_PRODUCT_HIVE.equals(_databaseProductName)) {
             setQueryRewriter(new HiveQueryRewriter(this));
+        } else if (DATABASE_PRODUCT_DERBY.equals(_databaseProductName)) {
+            setQueryRewriter(new DerbyQueryRewriter(this));
         } else {
             setQueryRewriter(new DefaultQueryRewriter(this));
         }

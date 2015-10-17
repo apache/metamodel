@@ -18,7 +18,6 @@
  */
 package org.apache.metamodel.query;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -122,11 +121,6 @@ public class FilterItemTest extends TestCase {
         FilterItem c = new FilterItem(new SelectItem(timestampColumn), OperatorType.LESS_THAN,
                 "2000-12-31 02:30:05.007");
         assertEquals("TimestampCol < TIMESTAMP '2000-12-31 02:30:05'", c.toString());
-
-        final Timestamp timestamp = Timestamp.valueOf("2015-10-16 00:21:00.000042");
-        c = new FilterItem(new SelectItem(timestampColumn), OperatorType.LESS_THAN,
-                timestamp);
-        assertEquals("TimestampCol < TIMESTAMP '2015-10-16 00:21:00.000042'", c.toString());
 
         c = new FilterItem(new SelectItem(timestampColumn), OperatorType.LESS_THAN, "2000-12-31 02:30:05");
         assertEquals("TimestampCol < TIMESTAMP '2000-12-31 02:30:05'", c.toString());

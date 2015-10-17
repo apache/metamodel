@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.jdbc.dialects;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -106,14 +107,22 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
     public String rewriteFilterItem(FilterItem item) {
         Object operand = item.getOperand();
         if (operand != null) {
+            final SelectItem selectItem = item.getSelectItem();
             if (operand instanceof String) {
                 String str = (String) operand;
                 // escape single quotes
                 if (str.indexOf('\'') != -1) {
                     str = escapeQuotes(str);
-                    FilterItem replacementFilterItem = new FilterItem(item.getSelectItem(), item.getOperator(), str);
+                    FilterItem replacementFilterItem = new FilterItem(selectItem, item.getOperator(), str);
                     return super.rewriteFilterItem(replacementFilterItem);
                 }
+            } else if (operand instanceof Timestamp) {
+                final OperatorType operator = item.getOperator();
+                StringBuilder sb = new StringBuilder();
+                sb.append(selectItem.getSameQueryAlias(false));
+                FilterItem.appendOperator(sb, operand, operator);
+                sb.append("TIMESTAMP \'" + operand.toString() + "\'");
+                return sb.toString();
             } else if (operand instanceof Iterable || operand.getClass().isArray()) {
                 // operand is a set of values (typically in combination with an
                 // IN operator). Each individual element must be escaped.
@@ -139,13 +148,13 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
                     }
                 }
 
-                FilterItem replacementFilterItem = new FilterItem(item.getSelectItem(), item.getOperator(), elements);
+                FilterItem replacementFilterItem = new FilterItem(selectItem, item.getOperator(), elements);
                 return super.rewriteFilterItem(replacementFilterItem);
             }
         }
         return super.rewriteFilterItem(item);
     }
-    
+
     @Override
     public boolean isScalarFunctionSupported(ScalarFunction function) {
         return false;

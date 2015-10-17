@@ -403,4 +403,9 @@ public class HsqldbTest extends TestCase {
         Connection conn = DriverManager.getConnection("jdbc:hsqldb:mem:interpretation_of_null", USERNAME, PASSWORD);
         JdbcTestTemplates.interpretationOfNulls(conn);
     }
+
+    public void testTimestampValueInsertSelect() throws Exception {
+        Connection conn = DriverManager.getConnection("jdbc:hsqldb:mem:interpretation_of_null", USERNAME, PASSWORD);
+        JdbcTestTemplates.timestampValueInsertSelect(conn);
+    }
 }

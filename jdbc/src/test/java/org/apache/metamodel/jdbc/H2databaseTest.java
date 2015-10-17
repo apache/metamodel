@@ -70,7 +70,7 @@ public class H2databaseTest extends TestCase {
         super.tearDown();
         conn.close();
     }
-    
+
     public void testCreateInsertAndUpdate() throws Exception {
         JdbcDataContext dc = new JdbcDataContext(conn);
         JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(dc, "metamodel_test_simple");
@@ -83,7 +83,7 @@ public class H2databaseTest extends TestCase {
 
     public void testUsingSingleUpdates() throws Exception {
         final JdbcDataContext dc = new JdbcDataContext(conn);
-        
+
         final Schema schema = dc.getDefaultSchema();
         dc.executeUpdate(new CreateTable(schema, "test_table").withColumn("id").ofType(ColumnType.VARCHAR));
 
@@ -100,7 +100,6 @@ public class H2databaseTest extends TestCase {
         ds.close();
 
         dc.executeUpdate(new DeleteFrom(table).where("id").eq("bar"));
-        
 
         ds = dc.query().from(table).selectCount().execute();
         assertTrue(ds.next());
@@ -109,7 +108,7 @@ public class H2databaseTest extends TestCase {
         ds.close();
 
         dc.executeUpdate(new Update(table).where("id").eq("foo").value("id", "baz"));
-        
+
         ds = dc.query().from(table).selectAll().execute();
         assertTrue(ds.next());
         assertEquals("Row[values=[baz]]", ds.getRow().toString());
@@ -509,8 +508,13 @@ public class H2databaseTest extends TestCase {
     public void testCharOfSizeOne() throws Exception {
         JdbcTestTemplates.meaningOfOneSizeChar(conn);
     }
-    
+
     public void testInterpretationOfNull() throws Exception {
         JdbcTestTemplates.interpretationOfNulls(conn);
     }
+
+    public void testTimestampValueInsertSelect() throws Exception {
+        JdbcTestTemplates.timestampValueInsertSelect(conn);
+    }
+
 }

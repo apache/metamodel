@@ -18,7 +18,6 @@
  */
 package org.apache.metamodel.util;
 
-import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.util.Arrays;
 
@@ -43,13 +42,6 @@ public class FormatHelperTest extends TestCase {
                 "TIMESTAMP '2011-07-24 00:00:00'",
                 FormatHelper.formatSqlValue(ColumnType.TIMESTAMP,
                         DateUtils.get(2011, Month.JULY, 24)));
-
-        final Timestamp timestamp = Timestamp.valueOf("2015-10-16 00:21:00.000042");
-        assertEquals(
-                "TIMESTAMP '2015-10-16 00:21:00.000042'",
-                FormatHelper.formatSqlValue(ColumnType.TIMESTAMP,
-                        timestamp));
-
         assertEquals(
                 "DATE '2011-07-24'",
                 FormatHelper.formatSqlValue(ColumnType.DATE,

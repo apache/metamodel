@@ -30,7 +30,7 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
+import org.apache.metamodel.jdbc.dialects.DerbyQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.ColumnType;
@@ -89,7 +89,7 @@ public class DerbyTest extends TestCase {
 
     public void testDifferentOperators() throws Exception {
         Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
-        
+
         JdbcTestTemplates.differentOperatorsTest(conn);
     }
 
@@ -241,7 +241,7 @@ public class DerbyTest extends TestCase {
     public void testQueryRewriterQuoteAliases() throws Exception {
         JdbcDataContext dc = new JdbcDataContext(_connection, new TableType[] { TableType.TABLE, TableType.VIEW }, null);
         IQueryRewriter queryRewriter = dc.getQueryRewriter();
-        assertSame(DefaultQueryRewriter.class, queryRewriter.getClass());
+        assertSame(DerbyQueryRewriter.class, queryRewriter.getClass());
 
         Schema schema = dc.getSchemaByName("APP");
         Table customersTable = schema.getTableByName("CUSTOMERS");
@@ -393,9 +393,15 @@ public class DerbyTest extends TestCase {
 
         JdbcTestTemplates.convertClobToString(dc);
     }
-    
+
     public void testInterpretationOfNull() throws Exception {
         Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
         JdbcTestTemplates.interpretationOfNulls(conn);
     }
+
+    public void testTimestampValueInsertSelect() throws Exception {
+        Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
+        JdbcTestTemplates.timestampValueInsertSelect(conn);
+    }
+
 }
