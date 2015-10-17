@@ -123,8 +123,7 @@ public class FilterItemTest extends TestCase {
                 "2000-12-31 02:30:05.007");
         assertEquals("TimestampCol < TIMESTAMP '2000-12-31 02:30:05'", c.toString());
 
-        final Timestamp timestamp = new Timestamp(1444947660082l);
-        timestamp.setNanos(42000);
+        final Timestamp timestamp = Timestamp.valueOf("2015-10-16 00:21:00.000042");
         c = new FilterItem(new SelectItem(timestampColumn), OperatorType.LESS_THAN,
                 timestamp);
         assertEquals("TimestampCol < TIMESTAMP '2015-10-16 00:21:00.000042'", c.toString());

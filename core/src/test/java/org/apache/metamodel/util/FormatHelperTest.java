@@ -44,8 +44,7 @@ public class FormatHelperTest extends TestCase {
                 FormatHelper.formatSqlValue(ColumnType.TIMESTAMP,
                         DateUtils.get(2011, Month.JULY, 24)));
 
-        final Timestamp timestamp = new Timestamp(1444947660082l);
-        timestamp.setNanos(42000);
+        final Timestamp timestamp = Timestamp.valueOf("2015-10-16 00:21:00.000042");
         assertEquals(
                 "TIMESTAMP '2015-10-16 00:21:00.000042'",
                 FormatHelper.formatSqlValue(ColumnType.TIMESTAMP,
