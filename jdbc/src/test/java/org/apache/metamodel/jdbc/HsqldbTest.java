@@ -74,7 +74,7 @@ public class HsqldbTest extends TestCase {
     
     public void testTimestampValueInsertSelect() throws Exception {
         Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:" + getName(), USERNAME, PASSWORD);
-        JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.MILLISECONDS);
+        JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.NANOSECONDS);
     }
 
     public void testCreateInsertAndUpdate() throws Exception {

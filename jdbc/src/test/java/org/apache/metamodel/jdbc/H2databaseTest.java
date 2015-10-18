@@ -83,7 +83,7 @@ public class H2databaseTest extends TestCase {
     }
     
     public void testTimestampValueInsertSelect() throws Exception {
-        JdbcTestTemplates.timestampValueInsertSelect(conn, TimeUnit.MILLISECONDS);
+        JdbcTestTemplates.timestampValueInsertSelect(conn, TimeUnit.NANOSECONDS);
     }
 
     public void testUsingSingleUpdates() throws Exception {

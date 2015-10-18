@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.table.TableModel;
 
@@ -63,6 +64,11 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
     @Override
     protected String getPropertyPrefix() {
         return "postgresql";
+    }
+    
+    public void testTimestampValueInsertSelect() throws Exception {
+        final Connection connection = getConnection();
+        JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.MILLISECONDS);
     }
 
     public void testCreateInsertAndUpdate() throws Exception {

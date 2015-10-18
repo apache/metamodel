@@ -78,7 +78,7 @@ public class DerbyTest extends TestCase {
 
     public void testTimestampValueInsertSelect() throws Exception {
         Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
-        JdbcTestTemplates.timestampValueInsertSelect(conn, TimeUnit.MILLISECONDS);
+        JdbcTestTemplates.timestampValueInsertSelect(conn, TimeUnit.NANOSECONDS);
     }
 
     public void testCreateInsertAndUpdate() throws Exception {

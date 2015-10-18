@@ -32,6 +32,7 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.jdbc.dialects.SQLiteQueryRewriter;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Column;
@@ -70,7 +71,7 @@ public class SqliteTest extends TestCase {
         super.tearDown();
         _connection.close();
     }
-    
+
     public void testTimestampValueInsertSelect() throws Exception {
         JdbcTestTemplates.timestampValueInsertSelect(_connection, TimeUnit.SECONDS);
     }
@@ -89,6 +90,11 @@ public class SqliteTest extends TestCase {
         JdbcTestTemplates.differentOperatorsTest(_connection);
     }
 
+    public void testGetQueryRewriter() throws Exception {
+        JdbcDataContext dc = new JdbcDataContext(_connection);
+        assertTrue(dc.getQueryRewriter() instanceof SQLiteQueryRewriter);
+    }
+
     public void testGetSchemas() throws Exception {
         DataContext dc = new JdbcDataContext(_connection);
         String[] schemaNames = dc.getSchemaNames();
@@ -104,9 +110,8 @@ public class SqliteTest extends TestCase {
                 + "Table[name=auth_cookie,type=TABLE,remarks=null], " + "Table[name=session,type=TABLE,remarks=null], "
                 + "Table[name=session_attribute,type=TABLE,remarks=null], "
                 + "Table[name=attachment,type=TABLE,remarks=null], " + "Table[name=wiki,type=TABLE,remarks=null], "
-                + "Table[name=revision,type=TABLE,remarks=null], "
-                + "Table[name=node_change,type=TABLE,remarks=null], " + "Table[name=ticket,type=TABLE,remarks=null], "
-                + "Table[name=ticket_change,type=TABLE,remarks=null], "
+                + "Table[name=revision,type=TABLE,remarks=null], " + "Table[name=node_change,type=TABLE,remarks=null], "
+                + "Table[name=ticket,type=TABLE,remarks=null], " + "Table[name=ticket_change,type=TABLE,remarks=null], "
                 + "Table[name=ticket_custom,type=TABLE,remarks=null], " + "Table[name=enum,type=TABLE,remarks=null], "
                 + "Table[name=component,type=TABLE,remarks=null], " + "Table[name=milestone,type=TABLE,remarks=null], "
                 + "Table[name=version,type=TABLE,remarks=null], " + "Table[name=report,type=TABLE,remarks=null]]",
@@ -142,8 +147,8 @@ public class SqliteTest extends TestCase {
 
         Table wikiTable = schema.getTableByName("WIKI");
 
-        Query q = new Query().selectCount().from(wikiTable)
-                .where(wikiTable.getColumnByName("name"), OperatorType.LIKE, "Trac%");
+        Query q = new Query().selectCount().from(wikiTable).where(wikiTable.getColumnByName("name"), OperatorType.LIKE,
+                "Trac%");
         assertEquals("SELECT COUNT(*) FROM wiki WHERE wiki.name LIKE 'Trac%'", q.toString());
         assertEquals(1, dc.getFetchSizeCalculator().getFetchSize(q));
         assertEquals(37, dc.executeQuery(q).toObjectArrays().get(0)[0]);
@@ -170,8 +175,8 @@ public class SqliteTest extends TestCase {
         assertEquals("wiki.name", nameColumn.getQualifiedLabel());
 
         assertEquals(
-                "Column[name=name,columnNumber=0,type=VARCHAR,nullable=true,nativeType=TEXT,columnSize=2000000000]", dc
-                        .getColumnByQualifiedLabel("wiki.name").toString());
+                "Column[name=name,columnNumber=0,type=VARCHAR,nullable=true,nativeType=TEXT,columnSize=2000000000]",
+                dc.getColumnByQualifiedLabel("wiki.name").toString());
         assertEquals("Table[name=wiki,type=TABLE,remarks=null]", dc.getTableByQualifiedLabel("WIKI").toString());
     }
 

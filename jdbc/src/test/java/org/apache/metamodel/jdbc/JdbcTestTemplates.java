@@ -666,14 +666,35 @@ public class JdbcTestTemplates {
 
         JdbcDataContext dc = new JdbcDataContext(conn);
         final Schema schema = dc.getDefaultSchema();
-        final Timestamp timestamp1 = Timestamp.valueOf("2015-10-16 16:33:33.456");
-        if (databasePrecision == TimeUnit.NANOSECONDS) {
-            timestamp1.setNanos(456001234);
+
+        final Timestamp timestamp1;
+        switch (databasePrecision) {
+        case SECONDS:
+            timestamp1 = Timestamp.valueOf("2015-10-16 16:33:33");
+            break;
+        case MILLISECONDS:
+            timestamp1 = Timestamp.valueOf("2015-10-16 16:33:33.456");
+            break;
+        case NANOSECONDS:
+            timestamp1 = Timestamp.valueOf("2015-10-16 16:33:33.456001234");
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported database precision: " + databasePrecision);
         }
 
-        final Timestamp timestamp2 = Timestamp.valueOf("2015-10-16 16:33:34.683");
-        if (databasePrecision == TimeUnit.NANOSECONDS) {
-            timestamp2.setNanos(683005343);
+        final Timestamp timestamp2;
+        switch (databasePrecision) {
+        case SECONDS:
+            timestamp2 = Timestamp.valueOf("2015-10-16 16:33:34");
+            break;
+        case MILLISECONDS:
+            timestamp2 = Timestamp.valueOf("2015-10-16 16:33:34.683");
+            break;
+        case NANOSECONDS:
+            timestamp2 = Timestamp.valueOf("2015-10-16 16:33:34.683005678");
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported database precision: " + databasePrecision);
         }
 
         dc.executeUpdate(new UpdateScript() {
@@ -689,62 +710,71 @@ public class JdbcTestTemplates {
 
         DataSet ds = dc.query().from("test_table").select("id").and("insertiontime").execute();
         assertTrue(ds.next());
-        if (databasePrecision == TimeUnit.SECONDS) {
+
+        switch (databasePrecision) {
+        case SECONDS:
             assertEquals("Row[values=[1, 2015-10-16 16:33:33]]", ds.getRow().toString());
-        } else {
+            break;
+        case MILLISECONDS:
             assertEquals("Row[values=[1, 2015-10-16 16:33:33.456]]", ds.getRow().toString());
-        }
-        if (databasePrecision == TimeUnit.NANOSECONDS) {
-            // assert on nanos
-            Timestamp ts = (Timestamp) ds.getRow().getValue(1);
-            assertEquals(456001234, ts.getNanos());
+            break;
+        case NANOSECONDS:
+            assertEquals("Row[values=[1, 2015-10-16 16:33:33.456001234]]", ds.getRow().toString());
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported database precision: " + databasePrecision);
         }
         assertEquals("java.lang.Integer", ds.getRow().getValue(0).getClass().getName());
         assertTrue(ds.next());
-        if (databasePrecision == TimeUnit.SECONDS) {
+
+        switch (databasePrecision) {
+        case SECONDS:
             assertEquals("Row[values=[2, 2015-10-16 16:33:34]]", ds.getRow().toString());
-        } else {
+            break;
+        case MILLISECONDS:
             assertEquals("Row[values=[2, 2015-10-16 16:33:34.683]]", ds.getRow().toString());
-        }
-        assertEquals("java.sql.Timestamp", ds.getRow().getValue(1).getClass().getName());
-        if (databasePrecision == TimeUnit.NANOSECONDS) {
-            // assert on nanos
-            Timestamp ts = (Timestamp) ds.getRow().getValue(1);
-            assertEquals(683005343, ts.getNanos());
+            break;
+        case NANOSECONDS:
+            assertEquals("Row[values=[2, 2015-10-16 16:33:34.683005678]]", ds.getRow().toString());
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported database precision: " + databasePrecision);
         }
         assertFalse(ds.next());
         ds.close();
 
-        Query query = dc.query().from("test_table").select("id").where("insertiontime").lessThan(timestamp2).toQuery();
-        try {
-            ds = dc.executeQuery(query);
-        } catch (Exception e) {
-            System.out.println("Failing query was: " + dc.getQueryRewriter().rewriteQuery(query));
-            throw e;
-        }
-        assertTrue(ds.next());
-        assertEquals("Row[values=[1]]", ds.getRow().toString());
-        assertFalse(ds.next());
-        ds.close();
-
-        ds = dc.query().from("test_table").select("id").where("insertiontime").greaterThan(timestamp1).execute();
-        assertTrue(ds.next());
-        assertEquals("Row[values=[2]]", ds.getRow().toString());
-        assertFalse(ds.next());
-        ds.close();
-
-        dc.executeUpdate(new UpdateScript() {
-            @Override
-            public void run(UpdateCallback callback) {
-                callback.deleteFrom("test_table").where("insertiontime").eq(timestamp1).execute();
+        if (databasePrecision != TimeUnit.SECONDS) {
+            Query query = dc.query().from("test_table").select("id").where("insertiontime").lessThan(timestamp2).toQuery();
+            try {
+                ds = dc.executeQuery(query);
+            } catch (Exception e) {
+                System.out.println("Failing query was: " + dc.getQueryRewriter().rewriteQuery(query));
+                throw e;
             }
-        });
-
-        ds = dc.query().from("test_table").selectCount().execute();
-        assertTrue(ds.next());
-        assertEquals("Row[values=[1]]", ds.getRow().toString());
-        assertFalse(ds.next());
-        ds.close();
+            assertTrue(ds.next());
+            assertEquals("Row[values=[1]]", ds.getRow().toString());
+            assertFalse(ds.next());
+            ds.close();
+            
+            ds = dc.query().from("test_table").select("id").where("insertiontime").greaterThan(timestamp1).execute();
+            assertTrue(ds.next());
+            assertEquals("Row[values=[2]]", ds.getRow().toString());
+            assertFalse(ds.next());
+            ds.close();
+            
+            dc.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback callback) {
+                    callback.deleteFrom("test_table").where("insertiontime").eq(timestamp1).execute();
+                }
+            });
+            
+            ds = dc.query().from("test_table").selectCount().execute();
+            assertTrue(ds.next());
+            assertEquals("Row[values=[1]]", ds.getRow().toString());
+            assertFalse(ds.next());
+            ds.close();
+        }
 
         dc.executeUpdate(new UpdateScript() {
             @Override
