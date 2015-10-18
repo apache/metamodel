@@ -24,6 +24,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
 
@@ -71,7 +72,7 @@ public class SqliteTest extends TestCase {
     }
     
     public void testTimestampValueInsertSelect() throws Exception {
-        JdbcTestTemplates.timestampValueInsertSelect(_connection);
+        JdbcTestTemplates.timestampValueInsertSelect(_connection, TimeUnit.SECONDS);
     }
 
     public void testCreateInsertAndUpdate() throws Exception {

@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
 
@@ -82,7 +83,7 @@ public class H2databaseTest extends TestCase {
     }
     
     public void testTimestampValueInsertSelect() throws Exception {
-        JdbcTestTemplates.timestampValueInsertSelect(conn);
+        JdbcTestTemplates.timestampValueInsertSelect(conn, TimeUnit.MILLISECONDS);
     }
 
     public void testUsingSingleUpdates() throws Exception {

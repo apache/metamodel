@@ -28,12 +28,14 @@ import java.io.StringReader;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.metamodel.BatchUpdateScript;
 import org.apache.metamodel.UpdateCallback;
@@ -50,6 +52,7 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.Update;
 import org.apache.metamodel.util.DateUtils;
+import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.Month;
 import org.junit.Ignore;
 
@@ -543,9 +546,9 @@ public class JdbcTestTemplates {
             dataContext.executeUpdate(new DropTable(defaultSchema, testTableName));
         }
 
-        dataContext.executeUpdate(new CreateTable(defaultSchema, testTableName).withColumn("mykey")
-                .ofType(ColumnType.INTEGER).nullable(false).asPrimaryKey().withColumn("name")
-                .ofType(ColumnType.VARCHAR).ofSize(20));
+        dataContext.executeUpdate(
+                new CreateTable(defaultSchema, testTableName).withColumn("mykey").ofType(ColumnType.INTEGER)
+                        .nullable(false).asPrimaryKey().withColumn("name").ofType(ColumnType.VARCHAR).ofSize(20));
         try {
             final Table table = defaultSchema.getTableByName(testTableName);
             assertNotNull(table);
@@ -584,9 +587,10 @@ public class JdbcTestTemplates {
             dataContext.executeUpdate(new DropTable(defaultSchema, testTableName));
         }
 
-        dataContext.executeUpdate(new CreateTable(defaultSchema, testTableName).withColumn("mykey1")
-                .ofType(ColumnType.INTEGER).nullable(false).asPrimaryKey().withColumn("mykey2").ofType(ColumnType.INTEGER)
-                .nullable(false).asPrimaryKey().withColumn("name").ofType(ColumnType.VARCHAR).ofSize(20));
+        dataContext.executeUpdate(
+                new CreateTable(defaultSchema, testTableName).withColumn("mykey1").ofType(ColumnType.INTEGER)
+                        .nullable(false).asPrimaryKey().withColumn("mykey2").ofType(ColumnType.INTEGER).nullable(false)
+                        .asPrimaryKey().withColumn("name").ofType(ColumnType.VARCHAR).ofSize(20));
         try {
             final Table table = defaultSchema.getTableByName(testTableName);
             assertNotNull(table);
@@ -634,15 +638,28 @@ public class JdbcTestTemplates {
             dataContext.executeUpdate(new DropTable(defaultSchema, testTableName));
         }
     }
-    
-    public static void timestampValueInsertSelect(Connection conn) throws Exception {
+
+    /**
+     * 
+     * @param conn
+     * @param databasePrecision
+     *            the precision with which the database can handle timestamp
+     *            values. Expected values: {@link TimeUnit#SECONDS},
+     *            {@link TimeUnit#MILLISECONDS} or {@link TimeUnit#NANOSECONDS}.
+     * 
+     * @throws Exception
+     */
+    public static void timestampValueInsertSelect(Connection conn, TimeUnit databasePrecision) throws Exception {
         assertNotNull(conn);
 
+        final Statement statement = conn.createStatement();
         try {
             // clean up, if nescesary
-            conn.createStatement().execute("DROP TABLE test_table");
+            statement.execute("DROP TABLE test_table");
         } catch (SQLException e) {
             // do nothing
+        } finally {
+            FileHelper.safeClose(statement);
         }
 
         assertFalse(conn.isReadOnly());
@@ -650,14 +667,20 @@ public class JdbcTestTemplates {
         JdbcDataContext dc = new JdbcDataContext(conn);
         final Schema schema = dc.getDefaultSchema();
         final Timestamp timestamp1 = Timestamp.valueOf("2015-10-16 16:33:33.456");
+        if (databasePrecision == TimeUnit.NANOSECONDS) {
+            timestamp1.setNanos(456001234);
+        }
+
         final Timestamp timestamp2 = Timestamp.valueOf("2015-10-16 16:33:34.683");
+        if (databasePrecision == TimeUnit.NANOSECONDS) {
+            timestamp2.setNanos(683005343);
+        }
 
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback cb) {
                 Table table = cb.createTable(schema, "test_table").withColumn("id").ofType(ColumnType.INTEGER)
-                        .withColumn("insertiontime")
-                        .ofType(ColumnType.TIMESTAMP).execute();
+                        .withColumn("insertiontime").ofType(ColumnType.TIMESTAMP).execute();
 
                 cb.insertInto(table).value("id", 1).value("insertiontime", timestamp1).execute();
                 cb.insertInto(table).value("id", 2).value("insertiontime", timestamp2).execute();
@@ -666,16 +689,33 @@ public class JdbcTestTemplates {
 
         DataSet ds = dc.query().from("test_table").select("id").and("insertiontime").execute();
         assertTrue(ds.next());
-        assertEquals("Row[values=[1, 2015-10-16 16:33:33.456]]", ds.getRow().toString());
+        if (databasePrecision == TimeUnit.SECONDS) {
+            assertEquals("Row[values=[1, 2015-10-16 16:33:33]]", ds.getRow().toString());
+        } else {
+            assertEquals("Row[values=[1, 2015-10-16 16:33:33.456]]", ds.getRow().toString());
+        }
+        if (databasePrecision == TimeUnit.NANOSECONDS) {
+            // assert on nanos
+            Timestamp ts = (Timestamp) ds.getRow().getValue(1);
+            assertEquals(456001234, ts.getNanos());
+        }
         assertEquals("java.lang.Integer", ds.getRow().getValue(0).getClass().getName());
         assertTrue(ds.next());
-        assertEquals("Row[values=[2, 2015-10-16 16:33:34.683]]", ds.getRow().toString());
+        if (databasePrecision == TimeUnit.SECONDS) {
+            assertEquals("Row[values=[2, 2015-10-16 16:33:34]]", ds.getRow().toString());
+        } else {
+            assertEquals("Row[values=[2, 2015-10-16 16:33:34.683]]", ds.getRow().toString());
+        }
         assertEquals("java.sql.Timestamp", ds.getRow().getValue(1).getClass().getName());
+        if (databasePrecision == TimeUnit.NANOSECONDS) {
+            // assert on nanos
+            Timestamp ts = (Timestamp) ds.getRow().getValue(1);
+            assertEquals(683005343, ts.getNanos());
+        }
         assertFalse(ds.next());
         ds.close();
 
-        Query query = dc.query().from("test_table").select("id").where("insertiontime")
-                .lessThan(timestamp2).toQuery();
+        Query query = dc.query().from("test_table").select("id").where("insertiontime").lessThan(timestamp2).toQuery();
         try {
             ds = dc.executeQuery(query);
         } catch (Exception e) {
@@ -687,8 +727,7 @@ public class JdbcTestTemplates {
         assertFalse(ds.next());
         ds.close();
 
-        ds = dc.query().from("test_table").select("id").where("insertiontime")
-                .greaterThan(timestamp1).execute();
+        ds = dc.query().from("test_table").select("id").where("insertiontime").greaterThan(timestamp1).execute();
         assertTrue(ds.next());
         assertEquals("Row[values=[2]]", ds.getRow().toString());
         assertFalse(ds.next());

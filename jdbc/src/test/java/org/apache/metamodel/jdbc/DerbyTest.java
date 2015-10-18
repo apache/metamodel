@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
 
@@ -77,7 +78,7 @@ public class DerbyTest extends TestCase {
 
     public void testTimestampValueInsertSelect() throws Exception {
         Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
-        JdbcTestTemplates.timestampValueInsertSelect(conn);
+        JdbcTestTemplates.timestampValueInsertSelect(conn, TimeUnit.MILLISECONDS);
     }
 
     public void testCreateInsertAndUpdate() throws Exception {
