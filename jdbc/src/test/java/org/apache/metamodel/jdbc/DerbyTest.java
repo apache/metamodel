@@ -59,8 +59,8 @@ public class DerbyTest extends TestCase {
         File dbFile = new File("src/test/resources/derby_testdb.jar");
         assertTrue(dbFile.exists());
         Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-        _connection = DriverManager.getConnection("jdbc:derby:jar:(" + dbFile.getAbsolutePath()
-                + ")derby_testdb;territory=en");
+        _connection = DriverManager
+                .getConnection("jdbc:derby:jar:(" + dbFile.getAbsolutePath() + ")derby_testdb;territory=en");
     }
 
     @Override
@@ -73,6 +73,11 @@ public class DerbyTest extends TestCase {
         if (logFile.exists()) {
             logFile.delete();
         }
+    }
+
+    public void testTimestampValueInsertSelect() throws Exception {
+        Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
+        JdbcTestTemplates.timestampValueInsertSelect(conn);
     }
 
     public void testCreateInsertAndUpdate() throws Exception {
@@ -89,7 +94,7 @@ public class DerbyTest extends TestCase {
 
     public void testDifferentOperators() throws Exception {
         Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
-        
+
         JdbcTestTemplates.differentOperatorsTest(conn);
     }
 
@@ -118,7 +123,8 @@ public class DerbyTest extends TestCase {
     }
 
     public void testQueryWithFilter() throws Exception {
-        JdbcDataContext dc = new JdbcDataContext(_connection, new TableType[] { TableType.TABLE, TableType.VIEW }, null);
+        JdbcDataContext dc = new JdbcDataContext(_connection, new TableType[] { TableType.TABLE, TableType.VIEW },
+                null);
         Query q = dc.query().from("APP", "CUSTOMERS").select("CUSTOMERNUMBER").where("ADDRESSLINE2").isNotNull()
                 .toQuery();
         assertEquals(25000, dc.getFetchSizeCalculator().getFetchSize(q));
@@ -180,8 +186,7 @@ public class DerbyTest extends TestCase {
         assertEquals(11, schemas.length);
         assertEquals("Schema[name=APP]", schemas[0].toString());
         assertEquals(13, schemas[0].getTableCount());
-        assertEquals("[Table[name=CUSTOMERS,type=TABLE,remarks=], "
-                + "Table[name=CUSTOMER_W_TER,type=TABLE,remarks=], "
+        assertEquals("[Table[name=CUSTOMERS,type=TABLE,remarks=], " + "Table[name=CUSTOMER_W_TER,type=TABLE,remarks=], "
                 + "Table[name=DEPARTMENT_MANAGERS,type=TABLE,remarks=], "
                 + "Table[name=EMPLOYEES,type=TABLE,remarks=], " + "Table[name=OFFICES,type=TABLE,remarks=], "
                 + "Table[name=ORDERDETAILS,type=TABLE,remarks=], " + "Table[name=ORDERFACT,type=TABLE,remarks=], "
@@ -239,7 +244,8 @@ public class DerbyTest extends TestCase {
     }
 
     public void testQueryRewriterQuoteAliases() throws Exception {
-        JdbcDataContext dc = new JdbcDataContext(_connection, new TableType[] { TableType.TABLE, TableType.VIEW }, null);
+        JdbcDataContext dc = new JdbcDataContext(_connection, new TableType[] { TableType.TABLE, TableType.VIEW },
+                null);
         IQueryRewriter queryRewriter = dc.getQueryRewriter();
         assertSame(DefaultQueryRewriter.class, queryRewriter.getClass());
 
@@ -304,7 +310,8 @@ public class DerbyTest extends TestCase {
                         .ofType(ColumnType.INTEGER).execute();
                 writtenTableRef.set(writtenTable);
                 String sql = createTableBuilder.createSqlStatement();
-                assertEquals("CREATE TABLE APP.test_table (id INTEGER, name VARCHAR(255), age INTEGER, PRIMARY KEY(id))",
+                assertEquals(
+                        "CREATE TABLE APP.test_table (id INTEGER, name VARCHAR(255), age INTEGER, PRIMARY KEY(id))",
                         sql.replaceAll("\"", "|"));
                 assertNotNull(writtenTable);
             }
@@ -393,7 +400,7 @@ public class DerbyTest extends TestCase {
 
         JdbcTestTemplates.convertClobToString(dc);
     }
-    
+
     public void testInterpretationOfNull() throws Exception {
         Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
         JdbcTestTemplates.interpretationOfNulls(conn);

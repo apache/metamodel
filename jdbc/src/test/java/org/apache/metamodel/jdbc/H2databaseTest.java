@@ -80,6 +80,10 @@ public class H2databaseTest extends TestCase {
         JdbcDataContext dc = new JdbcDataContext(conn);
         JdbcTestTemplates.compositeKeyCreation(dc, "metamodel_test_composite_keys");
     }
+    
+    public void testTimestampValueInsertSelect() throws Exception {
+        JdbcTestTemplates.timestampValueInsertSelect(conn);
+    }
 
     public void testUsingSingleUpdates() throws Exception {
         final JdbcDataContext dc = new JdbcDataContext(conn);

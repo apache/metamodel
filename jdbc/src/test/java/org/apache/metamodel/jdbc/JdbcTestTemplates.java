@@ -28,6 +28,7 @@ import java.io.StringReader;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -632,5 +633,85 @@ public class JdbcTestTemplates {
             // clean up after
             dataContext.executeUpdate(new DropTable(defaultSchema, testTableName));
         }
+    }
+    
+    public static void timestampValueInsertSelect(Connection conn) throws Exception {
+        assertNotNull(conn);
+
+        try {
+            // clean up, if nescesary
+            conn.createStatement().execute("DROP TABLE test_table");
+        } catch (SQLException e) {
+            // do nothing
+        }
+
+        assertFalse(conn.isReadOnly());
+
+        JdbcDataContext dc = new JdbcDataContext(conn);
+        final Schema schema = dc.getDefaultSchema();
+        final Timestamp timestamp1 = Timestamp.valueOf("2015-10-16 16:33:33.456");
+        final Timestamp timestamp2 = Timestamp.valueOf("2015-10-16 16:33:34.683");
+
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback cb) {
+                Table table = cb.createTable(schema, "test_table").withColumn("id").ofType(ColumnType.INTEGER)
+                        .withColumn("insertiontime")
+                        .ofType(ColumnType.TIMESTAMP).execute();
+
+                cb.insertInto(table).value("id", 1).value("insertiontime", timestamp1).execute();
+                cb.insertInto(table).value("id", 2).value("insertiontime", timestamp2).execute();
+            }
+        });
+
+        DataSet ds = dc.query().from("test_table").select("id").and("insertiontime").execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[1, 2015-10-16 16:33:33.456]]", ds.getRow().toString());
+        assertEquals("java.lang.Integer", ds.getRow().getValue(0).getClass().getName());
+        assertTrue(ds.next());
+        assertEquals("Row[values=[2, 2015-10-16 16:33:34.683]]", ds.getRow().toString());
+        assertEquals("java.sql.Timestamp", ds.getRow().getValue(1).getClass().getName());
+        assertFalse(ds.next());
+        ds.close();
+
+        Query query = dc.query().from("test_table").select("id").where("insertiontime")
+                .lessThan(timestamp2).toQuery();
+        try {
+            ds = dc.executeQuery(query);
+        } catch (Exception e) {
+            System.out.println("Failing query was: " + dc.getQueryRewriter().rewriteQuery(query));
+            throw e;
+        }
+        assertTrue(ds.next());
+        assertEquals("Row[values=[1]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        ds = dc.query().from("test_table").select("id").where("insertiontime")
+                .greaterThan(timestamp1).execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[2]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.deleteFrom("test_table").where("insertiontime").eq(timestamp1).execute();
+            }
+        });
+
+        ds = dc.query().from("test_table").selectCount().execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[1]]", ds.getRow().toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.dropTable("test_table").execute();
+            }
+        });
     }
 }

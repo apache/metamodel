@@ -69,6 +69,10 @@ public class SqliteTest extends TestCase {
         super.tearDown();
         _connection.close();
     }
+    
+    public void testTimestampValueInsertSelect() throws Exception {
+        JdbcTestTemplates.timestampValueInsertSelect(_connection);
+    }
 
     public void testCreateInsertAndUpdate() throws Exception {
         JdbcDataContext dc = new JdbcDataContext(_connection);

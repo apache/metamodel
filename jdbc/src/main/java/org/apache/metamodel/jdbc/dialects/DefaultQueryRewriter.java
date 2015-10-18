@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.jdbc.dialects;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -114,6 +115,9 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
                     FilterItem replacementFilterItem = new FilterItem(item.getSelectItem(), item.getOperator(), str);
                     return super.rewriteFilterItem(replacementFilterItem);
                 }
+            } else if (operand instanceof Timestamp) {
+                final String timestampLiteral = rewriteTimestamp((Timestamp) operand);
+                return rewriteFilterItemWithOperandLiteral(item, timestampLiteral);
             } else if (operand instanceof Iterable || operand.getClass().isArray()) {
                 // operand is a set of values (typically in combination with an
                 // IN operator). Each individual element must be escaped.
@@ -145,7 +149,39 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
         }
         return super.rewriteFilterItem(item);
     }
-    
+
+    /**
+     * Rewrites a (non-compound) {@link FilterItem} when it's operand has
+     * already been rewritten into a SQL literal.
+     * 
+     * @param item
+     * @param operandLiteral
+     * @return
+     */
+    protected String rewriteFilterItemWithOperandLiteral(FilterItem item, String operandLiteral) {
+        final OperatorType operator = item.getOperator();
+        final SelectItem selectItem = item.getSelectItem();
+        final StringBuilder sb = new StringBuilder();
+        sb.append(selectItem.getSameQueryAlias(false));
+        FilterItem.appendOperator(sb, item.getOperand(), operator);
+        sb.append(operandLiteral);
+        return sb.toString();
+    }
+
+    /**
+     * Rewrites a {@link Timestamp} into it's literal representation as known by
+     * this SQL dialect.
+     * 
+     * This default implementation returns the JDBC spec's escape syntax for a
+     * timestamp: {ts 'yyyy-mm-dd hh:mm:ss.f . . .'}
+     * 
+     * @param ts
+     * @return
+     */
+    protected String rewriteTimestamp(Timestamp ts) {
+        return "{ts '" + ts.toString() + "'}";
+    }
+
     @Override
     public boolean isScalarFunctionSupported(ScalarFunction function) {
         return false;
