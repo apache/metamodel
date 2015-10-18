@@ -18,6 +18,11 @@
  */
 package org.apache.metamodel.query;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+
 import junit.framework.TestCase;
 
 import org.apache.metamodel.DataContext;
@@ -38,11 +43,6 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 public class FilterItemTest extends TestCase {
 
@@ -374,7 +374,8 @@ public class FilterItemTest extends TestCase {
 
             @Override
             public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-                // we expect 3 columns to be materialized because the query has column references in both SELECT and WHERE clause
+                // we expect 3 columns to be materialized because the query has
+                // column references in both SELECT and WHERE clause
                 assertEquals(3, columns.length);
                 assertEquals("column_number", columns[0].getName());
                 assertEquals("name", columns[1].getName());

@@ -89,7 +89,7 @@ public class DerbyTest extends TestCase {
 
     public void testDifferentOperators() throws Exception {
         Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
-        
+
         JdbcTestTemplates.differentOperatorsTest(conn);
     }
 
@@ -393,9 +393,15 @@ public class DerbyTest extends TestCase {
 
         JdbcTestTemplates.convertClobToString(dc);
     }
-    
+
     public void testInterpretationOfNull() throws Exception {
         Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
         JdbcTestTemplates.interpretationOfNulls(conn);
     }
+
+    public void testTimestampValueInsertSelect() throws Exception {
+        Connection conn = DriverManager.getConnection("jdbc:derby:target/temp_derby;create=true");
+        JdbcTestTemplates.timestampValueInsertSelect(conn);
+    }
+
 }
