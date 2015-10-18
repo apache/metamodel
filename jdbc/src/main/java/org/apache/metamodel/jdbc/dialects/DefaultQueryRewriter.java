@@ -117,12 +117,7 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
                     return super.rewriteFilterItem(replacementFilterItem);
                 }
             } else if (operand instanceof Timestamp) {
-                final OperatorType operator = item.getOperator();
-                StringBuilder sb = new StringBuilder();
-                sb.append(selectItem.getSameQueryAlias(false));
-                FilterItem.appendOperator(sb, operand, operator);
-                sb.append("TIMESTAMP \'" + operand.toString() + "\'");
-                return sb.toString();
+                return rewriteTimestamp(item);
             } else if (operand instanceof Iterable || operand.getClass().isArray()) {
                 // operand is a set of values (typically in combination with an
                 // IN operator). Each individual element must be escaped.
@@ -153,6 +148,17 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
             }
         }
         return super.rewriteFilterItem(item);
+    }
+
+    protected String rewriteTimestamp(FilterItem item) {
+        final OperatorType operator = item.getOperator();
+        final SelectItem selectItem = item.getSelectItem();
+        final Object operand = item.getOperand();
+        StringBuilder sb = new StringBuilder();
+        sb.append(selectItem.getSameQueryAlias(false));
+        FilterItem.appendOperator(sb, operand, operator);
+        sb.append("TIMESTAMP \'" + operand.toString() + "\'");
+        return sb.toString();
     }
 
     @Override
