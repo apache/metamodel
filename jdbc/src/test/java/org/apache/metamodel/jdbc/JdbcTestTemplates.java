@@ -42,6 +42,7 @@ import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.create.ColumnCreationBuilder;
 import org.apache.metamodel.create.CreateTable;
+import org.apache.metamodel.create.TableCreationBuilder;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.drop.DropTable;
@@ -651,6 +652,11 @@ public class JdbcTestTemplates {
      * @throws Exception
      */
     public static void timestampValueInsertSelect(Connection conn, TimeUnit databasePrecision) throws Exception {
+        timestampValueInsertSelect(conn, databasePrecision, null);
+    }
+
+    public static void timestampValueInsertSelect(Connection conn, TimeUnit databasePrecision, final String nativeType)
+            throws Exception {
         assertNotNull(conn);
 
         final Statement statement = conn.createStatement();
@@ -707,8 +713,15 @@ public class JdbcTestTemplates {
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback cb) {
-                Table table = cb.createTable(schema, "test_table").withColumn("id").ofType(ColumnType.INTEGER)
-                        .withColumn("insertiontime").ofType(ColumnType.TIMESTAMP).execute();
+                TableCreationBuilder tableBuilder = cb.createTable(schema, "test_table");
+                tableBuilder.withColumn("id").ofType(ColumnType.INTEGER);
+                tableBuilder.withColumn("insertiontime").ofType(ColumnType.TIMESTAMP);
+                if (nativeType == null) {
+                    tableBuilder.withColumn("insertiontime").ofType(ColumnType.TIMESTAMP);
+                } else {
+                    tableBuilder.withColumn("insertiontime").ofType(ColumnType.TIMESTAMP).ofNativeType(nativeType);
+                }
+                Table table = tableBuilder.execute();
 
                 cb.insertInto(table).value("id", 1).value("insertiontime", timestamp1).execute();
                 cb.insertInto(table).value("id", 2).value("insertiontime", timestamp2).execute();
@@ -734,7 +747,7 @@ public class JdbcTestTemplates {
         default:
             throw new UnsupportedOperationException("Unsupported database precision: " + databasePrecision);
         }
-        assertEquals("java.lang.Integer", ds.getRow().getValue(0).getClass().getName());
+        assertTrue(ds.getRow().getValue(0) instanceof Number);
         assertTrue(ds.next());
 
         switch (databasePrecision) {
