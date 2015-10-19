@@ -546,9 +546,9 @@ public class JdbcTestTemplates {
             dataContext.executeUpdate(new DropTable(defaultSchema, testTableName));
         }
 
-        dataContext.executeUpdate(
-                new CreateTable(defaultSchema, testTableName).withColumn("mykey").ofType(ColumnType.INTEGER)
-                        .nullable(false).asPrimaryKey().withColumn("name").ofType(ColumnType.VARCHAR).ofSize(20));
+        dataContext.executeUpdate(new CreateTable(defaultSchema, testTableName).withColumn("mykey")
+                .ofType(ColumnType.INTEGER).nullable(false).asPrimaryKey().withColumn("name")
+                .ofType(ColumnType.VARCHAR).ofSize(20));
         try {
             final Table table = defaultSchema.getTableByName(testTableName);
             assertNotNull(table);
@@ -587,10 +587,10 @@ public class JdbcTestTemplates {
             dataContext.executeUpdate(new DropTable(defaultSchema, testTableName));
         }
 
-        dataContext.executeUpdate(
-                new CreateTable(defaultSchema, testTableName).withColumn("mykey1").ofType(ColumnType.INTEGER)
-                        .nullable(false).asPrimaryKey().withColumn("mykey2").ofType(ColumnType.INTEGER).nullable(false)
-                        .asPrimaryKey().withColumn("name").ofType(ColumnType.VARCHAR).ofSize(20));
+        dataContext.executeUpdate(new CreateTable(defaultSchema, testTableName).withColumn("mykey1")
+                .ofType(ColumnType.INTEGER).nullable(false).asPrimaryKey().withColumn("mykey2")
+                .ofType(ColumnType.INTEGER).nullable(false).asPrimaryKey().withColumn("name")
+                .ofType(ColumnType.VARCHAR).ofSize(20));
         try {
             final Table table = defaultSchema.getTableByName(testTableName);
             assertNotNull(table);
@@ -645,7 +645,8 @@ public class JdbcTestTemplates {
      * @param databasePrecision
      *            the precision with which the database can handle timestamp
      *            values. Expected values: {@link TimeUnit#SECONDS},
-     *            {@link TimeUnit#MILLISECONDS} or {@link TimeUnit#NANOSECONDS}.
+     *            {@link TimeUnit#MILLISECONDS}, {@link TimeUnit#MICROSECONDS}
+     *            or {@link TimeUnit#NANOSECONDS}.
      * 
      * @throws Exception
      */
@@ -675,6 +676,9 @@ public class JdbcTestTemplates {
         case MILLISECONDS:
             timestamp1 = Timestamp.valueOf("2015-10-16 16:33:33.456");
             break;
+        case MICROSECONDS:
+            timestamp1 = Timestamp.valueOf("2015-10-16 16:33:33.456001");
+            break;
         case NANOSECONDS:
             timestamp1 = Timestamp.valueOf("2015-10-16 16:33:33.456001234");
             break;
@@ -689,6 +693,9 @@ public class JdbcTestTemplates {
             break;
         case MILLISECONDS:
             timestamp2 = Timestamp.valueOf("2015-10-16 16:33:34.683");
+            break;
+        case MICROSECONDS:
+            timestamp2 = Timestamp.valueOf("2015-10-16 16:33:34.683005");
             break;
         case NANOSECONDS:
             timestamp2 = Timestamp.valueOf("2015-10-16 16:33:34.683005678");
@@ -718,6 +725,9 @@ public class JdbcTestTemplates {
         case MILLISECONDS:
             assertEquals("Row[values=[1, 2015-10-16 16:33:33.456]]", ds.getRow().toString());
             break;
+        case MICROSECONDS:
+            assertEquals("Row[values=[1, 2015-10-16 16:33:33.456001]]", ds.getRow().toString());
+            break;
         case NANOSECONDS:
             assertEquals("Row[values=[1, 2015-10-16 16:33:33.456001234]]", ds.getRow().toString());
             break;
@@ -734,6 +744,9 @@ public class JdbcTestTemplates {
         case MILLISECONDS:
             assertEquals("Row[values=[2, 2015-10-16 16:33:34.683]]", ds.getRow().toString());
             break;
+        case MICROSECONDS:
+            assertEquals("Row[values=[2, 2015-10-16 16:33:34.683005]]", ds.getRow().toString());
+            break;
         case NANOSECONDS:
             assertEquals("Row[values=[2, 2015-10-16 16:33:34.683005678]]", ds.getRow().toString());
             break;
@@ -744,7 +757,8 @@ public class JdbcTestTemplates {
         ds.close();
 
         if (databasePrecision != TimeUnit.SECONDS) {
-            Query query = dc.query().from("test_table").select("id").where("insertiontime").lessThan(timestamp2).toQuery();
+            Query query = dc.query().from("test_table").select("id").where("insertiontime").lessThan(timestamp2)
+                    .toQuery();
             try {
                 ds = dc.executeQuery(query);
             } catch (Exception e) {
@@ -755,20 +769,20 @@ public class JdbcTestTemplates {
             assertEquals("Row[values=[1]]", ds.getRow().toString());
             assertFalse(ds.next());
             ds.close();
-            
+
             ds = dc.query().from("test_table").select("id").where("insertiontime").greaterThan(timestamp1).execute();
             assertTrue(ds.next());
             assertEquals("Row[values=[2]]", ds.getRow().toString());
             assertFalse(ds.next());
             ds.close();
-            
+
             dc.executeUpdate(new UpdateScript() {
                 @Override
                 public void run(UpdateCallback callback) {
                     callback.deleteFrom("test_table").where("insertiontime").eq(timestamp1).execute();
                 }
             });
-            
+
             ds = dc.query().from("test_table").selectCount().execute();
             assertTrue(ds.next());
             assertEquals("Row[values=[1]]", ds.getRow().toString());

@@ -72,7 +72,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         }
         
         final Connection connection = getConnection();
-        JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.MILLISECONDS);
+        JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.MICROSECONDS);
     }
 
     public void testCreateInsertAndUpdate() throws Exception {
