@@ -1,3 +1,7 @@
+### Apache MetaModel (work in progress)
+
+ * [METAMODEL-198] - Fixed support for JDBC TIMESTAMP precision to match the underlying database's precision.
+
 ### Apache MetaModel 4.4.0
 
  * [METAMODEL-192] - Added support for Scalar functions. We have a basic set of datatype conversion functions as well as support for UDF via implementing the ScalarFunction interface.

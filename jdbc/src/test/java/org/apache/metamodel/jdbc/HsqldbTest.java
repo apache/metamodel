@@ -23,6 +23,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.table.TableModel;
 
@@ -69,6 +70,11 @@ public class HsqldbTest extends TestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         _connection.close();
+    }
+    
+    public void testTimestampValueInsertSelect() throws Exception {
+        Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:" + getName(), USERNAME, PASSWORD);
+        JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.NANOSECONDS);
     }
 
     public void testCreateInsertAndUpdate() throws Exception {
