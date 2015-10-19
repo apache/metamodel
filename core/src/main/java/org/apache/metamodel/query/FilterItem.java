@@ -291,34 +291,12 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
     }
 
     public static Object appendOperator(StringBuilder sb, Object operand, OperatorType operator) {
-        switch (operator) {
-        case DIFFERENT_FROM:
-            sb.append(" <> ");
-            break;
-        case EQUALS_TO:
-            sb.append(" = ");
-            break;
-        case LIKE:
-            sb.append(" LIKE ");
-            break;
-        case GREATER_THAN:
-            sb.append(" > ");
-            break;
-        case GREATER_THAN_OR_EQUAL:
-            sb.append(" >= ");
-            break;
-        case LESS_THAN:
-            sb.append(" < ");
-            break;
-        case LESS_THAN_OR_EQUAL:
-            sb.append(" <= ");
-            break;
-        case IN:
-            sb.append(" IN ");
+        sb.append(' ');
+        sb.append(operator.toSql());
+        sb.append(' ');
+
+        if (operator == OperatorType.IN) {
             operand = CollectionUtils.toList(operand);
-            break;
-        default:
-            throw new IllegalStateException("Operator could not be determined");
         }
         return operand;
     }

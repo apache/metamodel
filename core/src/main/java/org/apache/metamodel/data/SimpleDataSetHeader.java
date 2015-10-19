@@ -101,6 +101,12 @@ public class SimpleDataSetHeader implements DataSetHeader {
             }
             i++;
         }
+        
+        final boolean scalarFunctionQueried = item.getScalarFunction() != null;
+        if (scalarFunctionQueried) {
+            final SelectItem itemWithoutFunction = item.replaceFunction(null);
+            return indexOf(itemWithoutFunction);
+        }
 
         return -1;
     }
@@ -128,5 +134,10 @@ public class SimpleDataSetHeader implements DataSetHeader {
         } else if (!_items.equals(other._items))
             return false;
         return true;
+    }
+    
+    @Override
+    public String toString() {
+        return "DataSetHeader" + _items.toString();
     }
 }

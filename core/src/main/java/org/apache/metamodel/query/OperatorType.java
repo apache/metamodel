@@ -23,58 +23,35 @@ package org.apache.metamodel.query;
  *
  * @see FilterItem
  */
-public enum OperatorType {
+public interface OperatorType {
 
-    EQUALS_TO("=", false),
+    public static final OperatorType EQUALS_TO = new OperatorTypeImpl("=", false);
 
-    DIFFERENT_FROM("<>", false),
+    public static final OperatorType DIFFERENT_FROM = new OperatorTypeImpl("<>", false);
 
-    LIKE("LIKE", true),
+    public static final OperatorType LIKE = new OperatorTypeImpl("LIKE", true);
 
-    GREATER_THAN(">", false),
+    public static final OperatorType GREATER_THAN = new OperatorTypeImpl(">", false);
 
-    GREATER_THAN_OR_EQUAL(">=", false),
+    public static final OperatorType GREATER_THAN_OR_EQUAL = new OperatorTypeImpl(">=", false);
 
-    LESS_THAN("<", false),
+    public static final OperatorType LESS_THAN = new OperatorTypeImpl("<", false);
 
-    LESS_THAN_OR_EQUAL("<=", false),
+    public static final OperatorType LESS_THAN_OR_EQUAL = new OperatorTypeImpl("<=", false);
 
-    IN("IN", true);
+    public static final OperatorType IN = new OperatorTypeImpl("IN", true);
 
-    private final String _sql;
-    private final boolean _spaceDelimited;
-
-    private OperatorType(String sql, boolean spaceDelimited) {
-        _sql = sql;
-        _spaceDelimited = spaceDelimited;
-    }
+    public static final OperatorType[] BUILT_IN_OPERATORS = new OperatorType[] { EQUALS_TO, DIFFERENT_FROM, LIKE,
+            GREATER_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN, LESS_THAN_OR_EQUAL, IN };
 
 /**
      * Determines if this operator requires a space delimitor. Operators that are written using letters usually require
      * space delimitation whereas sign-based operators such as "=" and "<" can be applied even without any delimitaton.
+     * 
+     * @return
      */
-    public boolean isSpaceDelimited() {
-        return _spaceDelimited;
-    }
+    public boolean isSpaceDelimited();
 
-    public String toSql() {
-        return _sql;
-    }
+    public String toSql();
 
-/**
-     * Converts from SQL string literals to an OperatorType. Valid SQL values are "=", "<>", "LIKE", ">", ">=", "<" and
-     * "<=".
-     *
-     * @return a OperatorType object representing the specified SQL type
-     */
-    public static OperatorType convertOperatorType(String sqlType) {
-        if (sqlType != null) {
-            for (OperatorType operator : values()) {
-                if (sqlType.equals(operator.toSql())) {
-                    return operator;
-                }
-            }
-        }
-        return null;
-    }
 }

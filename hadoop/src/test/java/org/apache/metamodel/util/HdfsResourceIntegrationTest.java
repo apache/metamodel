@@ -20,7 +20,6 @@ package org.apache.metamodel.util;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -61,8 +60,11 @@ public class HdfsResourceIntegrationTest {
             configured = _filePath != null && _hostname != null && portString != null;
             if (configured) {
                 _port = Integer.parseInt(portString);
+            } else {
+                System.out.println("Skipping test because HDFS file path, hostname and port is not set");
             }
         } else {
+            System.out.println("Skipping test because properties file does not exist");
             configured = false;
         }
         Assume.assumeTrue(configured);
@@ -96,8 +98,8 @@ public class HdfsResourceIntegrationTest {
         int i = contents.length;
         Collections.reverse(Arrays.asList(contents));
         for (final String contentPart : contents) {
-            final HdfsResource partResource = new HdfsResource(_hostname, _port, _filePath + "/part-"
-                    + String.format("%02d", i--));
+            final HdfsResource partResource = new HdfsResource(_hostname, _port,
+                    _filePath + "/part-" + String.format("%02d", i--));
             partResource.write(new Action<OutputStream>() {
                 @Override
                 public void run(OutputStream out) throws Exception {
@@ -107,32 +109,44 @@ public class HdfsResourceIntegrationTest {
         }
 
         final Stopwatch stopwatch = Stopwatch.createStarted();
-
         final HdfsResource res1 = new HdfsResource(_hostname, _port, _filePath);
+        try {
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - start");
 
-        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - start");
+            final String str1 = res1.read(new Func<InputStream, String>() {
+                @Override
+                public String eval(InputStream in) {
+                    return FileHelper.readInputStreamAsString(in, "UTF8");
+                }
+            });
 
-        final String str1 = res1.read(new Func<InputStream, String>() {
-            @Override
-            public String eval(InputStream in) {
-                return FileHelper.readInputStreamAsString(in, "UTF8");
+            Assert.assertEquals(contentString, str1);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read1");
+
+            final String str2 = res1.read(new Func<InputStream, String>() {
+                @Override
+                public String eval(InputStream in) {
+                    return FileHelper.readInputStreamAsString(in, "UTF8");
+                }
+            });
+            Assert.assertEquals(str1, str2);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read2");
+
+            final StringBuilder sb = new StringBuilder();
+            for (String token : contents) {
+                sb.append(token);
             }
-        });
+            final long expectedSize = sb.length();
+            Assert.assertEquals(expectedSize, res1.getSize());
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - getSize");
 
-        Assert.assertEquals(contentString, str1);
-        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read1");
+            Assert.assertTrue(res1.getLastModified() > System.currentTimeMillis() - 10000);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - getLastModified");
 
-        final String str2 = res1.read(new Func<InputStream, String>() {
-            @Override
-            public String eval(InputStream in) {
-                return FileHelper.readInputStreamAsString(in, "UTF8");
-            }
-        });
-        Assert.assertEquals(str1, str2);
-        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read2");
-
-        res1.getHadoopFileSystem().delete(res1.getHadoopPath(), true);
-        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - deleted");
+        } finally {
+            res1.getHadoopFileSystem().delete(res1.getHadoopPath(), true);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - deleted");
+        }
 
         Assert.assertFalse(res1.isExists());
 
@@ -187,7 +201,7 @@ public class HdfsResourceIntegrationTest {
     }
 
     @Test
-    public void testFileSystemNotBeingClosed() throws IOException {
+    public void testFileSystemNotBeingClosed() throws Throwable {
         HdfsResource resourceToRead = null;
         try {
             resourceToRead = new HdfsResource(_hostname, _port, _filePath);
@@ -199,13 +213,18 @@ public class HdfsResourceIntegrationTest {
                 }
             });
 
+            final MutableRef<Throwable> throwableRef = new MutableRef<>();
+
             Thread.UncaughtExceptionHandler exceptionHandler = new Thread.UncaughtExceptionHandler() {
                 public void uncaughtException(Thread th, Throwable ex) {
+                    throwableRef.set(ex);
                     Assert.fail("Caught exception in the thread: " + ex);
                 }
             };
 
-            for (int i = 0; i < 10; i++) {
+            Thread[] threads = new Thread[10];
+
+            for (int i = 0; i < threads.length; i++) {
                 final HdfsResource res = new HdfsResource(_hostname, _port, _filePath);
 
                 Thread thread = new Thread(new Runnable() {
@@ -224,9 +243,21 @@ public class HdfsResourceIntegrationTest {
 
                     }
                 });
+                
                 thread.setUncaughtExceptionHandler(exceptionHandler);
                 thread.start();
+                threads[i] = thread;
             }
+
+            for (int i = 0; i < threads.length; i++) {
+                threads[i].join();
+            }
+            
+            Throwable error = throwableRef.get();
+            if (error != null) {
+                throw error;
+            }
+            
         } finally {
             if (resourceToRead != null) {
                 final FileSystem fileSystem = resourceToRead.getHadoopFileSystem();

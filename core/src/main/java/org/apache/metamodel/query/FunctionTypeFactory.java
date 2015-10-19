@@ -19,24 +19,48 @@
 package org.apache.metamodel.query;
 
 /**
- * Factory to create AggregateFunctions through
- * its function name.
+ * Factory to create AggregateFunctions through its function name.
  *
  */
 public class FunctionTypeFactory {
 
-    public static AggregateFunction get(String functionName) {
-        if (functionName.equals("COUNT")) {
+    public static FunctionType get(String functionName) {
+        if (functionName == null || functionName.isEmpty()) {
+            return null;
+        }
+
+        functionName = functionName.toUpperCase();
+
+        switch (functionName) {
+        case "COUNT":
             return FunctionType.COUNT;
-        } else if (functionName.equals("AVG")) {
+        case "AVG":
             return FunctionType.AVG;
-        } else if (functionName.equals("SUM")) {
+        case "SUM":
             return FunctionType.SUM;
-        } else if (functionName.equals("MAX")) {
+        case "MAX":
             return FunctionType.MAX;
-        } else if (functionName.equals("MIN")) {
+        case "MIN":
             return FunctionType.MIN;
-        } else {
+        case "TO_NUMBER":
+        case "NUMBER":
+        case "TO_NUM":
+        case "NUM":
+            return FunctionType.TO_NUMBER;
+        case "TO_STRING":
+        case "STRING":
+        case "TO_STR":
+        case "STR":
+            return FunctionType.TO_STRING;
+        case "TO_BOOLEAN":
+        case "BOOLEAN":
+        case "TO_BOOL":
+        case "BOOL":
+            return FunctionType.TO_BOOLEAN;
+        case "TO_DATE":
+        case "DATE":
+            return FunctionType.TO_DATE;
+        default:
             return null;
         }
     }

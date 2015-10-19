@@ -25,6 +25,7 @@ import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.util.BaseObject;
 
@@ -39,22 +40,22 @@ abstract class GroupedQueryBuilderCallback extends BaseObject implements Grouped
     protected GroupedQueryBuilder getQueryBuilder() {
         return queryBuilder;
     }
-    
+
     @Override
     public SatisfiedQueryBuilder<GroupedQueryBuilder> firstRow(int firstRow) {
         return getQueryBuilder().firstRow(firstRow);
     }
-    
+
     @Override
     public SatisfiedQueryBuilder<GroupedQueryBuilder> limit(int maxRows) {
         return getQueryBuilder().limit(maxRows);
     }
-    
+
     @Override
     public SatisfiedQueryBuilder<GroupedQueryBuilder> offset(int offset) {
         return getQueryBuilder().offset(offset);
     }
-    
+
     @Override
     public SatisfiedQueryBuilder<GroupedQueryBuilder> maxRows(int maxRows) {
         return getQueryBuilder().maxRows(maxRows);
@@ -76,6 +77,11 @@ abstract class GroupedQueryBuilderCallback extends BaseObject implements Grouped
     }
 
     @Override
+    public SatisfiedQueryBuilder<?> select(FunctionType function, String columnName) {
+        return getQueryBuilder().select(function, columnName);
+    }
+
+    @Override
     public FunctionSelectBuilder<GroupedQueryBuilder> select(FunctionType functionType, Column column) {
         return getQueryBuilder().select(functionType, column);
     }
@@ -93,6 +99,16 @@ abstract class GroupedQueryBuilderCallback extends BaseObject implements Grouped
     @Override
     public WhereBuilder<GroupedQueryBuilder> where(Column column) {
         return getQueryBuilder().where(column);
+    }
+    
+    @Override
+    public WhereBuilder<GroupedQueryBuilder> where(ScalarFunction function, Column column) {
+        return getQueryBuilder().where(function, column);
+    }
+    
+    @Override
+    public WhereBuilder<GroupedQueryBuilder> where(ScalarFunction function, String columnName) {
+        return getQueryBuilder().where(function, columnName);
     }
 
     @Override

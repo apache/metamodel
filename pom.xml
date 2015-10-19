@@ -46,7 +46,7 @@ under the License.
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
 	<artifactId>MetaModel</artifactId>
-	<version>4.4.0-SNAPSHOT</version>
+	<version>4.4.1-SNAPSHOT</version>
 	<name>MetaModel</name>
 	<description>MetaModel is a library that encapsulates the differences and enhances 
 		the capabilities of different datastores. Rich querying abilities are
@@ -273,6 +273,16 @@ under the License.
 									<excludes>
 										<exclude>commons-logging:commons-logging:compile</exclude>
 										<exclude>org.codehaus.jackson:compile</exclude>
+										
+										<!-- commons-beanutils-core is redundant when we already depend on commons-beanutils -->
+										<exclude>commons-beanutils:commons-beanutils-core:*</exclude>
+										
+										<!-- stax-api is overlapping with xml-apis -->
+										<exclude>stax:stax-api:*</exclude>
+										<exclude>javax.xml.stream:stax-api</exclude>
+										
+										<!-- findbugs-annotations is overlapping with annotations -->
+										<exclude>com.github.stephenc.findbugs:findbugs-annotations:*</exclude>
 									</excludes>
 								</bannedDependencies>
 							</rules>
@@ -374,6 +384,7 @@ under the License.
 							<exclude>**/*.iws/**</exclude>
 							<exclude>**/*.ipr/**</exclude>
 							<exclude>**/.idea/**</exclude>
+							<exclude>**/tattletale-filters.properties</exclude>
 							<exclude>DEPENDENCIES</exclude>
 							<exclude>DISCLAIMER</exclude>
 						</excludes>
@@ -427,6 +438,22 @@ under the License.
 						<groupId>commons-logging</groupId>
 					</exclusion>
 				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>commons-beanutils</groupId>
+				<artifactId>commons-beanutils</artifactId>
+				<version>1.9.2</version>
+				<exclusions>
+					<exclusion>
+						<artifactId>commons-logging</artifactId>
+						<groupId>commons-logging</groupId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>net.sourceforge.findbugs</groupId>
+				<artifactId>annotations</artifactId>
+				<version>1.3.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
@@ -500,6 +527,10 @@ under the License.
 						<groupId>org.mortbay.jetty</groupId>
 					</exclusion>
 					<exclusion>
+						<groupId>com.github.stephenc.findbugs</groupId>
+						<artifactId>findbugs-annotations</artifactId>
+					</exclusion>
+					<exclusion>
 						<groupId>commons-logging</groupId>
 						<artifactId>commons-logging</artifactId>
 					</exclusion>
@@ -529,6 +560,12 @@ under the License.
 				<groupId>org.apache.hadoop</groupId>
 				<artifactId>hadoop-mapreduce-client-core</artifactId>
 				<version>${hadoop.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>javax.xml.stream</groupId>
+						<artifactId>stax-api</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.hadoop</groupId>
@@ -550,6 +587,10 @@ under the License.
 					<exclusion>
 						<artifactId>commons-logging</artifactId>
 						<groupId>commons-logging</groupId>
+					</exclusion>
+					<exclusion>
+						<groupId>commons-beanutils</groupId>
+						<artifactId>commons-beanutils-core</artifactId>
 					</exclusion>
 					<exclusion>
 						<artifactId>jetty</artifactId>
@@ -646,6 +687,12 @@ under the License.
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-nop</artifactId>
+				<version>${slf4j.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-simple</artifactId>
 				<version>${slf4j.version}</version>
 				<scope>test</scope>
 			</dependency>
