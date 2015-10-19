@@ -1,22 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!--
-Licensed to the Apache Software Foundation (ASF) under one
-or more contributor license agreements.  See the NOTICE file
-distributed with this work for additional information
-regarding copyright ownership.  The ASF licenses this file
-to you under the Apache License, Version 2.0 (the
-"License"); you may not use this file except in compliance
-with the License.  You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing,
-software distributed under the License is distributed on an
-"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-KIND, either express or implied.  See the License for the
-specific language governing permissions and limitations
-under the License.
--->
+<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
+	license agreements. See the NOTICE file distributed with this work for additional 
+	information regarding copyright ownership. The ASF licenses this file to 
+	you under the Apache License, Version 2.0 (the "License"); you may not use 
+	this file except in compliance with the License. You may obtain a copy of 
+	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
+	by applicable law or agreed to in writing, software distributed under the 
+	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+	OF ANY KIND, either express or implied. See the License for the specific 
+	language governing permissions and limitations under the License. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<properties>
@@ -34,19 +26,19 @@ under the License.
 		<skipTests>false</skipTests>
 	</properties>
 	<parent>
-		<groupId>org.apache</groupId>
-		<artifactId>apache</artifactId>
-		<version>16</version>
+		<artifactId>parent-pom</artifactId>
+		<groupId>com.hi</groupId>
+		<version>1.19</version>
 	</parent>
 	<scm>
-		<url>https://git-wip-us.apache.org/repos/asf?p=metamodel.git</url>
-		<connection>scm:git:http://git-wip-us.apache.org/repos/asf/metamodel.git</connection>
-		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/metamodel.git</developerConnection>
+		<url>https://github.com/ankit2711/metamodel</url>
+		<connection>scm:git:https://github.com/ankit2711/metamodel.git</connection>
+		<developerConnection>scm:git:https://github.com/ankit2711/metamodel.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
 	<artifactId>MetaModel</artifactId>
-	<version>4.4.1-SNAPSHOT</version>
+	<version>4.4.1-INTERNAL-SNAPSHOT</version>
 	<name>MetaModel</name>
 	<description>MetaModel is a library that encapsulates the differences and enhances 
 		the capabilities of different datastores. Rich querying abilities are
@@ -135,30 +127,38 @@ under the License.
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
-	<distributionManagement>
-		<repository>
-			<id>apache.releases.https</id>
-			<name>Apache Release Distribution Repository</name>
-			<url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
-		</repository>
-		<snapshotRepository>
-			<id>apache.snapshots.https</id>
-			<name>Apache Development Snapshot Repository</name>
-			<url>https://repository.apache.org/content/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
 
 	<repositories>
 		<repository>
-			<id>apache.snapshots</id>
-			<url>http://repository.apache.org/snapshots/</url>
-			<name>Apache Snapshot Repo</name>
+			<id>nexus</id>
+			<name>Nexus maven repo at HI</name>
+			<url>http://repo.humaninference.com/content/groups/public</url>
+			<releases>
+				<enabled>true</enabled>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
 			<snapshots>
 				<enabled>true</enabled>
+				<checksumPolicy>fail</checksumPolicy>
+				<updatePolicy>never</updatePolicy>
 			</snapshots>
+		</repository>
+		<repository>
+			<id>thirdparty</id>
+			<name>Nexus maven repo at HI</name>
+			<url>http://repo.humaninference.com/content/repositories/thirdparty</url>
 			<releases>
-				<enabled>false</enabled>
+				<checksumPolicy>fail</checksumPolicy>
 			</releases>
+			<snapshots>
+				<checksumPolicy>fail</checksumPolicy>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven-restlet</id>
+			<name>Public online Restlet repository</name>
+			<url>http://maven.restlet.org</url>
 		</repository>
 	</repositories>
 
@@ -273,14 +273,15 @@ under the License.
 									<excludes>
 										<exclude>commons-logging:commons-logging:compile</exclude>
 										<exclude>org.codehaus.jackson:compile</exclude>
-										
-										<!-- commons-beanutils-core is redundant when we already depend on commons-beanutils -->
+
+										<!-- commons-beanutils-core is redundant when we already depend 
+											on commons-beanutils -->
 										<exclude>commons-beanutils:commons-beanutils-core:*</exclude>
-										
+
 										<!-- stax-api is overlapping with xml-apis -->
 										<exclude>stax:stax-api:*</exclude>
 										<exclude>javax.xml.stream:stax-api</exclude>
-										
+
 										<!-- findbugs-annotations is overlapping with annotations -->
 										<exclude>com.github.stephenc.findbugs:findbugs-annotations:*</exclude>
 									</excludes>
@@ -515,7 +516,7 @@ under the License.
 				<artifactId>hsqldb</artifactId>
 				<version>1.8.0.10</version>
 			</dependency>
-			
+
 			<!-- Hadoop -->
 			<dependency>
 				<groupId>org.apache.hadoop</groupId>
