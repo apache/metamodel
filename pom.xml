@@ -34,11 +34,11 @@
 		<url>https://github.com/ankit2711/metamodel</url>
 		<connection>scm:git:https://github.com/ankit2711/metamodel.git</connection>
 		<developerConnection>scm:git:https://github.com/ankit2711/metamodel.git</developerConnection>
-		<tag>MetaModel-4.4.1-INTERNAL</tag>
+		<tag>HEAD</tag>
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
 	<artifactId>MetaModel</artifactId>
-	<version>4.4.1-INTERNAL</version>
+	<version>4.4.2-INTERNAL-SNAPSHOT</version>
 	<name>MetaModel</name>
 	<description>MetaModel is a library that encapsulates the differences and enhances 
 		the capabilities of different datastores. Rich querying abilities are
