@@ -18,14 +18,26 @@
  */
 package org.apache.metamodel.query;
 
+import org.apache.metamodel.data.Row;
+
 /**
  * Interface that contains scalar specific methods.
  *
- * Scalar functions returns only a single value, based
- * on the input value.
+ * Scalar functions returns only a single value, based on the input value.
  *
  */
 public interface ScalarFunction extends FunctionType {
 
-    //TODO: Add scalar function methods
+    /**
+     * Applies and evaluates the function on a particular row of data.
+     * 
+     * @param row
+     *            the row containing data
+     * @param operandItem
+     *            the select item which is the argument to this function. If a
+     *            function takes multiple select items, this will be the primary
+     *            one.
+     * @return
+     */
+    public Object evaluate(Row row, SelectItem operandItem);
 }

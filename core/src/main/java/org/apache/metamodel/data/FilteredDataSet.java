@@ -22,7 +22,7 @@ package org.apache.metamodel.data;
 /**
  * Wraps another DataSet and transparently applies a set of filters to it.
  */
-public final class FilteredDataSet extends AbstractDataSet {
+public final class FilteredDataSet extends AbstractDataSet implements WrappingDataSet {
 
 	private final DataSet _dataSet;
 	private final IRowFilter[] _filters;
@@ -38,6 +38,11 @@ public final class FilteredDataSet extends AbstractDataSet {
 	public void close() {
 		super.close();
 		_dataSet.close();
+	}
+	
+	@Override
+	public DataSet getWrappedDataSet() {
+	    return _dataSet;
 	}
 
 	@Override

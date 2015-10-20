@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.util;
 
+import org.apache.commons.lang.SerializationUtils;
+
 import junit.framework.TestCase;
 
 public class HdfsResourceTest extends TestCase {
@@ -38,5 +40,12 @@ public class HdfsResourceTest extends TestCase {
         assertEquals("apache.txt", res3.getName());
 
         assertFalse(res3.equals(res1));
+    }
+    
+    public void testSerialization() throws Exception {
+        final HdfsResource res1 = new HdfsResource("hdfs://localhost:9000/home/metamodel.txt");
+        final byte[] bytes = SerializationUtils.serialize(res1);
+        final Object res2 = SerializationUtils.deserialize(bytes);
+        assertEquals(res1, res2);
     }
 }

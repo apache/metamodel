@@ -39,9 +39,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Stopwatch;
 
-
 public class HdfsResourceIntegrationTest {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(HdfsResourceIntegrationTest.class);
 
     private String _filePath;
@@ -61,8 +60,11 @@ public class HdfsResourceIntegrationTest {
             configured = _filePath != null && _hostname != null && portString != null;
             if (configured) {
                 _port = Integer.parseInt(portString);
+            } else {
+                System.out.println("Skipping test because HDFS file path, hostname and port is not set");
             }
         } else {
+            System.out.println("Skipping test because properties file does not exist");
             configured = false;
         }
         Assume.assumeTrue(configured);
@@ -76,7 +78,8 @@ public class HdfsResourceIntegrationTest {
     @Test
     public void testReadDirectory() throws Exception {
         final String contentString = "fun and games with Apache MetaModel and Hadoop is what we do";
-        final String[] contents = new String[] { "fun ", "and ", "games ", "with ", "Apache ", "MetaModel ", "and ", "Hadoop ", "is ", "what ", "we ", "do" };
+        final String[] contents = new String[] { "fun ", "and ", "games ", "with ", "Apache ", "MetaModel ", "and ",
+                "Hadoop ", "is ", "what ", "we ", "do" };
 
         final Configuration conf = new Configuration();
         conf.set("fs.defaultFS", "hdfs://" + _hostname + ":" + _port);
@@ -84,18 +87,19 @@ public class HdfsResourceIntegrationTest {
         final Path path = new Path(_filePath);
         final boolean exists = fileSystem.exists(path);
 
-        if(exists){
+        if (exists) {
             fileSystem.delete(path, true);
         }
 
         fileSystem.mkdirs(path);
 
-
-        // Reverse both filename and contents to make sure it is the name and not the creation order that is sorted on.
+        // Reverse both filename and contents to make sure it is the name and
+        // not the creation order that is sorted on.
         int i = contents.length;
         Collections.reverse(Arrays.asList(contents));
-        for(final String contentPart : contents){
-            final HdfsResource partResource = new HdfsResource(_hostname, _port, _filePath + "/part-" + String.format("%02d", i--));
+        for (final String contentPart : contents) {
+            final HdfsResource partResource = new HdfsResource(_hostname, _port,
+                    _filePath + "/part-" + String.format("%02d", i--));
             partResource.write(new Action<OutputStream>() {
                 @Override
                 public void run(OutputStream out) throws Exception {
@@ -105,32 +109,44 @@ public class HdfsResourceIntegrationTest {
         }
 
         final Stopwatch stopwatch = Stopwatch.createStarted();
-
         final HdfsResource res1 = new HdfsResource(_hostname, _port, _filePath);
+        try {
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - start");
 
-        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - start");
+            final String str1 = res1.read(new Func<InputStream, String>() {
+                @Override
+                public String eval(InputStream in) {
+                    return FileHelper.readInputStreamAsString(in, "UTF8");
+                }
+            });
 
-        final String str1 = res1.read(new Func<InputStream, String>() {
-            @Override
-            public String eval(InputStream in) {
-                return FileHelper.readInputStreamAsString(in, "UTF8");
+            Assert.assertEquals(contentString, str1);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read1");
+
+            final String str2 = res1.read(new Func<InputStream, String>() {
+                @Override
+                public String eval(InputStream in) {
+                    return FileHelper.readInputStreamAsString(in, "UTF8");
+                }
+            });
+            Assert.assertEquals(str1, str2);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read2");
+
+            final StringBuilder sb = new StringBuilder();
+            for (String token : contents) {
+                sb.append(token);
             }
-        });
+            final long expectedSize = sb.length();
+            Assert.assertEquals(expectedSize, res1.getSize());
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - getSize");
 
-        Assert.assertEquals(contentString, str1);
-        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read1");
+            Assert.assertTrue(res1.getLastModified() > System.currentTimeMillis() - 10000);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - getLastModified");
 
-        final String str2 = res1.read(new Func<InputStream, String>() {
-            @Override
-            public String eval(InputStream in) {
-                return FileHelper.readInputStreamAsString(in, "UTF8");
-            }
-        });
-        Assert.assertEquals(str1, str2);
-        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read2");
-
-        res1.getHadoopFileSystem().delete(res1.getHadoopPath(), true);
-        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - deleted");
+        } finally {
+            res1.getHadoopFileSystem().delete(res1.getHadoopPath(), true);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - deleted");
+        }
 
         Assert.assertFalse(res1.isExists());
 
@@ -184,4 +200,72 @@ public class HdfsResourceIntegrationTest {
         stopwatch.stop();
     }
 
+    @Test
+    public void testFileSystemNotBeingClosed() throws Throwable {
+        HdfsResource resourceToRead = null;
+        try {
+            resourceToRead = new HdfsResource(_hostname, _port, _filePath);
+            resourceToRead.write(new Action<OutputStream>() {
+
+                @Override
+                public void run(OutputStream out) throws Exception {
+                    FileHelper.writeString(out, "testFileSystemNotBeingClosed");
+                }
+            });
+
+            final MutableRef<Throwable> throwableRef = new MutableRef<>();
+
+            Thread.UncaughtExceptionHandler exceptionHandler = new Thread.UncaughtExceptionHandler() {
+                public void uncaughtException(Thread th, Throwable ex) {
+                    throwableRef.set(ex);
+                    Assert.fail("Caught exception in the thread: " + ex);
+                }
+            };
+
+            Thread[] threads = new Thread[10];
+
+            for (int i = 0; i < threads.length; i++) {
+                final HdfsResource res = new HdfsResource(_hostname, _port, _filePath);
+
+                Thread thread = new Thread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        res.read(new Action<InputStream>() {
+
+                            @Override
+                            public void run(InputStream is) throws Exception {
+                                String readAsString = FileHelper.readAsString(FileHelper.getReader(is, "UTF-8"));
+                                Assert.assertNotNull(readAsString);
+                                Assert.assertEquals("testFileSystemNotBeingClosed", readAsString);
+                            }
+                        });
+
+                    }
+                });
+                
+                thread.setUncaughtExceptionHandler(exceptionHandler);
+                thread.start();
+                threads[i] = thread;
+            }
+
+            for (int i = 0; i < threads.length; i++) {
+                threads[i].join();
+            }
+            
+            Throwable error = throwableRef.get();
+            if (error != null) {
+                throw error;
+            }
+            
+        } finally {
+            if (resourceToRead != null) {
+                final FileSystem fileSystem = resourceToRead.getHadoopFileSystem();
+                final Path resourceToReadPath = new Path(resourceToRead.getFilepath());
+                if (fileSystem.exists(resourceToReadPath)) {
+                    fileSystem.delete(resourceToReadPath, true);
+                }
+            }
+        }
+    }
 }

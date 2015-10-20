@@ -44,6 +44,7 @@ import org.apache.metamodel.query.JoinType;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.OrderByItem;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.query.SelectClause;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
@@ -123,7 +124,8 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
                                     whereItems.size());
                             final Number count = executeCountQuery(table, whereItems, functionApproximationAllowed);
                             if (count == null) {
-                                logger.debug("DataContext did not return any count query results. Proceeding with manual counting.");
+                                logger.debug(
+                                        "DataContext did not return any count query results. Proceeding with manual counting.");
                             } else {
                                 List<Row> data = new ArrayList<Row>(1);
                                 final DataSetHeader header = new SimpleDataSetHeader(new SelectItem[] { selectItem });
@@ -142,15 +144,17 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
                         final SelectItem selectItem = whereItem.getSelectItem();
                         if (!whereItem.isCompoundFilter() && selectItem != null && selectItem.getColumn() != null) {
                             final Column column = selectItem.getColumn();
-                            if (column.isPrimaryKey() && whereItem.getOperator() == OperatorType.EQUALS_TO) {
-                                logger.debug("Query is a primary key lookup query. Trying executePrimaryKeyLookupQuery(...)");
+                            if (column.isPrimaryKey() && OperatorType.EQUALS_TO.equals(whereItem.getOperator())) {
+                                logger.debug(
+                                        "Query is a primary key lookup query. Trying executePrimaryKeyLookupQuery(...)");
                                 if (table != null) {
                                     if (isMainSchemaTable(table)) {
                                         final Object operand = whereItem.getOperand();
                                         final Row row = executePrimaryKeyLookupQuery(table, selectItems, column,
                                                 operand);
                                         if (row == null) {
-                                            logger.debug("DataContext did not return any GET query results. Proceeding with manual lookup.");
+                                            logger.debug(
+                                                    "DataContext did not return any GET query results. Proceeding with manual lookup.");
                                         } else {
                                             final DataSetHeader header = new SimpleDataSetHeader(selectItems);
                                             return new InMemoryDataSet(header, row);
@@ -228,7 +232,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
             return false;
         }
         for (SelectItem item : clause.getItems()) {
-            if (item.getFunction() != null || item.getExpression() != null) {
+            if (item.getAggregateFunction() != null || item.getExpression() != null) {
                 return false;
             }
         }
@@ -404,8 +408,34 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
     }
 
     private List<SelectItem> buildWorkingSelectItems(List<SelectItem> selectItems, List<FilterItem> whereItems) {
+        final List<SelectItem> primarySelectItems = new ArrayList<>(selectItems.size());
+        for (SelectItem selectItem : selectItems) {
+            final ScalarFunction scalarFunction = selectItem.getScalarFunction();
+            if (scalarFunction == null || isScalarFunctionMaterialized(scalarFunction)) {
+                primarySelectItems.add(selectItem);
+            } else {
+                final SelectItem copySelectItem = selectItem.replaceFunction(null);
+                primarySelectItems.add(copySelectItem);
+            }
+        }
         final List<SelectItem> evaluatedSelectItems = MetaModelHelper.getEvaluatedSelectItems(whereItems);
-        return CollectionUtils.concat(true, selectItems, evaluatedSelectItems);
+        return CollectionUtils.concat(true, primarySelectItems, evaluatedSelectItems);
+    }
+
+    /**
+     * Determines if the subclass of this class can materialize
+     * {@link SelectItem}s with the given {@link ScalarFunction}. Usually scalar
+     * functions are applied by MetaModel on the client side, but when possible
+     * they can also be handled by e.g.
+     * {@link #materializeMainSchemaTable(Table, List, int, int)} and
+     * {@link #materializeMainSchemaTable(Table, List, List, int, int)} in which
+     * case MetaModel will not evaluate it client-side.
+     * 
+     * @param function
+     * @return
+     */
+    protected boolean isScalarFunctionMaterialized(ScalarFunction function) {
+        return false;
     }
 
     @Deprecated
@@ -430,7 +460,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         schemaNames[1] = getMainSchemaName();
         return schemaNames;
     }
-    
+
     @Override
     protected String getDefaultSchemaName() throws MetaModelException {
         return getMainSchemaName();
@@ -484,14 +514,14 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
 
         // Create "relationships" table: primary_table, primary_column,
         // foreign_table, foreign_column
-        relationshipsTable.addColumn(new MutableColumn("primary_table", ColumnType.VARCHAR, relationshipsTable, 0,
-                false));
-        relationshipsTable.addColumn(new MutableColumn("primary_column", ColumnType.VARCHAR, relationshipsTable, 1,
-                false));
-        relationshipsTable.addColumn(new MutableColumn("foreign_table", ColumnType.VARCHAR, relationshipsTable, 2,
-                false));
-        relationshipsTable.addColumn(new MutableColumn("foreign_column", ColumnType.VARCHAR, relationshipsTable, 3,
-                false));
+        relationshipsTable
+                .addColumn(new MutableColumn("primary_table", ColumnType.VARCHAR, relationshipsTable, 0, false));
+        relationshipsTable
+                .addColumn(new MutableColumn("primary_column", ColumnType.VARCHAR, relationshipsTable, 1, false));
+        relationshipsTable
+                .addColumn(new MutableColumn("foreign_table", ColumnType.VARCHAR, relationshipsTable, 2, false));
+        relationshipsTable
+                .addColumn(new MutableColumn("foreign_column", ColumnType.VARCHAR, relationshipsTable, 3, false));
 
         MutableRelationship.createRelationship(tablesTable.getColumnByName("name"),
                 columnsTable.getColumnByName("table"));
@@ -520,8 +550,8 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
                 if (t.getType() != null) {
                     typeString = t.getType().toString();
                 }
-                data.add(new DefaultRow(header, new Object[] { t.getName(), typeString, t.getColumnCount(),
-                        t.getRemarks() }));
+                data.add(new DefaultRow(header,
+                        new Object[] { t.getName(), typeString, t.getColumnCount(), t.getRemarks() }));
             }
         } else if ("columns".equals(tableName)) {
             // "columns" columns: name, type, native_type, size, nullable,
@@ -547,8 +577,8 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
                 for (int i = 0; i < primaryColumns.length; i++) {
                     Column pColumn = primaryColumns[i];
                     Column fColumn = foreignColumns[i];
-                    data.add(new DefaultRow(header, new Object[] { pTable.getName(), pColumn.getName(),
-                            fTable.getName(), fColumn.getName() }));
+                    data.add(new DefaultRow(header,
+                            new Object[] { pTable.getName(), pColumn.getName(), fTable.getName(), fColumn.getName() }));
                 }
             }
         } else {
@@ -615,10 +645,10 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
      * @param maxRows
      * @return
      */
-    protected DataSet materializeMainSchemaTable(Table table, List<SelectItem> selectItems,
-            List<FilterItem> whereItems, int firstRow, int maxRows) {
+    protected DataSet materializeMainSchemaTable(Table table, List<SelectItem> selectItems, List<FilterItem> whereItems,
+            int firstRow, int maxRows) {
         final List<SelectItem> workingSelectItems = buildWorkingSelectItems(selectItems, whereItems);
-        DataSet dataSet; 
+        DataSet dataSet;
         if (whereItems.isEmpty()) {
             // paging is pushed down to materializeMainSchemaTable
             dataSet = materializeMainSchemaTable(table, workingSelectItems, firstRow, maxRows);

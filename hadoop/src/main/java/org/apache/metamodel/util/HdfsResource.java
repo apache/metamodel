@@ -136,7 +136,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
         }
     }
 
-    private class HdfsDirectoryInputStream extends AbstractDirectoryInputStream<FileStatus> {
+    private static class HdfsDirectoryInputStream extends AbstractDirectoryInputStream<FileStatus> {
         private final Path _hadoopPath;
         private final FileSystem _fs;
 
@@ -157,7 +157,6 @@ public class HdfsResource extends AbstractResource implements Serializable {
                 });
                 // Natural ordering is the URL
                 Arrays.sort(fileStatuses);
-
             } catch (IOException e) {
                 fileStatuses = new FileStatus[0];
             }
@@ -165,7 +164,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
         }
 
         @Override
-        InputStream openStream(final int index) throws IOException {
+        public InputStream openStream(final int index) throws IOException {
             final Path nextPath = _files[index].getPath();
             return _fs.open(nextPath);
         }
@@ -184,7 +183,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
     private final String _hostname;
     private final int _port;
     private final String _filepath;
-    private Path _path;
+    private transient Path _path;
 
     /**
      * Creates a {@link HdfsResource}
@@ -198,8 +197,8 @@ public class HdfsResource extends AbstractResource implements Serializable {
         }
         final Matcher matcher = URL_PATTERN.matcher(url);
         if (!matcher.find()) {
-            throw new IllegalArgumentException("Cannot parse url '" + url
-                    + "'. Must follow pattern: hdfs://hostname:port/path/to/file");
+            throw new IllegalArgumentException(
+                    "Cannot parse url '" + url + "'. Must follow pattern: hdfs://hostname:port/path/to/file");
         }
         _hostname = matcher.group(1);
         _port = Integer.parseInt(matcher.group(2));
@@ -270,7 +269,11 @@ public class HdfsResource extends AbstractResource implements Serializable {
     public long getSize() {
         final FileSystem fs = getHadoopFileSystem();
         try {
-            return fs.getFileStatus(getHadoopPath()).getLen();
+            if (fs.isFile(getHadoopPath())) {
+                return fs.getFileStatus(getHadoopPath()).getLen();
+            } else {
+               return fs.getContentSummary(getHadoopPath()).getLength();
+            }
         } catch (Exception e) {
             throw wrapException(e);
         } finally {
@@ -351,7 +354,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
 
     public FileSystem getHadoopFileSystem() {
         try {
-            return FileSystem.get(getHadoopConfiguration());
+            return FileSystem.newInstance(getHadoopConfiguration());
         } catch (IOException e) {
             throw new MetaModelException("Could not connect to HDFS: " + e.getMessage(), e);
         }

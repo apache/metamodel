@@ -269,7 +269,7 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
         sb.append(' ');
 
         final OperatorType operator = filterItem.getOperator();
-        if (operator == OperatorType.IN) {
+        if (OperatorType.IN.equals(operator)) {
             throw new UnsupportedOperationException("IN operator not supported: " + filterItem);
         }
         sb.append(operator.toSql());

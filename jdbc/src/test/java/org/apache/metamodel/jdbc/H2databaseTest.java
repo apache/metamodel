@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
 
@@ -79,6 +80,10 @@ public class H2databaseTest extends TestCase {
     public void testCompositePrimaryKeyCreation() throws Exception {
         JdbcDataContext dc = new JdbcDataContext(conn);
         JdbcTestTemplates.compositeKeyCreation(dc, "metamodel_test_composite_keys");
+    }
+    
+    public void testTimestampValueInsertSelect() throws Exception {
+        JdbcTestTemplates.timestampValueInsertSelect(conn, TimeUnit.NANOSECONDS);
     }
 
     public void testUsingSingleUpdates() throws Exception {

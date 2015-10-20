@@ -25,6 +25,8 @@ import java.sql.Clob;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -126,13 +128,11 @@ public final class JdbcUtils {
                 cal.setTime((Date) value);
                 st.setDate(valueIndex, new java.sql.Date(cal.getTimeInMillis()), cal);
             } else if (type == ColumnType.TIME && value instanceof Date) {
-                Calendar cal = Calendar.getInstance();
-                cal.setTime((Date) value);
-                st.setTime(valueIndex, new java.sql.Time(cal.getTimeInMillis()), cal);
+                final Time time = toTime((Date) value);
+                st.setTime(valueIndex, time);
             } else if (type == ColumnType.TIMESTAMP && value instanceof Date) {
-                Calendar cal = Calendar.getInstance();
-                cal.setTime((Date) value);
-                st.setTimestamp(valueIndex, new java.sql.Timestamp(cal.getTimeInMillis()), cal);
+                final Timestamp ts = toTimestamp((Date) value);
+                st.setTimestamp(valueIndex, ts);
             } else if (type == ColumnType.CLOB || type == ColumnType.NCLOB) {
                 if (value instanceof InputStream) {
                     InputStream inputStream = (InputStream) value;
@@ -182,6 +182,24 @@ public final class JdbcUtils {
         }
     }
 
+    private static Time toTime(Date value) {
+        if (value instanceof Time) {
+            return (Time) value;
+        }
+        final Calendar cal = Calendar.getInstance();
+        cal.setTime((Date) value);
+        return new java.sql.Time(cal.getTimeInMillis());
+    }
+
+    private static Timestamp toTimestamp(Date value) {
+        if (value instanceof Timestamp) {
+            return (Timestamp) value;
+        }
+        final Calendar cal = Calendar.getInstance();
+        cal.setTime((Date) value);
+        return new Timestamp(cal.getTimeInMillis());
+    }
+
     public static String getValueAsSql(Column column, Object value, IQueryRewriter queryRewriter) {
         if (value == null) {
             return "NULL";
@@ -211,7 +229,8 @@ public final class JdbcUtils {
             if (!inlineValues) {
                 if (isPreparedParameterCandidate(whereItem)) {
                     // replace operator with parameter
-                    whereItem = new FilterItem(whereItem.getSelectItem(), whereItem.getOperator(), new QueryParameter());
+                    whereItem = new FilterItem(whereItem.getSelectItem(), whereItem.getOperator(),
+                            new QueryParameter());
                 }
             }
             final String whereItemLabel = queryRewriter.rewriteFilterItem(whereItem);
@@ -229,7 +248,7 @@ public final class JdbcUtils {
      * @return
      */
     public static boolean isPreparedParameterCandidate(FilterItem whereItem) {
-        return !whereItem.isCompoundFilter() && whereItem.getOperator() != OperatorType.IN
+        return !whereItem.isCompoundFilter() && !OperatorType.IN.equals(whereItem.getOperator())
                 && whereItem.getOperand() != null;
     }
 

@@ -20,12 +20,14 @@ package org.apache.metamodel.query;
 
 import org.apache.metamodel.util.AggregateBuilder;
 
-public class MinAggregateFunction extends DefaultAggregateFunction<Object> implements AggregateFunction {
+public class MinAggregateFunction extends DefaultAggregateFunction<Object> {
 
+    @Override
     public String getFunctionName() {
         return "MIN";
     }
 
+    @Override
     public AggregateBuilder<Object> createAggregateBuilder() {
         return new MinAggregateBuilder();
     }

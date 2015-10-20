@@ -360,10 +360,12 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
             for (int i = 0; i < lineNumber; i++) {
                 String line = reader.readLine();
                 if (line == null) {
+                    FileHelper.safeClose(reader);
                     return new EmptyDataSet(columns);
                 }
             }
         } catch (IOException e) {
+            FileHelper.safeClose(reader);
             throw new MetaModelException("IOException occurred while reading from CSV resource: " + _resource, e);
         }
 

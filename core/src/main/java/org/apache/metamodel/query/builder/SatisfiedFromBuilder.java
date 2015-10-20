@@ -36,9 +36,9 @@ public interface SatisfiedFromBuilder {
 
     public ColumnSelectBuilder<?> select(Column column);
     
-    public SatisfiedQueryBuilder<?> select(FunctionType functionType, String columnName);
+    public SatisfiedQueryBuilder<?> select(FunctionType function, String columnName);
 
-    public FunctionSelectBuilder<?> select(FunctionType functionType, Column column);
+    public FunctionSelectBuilder<?> select(FunctionType function, Column column);
 
     public CountSelectBuilder<?> selectCount();
 

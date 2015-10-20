@@ -97,7 +97,7 @@ final class FetchSizeCalculator {
 
 		List<SelectItem> items = query.getSelectClause().getItems();
 		for (SelectItem item : items) {
-			if (item.getFunction() == null) {
+			if (item.getAggregateFunction() == null) {
 				return false;
 			}
 		}
