@@ -93,8 +93,12 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     public static final TimeValue TIMEOUT_SCROLL = TimeValue.timeValueSeconds(60);
 
     private final Client elasticSearchClient;
-    private final SimpleTableDef[] tableDefs;
     private final String indexName;
+    // Table definitions that are set from the beginning, not supposed to be changed.
+    private final List<SimpleTableDef> staticTableDefinitions;
+
+    // Table definitions that are discovered, these can change
+    private final List<SimpleTableDef> dynamicTableDefinitions = new ArrayList<>();
 
     /**
      * Constructs a {@link ElasticSearchDataContext}. This constructor accepts a
@@ -105,11 +109,11 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *            the ElasticSearch client
      * @param indexName
      *            the name of the ElasticSearch index to represent
-     * @param tableDefs
+     * @param tableDefinitions
      *            an array of {@link SimpleTableDef}s, which define the table
      *            and column model of the ElasticSearch index.
      */
-    public ElasticSearchDataContext(Client client, String indexName, SimpleTableDef... tableDefs) {
+    public ElasticSearchDataContext(Client client, String indexName, SimpleTableDef... tableDefinitions) {
         if (client == null) {
             throw new IllegalArgumentException("ElasticSearch Client cannot be null");
         }
@@ -118,13 +122,14 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         }
         this.elasticSearchClient = client;
         this.indexName = indexName;
-        this.tableDefs = tableDefs;
+        this.staticTableDefinitions = Arrays.asList(tableDefinitions);
+        this.dynamicTableDefinitions.addAll(Arrays.asList(detectSchema()));
     }
 
     /**
      * Constructs a {@link ElasticSearchDataContext} and automatically detects
      * the schema structure/view on all indexes (see
-     * {@link #detectSchema(Client, String)}).
+     * {@link this.detectSchema(Client, String)}).
      *
      * @param client
      *            the ElasticSearch client
@@ -132,7 +137,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *            the name of the ElasticSearch index to represent
      */
     public ElasticSearchDataContext(Client client, String indexName) {
-        this(client, indexName, detectSchema(client, indexName));
+        this(client, indexName, new SimpleTableDef[0]);
     }
 
     /**
@@ -141,18 +146,15 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      * based on the metadata provided by the ElasticSearch java client.
      *
      * @see #detectTable(ClusterState, String, String)
-     *
-     * @param client
-     *            the client to inspect
-     * @param indexName
      * @return a mutable schema instance, useful for further fine tuning by the
      *         user.
      */
-    public static SimpleTableDef[] detectSchema(Client client, String indexName) {
+    private SimpleTableDef[] detectSchema() {
         logger.info("Detecting schema for index '{}'", indexName);
 
         final ClusterState cs;
-        final ClusterStateRequestBuilder clusterStateRequestBuilder = client.admin().cluster().prepareState();
+        final ClusterStateRequestBuilder clusterStateRequestBuilder =
+                getElasticSearchClient().admin().cluster().prepareState();
 
         // different methods here to set the index name, so we have to use
         // reflection :-/
@@ -172,7 +174,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         }
         cs = clusterStateRequestBuilder.execute().actionGet().getState();
 
-        final List<SimpleTableDef> result = new ArrayList<SimpleTableDef>();
+        final List<SimpleTableDef> result = new ArrayList<>();
 
         final IndexMetaData imd = cs.getMetaData().index(indexName);
         if (imd == null) {
@@ -192,7 +194,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
                 }
             }
         }
-        final SimpleTableDef[] tableDefArray = (SimpleTableDef[]) result.toArray(new SimpleTableDef[result.size()]);
+        final SimpleTableDef[] tableDefArray = result.toArray(new SimpleTableDef[result.size()]);
         Arrays.sort(tableDefArray, new Comparator<SimpleTableDef>() {
             @Override
             public int compare(SimpleTableDef o1, SimpleTableDef o2) {
@@ -244,16 +246,34 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     @Override
     protected Schema getMainSchema() throws MetaModelException {
         final MutableSchema theSchema = new MutableSchema(getMainSchemaName());
-        for (final SimpleTableDef tableDef : tableDefs) {
-            final MutableTable table = tableDef.toTable().setSchema(theSchema);
-            final Column idColumn = table.getColumnByName(FIELD_ID);
-            if (idColumn != null && idColumn instanceof MutableColumn) {
-                final MutableColumn mutableColumn = (MutableColumn) idColumn;
-                mutableColumn.setPrimaryKey(true);
-            }
-            theSchema.addTable(table);
+        for (final SimpleTableDef tableDef : staticTableDefinitions) {
+            addTable(theSchema, tableDef);
         }
+
+        final SimpleTableDef[] tables = detectSchema();
+        synchronized (this) {
+            dynamicTableDefinitions.clear();
+            dynamicTableDefinitions.addAll(Arrays.asList(tables));
+            for (final SimpleTableDef tableDef : dynamicTableDefinitions) {
+                final List<String> tableNames = Arrays.asList(theSchema.getTableNames());
+
+                if (!tableNames.contains(tableDef.getName())) {
+                    addTable(theSchema, tableDef);
+                }
+            }
+        }
+
         return theSchema;
+    }
+
+    private void addTable(final MutableSchema theSchema, final SimpleTableDef tableDef) {
+        final MutableTable table = tableDef.toTable().setSchema(theSchema);
+        final Column idColumn = table.getColumnByName(FIELD_ID);
+        if (idColumn != null && idColumn instanceof MutableColumn) {
+            final MutableColumn mutableColumn = (MutableColumn) idColumn;
+            mutableColumn.setPrimaryKey(true);
+        }
+        theSchema.addTable(table);
     }
 
     @Override
@@ -317,7 +337,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
             return QueryBuilders.matchAllQuery();
         }
 
-        List<QueryBuilder> children = new ArrayList<QueryBuilder>(whereItems.size());
+        List<QueryBuilder> children = new ArrayList<>(whereItems.size());
         for (FilterItem item : whereItems) {
             final QueryBuilder itemQueryBuilder;
 
