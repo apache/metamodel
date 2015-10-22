@@ -33,7 +33,7 @@ public class Neo4jCypherQueryBuilder {
         }
         return buildSelectQuery(table.getName(), columnNames, firstRow, maxRows);
     }
-    
+
     public static String buildSelectQuery(String tableName, String[] columnNames, int firstRow, int maxRows) {
         StringBuilder cypherBuilder = new StringBuilder();
         cypherBuilder.append("MATCH (n:");
@@ -56,17 +56,49 @@ public class Neo4jCypherQueryBuilder {
         }
         return cypherBuilder.toString();
     }
-    
+
     public static String buildCountQuery(String tableName, List<FilterItem> whereItems) {
         StringBuilder cypherBuilder = new StringBuilder();
         cypherBuilder.append("MATCH (n:");
         cypherBuilder.append(tableName);
-        cypherBuilder.append(") RETURN COUNT(*);");
+        cypherBuilder.append(") ");
+        cypherBuilder.append(buildWhereClause(whereItems, "n"));
+        cypherBuilder.append(" RETURN COUNT(*);");
         return cypherBuilder.toString();
+    }
+
+    private static String buildWhereClause(List<FilterItem> whereItems, String queryObjectHandle) {
+        if ((whereItems != null) && (!whereItems.isEmpty())) {
+            StringBuilder whereClauseBuilder = new StringBuilder();
+            whereClauseBuilder.append("WHERE ");
+
+            FilterItem firstWhereItem = whereItems.get(0);
+            whereClauseBuilder.append(buildWhereClauseItem(firstWhereItem, queryObjectHandle));
+            
+            for (int i = 1; i < whereItems.size(); i++) {
+                whereClauseBuilder.append(" AND ");
+                FilterItem whereItem = whereItems.get(i);
+                whereClauseBuilder.append(buildWhereClauseItem(whereItem, queryObjectHandle));
+            }
+            
+            return whereClauseBuilder.toString(); 
+        } else {
+            return "";
+        }
+    }
+
+    private static String buildWhereClauseItem(FilterItem whereItem, String queryObjectHandle) {
+        StringBuilder whereClauseItemBuilder = new StringBuilder();
+        whereClauseItemBuilder.append(queryObjectHandle);
+        whereClauseItemBuilder.append(":");
+        whereClauseItemBuilder.append(whereItem.getSelectItem().getColumn().getName());
+        whereClauseItemBuilder.append(whereItem.getOperator().toSql());
+        whereClauseItemBuilder.append(whereItem.getOperand());
+        return whereClauseItemBuilder.toString();
     }
 
     public static String buildCountQuery(Table table, List<FilterItem> whereItems) {
         return buildCountQuery(table.getName(), whereItems);
     }
-    
+
 }

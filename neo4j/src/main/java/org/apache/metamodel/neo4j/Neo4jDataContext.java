@@ -226,17 +226,22 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
         String countQuery = Neo4jCypherQueryBuilder.buildCountQuery(table, whereItems);
         String jsonResponse = _requestWrapper.executeCypherQuery(countQuery);
-        // TODO: Extract the Number from JSON... Here or a separate class? 
+
         JSONObject jsonResponseObject;
         try {
             jsonResponseObject = new JSONObject(jsonResponse);
-            
+            JSONArray resultsJSONArray = jsonResponseObject.getJSONArray("results");
+            JSONObject resultJSONObject = (JSONObject) resultsJSONArray.get(0);
+            JSONArray dataJSONArray = resultJSONObject.getJSONArray("data");
+            JSONObject rowJSONObject = (JSONObject) dataJSONArray.get(0);
+            JSONArray valueJSONArray = rowJSONObject.getJSONArray("row");
+            Number value = (Number) valueJSONArray.get(0);
+            return value;
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            // TODO Extract errors from JSON and log them
+            return null;
         }
-        return -1;
-        }
+    }
 
     @Override
     public void executeUpdate(UpdateScript script) {

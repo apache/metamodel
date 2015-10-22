@@ -179,17 +179,14 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         // insert a few records
         {
             requestWrapper.executeCypherQuery("CREATE (n:JUnitLabel { name: 'John Doe', age: 30 })");
-            requestWrapper.executeCypherQuery("CREATE (n:JUnitLabel { name: 'Jane Doe', gender: 'F' })");
+            requestWrapper.executeCypherQuery("CREATE (n:JUnitLabel { name: 'Sofia Unknown', gender: 'F' })");
         }
 
         // create datacontext using detected schema
         final DataContext dc = new Neo4jDataContext(getHostname(), getPort());
 
-        final DataSet ds2 = dc.query().from("JUnitLabel").selectCount().execute();
         final DataSet ds1 = dc.query().from("JUnitLabel").selectCount().where("name").eq("John Doe").execute();
-
-        assertTrue("Class: " + ds1.getClass().getName(), ds1 instanceof Neo4jDataSet);
-        assertTrue("Class: " + ds2.getClass().getName(), ds2 instanceof Neo4jDataSet);
+        final DataSet ds2 = dc.query().from("JUnitLabel").selectCount().execute();
 
         assertTrue(ds1.next());
         assertTrue(ds2.next());
@@ -200,9 +197,10 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         assertFalse(ds1.next());
         assertFalse(ds2.next());
 
-        assertEquals("Row[values=[Jane Doe, null]]", row1.toString());
-        assertEquals("Row[values=[John Doe, 30]]", row2.toString());
+        assertEquals("Row[values=[1]]", row1.toString());
+        assertEquals("Row[values=[2]]", row2.toString());
 
+        // TODO: Try-with-resources
         ds1.close();
         ds2.close();
     }
