@@ -18,6 +18,9 @@
  */
 package org.apache.metamodel.neo4j;
 
+import java.util.List;
+
+import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
 
@@ -52,6 +55,46 @@ public class Neo4jCypherQueryBuilder {
             cypherBuilder.append(" LIMIT " + maxRows);
         }
         return cypherBuilder.toString();
+    }
+    
+    public static String buildCountQuery(String tableName, List<FilterItem> whereItems) {
+        StringBuilder cypherBuilder = new StringBuilder();
+        cypherBuilder.append("MATCH (n:");
+        cypherBuilder.append(tableName);
+        cypherBuilder.append(") ");
+        cypherBuilder.append(buildWhereClause(whereItems, "n"));
+        cypherBuilder.append(" RETURN COUNT(*);");
+        return cypherBuilder.toString();
+    }
+
+    private static String buildWhereClause(List<FilterItem> whereItems, String queryObjectHandle) {
+        if ((whereItems != null) && (!whereItems.isEmpty())) {
+            StringBuilder whereClauseBuilder = new StringBuilder();
+            whereClauseBuilder.append("WHERE ");
+
+            FilterItem firstWhereItem = whereItems.get(0);
+            whereClauseBuilder.append(buildWhereClauseItem(firstWhereItem, queryObjectHandle));
+            
+            for (int i = 1; i < whereItems.size(); i++) {
+                whereClauseBuilder.append(" AND ");
+                FilterItem whereItem = whereItems.get(i);
+                whereClauseBuilder.append(buildWhereClauseItem(whereItem, queryObjectHandle));
+            }
+            
+            return whereClauseBuilder.toString(); 
+        } else {
+            return "";
+        }
+    }
+
+    private static String buildWhereClauseItem(FilterItem whereItem, String queryObjectHandle) {
+        StringBuilder whereClauseItemBuilder = new StringBuilder();
+        whereClauseItemBuilder.append(queryObjectHandle);
+        whereClauseItemBuilder.append(":");
+        whereClauseItemBuilder.append(whereItem.getSelectItem().getColumn().getName());
+        whereClauseItemBuilder.append(whereItem.getOperator().toSql());
+        whereClauseItemBuilder.append(whereItem.getOperand());
+        return whereClauseItemBuilder.toString();
     }
     
 }

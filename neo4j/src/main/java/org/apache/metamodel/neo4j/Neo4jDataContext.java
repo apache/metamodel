@@ -361,10 +361,25 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements
 	}
 
 	@Override
-	protected Number executeCountQuery(Table table,
-			List<FilterItem> whereItems, boolean functionApproximationAllowed) {
-		return -1;
-	}
+    protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
+        String countQuery = Neo4jCypherQueryBuilder.buildCountQuery(table.getName(), whereItems);
+        String jsonResponse = _requestWrapper.executeCypherQuery(countQuery);
+
+        JSONObject jsonResponseObject;
+        try {
+            jsonResponseObject = new JSONObject(jsonResponse);
+            JSONArray resultsJSONArray = jsonResponseObject.getJSONArray("results");
+            JSONObject resultJSONObject = (JSONObject) resultsJSONArray.get(0);
+            JSONArray dataJSONArray = resultJSONObject.getJSONArray("data");
+            JSONObject rowJSONObject = (JSONObject) dataJSONArray.get(0);
+            JSONArray valueJSONArray = rowJSONObject.getJSONArray("row");
+            Number value = (Number) valueJSONArray.get(0);
+            return value;
+        } catch (JSONException e) {
+            // TODO Extract errors from JSON and log them
+            return null;
+        }
+    }
 
 	@Override
 	public void executeUpdate(UpdateScript script) {
