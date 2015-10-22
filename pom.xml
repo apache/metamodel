@@ -378,6 +378,7 @@ under the License.
 							<exclude>**/.idea/**</exclude>
 							<exclude>DEPENDENCIES</exclude>
 							<exclude>DISCLAIMER</exclude>
+							<exclude>neo4j-community-*/**</exclude>
 						</excludes>
 					</configuration>
 				</plugin>

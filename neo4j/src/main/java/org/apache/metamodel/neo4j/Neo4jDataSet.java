@@ -42,24 +42,29 @@ final class Neo4jDataSet extends AbstractDataSet {
     @Override
     public boolean next() {
         try {
-            JSONObject results = _resultJSONObject.getJSONArray("results").getJSONObject(0);
-            JSONArray data = results.getJSONArray("data");
-            if (_currentRowIndex < data.length()) {
-                JSONObject row = data.getJSONObject(_currentRowIndex);
-                JSONArray jsonValues = row.getJSONArray("row");
-                
-                Object[] objectValues = new Object[jsonValues.length()];
-                for (int i = 0 ; i < jsonValues.length(); i++) {
-                    objectValues[i] = jsonValues.getString(i);
-                }
-                _row = new DefaultRow(new SimpleDataSetHeader(getSelectItems()), objectValues);
-                _currentRowIndex++;
-                return true;
+            JSONArray resultsArray = _resultJSONObject.getJSONArray("results");
+            if (resultsArray.length() > 0) {
+            	JSONObject results = resultsArray.getJSONObject(0);
+            	JSONArray data = results.getJSONArray("data");
+            	if (_currentRowIndex < data.length()) {
+            		JSONObject row = data.getJSONObject(_currentRowIndex);
+            		JSONArray jsonValues = row.getJSONArray("row");
+            		
+            		Object[] objectValues = new Object[jsonValues.length()];
+            		for (int i = 0 ; i < jsonValues.length(); i++) {
+            			objectValues[i] = jsonValues.getString(i);
+            		}
+            		_row = new DefaultRow(new SimpleDataSetHeader(getSelectItems()), objectValues);
+            		_currentRowIndex++;
+            		return true;
+            	}            	
+            } else {
+            	JSONArray errorArray = _resultJSONObject.getJSONArray("errors");
+            	JSONObject error = errorArray.getJSONObject(0);
+            	throw new IllegalStateException(error.toString());
             }
-            return false;
         } catch (JSONException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new IllegalStateException(e);
         }
         return false;
     }

@@ -168,6 +168,17 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         ds1.close();
         ds2.close();
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        if (isConfigured()) {
+            // Delete the test nodes
+            requestWrapper.executeCypherQuery("MATCH (n:JUnitLabel) DELETE n");
+            requestWrapper.executeCypherQuery("MATCH (n:JUnitLabelTemp) DELETE n");
+        }
+
+        super.tearDown();
+    }
     
     @Test
     public void testCountQuery() throws Exception {
@@ -203,17 +214,6 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         // TODO: Try-with-resources
         ds1.close();
         ds2.close();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        if (isConfigured()) {
-            // Delete the test nodes
-            requestWrapper.executeCypherQuery("MATCH (n:JUnitLabel) DELETE n");
-            requestWrapper.executeCypherQuery("MATCH (n:JUnitLabelTemp) DELETE n");
-        }
-
-        super.tearDown();
     }
 
 }

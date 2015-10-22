@@ -33,7 +33,7 @@ public class Neo4jCypherQueryBuilder {
         }
         return buildSelectQuery(table.getName(), columnNames, firstRow, maxRows);
     }
-
+    
     public static String buildSelectQuery(String tableName, String[] columnNames, int firstRow, int maxRows) {
         StringBuilder cypherBuilder = new StringBuilder();
         cypherBuilder.append("MATCH (n:");
@@ -56,7 +56,7 @@ public class Neo4jCypherQueryBuilder {
         }
         return cypherBuilder.toString();
     }
-
+    
     public static String buildCountQuery(String tableName, List<FilterItem> whereItems) {
         StringBuilder cypherBuilder = new StringBuilder();
         cypherBuilder.append("MATCH (n:");
@@ -96,9 +96,5 @@ public class Neo4jCypherQueryBuilder {
         whereClauseItemBuilder.append(whereItem.getOperand());
         return whereClauseItemBuilder.toString();
     }
-
-    public static String buildCountQuery(Table table, List<FilterItem> whereItems) {
-        return buildCountQuery(table.getName(), whereItems);
-    }
-
+    
 }

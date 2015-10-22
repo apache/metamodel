@@ -224,7 +224,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
 
     @Override
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
-        String countQuery = Neo4jCypherQueryBuilder.buildCountQuery(table, whereItems);
+        String countQuery = Neo4jCypherQueryBuilder.buildCountQuery(table.getName(), whereItems);
         String jsonResponse = _requestWrapper.executeCypherQuery(countQuery);
 
         JSONObject jsonResponseObject;
@@ -245,8 +245,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
 
     @Override
     public void executeUpdate(UpdateScript script) {
-        throw new UnsupportedOperationException(
-                "MetaModel does not currently support write operations on Neo4j databases.");
+        throw new UnsupportedOperationException("MetaModel does not currently support write operations on Neo4j databases.");
     }
 
     @Override
