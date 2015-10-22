@@ -303,6 +303,7 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
         final List<String> delims = collectionProcessor.getDelims();
         if (tokens.size() == 1) {
             expression = tokens.get(0);
+			_upperExpression = expression.toUpperCase();
         } else {
             final LogicalOperator logicalOperator = LogicalOperator.valueOf(delims.get(1).trim());
 
