@@ -89,8 +89,8 @@ public class QueryParserTest extends TestCase {
     }
     
     public void testApproximateCountQuery() throws Exception {
-        Query q = MetaModelHelper.parseQuery(dc, "SELECT ~COUNT(*) FROM sch.tbl");
-        assertEquals("SELECT ~COUNT(*) FROM sch.tbl", q.toSql());
+        Query q = MetaModelHelper.parseQuery(dc, "SELECT APPROXIMATE COUNT(*) FROM sch.tbl");
+        assertEquals("SELECT APPROXIMATE COUNT(*) FROM sch.tbl", q.toSql());
         assertTrue(q.getSelectClause().getItem(0).isFunctionApproximationAllowed());
     }
 

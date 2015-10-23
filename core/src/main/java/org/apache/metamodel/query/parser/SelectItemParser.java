@@ -110,8 +110,8 @@ public final class SelectItemParser implements QueryPartProcessor {
         final FunctionType function;
         final int startParenthesis = expression.indexOf('(');
         if (startParenthesis > 0 && expression.endsWith(")")) {
-            functionApproximation = (expression.charAt(0) == SelectItem.FUNCTION_APPROXIMATION_PREFIX);
-            final String functionName = expression.substring((functionApproximation ? 1 : 0), startParenthesis);
+            functionApproximation = (expression.startsWith(SelectItem.FUNCTION_APPROXIMATION_PREFIX));
+            final String functionName = expression.substring((functionApproximation ? SelectItem.FUNCTION_APPROXIMATION_PREFIX.length() : 0), startParenthesis);
             function = FunctionTypeFactory.get(functionName.toUpperCase());
             if (function != null) {
                 expression = expression.substring(startParenthesis + 1, expression.length() - 1).trim();

@@ -47,7 +47,8 @@ import org.slf4j.LoggerFactory;
  */
 public class SelectItem extends BaseObject implements QueryItem, Cloneable {
 
-    public static final char FUNCTION_APPROXIMATION_PREFIX = '~';
+    public static final String FUNCTION_APPROXIMATION_PREFIX = "APPROXIMATE ";
+    
     private static final long serialVersionUID = 317475105509663973L;
     private static final Logger logger = LoggerFactory.getLogger(SelectItem.class);
 
