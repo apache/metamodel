@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -40,6 +41,7 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
+import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
@@ -72,6 +74,16 @@ public class JdbcDataContextTest extends JdbcTestCase {
         DataContext dc = new JdbcDataContext(con);
         Schema schema = dc.getSchemaByName("foobar");
         assertNull("found schema: " + schema, schema);
+    }
+
+    public void testQueryMaxRows0() throws Exception {
+        final Connection con = getTestDbConnection();
+        final DataContext dc = new JdbcDataContext(con);
+        final Table table = dc.getDefaultSchema().getTables()[0];
+        final DataSet dataSet = dc.query().from(table).selectAll().limit(0).execute();
+        assertTrue(dataSet instanceof EmptyDataSet);
+        assertFalse(dataSet.next());
+        dataSet.close();
     }
 
     public void testUsingDataSource() throws Exception {
@@ -211,6 +223,42 @@ public class JdbcDataContextTest extends JdbcTestCase {
 
         assertEquals(0, jdbcCompiledQuery.getActiveLeases());
         assertEquals(0, jdbcCompiledQuery.getIdleLeases());
+    }
+
+    public void testSelectScalarFunction() throws Exception {
+        final Connection connection = getTestDbConnection();
+        final JdbcDataContext dataContext = new JdbcDataContext(connection);
+        final DataSet dataSet = dataContext.query().from("customers").select("creditlimit")
+                .select(FunctionType.TO_DATE, "creditlimit").select("creditlimit").limit(2).execute();
+        try {
+            assertEquals("[_CUSTOMERS_._CREDITLIMIT_, TO_DATE(_CUSTOMERS_._CREDITLIMIT_), _CUSTOMERS_._CREDITLIMIT_]",
+                    Arrays.toString(dataSet.getSelectItems()).replaceAll("\"", "_"));
+
+            assertTrue(dataSet.next());
+            final Object value0 = dataSet.getRow().getValue(0);
+            assertTrue("Expected a number but got: " + value0, value0 instanceof Number);
+            final Object value1 = dataSet.getRow().getValue(1);
+            assertTrue("Expected a date but got: " + value1, value1 instanceof Date);
+            final Object value2 = dataSet.getRow().getValue(2);
+            assertTrue("Expected a number but got: " + value2, value2 instanceof Number);
+        } finally {
+            dataSet.close();
+        }
+    }
+
+    public void testWhereScalarFunction() throws Exception {
+        final Connection connection = getTestDbConnection();
+        final JdbcDataContext dataContext = new JdbcDataContext(connection);
+        try {
+            dataContext.query().from("customers").select("customernumber")
+                    .where(FunctionType.TO_BOOLEAN, "creditlimit").eq(true).limit(2).execute();
+            fail("Exception expected");
+        } catch (MetaModelException e) {
+            assertEquals(
+                    "Scalar functions outside of SELECT clause is not supported for JDBC databases. Query rejected: "
+                            + "SELECT \"CUSTOMERS\".\"CUSTOMERNUMBER\" FROM PUBLIC.\"CUSTOMERS\" WHERE TO_BOOLEAN(\"CUSTOMERS\".\"CREDITLIMIT\") = TRUE",
+                    e.getMessage());
+        }
     }
 
     public void testExecuteQueryWithComparisonGreaterThanOrEquals() throws Exception {

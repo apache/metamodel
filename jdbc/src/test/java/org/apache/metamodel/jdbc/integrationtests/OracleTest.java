@@ -18,8 +18,10 @@
  */
 package org.apache.metamodel.jdbc.integrationtests;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.table.TableModel;
 
@@ -86,6 +88,15 @@ public class OracleTest extends AbstractJdbIntegrationTest {
         }
 
         JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(getDataContext(), "metamodel_test_simple");
+    }
+    
+    public void testTimestampValueInsertSelect() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+        
+        final Connection connection = getConnection();
+        JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.MICROSECONDS, null);
     }
 
     public void testCompositePrimaryKeyCreation() throws Exception {

@@ -321,7 +321,7 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
         final String rightSide;
         {
             String rightSideCandidate = null;
-            final OperatorType[] operators = OperatorType.values();
+            final OperatorType[] operators = OperatorType.BUILT_IN_OPERATORS;
             for (OperatorType operatorCandidate : operators) {
                 final String searchStr;
                 if (operatorCandidate.isSpaceDelimited()) {
@@ -521,9 +521,6 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
     public Query setMaxRows(Integer maxRows) {
         if (maxRows != null) {
             final int maxRowsValue = maxRows.intValue();
-            if (maxRowsValue == 0) {
-                throw new IllegalArgumentException("Max rows cannot be zero");
-            }
             if (maxRowsValue < 0) {
                 throw new IllegalArgumentException("Max rows cannot be negative");
             }

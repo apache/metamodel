@@ -21,7 +21,6 @@ package org.apache.metamodel.csv;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -61,7 +60,8 @@ final class CsvUpdateCallback extends AbstractUpdateCallback implements UpdateCa
     }
 
     @Override
-    public TableCreationBuilder createTable(Schema schema, String name) throws IllegalArgumentException, IllegalStateException {
+    public TableCreationBuilder createTable(Schema schema, String name) throws IllegalArgumentException,
+            IllegalStateException {
         return new CsvCreateTableBuilder(this, schema, name);
     }
 
@@ -86,41 +86,31 @@ final class CsvUpdateCallback extends AbstractUpdateCallback implements UpdateCa
     }
 
     protected synchronized void writeRow(final String[] stringValues, final boolean append) {
-        final CsvWriter _csvWriter = new CsvWriter(_configuration);
-        final String line = _csvWriter.buildLine(stringValues);
-        if (_resource instanceof FileResource) {
-            // optimized handling for file-based resources
-            final File file = ((FileResource) _resource).getFile();
-            final Writer writer = getFileWriter(file, append);
-            try {
-                writer.write(line);
-            } catch (IOException e) {
-                throw new MetaModelException("Failed to write line to file: " + line, e);
-            }
-        } else {
-            // generic handling for any kind of resource
-            final Action<OutputStream> action = new Action<OutputStream>() {
-                @Override
-                public void run(OutputStream out) throws Exception {
-                    final String encoding = _configuration.getEncoding();
-                    final OutputStreamWriter writer = new OutputStreamWriter(out, encoding);
-                    writer.write(line);
-                    writer.flush();
-                }
-            };
-            if (append) {
-                _resource.append(action);
-            } else {
-                _resource.write(action);
-            }
+        final CsvWriter csvWriter = new CsvWriter(_configuration);
+        final String line = csvWriter.buildLine(stringValues);
+        final Writer writer = getWriter(append);
+        try {
+            writer.write(line);
+        } catch (IOException e) {
+            throw new MetaModelException("Failed to write line: " + line, e);
         }
     }
 
-    private Writer getFileWriter(File file, boolean append) {
+    private Writer getWriter(boolean append) {
         if (_writer == null || !append) {
-            final boolean needsLineBreak = needsLineBreak(file, _configuration);
+            final boolean needsLineBreak = needsLineBreak(_resource, _configuration);
 
-            final Writer writer = FileHelper.getWriter(file, _configuration.getEncoding(), append);
+            final OutputStream out;
+            if (append) {
+                out = _resource.append();
+            } else {
+                out = _resource.write();
+            }
+
+            final boolean insertBom = !append;
+
+            final Writer writer = FileHelper.getWriter(out, _configuration.getEncoding(), insertBom);
+
             if (needsLineBreak) {
                 try {
                     writer.write('\n');
@@ -133,47 +123,53 @@ final class CsvUpdateCallback extends AbstractUpdateCallback implements UpdateCa
         return _writer;
     }
 
-    protected static boolean needsLineBreak(File file, CsvConfiguration configuration) {
-        if (!file.exists() || file.length() == 0) {
+    protected static boolean needsLineBreak(Resource resource, CsvConfiguration configuration) {
+        if (!resource.isExists() || resource.getSize() == 0) {
             return false;
         }
 
-        try {
-            // find the bytes a newline would match under the encoding
-            final byte[] bytesInLineBreak;
-            {
-                ByteBuffer encodedLineBreak = Charset.forName(configuration.getEncoding()).encode("\n");
-                bytesInLineBreak = new byte[encodedLineBreak.capacity()];
-                encodedLineBreak.get(bytesInLineBreak);
-            }
+        if (resource instanceof FileResource) {
 
-            // find the last bytes of the file
-            final byte[] bytesFromFile = new byte[bytesInLineBreak.length];
-            {
-                final RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
-                try {
-                    FileChannel channel = randomAccessFile.getChannel();
-                    try {
-                        long length = randomAccessFile.length();
+            final File file = ((FileResource) resource).getFile();
 
-                        channel = channel.position(length - bytesInLineBreak.length);
-                        channel.read(ByteBuffer.wrap(bytesFromFile));
-                    } finally {
-                        channel.close();
-                    }
-                } finally {
-                    randomAccessFile.close();
+            try {
+                // find the bytes a newline would match under the encoding
+                final byte[] bytesInLineBreak;
+                {
+                    ByteBuffer encodedLineBreak = Charset.forName(configuration.getEncoding()).encode("\n");
+                    bytesInLineBreak = new byte[encodedLineBreak.capacity()];
+                    encodedLineBreak.get(bytesInLineBreak);
                 }
-            }
 
-            // if the two byte arrays match, then the newline is not needed.
-            if (EqualsBuilder.equals(bytesInLineBreak, bytesFromFile)) {
-                return false;
+                // find the last bytes of the file
+                final byte[] bytesFromFile = new byte[bytesInLineBreak.length];
+                {
+                    final RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
+                    try {
+                        FileChannel channel = randomAccessFile.getChannel();
+                        try {
+                            long length = randomAccessFile.length();
+
+                            channel = channel.position(length - bytesInLineBreak.length);
+                            channel.read(ByteBuffer.wrap(bytesFromFile));
+                        } finally {
+                            channel.close();
+                        }
+                    } finally {
+                        randomAccessFile.close();
+                    }
+                }
+
+                // if the two byte arrays match, then the newline is not needed.
+                if (EqualsBuilder.equals(bytesInLineBreak, bytesFromFile)) {
+                    return false;
+                }
+                return true;
+            } catch (Exception e) {
+                logger.error("Error occurred while checking if file needs linebreak, omitting check", e);
             }
-            return true;
-        } catch (Exception e) {
-            logger.error("Error occurred while checking if file needs linebreak, omitting check", e);
         }
+
         return false;
     }
 

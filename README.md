@@ -24,7 +24,7 @@ Please check out our [wiki for user documentation](http://wiki.apache.org/metamo
 MetaModel uses maven as it's build tool. Code can be built with:
 
 ```
-mvn clean install.
+mvn clean install
 ```
 
 ### Running the integration tests

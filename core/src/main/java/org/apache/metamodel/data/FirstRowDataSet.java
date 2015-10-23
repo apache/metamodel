@@ -21,7 +21,7 @@ package org.apache.metamodel.data;
 /**
  * Wraps another DataSet and enforces a first row offset.
  */
-public final class FirstRowDataSet extends AbstractDataSet {
+public final class FirstRowDataSet extends AbstractDataSet implements WrappingDataSet {
 
     private final DataSet _dataSet;
     private volatile int _rowsLeftToSkip;
@@ -51,6 +51,11 @@ public final class FirstRowDataSet extends AbstractDataSet {
     @Override
     public Row getRow() {
         return _dataSet.getRow();
+    }
+    
+    @Override
+    public DataSet getWrappedDataSet() {
+        return _dataSet;
     }
 
     @Override

@@ -28,7 +28,7 @@ import java.net.URL;
 /**
  * Resource based on URL or URI.
  */
-public class UrlResource implements Resource, Serializable {
+public class UrlResource extends AbstractResource implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -94,38 +94,13 @@ public class UrlResource implements Resource, Serializable {
     }
 
     @Override
-    public void write(Action<OutputStream> writeCallback) throws ResourceException {
+    public OutputStream write() throws ResourceException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void append(Action<OutputStream> appendCallback) throws ResourceException {
+    public OutputStream append() throws ResourceException {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void read(Action<InputStream> readCallback) throws ResourceException {
-        final InputStream in = read();
-        try {
-            readCallback.run(in);
-        } catch (Exception e) {
-            throw new ResourceException(this, "Error occurred in read callback", e);
-        } finally {
-            FileHelper.safeClose(in);
-        }
-    }
-
-    @Override
-    public <E> E read(Func<InputStream, E> readCallback) throws ResourceException {
-        final InputStream in = read();
-        try {
-            E result = readCallback.eval(in);
-            return result;
-        } catch (Exception e) {
-            throw new ResourceException(this, "Error occurred in read callback", e);
-        } finally {
-            FileHelper.safeClose(in);
-        }
     }
 
     @Override

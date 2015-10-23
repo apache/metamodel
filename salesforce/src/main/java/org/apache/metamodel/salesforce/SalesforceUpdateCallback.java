@@ -233,7 +233,7 @@ final class SalesforceUpdateCallback extends AbstractUpdateCallback implements C
 
         final OperatorType operator = whereItem.getOperator();
 
-        if (operator != OperatorType.EQUALS_TO && operator != OperatorType.IN) {
+        if (!OperatorType.EQUALS_TO.equals(operator) && !OperatorType.IN.equals(operator)) {
             throw new IllegalStateException(
                     "Salesforce only allows deletion of records by their specific IDs. Violated by operator in where item: "
                             + whereItem);

@@ -18,11 +18,8 @@
  */
 package org.apache.metamodel.query.parser;
 
-import java.lang.String;
 import java.util.Arrays;
 import java.util.List;
-
-import junit.framework.TestCase;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
@@ -37,6 +34,8 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
+
+import junit.framework.TestCase;
 
 public class QueryParserTest extends TestCase {
 
@@ -64,6 +63,12 @@ public class QueryParserTest extends TestCase {
                 "select a.foo as f from sch.tbl a inner join sch.tbl b on a.foo=b.foo order by a.foo asc");
         assertEquals("SELECT a.foo AS f FROM sch.tbl a INNER JOIN sch.tbl b ON a.foo = b.foo ORDER BY a.foo ASC",
                 q.toSql());
+    }
+    
+    public void testParseScalarFunctions() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc,
+                "select TO_NUM(a.foo) from sch.tbl a WHERE BOOLEAN(a.bar) = false");
+        assertEquals("SELECT TO_NUMBER(a.foo) FROM sch.tbl a WHERE TO_BOOLEAN(a.bar) = FALSE", q.toSql());
     }
 
     public void testSelectEverythingFromTable() throws Exception {
@@ -368,11 +373,11 @@ public class QueryParserTest extends TestCase {
         assertNotNull("SelectItem 1 should be a column", q.getSelectClause().getItem(0).getColumn());
 
         // COUNT(*)
-        assertNotNull("SelectItem 2 should be a Function", q.getSelectClause().getItem(1).getFunction());
+        assertNotNull("SelectItem 2 should be a Function", q.getSelectClause().getItem(1).getAggregateFunction());
         assertNotNull("SelectItem 2 should be a Function of '*'", q.getSelectClause().getItem(1).getExpression());
 
         // MAX(tbl.baz)
-        assertNotNull("SelectItem 3 should be a Function", q.getSelectClause().getItem(2).getFunction());
+        assertNotNull("SelectItem 3 should be a Function", q.getSelectClause().getItem(2).getAggregateFunction());
         assertNotNull("SelectItem 4 should be a Function of a column", q.getSelectClause().getItem(2).getColumn());
 
         // FROM tbl.foo
@@ -384,7 +389,7 @@ public class QueryParserTest extends TestCase {
         // HAVING COUNT(*) > 2
         FilterItem havingItem = q.getHavingClause().getItem(0);
         assertNull(havingItem.getExpression());
-        assertNotNull(havingItem.getSelectItem().getFunction());
+        assertNotNull(havingItem.getSelectItem().getAggregateFunction());
         assertEquals("*", havingItem.getSelectItem().getExpression());
 
         // ORDER BY tbl.foo ASC

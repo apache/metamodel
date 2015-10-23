@@ -54,7 +54,16 @@ public abstract class AbstractDataContext implements DataContext {
     public final DataContext refreshSchemas() {
         _schemaCache.clear();
         _schemaNameCache = null;
+        onSchemaCacheRefreshed();
         return this;
+    }
+
+    /**
+     * Method invoked when schemas have been refreshed using
+     * {@link #refreshSchemas()}. Can be overridden to add callback
+     * functionality in subclasses.
+     */
+    protected void onSchemaCacheRefreshed() {
     }
 
     /**
@@ -111,12 +120,12 @@ public abstract class AbstractDataContext implements DataContext {
     @Override
     public final Schema getDefaultSchema() throws MetaModelException {
         Schema result = null;
-        String defaultSchemaName = getDefaultSchemaName();
+        final String defaultSchemaName = getDefaultSchemaName();
         if (defaultSchemaName != null) {
             result = getSchemaByName(defaultSchemaName);
         }
         if (result == null) {
-            Schema[] schemas = getSchemas();
+            final Schema[] schemas = getSchemas();
             if (schemas.length == 1) {
                 result = schemas[0];
             } else {
@@ -126,7 +135,7 @@ public abstract class AbstractDataContext implements DataContext {
                     String name = schema.getName();
                     if (schema != null) {
                         name = name.toLowerCase();
-                        boolean isInformationSchema = name.startsWith("information") && name.endsWith("schema");
+                        final boolean isInformationSchema = name.startsWith("information") && name.endsWith("schema");
                         if (!isInformationSchema && schema.getTableCount() > highestTableCount) {
                             highestTableCount = schema.getTableCount();
                             result = schema;

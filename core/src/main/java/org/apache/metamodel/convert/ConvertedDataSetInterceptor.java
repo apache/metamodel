@@ -72,7 +72,7 @@ public class ConvertedDataSetInterceptor implements DataSetInterceptor, HasReadT
 		for (int i = 0; i < selectItems.length; i++) {
 			SelectItem selectItem = selectItems[i];
 			Column column = selectItem.getColumn();
-			if (column != null && selectItem.getFunction() == null) {
+			if (column != null && selectItem.getAggregateFunction() == null) {
 				TypeConverter<?, ?> converter = converters.get(column);
 				if (converter != null) {
 					hasConverter = true;

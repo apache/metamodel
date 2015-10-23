@@ -28,17 +28,21 @@ import java.io.StringReader;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.metamodel.BatchUpdateScript;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.create.ColumnCreationBuilder;
 import org.apache.metamodel.create.CreateTable;
+import org.apache.metamodel.create.TableCreationBuilder;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.drop.DropTable;
@@ -49,6 +53,7 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.Update;
 import org.apache.metamodel.util.DateUtils;
+import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.Month;
 import org.junit.Ignore;
 
@@ -156,42 +161,49 @@ public class JdbcTestTemplates {
         assertTrue(ds.next());
         assertEquals("1", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // regular NOT EQUALS
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("code").ne("C02").execute();
         assertTrue(ds.next());
         assertEquals("3", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // regular GREATER THAN
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("id").gt(2).execute();
         assertTrue(ds.next());
         assertEquals("2", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // regular LESS THAN
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("id").lt(2).execute();
         assertTrue(ds.next());
         assertEquals("1", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // IS NULL
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("code").isNull().execute();
         assertTrue(ds.next());
         assertEquals("1", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // IS NOT NULL
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("code").isNotNull().execute();
         assertTrue(ds.next());
         assertEquals("3", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // LIKE
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("code").like("C%").execute();
         assertTrue(ds.next());
         assertEquals("3", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // regular IN (with string)
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("code").in("C01", "C02")
@@ -199,12 +211,14 @@ public class JdbcTestTemplates {
         assertTrue(ds.next());
         assertEquals("2", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // regular IN (with decimals)
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("id").in(1.0, 2.0, 4.0).execute();
         assertTrue(ds.next());
         assertEquals("3", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
 
         // irregular IN (with null value) - (currently uses SQL's standard way
         // of understanding NULL - see ticket #1058)
@@ -217,6 +231,7 @@ public class JdbcTestTemplates {
         assertTrue(ds.next());
         assertEquals("0", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
+        ds.close();
     }
 
     public static void meaningOfOneSizeChar(Connection conn) throws Exception {
@@ -259,6 +274,7 @@ public class JdbcTestTemplates {
         assertTrue(ds.next());
         assertNull(ds.getRow().getValue(0));
         assertFalse(ds.next());
+        ds.close();
     }
 
     public static void automaticConversionWhenInsertingString(Connection conn) throws Exception {
@@ -573,8 +589,9 @@ public class JdbcTestTemplates {
         }
 
         dataContext.executeUpdate(new CreateTable(defaultSchema, testTableName).withColumn("mykey1")
-                .ofType(ColumnType.INTEGER).nullable(false).asPrimaryKey().withColumn("mykey2").ofType(ColumnType.INTEGER)
-                .nullable(false).asPrimaryKey().withColumn("name").ofType(ColumnType.VARCHAR).ofSize(20));
+                .ofType(ColumnType.INTEGER).nullable(false).asPrimaryKey().withColumn("mykey2")
+                .ofType(ColumnType.INTEGER).nullable(false).asPrimaryKey().withColumn("name")
+                .ofType(ColumnType.VARCHAR).ofSize(20));
         try {
             final Table table = defaultSchema.getTableByName(testTableName);
             assertNotNull(table);
@@ -621,5 +638,176 @@ public class JdbcTestTemplates {
             // clean up after
             dataContext.executeUpdate(new DropTable(defaultSchema, testTableName));
         }
+    }
+
+    /**
+     * 
+     * @param conn
+     * @param databasePrecision
+     *            the precision with which the database can handle timestamp
+     *            values. Expected values: {@link TimeUnit#SECONDS},
+     *            {@link TimeUnit#MILLISECONDS}, {@link TimeUnit#MICROSECONDS}
+     *            or {@link TimeUnit#NANOSECONDS}.
+     * 
+     * @throws Exception
+     */
+    public static void timestampValueInsertSelect(Connection conn, TimeUnit databasePrecision) throws Exception {
+        timestampValueInsertSelect(conn, databasePrecision, null);
+    }
+
+    public static void timestampValueInsertSelect(Connection conn, TimeUnit databasePrecision, final String nativeType)
+            throws Exception {
+        assertNotNull(conn);
+
+        final Statement statement = conn.createStatement();
+        try {
+            // clean up, if nescesary
+            statement.execute("DROP TABLE test_table");
+        } catch (SQLException e) {
+            // do nothing
+        } finally {
+            FileHelper.safeClose(statement);
+        }
+
+        assertFalse(conn.isReadOnly());
+
+        JdbcDataContext dc = new JdbcDataContext(conn);
+        final Schema schema = dc.getDefaultSchema();
+
+        final Timestamp timestamp1;
+        switch (databasePrecision) {
+        case SECONDS:
+            timestamp1 = Timestamp.valueOf("2015-10-16 16:33:33");
+            break;
+        case MILLISECONDS:
+            timestamp1 = Timestamp.valueOf("2015-10-16 16:33:33.456");
+            break;
+        case MICROSECONDS:
+            timestamp1 = Timestamp.valueOf("2015-10-16 16:33:33.456001");
+            break;
+        case NANOSECONDS:
+            timestamp1 = Timestamp.valueOf("2015-10-16 16:33:33.456001234");
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported database precision: " + databasePrecision);
+        }
+
+        final Timestamp timestamp2;
+        switch (databasePrecision) {
+        case SECONDS:
+            timestamp2 = Timestamp.valueOf("2015-10-16 16:33:34");
+            break;
+        case MILLISECONDS:
+            timestamp2 = Timestamp.valueOf("2015-10-16 16:33:34.683");
+            break;
+        case MICROSECONDS:
+            timestamp2 = Timestamp.valueOf("2015-10-16 16:33:34.683005");
+            break;
+        case NANOSECONDS:
+            timestamp2 = Timestamp.valueOf("2015-10-16 16:33:34.683005678");
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported database precision: " + databasePrecision);
+        }
+
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback cb) {
+                TableCreationBuilder tableBuilder = cb.createTable(schema, "test_table");
+                tableBuilder.withColumn("id").ofType(ColumnType.INTEGER);
+                tableBuilder.withColumn("insertiontime").ofType(ColumnType.TIMESTAMP);
+                if (nativeType == null) {
+                    tableBuilder.withColumn("insertiontime").ofType(ColumnType.TIMESTAMP);
+                } else {
+                    tableBuilder.withColumn("insertiontime").ofType(ColumnType.TIMESTAMP).ofNativeType(nativeType);
+                }
+                Table table = tableBuilder.execute();
+
+                cb.insertInto(table).value("id", 1).value("insertiontime", timestamp1).execute();
+                cb.insertInto(table).value("id", 2).value("insertiontime", timestamp2).execute();
+            }
+        });
+
+        DataSet ds = dc.query().from("test_table").select("id").and("insertiontime").execute();
+        assertTrue(ds.next());
+
+        switch (databasePrecision) {
+        case SECONDS:
+            assertEquals("Row[values=[1, 2015-10-16 16:33:33]]", ds.getRow().toString());
+            break;
+        case MILLISECONDS:
+            assertEquals("Row[values=[1, 2015-10-16 16:33:33.456]]", ds.getRow().toString());
+            break;
+        case MICROSECONDS:
+            assertEquals("Row[values=[1, 2015-10-16 16:33:33.456001]]", ds.getRow().toString());
+            break;
+        case NANOSECONDS:
+            assertEquals("Row[values=[1, 2015-10-16 16:33:33.456001234]]", ds.getRow().toString());
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported database precision: " + databasePrecision);
+        }
+        assertTrue(ds.getRow().getValue(0) instanceof Number);
+        assertTrue(ds.next());
+
+        switch (databasePrecision) {
+        case SECONDS:
+            assertEquals("Row[values=[2, 2015-10-16 16:33:34]]", ds.getRow().toString());
+            break;
+        case MILLISECONDS:
+            assertEquals("Row[values=[2, 2015-10-16 16:33:34.683]]", ds.getRow().toString());
+            break;
+        case MICROSECONDS:
+            assertEquals("Row[values=[2, 2015-10-16 16:33:34.683005]]", ds.getRow().toString());
+            break;
+        case NANOSECONDS:
+            assertEquals("Row[values=[2, 2015-10-16 16:33:34.683005678]]", ds.getRow().toString());
+            break;
+        default:
+            throw new UnsupportedOperationException("Unsupported database precision: " + databasePrecision);
+        }
+        assertFalse(ds.next());
+        ds.close();
+
+        if (databasePrecision != TimeUnit.SECONDS) {
+            Query query = dc.query().from("test_table").select("id").where("insertiontime").lessThan(timestamp2)
+                    .toQuery();
+            try {
+                ds = dc.executeQuery(query);
+            } catch (Exception e) {
+                System.out.println("Failing query was: " + dc.getQueryRewriter().rewriteQuery(query));
+                throw e;
+            }
+            assertTrue(ds.next());
+            assertEquals("Row[values=[1]]", ds.getRow().toString());
+            assertFalse(ds.next());
+            ds.close();
+
+            ds = dc.query().from("test_table").select("id").where("insertiontime").greaterThan(timestamp1).execute();
+            assertTrue(ds.next());
+            assertEquals("Row[values=[2]]", ds.getRow().toString());
+            assertFalse(ds.next());
+            ds.close();
+
+            dc.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback callback) {
+                    callback.deleteFrom("test_table").where("insertiontime").eq(timestamp1).execute();
+                }
+            });
+
+            ds = dc.query().from("test_table").selectCount().execute();
+            assertTrue(ds.next());
+            assertEquals("Row[values=[1]]", ds.getRow().toString());
+            assertFalse(ds.next());
+            ds.close();
+        }
+
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.dropTable("test_table").execute();
+            }
+        });
     }
 }

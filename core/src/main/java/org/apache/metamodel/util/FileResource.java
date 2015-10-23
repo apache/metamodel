@@ -19,15 +19,36 @@
 package org.apache.metamodel.util;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * {@link File} based {@link Resource} implementation.
  */
-public class FileResource implements Resource, Serializable {
+public class FileResource extends AbstractResource implements Serializable {
+
+    private class DirectoryInputStream extends AbstractDirectoryInputStream<File> {
+
+        public DirectoryInputStream() {
+            final File[] unsortedFiles = getChildren();
+
+            if (unsortedFiles == null) {
+                _files = new File[0];
+            } else {
+                Arrays.sort(unsortedFiles);
+                _files = unsortedFiles;
+            }
+        }
+
+        @Override
+        InputStream openStream(final int index) throws IOException {
+            return FileHelper.getInputStream(_files[index]);
+        }
+    }
 
     private static final long serialVersionUID = 1L;
     private final File _file;
@@ -39,7 +60,7 @@ public class FileResource implements Resource, Serializable {
     public FileResource(File file) {
         _file = file;
     }
-    
+
     @Override
     public String toString() {
         return "FileResource[" + _file.getPath() + "]";
@@ -64,57 +85,24 @@ public class FileResource implements Resource, Serializable {
         if (!isExists()) {
             return false;
         }
+        if (_file.isDirectory()) {
+            return true;
+        }
         boolean canWrite = _file.canWrite();
         return !canWrite;
     }
 
     @Override
-    public void write(Action<OutputStream> writeCallback) throws ResourceException {
-        final OutputStream out = FileHelper.getOutputStream(_file);
-        try {
-            writeCallback.run(out);
-        } catch (Exception e) {
-            throw new ResourceException(this, "Error occurred in write callback", e);
-        } finally {
-            FileHelper.safeClose(out);
+    public OutputStream write() throws ResourceException {
+        if (_file.isDirectory()) {
+            throw new ResourceException(this, "Cannot write to directory: " + _file);
         }
+        return FileHelper.getOutputStream(_file);
     }
 
     @Override
-    public void append(Action<OutputStream> appendCallback) {
-        final OutputStream out = FileHelper.getOutputStream(_file, true);
-        try {
-            appendCallback.run(out);
-        } catch (Exception e) {
-            throw new ResourceException(this, "Error occurred in append callback", e);
-        } finally {
-            FileHelper.safeClose(out);
-        }
-    }
-
-    @Override
-    public void read(Action<InputStream> readCallback) {
-        final InputStream in = read();
-        try {
-            readCallback.run(in);
-        } catch (Exception e) {
-            throw new ResourceException(this, "Error occurred in read callback", e);
-        } finally {
-            FileHelper.safeClose(in);
-        }
-    }
-
-    @Override
-    public <E> E read(Func<InputStream, E> readCallback) {
-        final InputStream in = read();
-        try {
-            final E result = readCallback.eval(in);
-            return result;
-        } catch (Exception e) {
-            throw new ResourceException(this, "Error occurred in read callback", e);
-        } finally {
-            FileHelper.safeClose(in);
-        }
+    public OutputStream append() throws ResourceException {
+        return FileHelper.getOutputStream(_file, true);
     }
 
     public File getFile() {
@@ -128,11 +116,35 @@ public class FileResource implements Resource, Serializable {
 
     @Override
     public long getSize() {
+        if (_file.isDirectory()) {
+            long size = 0;
+            final File[] children = getChildren();
+            for (File file : children) {
+                final long length = file.length();
+                if (length == -1) {
+                    return -1;
+                }
+                size += length;
+            }
+            return size;
+        }
         return _file.length();
     }
 
     @Override
     public long getLastModified() {
+        if (_file.isDirectory()) {
+            long lastModified = -1;
+            final File[] children = getChildren();
+            for (File file : children) {
+                final long l = file.lastModified();
+                if (l != 0) {
+                    lastModified = Math.max(lastModified, l);
+                }
+            }
+            return lastModified;
+        }
+        
         final long lastModified = _file.lastModified();
         if (lastModified == 0) {
             return -1;
@@ -142,7 +154,19 @@ public class FileResource implements Resource, Serializable {
 
     @Override
     public InputStream read() throws ResourceException {
+        if (_file.isDirectory()) {
+            return new DirectoryInputStream();
+        }
         final InputStream in = FileHelper.getInputStream(_file);
         return in;
+    }
+
+    private File[] getChildren() {
+        return _file.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(final File pathname) {
+                return pathname.isFile();
+            }
+        });
     }
 }
