@@ -44,6 +44,12 @@ public class SelectItemTest extends MetaModelTestCase {
         SelectItem selectItem = new SelectItem(_schema.getTableByName(TABLE_PROJECT).getColumns()[0]);
         assertEquals("project.project_id", selectItem.toSql());
     }
+    
+    public void testToSqlFuntionApproximation() throws Exception {
+        SelectItem selectItem = new SelectItem(FunctionType.MAX, _schema.getTableByName(TABLE_PROJECT).getColumns()[0]);
+        selectItem.setFunctionApproximationAllowed(true);
+        assertEquals("~MAX(project.project_id)", selectItem.toSql());
+    }
 
     public void testSubQuerySelectItem() throws Exception {
         Table projectTable = _schema.getTableByName(TABLE_PROJECT);
