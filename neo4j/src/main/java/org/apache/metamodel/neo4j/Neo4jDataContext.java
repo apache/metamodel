@@ -138,7 +138,6 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
                     }
                 }
 
-                // TODO: Get all relationships for label
                 List<String> relationshipPropertiesPerLabel = new ArrayList<String>();
                 for (JSONObject node : nodesPerLabel) {
                     Integer nodeId = (Integer) node.getJSONObject("metadata").get("id");
@@ -182,7 +181,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
             if (relationshipPropertiesJSONObject.length() > 0) {
                 JSONArray relationshipPropertiesNamesJSONArray = relationshipPropertiesJSONObject.names();
                 for (int i = 0; i < relationshipPropertiesNamesJSONArray.length(); i++) {
-                    String propertyName = relationshipName + "_" + relationshipPropertiesNamesJSONArray.getString(i);
+                    String propertyName = relationshipName + RELATIONSHIP_COLUMN_SEPARATOR + relationshipPropertiesNamesJSONArray.getString(i);
                     if (!propertyNames.contains(propertyName)) {
                         propertyNames.add(propertyName);
                     }
