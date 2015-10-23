@@ -342,24 +342,21 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         // create datacontext using detected schema
         final DataContext dc = new Neo4jDataContext(getHostname(), getPort());
 
-        final DataSet ds1 = dc.query().from("JUnitLabel").selectCount().where("name").eq("John Doe").execute();
-        final DataSet ds2 = dc.query().from("JUnitLabel").selectCount().execute();
+        try (final DataSet ds1 = dc.query().from("JUnitLabel").selectCount().where("name").eq("John Doe").execute()) {
+            assertTrue(ds1.next());
+            final Row row1 = ds1.getRow();
+            assertFalse(ds1.next());
+            assertEquals("Row[values=[1]]", row1.toString());
+            
+        }
+        
+        try (final DataSet ds2 = dc.query().from("JUnitLabel").selectCount().execute()) {
+            assertTrue(ds2.next());
+            final Row row2 = ds2.getRow();
+            assertFalse(ds2.next());
+            assertEquals("Row[values=[2]]", row2.toString());
+        }
 
-        assertTrue(ds1.next());
-        assertTrue(ds2.next());
-
-        final Row row1 = ds1.getRow();
-        final Row row2 = ds2.getRow();
-
-        assertFalse(ds1.next());
-        assertFalse(ds2.next());
-
-        assertEquals("Row[values=[1]]", row1.toString());
-        assertEquals("Row[values=[2]]", row2.toString());
-
-        // TODO: Try-with-resources
-        ds1.close();
-        ds2.close();
     }
 
     @Override
