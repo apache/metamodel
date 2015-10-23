@@ -201,9 +201,23 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 
         CompiledQuery query2 = strategy.query().from("JUnitPerson").select("rel_HAS_READ#rating").compile();
         try (DataSet dataSet2 = strategy.executeQuery(query2)) {
-            assertTrue(dataSet2.next());
-            assertEquals("Row[values=[5]]", dataSet2.getRow().toString());
-            assertFalse(dataSet2.next());
+            List<Row> dataSet2Rows = new ArrayList<>();
+            while (dataSet2.next()) {
+                dataSet2Rows.add(dataSet2.getRow());
+            }
+            // Sorting to have deterministic order
+            Collections.sort(dataSet2Rows, new Comparator<Row>() {
+
+                @Override
+                public int compare(Row arg0, Row arg1) {
+                    return arg0.toString().compareTo(arg1.toString());
+                }
+            });
+
+            assertEquals(3, dataSet2Rows.size());
+            assertEquals("Row[values=[5]]", dataSet2Rows.get(0).toString());
+            assertEquals("Row[values=[null]]", dataSet2Rows.get(1).toString());
+            assertEquals("Row[values=[null]]", dataSet2Rows.get(2).toString());
         }
     }
 
