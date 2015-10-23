@@ -22,16 +22,16 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
+import java.util.Arrays;
 import java.util.Collection;
 
 import javax.sql.DataSource;
 
 import org.apache.metamodel.cassandra.CassandraDataContext;
-import org.apache.metamodel.elasticsearch.ElasticSearchDataContext;
-import org.ektorp.http.StdHttpClient.Builder;
 import org.apache.metamodel.couchdb.CouchDbDataContext;
 import org.apache.metamodel.csv.CsvConfiguration;
 import org.apache.metamodel.csv.CsvDataContext;
+import org.apache.metamodel.elasticsearch.ElasticSearchDataContext;
 import org.apache.metamodel.excel.ExcelConfiguration;
 import org.apache.metamodel.excel.ExcelDataContext;
 import org.apache.metamodel.fixedwidth.FixedWidthConfiguration;
@@ -46,12 +46,16 @@ import org.apache.metamodel.sugarcrm.SugarCrmDataContext;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.apache.metamodel.xml.XmlDomDataContext;
+import org.ektorp.http.StdHttpClient.Builder;
 import org.elasticsearch.client.Client;
 import org.xml.sax.InputSource;
 
 import com.datastax.driver.core.Cluster;
+import com.google.common.base.Strings;
 import com.mongodb.DB;
-import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 
 /**
  * A factory for DataContext objects. This class substantially easens the task
@@ -346,7 +350,8 @@ public class DataContextFactory {
      *            table-based model
      * @return a DataContext object that matches the request
      */
-    public static DataContext createXmlDataContext(InputSource inputSource, String schemaName, boolean autoFlattenTables) {
+    public static DataContext createXmlDataContext(InputSource inputSource, String schemaName,
+            boolean autoFlattenTables) {
         XmlDomDataContext dc = new XmlDomDataContext(inputSource, schemaName, autoFlattenTables);
         return dc;
     }
@@ -496,7 +501,8 @@ public class DataContextFactory {
      *            the types of tables to include in the generated schemas
      * @return a DataContext object that matches the request
      */
-    public static UpdateableDataContext createJdbcDataContext(DataSource ds, String catalogName, TableType[] tableTypes) {
+    public static UpdateableDataContext createJdbcDataContext(DataSource ds, String catalogName,
+            TableType[] tableTypes) {
         return new JdbcDataContext(ds, tableTypes, catalogName);
     }
 
@@ -535,14 +541,19 @@ public class DataContextFactory {
     public static UpdateableDataContext createMongoDbDataContext(String hostname, Integer port, String databaseName,
             String username, char[] password, SimpleTableDef[] tableDefs) {
         try {
-            DB mongoDb;
+            final ServerAddress serverAddress;
             if (port == null) {
-                mongoDb = new Mongo(hostname).getDB(databaseName);
+                serverAddress = new ServerAddress(hostname);
             } else {
-                mongoDb = new Mongo(hostname, port).getDB(databaseName);
+                serverAddress = new ServerAddress(hostname, port);
             }
-            if (username != null) {
-                mongoDb.authenticate(username, password);
+
+            final DB mongoDb;
+            if (Strings.isNullOrEmpty(username)) {
+                mongoDb = new MongoClient(serverAddress).getDB(databaseName);
+            } else {
+                final MongoCredential credential = MongoCredential.createCredential(username, databaseName, password);
+                mongoDb = new MongoClient(serverAddress, Arrays.asList(credential)).getDB(databaseName);
             }
 
             if (tableDefs == null || tableDefs.length == 0) {
@@ -642,10 +653,11 @@ public class DataContextFactory {
 
     /**
      * Creates a new ElasticSearch datacontext.
+     * 
      * @param client
-     *       The ElasticSearch client
+     *            The ElasticSearch client
      * @param indexName
-     *       The ElasticSearch index name
+     *            The ElasticSearch index name
      * @return a DataContext object that matches the request
      */
     public static UpdateableDataContext createElasticSearchDataContext(Client client, String indexName) {
@@ -654,10 +666,11 @@ public class DataContextFactory {
 
     /**
      * Creates a new Cassandra datacontext.
+     * 
      * @param cluster
-     *       The Cassandra client
+     *            The Cassandra client
      * @param keySpaceName
-     *       The Cassandra key space name
+     *            The Cassandra key space name
      * @return a DataContext object that matches the request
      */
     public static DataContext createCassandraDataContext(Cluster cluster, String keySpaceName) {
