@@ -11,6 +11,7 @@
 
 	<properties>
 		<jest.version>2.0.0-SNAPSHOT</jest.version>
+		<elasticsearch.version>1.4.4</elasticsearch.version>
 	</properties>
 
 	<artifactId>MetaModel-elasticsearch-jest</artifactId>
@@ -40,10 +41,18 @@
 			<artifactId>commons-io</artifactId>
 		</dependency>
 
+		<!-- Jest -->
 		<dependency>
 			<groupId>io.searchbox</groupId>
 			<artifactId>jest</artifactId>
 			<version>${jest.version}</version>
+		</dependency>
+
+		<!-- elasticsearch -->
+		<dependency>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<version>${elasticsearch.version}</version>
 		</dependency>
 
 		<!-- test -->

@@ -21,6 +21,7 @@ package org.metamodel.jest.elasticsearch;
 import java.util.Date;
 import java.util.Map;
 
+import com.google.gson.JsonObject;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
@@ -33,7 +34,7 @@ import org.apache.metamodel.schema.ColumnType;
  */
 final class ElasticSearchUtils {
 
-    public static Row createRow(Map<String, Object> sourceMap, String documentId, DataSetHeader header) {
+    public static Row createRow(JsonObject source, String documentId, DataSetHeader header) {
         final Object[] values = new Object[header.size()];
         for (int i = 0; i < values.length; i++) {
             final SelectItem selectItem = header.getSelectItem(i);
@@ -45,10 +46,10 @@ final class ElasticSearchUtils {
             if (column.isPrimaryKey()) {
                 values[i] = documentId;
             } else {
-                Object value = sourceMap.get(column.getName());
+                String value = source.get(column.getName()).getAsString();
 
                 if (column.getType() == ColumnType.DATE) {
-                    Date valueToDate = ElasticSearchDateConverter.tryToConvert((String) value);
+                    Date valueToDate = ElasticSearchDateConverter.tryToConvert(value);
                     if (valueToDate == null) {
                         values[i] = value;
                     } else {

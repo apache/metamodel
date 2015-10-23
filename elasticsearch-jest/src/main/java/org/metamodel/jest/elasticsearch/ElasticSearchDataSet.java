@@ -18,21 +18,23 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import io.searchbox.client.JestClient;
+import io.searchbox.client.JestResult;
+import io.searchbox.core.SearchResult;
+import io.searchbox.core.SearchScroll;
+import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
-import org.elasticsearch.action.search.ClearScrollRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * {@link DataSet} implementation for ElasticSearch
@@ -41,23 +43,21 @@ final class ElasticSearchDataSet extends AbstractDataSet {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataSet.class);
 
-    private final Client _client;
+    private final JestClient _client;
     private final AtomicBoolean _closed;
 
-    private SearchResponse _searchResponse;
-    private SearchHit _currentHit;
+    private JestResult _searchResponse;
+    private JsonObject _currentHit;
     private int _hitIndex = 0;
 
-    public ElasticSearchDataSet(Client client, SearchResponse searchResponse, List<SelectItem> selectItems,
-            boolean queryPostProcessed) {
+    public ElasticSearchDataSet(JestClient client, JestResult searchResponse, List<SelectItem> selectItems) {
         super(selectItems);
         _client = client;
         _searchResponse = searchResponse;
         _closed = new AtomicBoolean(false);
     }
     
-    public ElasticSearchDataSet(Client client, SearchResponse searchResponse, Column[] columns,
-            boolean queryPostProcessed) {
+    public ElasticSearchDataSet(JestClient client, JestResult searchResponse, Column[] columns) {
         super(columns);
         _client = client;
         _searchResponse = searchResponse;
@@ -69,9 +69,14 @@ final class ElasticSearchDataSet extends AbstractDataSet {
         super.close();
         boolean closeNow = _closed.compareAndSet(true, false);
         if (closeNow) {
-            ClearScrollRequestBuilder scrollRequestBuilder = new ClearScrollRequestBuilder(_client)
-                    .addScrollId(_searchResponse.getScrollId());
-            scrollRequestBuilder.execute();
+            final String scrollId = _searchResponse.getJsonObject().getAsJsonPrimitive("_scroll_id").getAsString();
+            JestDeleteScroll scroll = new JestDeleteScroll.Builder(scrollId).build();
+
+            try {
+                _client.execute(scroll);
+            } catch (Exception e){
+                logger.warn("Could not delete ElasticSearch scroll", e);
+            }
         }
     }
 
@@ -86,21 +91,21 @@ final class ElasticSearchDataSet extends AbstractDataSet {
 
     @Override
     public boolean next() {
-        final SearchHit[] hits = _searchResponse.getHits().hits();
-        if (hits.length == 0) {
+        final JsonArray hits = _searchResponse.getJsonObject().getAsJsonArray("hits");
+        if (hits.size() == 0) {
             // break condition for the scroll
             _currentHit = null;
             return false;
         }
 
-        if (_hitIndex < hits.length) {
+        if (_hitIndex < hits.size()) {
             // pick the next hit within this search response
-            _currentHit = hits[_hitIndex];
+            _currentHit = hits.get(_hitIndex).getAsJsonObject();
             _hitIndex++;
             return true;
         }
 
-        final String scrollId = _searchResponse.getScrollId();
+        final String scrollId = _searchResponse.getJsonObject().getAsJsonPrimitive("_scroll_id").getAsString();
         if (scrollId == null) {
             // this search response is not scrolleable - then it's the end.
             _currentHit = null;
@@ -108,8 +113,14 @@ final class ElasticSearchDataSet extends AbstractDataSet {
         }
 
         // try to scroll to the next set of hits
-        _searchResponse = _client.prepareSearchScroll(scrollId).setScroll(ElasticSearchDataContext.TIMEOUT_SCROLL)
-                .execute().actionGet();
+        SearchScroll scroll = new SearchScroll.Builder(scrollId, ElasticSearchDataContext.TIMEOUT_SCROLL).build();
+
+        try {
+            _searchResponse = _client.execute(scroll);
+        } catch (Exception e){
+            logger.warn("Could not execute ElasticSearch query", e);
+            throw new MetaModelException("Could not execute ElasticSearch query", e);
+        }
 
         // start over (recursively)
         _hitIndex = 0;
@@ -122,9 +133,9 @@ final class ElasticSearchDataSet extends AbstractDataSet {
             return null;
         }
 
-        final Map<String, Object> source = _currentHit.getSource();
-        final String documentId = _currentHit.getId();
-        final Row row = ElasticSearchUtils.createRow(source, documentId, getHeader());
-        return row;
+        final JsonObject source = _currentHit.getAsJsonObject("_source");
+        final String documentId = _currentHit.getAsJsonObject("_id").getAsString();
+        return ElasticSearchUtils.createRow(source, documentId, getHeader());
+
     }
 }

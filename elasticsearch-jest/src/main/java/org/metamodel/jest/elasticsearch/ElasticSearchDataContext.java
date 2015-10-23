@@ -18,20 +18,14 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.metamodel.DataContext;
-import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.QueryPostprocessDataContext;
-import org.apache.metamodel.UpdateScript;
-import org.apache.metamodel.UpdateableDataContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import io.searchbox.client.JestClient;
+import io.searchbox.client.JestResult;
+import io.searchbox.core.*;
+import io.searchbox.indices.mapping.GetMapping;
+import io.searchbox.params.Parameters;
+import org.apache.metamodel.*;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Row;
@@ -40,24 +34,18 @@ import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.LogicalOperator;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.MutableColumn;
-import org.apache.metamodel.schema.MutableSchema;
-import org.apache.metamodel.schema.MutableTable;
-import org.apache.metamodel.schema.Schema;
-import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.*;
 import org.apache.metamodel.util.CollectionUtils;
 import org.apache.metamodel.util.SimpleTableDef;
-
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import io.searchbox.client.JestClient;
-import io.searchbox.client.JestResult;
-import io.searchbox.indices.mapping.GetMapping;
+import java.util.*;
 
 /**
  * DataContext implementation for ElasticSearch analytics engine.
@@ -82,7 +70,8 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     public static final String FIELD_ID = "_id";
 
-    public static final TimeValue TIMEOUT_SCROLL = TimeValue.timeValueSeconds(60);
+    // 1 minute timeout
+    public static final String TIMEOUT_SCROLL = "1m";
 
     private final JestClient elasticSearchClient;
 
@@ -247,38 +236,55 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     @Override
     protected DataSet materializeMainSchemaTable(Table table, List<SelectItem> selectItems,
             List<FilterItem> whereItems, int firstRow, int maxRows) {
-        final QueryBuilder queryBuilder = createQueryBuilderForSimpleWhere(table, whereItems, LogicalOperator.AND);
+        final QueryBuilder queryBuilder = createQueryBuilderForSimpleWhere(whereItems, LogicalOperator.AND);
         if (queryBuilder != null) {
             // where clause can be pushed down to an ElasticSearch query
-            final SearchRequestBuilder searchRequest = createSearchRequest(table, firstRow, maxRows, queryBuilder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            return new ElasticSearchDataSet(elasticSearchClient, response, selectItems, false);
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(queryBuilder);
+            SearchResult result = executeSearch(table, searchSourceBuilder, false);
+
+            return new ElasticSearchDataSet(elasticSearchClient, result, selectItems);
         }
         return super.materializeMainSchemaTable(table, selectItems, whereItems, firstRow, maxRows);
     }
 
-    @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-        final SearchRequestBuilder searchRequest = createSearchRequest(table, 1, maxRows, null);
-        final SearchResponse response = searchRequest.execute().actionGet();
-        return new ElasticSearchDataSet(elasticSearchClient, response, columns, false);
+    private SearchResult executeSearch(Table table, SearchSourceBuilder searchSourceBuilder, boolean scroll) {
+        Search.Builder builder = new Search.Builder(searchSourceBuilder.toString()).addIndex(getIndexName()).addType(table.getName());
+        if(scroll){
+            builder.setParameter(Parameters.SCROLL, TIMEOUT_SCROLL);
+        }
+
+        Search search = builder.build();
+        SearchResult result;
+        try {
+            result = elasticSearchClient.execute(search);
+        } catch (Exception e){
+            logger.warn("Could not execute ElasticSearch query", e);
+            throw new MetaModelException("Could not execute ElasticSearch query", e);
+        }
+        return result;
     }
 
-    private SearchRequestBuilder createSearchRequest(Table table, int firstRow, int maxRows, QueryBuilder queryBuilder) {
-        final String documentType = table.getName();
-        final SearchRequestBuilder searchRequest = elasticSearchClient.prepareSearch(indexName).setTypes(documentType);
+    @Override
+    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+        SearchResult searchResult = executeSearch(table, createSearchRequest(1, maxRows, null), limitMaxRowsIsSet(maxRows));
+
+
+        return new ElasticSearchDataSet(elasticSearchClient, searchResult, columns);
+    }
+
+    private SearchSourceBuilder createSearchRequest(int firstRow, int maxRows, QueryBuilder queryBuilder) {
+        final SearchSourceBuilder searchRequest = new SearchSourceBuilder();
         if (firstRow > 1) {
             final int zeroBasedFrom = firstRow - 1;
-            searchRequest.setFrom(zeroBasedFrom);
+            searchRequest.from(zeroBasedFrom);
         }
         if (limitMaxRowsIsSet(maxRows)) {
-            searchRequest.setSize(maxRows);
-        } else {
-            searchRequest.setScroll(TIMEOUT_SCROLL);
+            searchRequest.size(maxRows);
         }
 
         if (queryBuilder != null) {
-            searchRequest.setQuery(queryBuilder);
+            searchRequest.query(queryBuilder);
         }
 
         return searchRequest;
@@ -288,13 +294,12 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      * Creates, if possible, a {@link QueryBuilder} object which can be used to
      * push down one or more {@link FilterItem}s to ElasticSearch's backend.
      *
-     * @param table
      * @param whereItems
      * @param logicalOperator
      * @return a {@link QueryBuilder} if one was produced, or null if the items
      *         could not be pushed down to an ElasticSearch query
      */
-    protected QueryBuilder createQueryBuilderForSimpleWhere(Table table, List<FilterItem> whereItems,
+    protected QueryBuilder createQueryBuilderForSimpleWhere(List<FilterItem> whereItems,
             LogicalOperator logicalOperator) {
         if (whereItems.isEmpty()) {
             return QueryBuilders.matchAllQuery();
@@ -306,7 +311,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
             if (item.isCompoundFilter()) {
                 final List<FilterItem> childItems = Arrays.asList(item.getChildItems());
-                itemQueryBuilder = createQueryBuilderForSimpleWhere(table, childItems, item.getLogicalOperator());
+                itemQueryBuilder = createQueryBuilderForSimpleWhere(childItems, item.getLogicalOperator());
                 if (itemQueryBuilder == null) {
                     // something was not supported, so we have to forfeit here
                     // too.
@@ -377,18 +382,19 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         final String documentType = table.getName();
         final String id = keyValue.toString();
 
-        final GetResponse response = elasticSearchClient.prepareGet(indexName, documentType, id).execute().actionGet();
+        final Get get = new Get.Builder(indexName, id).type(documentType).build();
 
-        if (!response.isExists()) {
-            return null;
+        JestResult getResult;
+        try {
+            getResult = elasticSearchClient.execute(get);
+        } catch (Exception e){
+            logger.warn("Could not execute ElasticSearch get query", e);
+            throw new MetaModelException("Could not execute ElasticSearch get query", e);
         }
-
-        final Map<String, Object> source = response.getSource();
-        final String documentId = response.getId();
 
         final DataSetHeader header = new SimpleDataSetHeader(selectItems);
 
-        return ElasticSearchUtils.createRow(source, documentId, header);
+        return ElasticSearchUtils.createRow(getResult.getJsonObject(), id, header);
     }
 
     @Override
@@ -398,9 +404,20 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
             return null;
         }
         final String documentType = table.getName();
-        final CountResponse response = elasticSearchClient.prepareCount(indexName)
-                .setQuery(QueryBuilders.termQuery("_type", documentType)).execute().actionGet();
-        return response.getCount();
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        sourceBuilder.query(QueryBuilders.termQuery("_type", documentType));
+
+        Count count = new Count.Builder().addIndex(indexName).query(sourceBuilder.toString()).build();
+
+        CountResult countResult;
+        try {
+            countResult = elasticSearchClient.execute(count);
+        } catch (Exception e){
+            logger.warn("Could not execute ElasticSearch get query", e);
+            throw new MetaModelException("Could not execute ElasticSearch get query", e);
+        }
+
+        return countResult.getCount();
     }
 
     private boolean limitMaxRowsIsSet(int maxRows) {
@@ -415,11 +432,11 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     }
 
     /**
-     * Gets the {@link Client} that this {@link DataContext} is wrapping.
+     * Gets the {@link JestClient} that this {@link DataContext} is wrapping.
      *
      * @return
      */
-    public Client getElasticSearchClient() {
+    public JestClient getElasticSearchClient() {
         return elasticSearchClient;
     }
 
