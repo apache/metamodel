@@ -47,7 +47,7 @@ final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<Elast
         final String documentType = getTable().getName();
         final IndexRequestBuilder requestBuilder = new IndexRequestBuilder(client, indexName).setType(documentType);
 
-        final Map<String, Object> valueMap = new HashMap<String, Object>();
+        final Map<String, Object> valueMap = new HashMap<>();
         final Column[] columns = getColumns();
         final Object[] values = getValues();
         for (int i = 0; i < columns.length; i++) {
