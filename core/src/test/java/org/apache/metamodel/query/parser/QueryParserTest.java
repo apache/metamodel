@@ -52,6 +52,13 @@ public class QueryParserTest extends TestCase {
         col.setType(ColumnType.INTEGER);
     };
 
+	public void testQueryWithParenthesisAnd() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc,
+                "select foo from sch.tbl where (foo= 1) and (foo=2)");
+        assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.foo = '1' AND tbl.foo = '2'",
+                q.toSql());
+    }
+
     public void testQueryInLowerCase() throws Exception {
         Query q = MetaModelHelper.parseQuery(dc,
                 "select a.foo as f from sch.tbl a inner join sch.tbl b on a.foo=b.foo order by a.foo asc");
