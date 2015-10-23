@@ -71,7 +71,7 @@ abstract class SatisfiedFromBuilderCallback extends BaseObject implements Satisf
         GroupedQueryBuilder queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
         return new SatisfiedSelectBuilderImpl(queryBuilder);
     }
-    
+
     @Override
     public SatisfiedQueryBuilder<?> select(FunctionType functionType, String columnName) {
         GroupedQueryBuilderImpl queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
@@ -150,14 +150,15 @@ abstract class SatisfiedFromBuilderCallback extends BaseObject implements Satisf
     }
 
     @Override
-    public ColumnSelectBuilder<?> select(String columnName) {
+    public SatisfiedQueryBuilder<?> select(String columnName) {
         if (columnName == null) {
             throw new IllegalArgumentException("columnName cannot be null");
         }
 
-        GroupedQueryBuilderImpl queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
-        Column column = queryBuilder.findColumn(columnName);
-        return select(column);
+        query.select(columnName);
+
+        final GroupedQueryBuilder queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
+        return new SatisfiedSelectBuilderImpl(queryBuilder);
     }
 
     @Override

@@ -50,7 +50,7 @@ public class QueryParserTest extends TestCase {
         MutableColumn col = (MutableColumn) dc.getColumnByQualifiedLabel("tbl.baz");
         col.setType(ColumnType.INTEGER);
     };
-
+    
     public void testQueryInLowerCase() throws Exception {
         Query q = MetaModelHelper.parseQuery(dc,
                 "select a.foo as f from sch.tbl a inner join sch.tbl b on a.foo=b.foo order by a.foo asc");
@@ -62,6 +62,15 @@ public class QueryParserTest extends TestCase {
         Query q = MetaModelHelper.parseQuery(dc,
                 "select TO_NUM(a.foo) from sch.tbl a WHERE BOOLEAN(a.bar) = false");
         assertEquals("SELECT TO_NUMBER(a.foo) FROM sch.tbl a WHERE TO_BOOLEAN(a.bar) = FALSE", q.toSql());
+    }
+    
+    public void testSelectMapValueUsingDotNotation() throws Exception {
+        // set 'baz' column to an MAP column
+        MutableColumn col = (MutableColumn) dc.getColumnByQualifiedLabel("tbl.baz");
+        col.setType(ColumnType.MAP);
+        
+        Query q = MetaModelHelper.parseQuery(dc, "SELECT tbl.baz.foo.bar, baz.helloworld, baz.hello.world FROM sch.tbl");
+        assertEquals("", q.toSql());
     }
 
     public void testSelectEverythingFromTable() throws Exception {

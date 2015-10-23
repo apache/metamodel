@@ -28,6 +28,7 @@ import org.apache.metamodel.MockUpdateableDataContext;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.InMemoryDataSet;
+import org.apache.metamodel.data.WrappingDataSet;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
@@ -70,7 +71,8 @@ public class ConvertedDataSetInterceptorTest extends TestCase {
 		ds.close();
 	}
 
-	public void testNonConvertedQuery() throws Exception {
+	@SuppressWarnings("resource")
+    public void testNonConvertedQuery() throws Exception {
 		MockUpdateableDataContext source = new MockUpdateableDataContext();
 		Column fooColumn = source.getColumnByQualifiedLabel("schema.table.foo");
 		assertNotNull(fooColumn);
@@ -86,7 +88,10 @@ public class ConvertedDataSetInterceptorTest extends TestCase {
 		assertEquals("SELECT table.bar FROM schema.table", query.toSql());
 
 		DataSet ds = converted.executeQuery(query);
+		while (ds instanceof WrappingDataSet) {
+		    ds = ((WrappingDataSet) ds).getWrappedDataSet();
+		}
+		ds.close();
 		assertEquals(InMemoryDataSet.class, ds.getClass());
-
 	}
 }

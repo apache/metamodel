@@ -147,8 +147,24 @@ public final class SelectItemParser implements QueryPartProcessor {
                 throw new MultipleSelectItemsParsedException(fromItem);
             } else if (fromItem.getTable() != null) {
                 Column column = fromItem.getTable().getColumnByName(columnName);
+                int offset = -1;
+                while (function == null && column == null) {
+                    // check for MAP_VALUE shortcut syntax
+                    offset = columnName.indexOf('.', offset + 1);
+                    if (offset == -1) {
+                        break;
+                    }
+
+                    final String part1 = columnName.substring(0, offset);
+                    column = fromItem.getTable().getColumnByName(part1);
+                    if (column != null) {
+                        final String part2 = columnName.substring(offset + 1);
+                        return new SelectItem(new MapValueFunction(part2), column, fromItem);
+                    }
+                }
+
                 if (column != null) {
-                    SelectItem selectItem = new SelectItem(function, column, fromItem);
+                    final SelectItem selectItem = new SelectItem(function, column, fromItem);
                     return selectItem;
                 }
             } else if (fromItem.getSubQuery() != null) {

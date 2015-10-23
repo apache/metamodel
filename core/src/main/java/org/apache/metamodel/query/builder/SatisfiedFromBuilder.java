@@ -46,7 +46,7 @@ public interface SatisfiedFromBuilder {
     
     public SatisfiedSelectBuilder<?> selectAll();
 
-    public ColumnSelectBuilder<?> select(String columnName);
+    public SatisfiedQueryBuilder<?> select(String selectExpression);
 
     public SatisfiedSelectBuilder<?> select(String... columnNames);
 }

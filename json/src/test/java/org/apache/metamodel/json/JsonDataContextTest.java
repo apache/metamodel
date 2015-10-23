@@ -119,4 +119,24 @@ public class JsonDataContextTest extends TestCase {
             ds.close();
         }
     }
+    
+    public void testUseDotNotationToGetFromNestedMap() throws Exception {
+        final Resource resource = new FileResource("src/test/resources/nested_fields.json");
+        final JsonDataContext dataContext = new JsonDataContext(resource);
+
+        final Schema schema = dataContext.getDefaultSchema();
+        assertEquals("[nested_fields.json]", Arrays.toString(schema.getTableNames()));
+
+        final DataSet ds = dataContext.query().from(schema.getTable(0)).select("name.first").execute();
+        try {
+            assertTrue(ds.next());
+            assertEquals("Row[values=[John]]", ds.getRow().toString());
+            assertTrue(ds.next());
+            assertEquals("Row[values=[John]]",
+                    ds.getRow().toString());
+            assertFalse(ds.next());
+        } finally {
+            ds.close();
+        }
+    }
 }
