@@ -21,6 +21,7 @@ package org.apache.metamodel.jdbc.integrationtests;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.metamodel.UpdateCallback;
@@ -60,6 +61,15 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
             return;
         }
         JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(getDataContext(), "metamodel_test_simple");
+    }
+
+    public void testTimestampValueInsertSelect() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        final Connection connection = getConnection();
+        JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.NANOSECONDS, "datetime");
     }
 
     public void testCreateTableInUpdateScript() throws Exception {

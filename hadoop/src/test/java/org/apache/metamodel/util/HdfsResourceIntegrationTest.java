@@ -22,44 +22,52 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Stopwatch;
 
-import junit.framework.TestCase;
+public class HdfsResourceIntegrationTest {
 
-public class HdfsResourceIntegrationTest extends TestCase {
-    
     private static final Logger logger = LoggerFactory.getLogger(HdfsResourceIntegrationTest.class);
 
-    private boolean _configured;
-    private Properties _properties;
     private String _filePath;
     private String _hostname;
     private int _port;
 
-    @Override
-    protected final void setUp() throws Exception {
-        super.setUp();
-
-        _properties = new Properties();
+    @Before
+    public void setUp() throws Exception {
         final File file = new File(getPropertyFilePath());
+        final boolean configured;
         if (file.exists()) {
-            _properties.load(new FileReader(file));
-            _filePath = _properties.getProperty("hadoop.hdfs.file.path");
-            _hostname = _properties.getProperty("hadoop.hdfs.hostname");
-            final String portString = _properties.getProperty("hadoop.hdfs.port");
-            _configured = _filePath != null && _hostname != null && portString != null;
-            if (_configured) {
+            final Properties properties = new Properties();
+            properties.load(new FileReader(file));
+            _filePath = properties.getProperty("hadoop.hdfs.file.path");
+            _hostname = properties.getProperty("hadoop.hdfs.hostname");
+            final String portString = properties.getProperty("hadoop.hdfs.port");
+            configured = _filePath != null && _hostname != null && portString != null;
+            if (configured) {
                 _port = Integer.parseInt(portString);
+            } else {
+                System.out.println("Skipping test because HDFS file path, hostname and port is not set");
             }
         } else {
-            _configured = false;
+            System.out.println("Skipping test because properties file does not exist");
+            configured = false;
         }
+        Assume.assumeTrue(configured);
     }
 
     private String getPropertyFilePath() {
@@ -67,13 +75,87 @@ public class HdfsResourceIntegrationTest extends TestCase {
         return userHome + "/metamodel-integrationtest-configuration.properties";
     }
 
-    public void testReadOnRealHdfsInstall() throws Exception {
-        if (!_configured) {
-            System.err.println("!!! WARN !!! Hadoop HDFS integration test ignored\r\n"
-                    + "Please configure Hadoop HDFS test-properties (" + getPropertyFilePath()
-                    + "), to run integration tests");
-            return;
+    @Test
+    public void testReadDirectory() throws Exception {
+        final String contentString = "fun and games with Apache MetaModel and Hadoop is what we do";
+        final String[] contents = new String[] { "fun ", "and ", "games ", "with ", "Apache ", "MetaModel ", "and ",
+                "Hadoop ", "is ", "what ", "we ", "do" };
+
+        final Configuration conf = new Configuration();
+        conf.set("fs.defaultFS", "hdfs://" + _hostname + ":" + _port);
+        final FileSystem fileSystem = FileSystem.get(conf);
+        final Path path = new Path(_filePath);
+        final boolean exists = fileSystem.exists(path);
+
+        if (exists) {
+            fileSystem.delete(path, true);
         }
+
+        fileSystem.mkdirs(path);
+
+        // Reverse both filename and contents to make sure it is the name and
+        // not the creation order that is sorted on.
+        int i = contents.length;
+        Collections.reverse(Arrays.asList(contents));
+        for (final String contentPart : contents) {
+            final HdfsResource partResource = new HdfsResource(_hostname, _port,
+                    _filePath + "/part-" + String.format("%02d", i--));
+            partResource.write(new Action<OutputStream>() {
+                @Override
+                public void run(OutputStream out) throws Exception {
+                    out.write(contentPart.getBytes());
+                }
+            });
+        }
+
+        final Stopwatch stopwatch = Stopwatch.createStarted();
+        final HdfsResource res1 = new HdfsResource(_hostname, _port, _filePath);
+        try {
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - start");
+
+            final String str1 = res1.read(new Func<InputStream, String>() {
+                @Override
+                public String eval(InputStream in) {
+                    return FileHelper.readInputStreamAsString(in, "UTF8");
+                }
+            });
+
+            Assert.assertEquals(contentString, str1);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read1");
+
+            final String str2 = res1.read(new Func<InputStream, String>() {
+                @Override
+                public String eval(InputStream in) {
+                    return FileHelper.readInputStreamAsString(in, "UTF8");
+                }
+            });
+            Assert.assertEquals(str1, str2);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read2");
+
+            final StringBuilder sb = new StringBuilder();
+            for (String token : contents) {
+                sb.append(token);
+            }
+            final long expectedSize = sb.length();
+            Assert.assertEquals(expectedSize, res1.getSize());
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - getSize");
+
+            Assert.assertTrue(res1.getLastModified() > System.currentTimeMillis() - 10000);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - getLastModified");
+
+        } finally {
+            res1.getHadoopFileSystem().delete(res1.getHadoopPath(), true);
+            logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - deleted");
+        }
+
+        Assert.assertFalse(res1.isExists());
+
+        logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - done");
+        stopwatch.stop();
+    }
+
+    @Test
+    public void testReadOnRealHdfsInstall() throws Exception {
         final String contentString = "fun and games with Apache MetaModel and Hadoop is what we do";
 
         final Stopwatch stopwatch = Stopwatch.createStarted();
@@ -89,7 +171,7 @@ public class HdfsResourceIntegrationTest extends TestCase {
 
         logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - written");
 
-        assertTrue(res1.isExists());
+        Assert.assertTrue(res1.isExists());
 
         final String str1 = res1.read(new Func<InputStream, String>() {
             @Override
@@ -97,7 +179,7 @@ public class HdfsResourceIntegrationTest extends TestCase {
                 return FileHelper.readInputStreamAsString(in, "UTF8");
             }
         });
-        assertEquals(contentString, str1);
+        Assert.assertEquals(contentString, str1);
         logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read1");
 
         final String str2 = res1.read(new Func<InputStream, String>() {
@@ -106,15 +188,84 @@ public class HdfsResourceIntegrationTest extends TestCase {
                 return FileHelper.readInputStreamAsString(in, "UTF8");
             }
         });
-        assertEquals(str1, str2);
+        Assert.assertEquals(str1, str2);
         logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read2");
 
         res1.getHadoopFileSystem().delete(res1.getHadoopPath(), false);
         logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - deleted");
 
-        assertFalse(res1.isExists());
+        Assert.assertFalse(res1.isExists());
 
         logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - done");
         stopwatch.stop();
+    }
+
+    @Test
+    public void testFileSystemNotBeingClosed() throws Throwable {
+        HdfsResource resourceToRead = null;
+        try {
+            resourceToRead = new HdfsResource(_hostname, _port, _filePath);
+            resourceToRead.write(new Action<OutputStream>() {
+
+                @Override
+                public void run(OutputStream out) throws Exception {
+                    FileHelper.writeString(out, "testFileSystemNotBeingClosed");
+                }
+            });
+
+            final MutableRef<Throwable> throwableRef = new MutableRef<>();
+
+            Thread.UncaughtExceptionHandler exceptionHandler = new Thread.UncaughtExceptionHandler() {
+                public void uncaughtException(Thread th, Throwable ex) {
+                    throwableRef.set(ex);
+                    Assert.fail("Caught exception in the thread: " + ex);
+                }
+            };
+
+            Thread[] threads = new Thread[10];
+
+            for (int i = 0; i < threads.length; i++) {
+                final HdfsResource res = new HdfsResource(_hostname, _port, _filePath);
+
+                Thread thread = new Thread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        res.read(new Action<InputStream>() {
+
+                            @Override
+                            public void run(InputStream is) throws Exception {
+                                String readAsString = FileHelper.readAsString(FileHelper.getReader(is, "UTF-8"));
+                                Assert.assertNotNull(readAsString);
+                                Assert.assertEquals("testFileSystemNotBeingClosed", readAsString);
+                            }
+                        });
+
+                    }
+                });
+                
+                thread.setUncaughtExceptionHandler(exceptionHandler);
+                thread.start();
+                threads[i] = thread;
+            }
+
+            for (int i = 0; i < threads.length; i++) {
+                threads[i].join();
+            }
+            
+            Throwable error = throwableRef.get();
+            if (error != null) {
+                throw error;
+            }
+            
+        } finally {
+            if (resourceToRead != null) {
+                final FileSystem fileSystem = resourceToRead.getHadoopFileSystem();
+                final Path resourceToReadPath = new Path(resourceToRead.getFilepath());
+                if (fileSystem.exists(resourceToReadPath)) {
+                    fileSystem.delete(resourceToReadPath, true);
+                }
+            }
+        }
     }
 }

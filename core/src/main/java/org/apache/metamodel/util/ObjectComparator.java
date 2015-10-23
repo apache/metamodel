@@ -96,7 +96,7 @@ public final class ObjectComparator implements Comparator<Object> {
 				return -1 * c2.compareTo(o1);
 			}
 		}
-		logger.info("Using ToStringComparator because no apparent better comparison method could be found");
+		logger.debug("Using ToStringComparator because no apparent better comparison method could be found");
 		return ToStringComparator.getComparator().compare(o1, o2);
 	}
 }

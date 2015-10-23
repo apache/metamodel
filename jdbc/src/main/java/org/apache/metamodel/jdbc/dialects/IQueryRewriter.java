@@ -24,6 +24,7 @@ import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.schema.ColumnType;
 
 /**
@@ -60,6 +61,18 @@ public interface IQueryRewriter {
      *         query property to the query string.
      */
     public boolean isFirstRowSupported();
+
+    /**
+     * Determines whether a specific scalar function is supported by the
+     * database or not.
+     * 
+     * If the function is not supported then MetaModel will handle the function
+     * on the client side.
+     * 
+     * @param function
+     * @return
+     */
+    public boolean isScalarFunctionSupported(ScalarFunction function);
 
     /**
      * Escapes the quotes within a String literal of a query item.

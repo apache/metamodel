@@ -21,9 +21,7 @@ package org.apache.metamodel.excel;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PushbackInputStream;
 
-import org.apache.poi.POIXMLDocument;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
@@ -34,11 +32,10 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
-import org.apache.metamodel.util.LazyRef;
-import org.apache.metamodel.util.Ref;
+import org.apache.metamodel.util.Func;
 import org.apache.metamodel.util.Resource;
+import org.apache.poi.POIXMLDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,25 +142,19 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
 
     @Override
     public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-
-        Ref<InputStream> inputStreamRef = getInputStreamRef();
-        InputStream inputStream = null;
         try {
-            SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate(inputStreamRef);
-            inputStream = inputStreamRef.get();
+            SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate();
 
             // METAMODEL-47: Ensure that we have loaded the schema at this point
             getDefaultSchema();
 
-            DataSet dataSet = delegate.executeQuery(inputStream, table, columns, maxRows);
+            DataSet dataSet = delegate.executeQuery(table, columns, maxRows);
             return dataSet;
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             }
             throw new MetaModelException("Unexpected exception while materializing main schema table", e);
-        } finally {
-            FileHelper.safeClose(inputStream);
         }
     }
 
@@ -173,12 +164,9 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
             logger.info("Resource does not exist, returning empty schema");
             return new MutableSchema(getMainSchemaName());
         }
-        Ref<InputStream> inputStreamRef = getInputStreamRef();
-        InputStream inputStream = null;
         try {
-            SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate(inputStreamRef);
-            inputStream = inputStreamRef.get();
-            Schema schema = delegate.createSchema(inputStream, getMainSchemaName());
+            SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate();
+            Schema schema = delegate.createSchema(getMainSchemaName());
             assert getMainSchemaName().equals(schema.getName());
             return schema;
         } catch (Exception e) {
@@ -186,8 +174,6 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
                 throw (RuntimeException) e;
             }
             throw new MetaModelException("Unexpected exception while building main schema", e);
-        } finally {
-            FileHelper.safeClose(inputStream);
         }
     }
 
@@ -209,55 +195,33 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
         return null;
     }
 
-    private SpreadsheetReaderDelegate getSpreadsheetReaderDelegate(Ref<InputStream> inputStream)
-            throws MetaModelException {
+    private SpreadsheetReaderDelegate getSpreadsheetReaderDelegate() throws MetaModelException {
         if (_spreadsheetReaderDelegate == null) {
             synchronized (this) {
                 if (_spreadsheetReaderDelegate == null) {
-                    try {
-                        if (POIXMLDocument.hasOOXMLHeader(inputStream.get())) {
-                            _spreadsheetReaderDelegate = new XlsxSpreadsheetReaderDelegate(_configuration);
-                        } else {
-                            _spreadsheetReaderDelegate = new DefaultSpreadsheetReaderDelegate(_configuration);
+                    _spreadsheetReaderDelegate = _resource.read(new Func<InputStream, SpreadsheetReaderDelegate>() {
+                        @Override
+                        public SpreadsheetReaderDelegate eval(InputStream in) {
+                            try {
+                                if (POIXMLDocument.hasOOXMLHeader(in)) {
+                                    return new XlsxSpreadsheetReaderDelegate(_resource, _configuration);
+                                } else {
+                                    return new DefaultSpreadsheetReaderDelegate(_resource, _configuration);
+                                }
+                            } catch (IOException e) {
+                                logger.warn("Could not identify spreadsheet type, using default", e);
+                                return new DefaultSpreadsheetReaderDelegate(_resource, _configuration);
+                            }
                         }
-                    } catch (IOException e) {
-                        logger.error("Could not identify spreadsheet type, using default", e);
-                        _spreadsheetReaderDelegate = new DefaultSpreadsheetReaderDelegate(_configuration);
-                    }
+                    });
                 }
             }
         }
         return _spreadsheetReaderDelegate;
     }
 
-    private InputStream getInputStream() throws MetaModelException {
-        InputStream inputStream = _resource.read();
-        if (!inputStream.markSupported()) {
-            inputStream = new PushbackInputStream(inputStream, 8);
-        }
-        return inputStream;
-    }
-
-    private LazyRef<InputStream> getInputStreamRef() throws MetaModelException {
-        final LazyRef<InputStream> inputStreamRef = new LazyRef<InputStream>() {
-            @Override
-            public InputStream fetch() {
-                InputStream inputStream = getInputStream();
-                return inputStream;
-            }
-        };
-        return inputStreamRef;
-    }
-
     protected void notifyTablesModified() {
-        LazyRef<InputStream> inputStreamRef = getInputStreamRef();
-        try {
-            getSpreadsheetReaderDelegate(inputStreamRef).notifyTablesModified(inputStreamRef);
-        } finally {
-            if (inputStreamRef.isFetched()) {
-                FileHelper.safeClose(inputStreamRef.get());
-            }
-        }
+        getSpreadsheetReaderDelegate().notifyTablesModified();
     }
 
     @Override

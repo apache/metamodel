@@ -20,10 +20,7 @@ package org.apache.metamodel.query.parser;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
-import org.apache.metamodel.query.FromItem;
-import org.apache.metamodel.query.FunctionType;
-import org.apache.metamodel.query.Query;
-import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.query.*;
 import org.apache.metamodel.schema.Column;
 
 public final class SelectItemParser implements QueryPartProcessor {
@@ -113,10 +110,10 @@ public final class SelectItemParser implements QueryPartProcessor {
         final int startParenthesis = expression.indexOf('(');
         if (startParenthesis > 0 && expression.endsWith(")")) {
             String functionName = expression.substring(0, startParenthesis);
-            function = FunctionType.get(functionName.toUpperCase());
+            function = FunctionTypeFactory.get(functionName.toUpperCase());
             if (function != null) {
                 expression = expression.substring(startParenthesis + 1, expression.length() - 1).trim();
-                if (function == FunctionType.COUNT && "*".equals(expression)) {
+                if (function instanceof CountAggregateFunction && "*".equals(expression)) {
                     return SelectItem.getCountAllItem();
                 }
             }

@@ -18,6 +18,9 @@
  */
 package org.apache.metamodel.elasticsearch;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.metamodel.schema.ColumnType;
 
 /**
@@ -31,51 +34,42 @@ public class ElasticSearchMetaDataParser {
      * object. This method makes much easier to create the ElasticSearch schema.
      *
      * @param metaDataInfo
-     *            ElasticSearch metadata info in a json-like format
+     *            ElasticSearch mapping metadata in Map format
      * @return An ElasticSearchMetaData object
      */
-    public static ElasticSearchMetaData parse(Object metaDataInfo) {
-        final String plainMetaDataInfo = removeFirstAndLastCharacter(metaDataInfo.toString());
-        final String metaDataWithoutDateFormats = removeDateFormats(plainMetaDataInfo);
-        final String[] metaDataFields = metaDataWithoutDateFormats.split("},");
-
-        final String[] fieldNames = new String[metaDataFields.length + 1];
-        final ColumnType[] columnTypes = new ColumnType[metaDataFields.length + 1];
+    public static ElasticSearchMetaData parse(Map<String, ?> metaDataInfo) {
+        final String[] fieldNames = new String[metaDataInfo.size() + 1];
+        final ColumnType[] columnTypes = new ColumnType[metaDataInfo.size() + 1];
 
         // add the document ID field (fixed)
         fieldNames[0] = ElasticSearchDataContext.FIELD_ID;
         columnTypes[0] = ColumnType.STRING;
 
         int i = 1;
-        for (String metaDataField : metaDataFields) {
-            // message={type=long}
-            fieldNames[i] = getNameFromMetaDataField(metaDataField);
-            columnTypes[i] = getColumnTypeFromMetaDataField(metaDataField);
+        for (Entry<String, ?> metaDataField : metaDataInfo.entrySet()) {
+            @SuppressWarnings("unchecked")
+            final Map<String, ?> fieldMetadata = (Map<String, ?>) metaDataField.getValue();
+
+            fieldNames[i] = metaDataField.getKey();
+            columnTypes[i] = getColumnTypeFromMetadataField(fieldMetadata);
             i++;
 
         }
         return new ElasticSearchMetaData(fieldNames, columnTypes);
     }
 
-    private static String removeFirstAndLastCharacter(String metaDataInfo) {
-        return metaDataInfo.substring(1, metaDataInfo.length() - 1);
-    }
-
-    private static String removeDateFormats(String metaDataInfo) {
-        return metaDataInfo.replaceAll("type=date.*?}", "type=date}");
-    }
-
-    private static String getNameFromMetaDataField(String metaDataField) {
-        return metaDataField.substring(0, metaDataField.indexOf("=")).trim();
-    }
-
-    private static ColumnType getColumnTypeFromMetaDataField(String metaDataField) {
+    private static ColumnType getColumnTypeFromMetadataField(Map<String, ?> fieldMetadata) {
         final ColumnType columnType;
-        final String metaDataFieldType = getMetaDataFieldTypeFromMetaDataField(metaDataField);
-        if (metaDataFieldType.equals("long")) {
-            columnType = ColumnType.BIGINT;
-        } else if (metaDataFieldType.equals("date")) {
+        final String metaDataFieldType = getMetaDataFieldTypeFromMetaDataField(fieldMetadata);
+
+        if (metaDataFieldType == null) {
+            return ColumnType.STRING;
+        }
+
+        if (metaDataFieldType.startsWith("date")) {
             columnType = ColumnType.DATE;
+        } else if (metaDataFieldType.equals("long")) {
+            columnType = ColumnType.BIGINT;
         } else if (metaDataFieldType.equals("string")) {
             columnType = ColumnType.STRING;
         } else if (metaDataFieldType.equals("float")) {
@@ -90,15 +84,12 @@ public class ElasticSearchMetaDataParser {
         return columnType;
     }
 
-    private static String getMetaDataFieldTypeFromMetaDataField(String metaDataField) {
-        String type = metaDataField.substring(metaDataField.indexOf("type=") + 5);
-        if (type.indexOf(",") > 0) {
-            type = type.substring(0, type.indexOf(","));
+    private static String getMetaDataFieldTypeFromMetaDataField(Map<String, ?> metaDataField) {
+        final Object type = metaDataField.get("type");
+        if (type == null) {
+            return null;
         }
-        if (type.indexOf("}") > 0) {
-            type = type.substring(0, type.indexOf("}"));
-        }
-        return type;
+        return type.toString();
     }
 
 }

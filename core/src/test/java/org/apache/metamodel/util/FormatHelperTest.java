@@ -29,12 +29,11 @@ public class FormatHelperTest extends TestCase {
 
 	public void testNumberFormat() throws Exception {
 		NumberFormat format = FormatHelper.getUiNumberFormat();
-		assertEquals("987643.21", format.format(987643.213456343));
-		assertEquals("0.22", format.format(0.218456343));
+		assertEquals("987643.213456343", format.format(987643.213456343));
+		assertEquals("0.218456343", format.format(0.218456343));
 		assertEquals("20.1", format.format(20.1));
 	}
 
-	@SuppressWarnings("unchecked")
 	public void testFormatSqlValue() throws Exception {
 		assertEquals("'foo'", FormatHelper.formatSqlValue(null, "foo"));
 		assertEquals("1", FormatHelper.formatSqlValue(null, 1));

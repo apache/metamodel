@@ -28,15 +28,153 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.metamodel.MetaModelException;
 
 /**
  * A {@link Resource} implementation that connects to Apache Hadoop's HDFS
  * distributed file system.
  */
-public class HdfsResource implements Resource, Serializable {
+public class HdfsResource extends AbstractResource implements Serializable {
+
+    private static class HdfsFileInputStream extends InputStream {
+
+        private final InputStream _in;
+        private final FileSystem _fs;
+
+        public HdfsFileInputStream(final InputStream in, final FileSystem fs) {
+            _in = in;
+            _fs = fs;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return _in.read();
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            return _in.read(b, off, len);
+        }
+
+        @Override
+        public int read(byte[] b) throws IOException {
+            return _in.read(b);
+        }
+
+        @Override
+        public boolean markSupported() {
+            return _in.markSupported();
+        }
+
+        @Override
+        public synchronized void mark(int readLimit) {
+            _in.mark(readLimit);
+        }
+
+        @Override
+        public int available() throws IOException {
+            return _in.available();
+        }
+
+        @Override
+        public synchronized void reset() throws IOException {
+            _in.reset();
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            return _in.skip(n);
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            // need to close 'fs' when input stream is closed
+            FileHelper.safeClose(_fs);
+        }
+    }
+
+    private static class HdfsFileOutputStream extends OutputStream {
+
+        private final OutputStream _out;
+        private final FileSystem _fs;
+
+        public HdfsFileOutputStream(final OutputStream out, final FileSystem fs) {
+            _out = out;
+            _fs = fs;
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            _out.write(b);
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            _out.write(b, off, len);
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+            _out.write(b);
+        }
+
+        @Override
+        public void flush() throws IOException {
+            _out.flush();
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            // need to close 'fs' when output stream is closed
+            FileHelper.safeClose(_fs);
+        }
+    }
+
+    private static class HdfsDirectoryInputStream extends AbstractDirectoryInputStream<FileStatus> {
+        private final Path _hadoopPath;
+        private final FileSystem _fs;
+
+        public HdfsDirectoryInputStream(final Path hadoopPath, final FileSystem fs) {
+            _hadoopPath = hadoopPath;
+            _fs = fs;
+            FileStatus[] fileStatuses;
+            try {
+                fileStatuses = _fs.listStatus(_hadoopPath, new PathFilter() {
+                    @Override
+                    public boolean accept(final Path path) {
+                        try {
+                            return _fs.isFile(path);
+                        } catch (IOException e) {
+                            return false;
+                        }
+                    }
+                });
+                // Natural ordering is the URL
+                Arrays.sort(fileStatuses);
+            } catch (IOException e) {
+                fileStatuses = new FileStatus[0];
+            }
+            _files = fileStatuses;
+        }
+
+        @Override
+        public InputStream openStream(final int index) throws IOException {
+            final Path nextPath = _files[index].getPath();
+            return _fs.open(nextPath);
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            FileHelper.safeClose(_fs);
+        }
+    }
 
     private static final long serialVersionUID = 1L;
 
@@ -45,11 +183,11 @@ public class HdfsResource implements Resource, Serializable {
     private final String _hostname;
     private final int _port;
     private final String _filepath;
-    private Path _path;
+    private transient Path _path;
 
     /**
      * Creates a {@link HdfsResource}
-     * 
+     *
      * @param url
      *            a URL of the form: hdfs://hostname:port/path/to/file
      */
@@ -59,8 +197,8 @@ public class HdfsResource implements Resource, Serializable {
         }
         final Matcher matcher = URL_PATTERN.matcher(url);
         if (!matcher.find()) {
-            throw new IllegalArgumentException("Cannot parse url '" + url
-                    + "'. Must follow pattern: hdfs://hostname:port/path/to/file");
+            throw new IllegalArgumentException(
+                    "Cannot parse url '" + url + "'. Must follow pattern: hdfs://hostname:port/path/to/file");
         }
         _hostname = matcher.group(1);
         _port = Integer.parseInt(matcher.group(2));
@@ -69,7 +207,7 @@ public class HdfsResource implements Resource, Serializable {
 
     /**
      * Creates a {@link HdfsResource}
-     * 
+     *
      * @param hostname
      *            the HDFS (namenode) hostname
      * @param port
@@ -131,7 +269,11 @@ public class HdfsResource implements Resource, Serializable {
     public long getSize() {
         final FileSystem fs = getHadoopFileSystem();
         try {
-            return fs.getFileStatus(getHadoopPath()).getLen();
+            if (fs.isFile(getHadoopPath())) {
+                return fs.getFileStatus(getHadoopPath()).getLen();
+            } else {
+               return fs.getContentSummary(getHadoopPath()).getLength();
+            }
         } catch (Exception e) {
             throw wrapException(e);
         } finally {
@@ -152,36 +294,28 @@ public class HdfsResource implements Resource, Serializable {
     }
 
     @Override
-    public void write(final Action<OutputStream> writeCallback) throws ResourceException {
+    public OutputStream write() throws ResourceException {
         final FileSystem fs = getHadoopFileSystem();
         try {
             final FSDataOutputStream out = fs.create(getHadoopPath(), true);
-            try {
-                writeCallback.run(out);
-            } finally {
-                FileHelper.safeClose(out);
-            }
-        } catch (Exception e) {
-            throw wrapException(e);
-        } finally {
+            return new HdfsFileOutputStream(out, fs);
+        } catch (IOException e) {
+            // we can close 'fs' in case of an exception
             FileHelper.safeClose(fs);
+            throw wrapException(e);
         }
     }
 
     @Override
-    public void append(Action<OutputStream> appendCallback) throws ResourceException {
+    public OutputStream append() throws ResourceException {
         final FileSystem fs = getHadoopFileSystem();
         try {
             final FSDataOutputStream out = fs.append(getHadoopPath());
-            try {
-                appendCallback.run(out);
-            } finally {
-                FileHelper.safeClose(out);
-            }
-        } catch (Exception e) {
-            throw wrapException(e);
-        } finally {
+            return new HdfsFileOutputStream(out, fs);
+        } catch (IOException e) {
+            // we can close 'fs' in case of an exception
             FileHelper.safeClose(fs);
+            throw wrapException(e);
         }
     }
 
@@ -190,95 +324,18 @@ public class HdfsResource implements Resource, Serializable {
         final FileSystem fs = getHadoopFileSystem();
         final InputStream in;
         try {
-            in = fs.open(getHadoopPath());
+            final Path hadoopPath = getHadoopPath();
+            // return a wrapper InputStream which manages the 'fs' closeable
+            if (fs.isFile(hadoopPath)) {
+                in = fs.open(hadoopPath);
+                return new HdfsFileInputStream(in, fs);
+            } else {
+                return new HdfsDirectoryInputStream(hadoopPath, fs);
+            }
         } catch (Exception e) {
             // we can close 'fs' in case of an exception
             FileHelper.safeClose(fs);
             throw wrapException(e);
-        }
-
-        // return a wrappper InputStream which manages the 'fs' closeable
-        return new InputStream() {
-            @Override
-            public int read() throws IOException {
-                return in.read();
-            }
-
-            @Override
-            public int read(byte[] b, int off, int len) throws IOException {
-                return in.read(b, off, len);
-            }
-
-            @Override
-            public int read(byte[] b) throws IOException {
-                return in.read(b);
-            }
-
-            @Override
-            public boolean markSupported() {
-                return in.markSupported();
-            }
-
-            @Override
-            public synchronized void mark(int readlimit) {
-                in.mark(readlimit);
-            }
-
-            @Override
-            public int available() throws IOException {
-                return in.available();
-            }
-
-            @Override
-            public synchronized void reset() throws IOException {
-                in.reset();
-            }
-
-            @Override
-            public long skip(long n) throws IOException {
-                return in.skip(n);
-            }
-
-            @Override
-            public void close() throws IOException {
-                super.close();
-                // need to close 'fs' when input stream is closed
-                FileHelper.safeClose(fs);
-            }
-        };
-    }
-
-    @Override
-    public void read(Action<InputStream> readCallback) throws ResourceException {
-        final FileSystem fs = getHadoopFileSystem();
-        try {
-            final InputStream in = fs.open(getHadoopPath());
-            try {
-                readCallback.run(in);
-            } finally {
-                FileHelper.safeClose(in);
-            }
-        } catch (Exception e) {
-            throw wrapException(e);
-        } finally {
-            FileHelper.safeClose(fs);
-        }
-    }
-
-    @Override
-    public <E> E read(Func<InputStream, E> readCallback) throws ResourceException {
-        final FileSystem fs = getHadoopFileSystem();
-        try {
-            final InputStream in = fs.open(getHadoopPath());
-            try {
-                return readCallback.eval(in);
-            } finally {
-                FileHelper.safeClose(in);
-            }
-        } catch (Exception e) {
-            throw wrapException(e);
-        } finally {
-            FileHelper.safeClose(fs);
         }
     }
 
@@ -297,7 +354,7 @@ public class HdfsResource implements Resource, Serializable {
 
     public FileSystem getHadoopFileSystem() {
         try {
-            return FileSystem.get(getHadoopConfiguration());
+            return FileSystem.newInstance(getHadoopConfiguration());
         } catch (IOException e) {
             throw new MetaModelException("Could not connect to HDFS: " + e.getMessage(), e);
         }

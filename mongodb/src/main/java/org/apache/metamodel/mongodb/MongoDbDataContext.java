@@ -306,7 +306,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                         final SelectItem selectItem = whereItem.getSelectItem();
                         if (!whereItem.isCompoundFilter() && selectItem != null && selectItem.getColumn() != null) {
                             final Column column = selectItem.getColumn();
-                            if (column.isPrimaryKey() && whereItem.getOperator() == OperatorType.EQUALS_TO) {
+                            if (column.isPrimaryKey() && OperatorType.EQUALS_TO.equals(whereItem.getOperator())) {
                                 logger.debug("Query is a primary key lookup query. Trying executePrimaryKeyLookupQuery(...)");
                                 final Object operand = whereItem.getOperand();
                                 final Row row = executePrimaryKeyLookupQuery(table, selectItems, column, operand);
@@ -392,10 +392,9 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
             final BasicDBObject existingFilterObject = (BasicDBObject) query.get(columnName);
             if (existingFilterObject == null) {
                 if (operatorName == null) {
-                    if (item.getOperator().equals(OperatorType.LIKE)) {
+                    if (OperatorType.LIKE.equals(item.getOperator())) {
                         query.put(columnName, turnOperandIntoRegExp(operand));
-                    }
-                    else {
+                    } else {
                         query.put(columnName, operand);
                     }
                 } else {
@@ -412,34 +411,34 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     private String getOperatorName(FilterItem item) {
-        final String operatorName;
-        switch (item.getOperator()) {
-        case EQUALS_TO:
-        case LIKE:
-            operatorName = null;
-            break;
-        case LESS_THAN:
-            operatorName = "$lt";
-            break;
-        case LESS_THAN_OR_EQUAL:
-            operatorName = "$lte";
-            break;
-        case GREATER_THAN:
-            operatorName = "$gt";
-            break;
-        case GREATER_THAN_OR_EQUAL:
-            operatorName = "$gte";
-            break;
-        case DIFFERENT_FROM:
-            operatorName = "$ne";
-            break;
-        case IN:
-            operatorName = "$in";
-            break;
-        default:
-            throw new IllegalStateException("Unsupported operator type: " + item.getOperator());
+        final OperatorType operator = item.getOperator();
+
+        if (OperatorType.EQUALS_TO.equals(operator)) {
+            return null;
         }
-        return operatorName;
+        if (OperatorType.LIKE.equals(operator)) {
+            return null;
+        }
+        if (OperatorType.LESS_THAN.equals(operator)) {
+            return "$lt";
+        }
+        if (OperatorType.LESS_THAN_OR_EQUAL.equals(operator)) {
+            return "$lte";
+        }
+        if (OperatorType.GREATER_THAN.equals(operator)) {
+            return "$gt";
+        }
+        if (OperatorType.GREATER_THAN_OR_EQUAL.equals(operator)) {
+            return "$gte";
+        }
+        if (OperatorType.DIFFERENT_FROM.equals(operator)) {
+            return "$ne";
+        }
+        if (OperatorType.IN.equals(operator)) {
+            return "$in";
+        }
+
+        throw new IllegalStateException("Unsupported operator type: " + operator);
     }
 
     private Pattern turnOperandIntoRegExp(Object operand) {

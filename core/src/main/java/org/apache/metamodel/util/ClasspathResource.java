@@ -26,7 +26,7 @@ import java.net.URL;
 /**
  * A {@link Resource} based on a classpath entry
  */
-public class ClasspathResource implements Resource, Serializable {
+public class ClasspathResource extends AbstractResource implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -90,6 +90,16 @@ public class ClasspathResource implements Resource, Serializable {
         }
         return new UrlResource(url);
     }
+    
+    @Override
+    public OutputStream append() throws ResourceException {
+        return getUrlResourceDelegate().append();
+    }
+    
+    @Override
+    public OutputStream write() throws ResourceException {
+        return getUrlResourceDelegate().write();
+    }
 
     @Override
     public boolean isReadOnly() {
@@ -124,28 +134,8 @@ public class ClasspathResource implements Resource, Serializable {
     }
 
     @Override
-    public void write(Action<OutputStream> writeCallback) throws ResourceException {
-        getUrlResourceDelegate().write(writeCallback);
-    }
-
-    @Override
-    public void append(Action<OutputStream> appendCallback) throws ResourceException {
-        getUrlResourceDelegate().append(appendCallback);
-    }
-
-    @Override
     public InputStream read() throws ResourceException {
         return getUrlResourceDelegate().read();
-    }
-
-    @Override
-    public void read(Action<InputStream> readCallback) throws ResourceException {
-        getUrlResourceDelegate().read(readCallback);
-    }
-
-    @Override
-    public <E> E read(Func<InputStream, E> readCallback) throws ResourceException {
-        return getUrlResourceDelegate().read(readCallback);
     }
 
 }
