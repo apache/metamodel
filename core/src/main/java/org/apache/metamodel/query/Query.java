@@ -56,7 +56,8 @@ import org.apache.metamodel.util.NumberComparator;
  * dataset:
  * <ul>
  * <li>First row: The first row (aka. offset) of the result of the query.</li>
- * <li>Max rows: The maximum amount of rows to return when executing the query.</li>
+ * <li>Max rows: The maximum amount of rows to return when executing the query.
+ * </li>
  * </ul>
  * 
  * Queries are executed using the DataContext.executeQuery method or can
@@ -303,7 +304,7 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
         final List<String> delims = collectionProcessor.getDelims();
         if (tokens.size() == 1) {
             expression = tokens.get(0);
-			_upperExpression = expression.toUpperCase();
+            _upperExpression = expression.toUpperCase();
         } else {
             final LogicalOperator logicalOperator = LogicalOperator.valueOf(delims.get(1).trim());
 
