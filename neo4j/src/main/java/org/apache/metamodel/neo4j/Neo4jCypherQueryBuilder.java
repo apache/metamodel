@@ -40,23 +40,15 @@ public class Neo4jCypherQueryBuilder {
     }
 
     public static String buildSelectQuery(String tableName, String[] columnNames, int firstRow, int maxRows) {
-        // Build such a Cypher query:
-        // MATCH (n:table.getName())-[r]->(relationshipEndNode) RETURN id(n),
-        // relationshipEndNode, foreach(n.propertyColumn),
-        // foreach(r.relationshipColumn);
-
-        // MATCH (n:JUnitPerson) OPTIONAL MATCH (n)-[r]->(relationshipEndNode)
-        // RETURN id(n), n, r, relationshipEndNode;
-
         // Split node property columns and relationship columns
         List<String> nodePropertyColumnNames = new ArrayList<String>();
         Map<String, List<String>> relationships = new LinkedHashMap<>();
         for (String columnName : columnNames) {
-            if (columnName.startsWith(Neo4jDataContext.RELATIONSHIP_COLUMN_PREFIX)) {
-                columnName = columnName.replace(Neo4jDataContext.RELATIONSHIP_COLUMN_PREFIX, "");
+            if (columnName.startsWith(Neo4jDataContext.RELATIONSHIP_PREFIX)) {
+                columnName = columnName.replace(Neo4jDataContext.RELATIONSHIP_PREFIX, "");
 
-                if (columnName.contains("#")) {
-                    Pattern relationshipPlusColumnPattern = Pattern.compile("(.)+#(.)+");
+                if (columnName.contains(Neo4jDataContext.RELATIONSHIP_COLUMN_SEPARATOR)) {
+                    Pattern relationshipPlusColumnPattern = Pattern.compile("(.)+" + Neo4jDataContext.RELATIONSHIP_COLUMN_SEPARATOR + "(.)+");
                     Matcher relationshipPlusColumnMatcher = relationshipPlusColumnPattern.matcher(columnName);
 
                     String relationshipName = relationshipPlusColumnMatcher.group(0);

@@ -59,7 +59,9 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
 
     public static final int DEFAULT_PORT = 7474;
 
-    public static final String RELATIONSHIP_COLUMN_PREFIX = "rel_";
+    public static final String RELATIONSHIP_PREFIX = "rel_";
+    
+    public static final String RELATIONSHIP_COLUMN_SEPARATOR = "#";
 
     private final SimpleTableDef[] _tableDefs;
 
@@ -144,7 +146,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
                     for (JSONObject relationship : relationshipsPerNode) {
                         // Add the relationship as a column in the table
                         String relationshipName = relationship.getString("type");
-                        String relationshipNameProperty = RELATIONSHIP_COLUMN_PREFIX + relationshipName;
+                        String relationshipNameProperty = RELATIONSHIP_PREFIX + relationshipName;
                         if (!relationshipPropertiesPerLabel.contains(relationshipNameProperty)) {
                             relationshipPropertiesPerLabel.add(relationshipNameProperty);
                         }
@@ -174,7 +176,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
     private List<String> getAllPropertiesPerRelationship(JSONObject relationship) {
         List<String> propertyNames = new ArrayList<String>();
         try {
-            String relationshipName = RELATIONSHIP_COLUMN_PREFIX
+            String relationshipName = RELATIONSHIP_PREFIX
                     + relationship.getJSONObject("metadata").getString("type");
             JSONObject relationshipPropertiesJSONObject = relationship.getJSONObject("data");
             if (relationshipPropertiesJSONObject.length() > 0) {
