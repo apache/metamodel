@@ -50,317 +50,249 @@ import org.slf4j.LoggerFactory;
 /**
  * DataContext implementation for Neo4j
  */
-public class Neo4jDataContext extends QueryPostprocessDataContext implements
-		UpdateableDataContext, DocumentSourceProvider {
+public class Neo4jDataContext extends QueryPostprocessDataContext implements UpdateableDataContext,
+        DocumentSourceProvider {
 
-	public static final Logger logger = LoggerFactory
-			.getLogger(Neo4jDataContext.class);
+    public static final Logger logger = LoggerFactory.getLogger(Neo4jDataContext.class);
 
-	public static final String SCHEMA_NAME = "neo4j";
+    public static final String SCHEMA_NAME = "neo4j";
 
-	public static final int DEFAULT_PORT = 7474;
+    public static final int DEFAULT_PORT = 7474;
 
-	private static final String RELATIONSHIP_COLUMN_PREFIX = "rel_";
+    public static final String RELATIONSHIP_COLUMN_PREFIX = "rel_";
 
-	private final SimpleTableDef[] _tableDefs;
+    private final SimpleTableDef[] _tableDefs;
 
-	private final Neo4jRequestWrapper _requestWrapper;
+    private final Neo4jRequestWrapper _requestWrapper;
 
-	private final HttpHost _httpHost;
+    private final HttpHost _httpHost;
 
-	public Neo4jDataContext(String hostname, int port,
-			SimpleTableDef... tableDefs) {
-		_httpHost = new HttpHost(hostname, port);
-		CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-		_requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
-		_tableDefs = tableDefs;
-	}
+    public Neo4jDataContext(String hostname, int port, SimpleTableDef... tableDefs) {
+        _httpHost = new HttpHost(hostname, port);
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
+        _tableDefs = tableDefs;
+    }
 
-	public Neo4jDataContext(String hostname, int port) {
-		_httpHost = new HttpHost(hostname, port);
-		CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-		_requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
-		_tableDefs = detectTableDefs();
-	}
+    public Neo4jDataContext(String hostname, int port) {
+        _httpHost = new HttpHost(hostname, port);
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
+        _tableDefs = detectTableDefs();
+    }
 
-	public Neo4jDataContext(String hostname, int port,
-			CloseableHttpClient httpClient) {
-		_httpHost = new HttpHost(hostname, port);
-		_requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
-		_tableDefs = detectTableDefs();
-	}
+    public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient) {
+        _httpHost = new HttpHost(hostname, port);
+        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
+        _tableDefs = detectTableDefs();
+    }
 
-	public Neo4jDataContext(String hostname, int port,
-			CloseableHttpClient httpClient, SimpleTableDef... tableDefs) {
-		_httpHost = new HttpHost(hostname, port);
-		_requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
-		_tableDefs = tableDefs;
-	}
+    public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient, SimpleTableDef... tableDefs) {
+        _httpHost = new HttpHost(hostname, port);
+        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
+        _tableDefs = tableDefs;
+    }
 
-	@Override
-	protected String getDefaultSchemaName() throws MetaModelException {
-		return SCHEMA_NAME;
-	}
+    @Override
+    protected String getDefaultSchemaName() throws MetaModelException {
+        return SCHEMA_NAME;
+    }
 
-	@Override
-	protected Schema getMainSchema() throws MetaModelException {
-		MutableSchema schema = new MutableSchema(getMainSchemaName());
-		for (SimpleTableDef tableDef : _tableDefs) {
-			MutableTable table = tableDef.toTable().setSchema(schema);
-			schema.addTable(table);
-		}
-		return schema;
-	}
+    @Override
+    protected Schema getMainSchema() throws MetaModelException {
+        MutableSchema schema = new MutableSchema(getMainSchemaName());
+        for (SimpleTableDef tableDef : _tableDefs) {
+            MutableTable table = tableDef.toTable().setSchema(schema);
+            schema.addTable(table);
+        }
+        return schema;
+    }
 
-	@Override
-	protected String getMainSchemaName() throws MetaModelException {
-		return SCHEMA_NAME;
-	}
+    @Override
+    protected String getMainSchemaName() throws MetaModelException {
+        return SCHEMA_NAME;
+    }
 
-	public SimpleTableDef[] detectTableDefs() {
-		List<SimpleTableDef> tableDefs = new ArrayList<SimpleTableDef>();
+    public SimpleTableDef[] detectTableDefs() {
+        List<SimpleTableDef> tableDefs = new ArrayList<SimpleTableDef>();
 
-		String labelsJsonString = _requestWrapper
-				.executeRestRequest(new HttpGet("/db/data/labels"));
+        String labelsJsonString = _requestWrapper.executeRestRequest(new HttpGet("/db/data/labels"));
 
-		JSONArray labelsJsonArray;
-		try {
-			labelsJsonArray = new JSONArray(labelsJsonString);
-			for (int i = 0; i < labelsJsonArray.length(); i++) {
-				String label = labelsJsonArray.getString(i);
+        JSONArray labelsJsonArray;
+        try {
+            labelsJsonArray = new JSONArray(labelsJsonString);
+            for (int i = 0; i < labelsJsonArray.length(); i++) {
+                String label = labelsJsonArray.getString(i);
 
-				List<JSONObject> nodesPerLabel = getAllNodesPerLabel(label);
+                List<JSONObject> nodesPerLabel = getAllNodesPerLabel(label);
 
-				List<String> propertiesPerLabel = new ArrayList<String>();
-				for (JSONObject node : nodesPerLabel) {
-					List<String> propertiesPerNode = getAllPropertiesPerNode(node);
-					for (String property : propertiesPerNode) {
-						if (!propertiesPerLabel.contains(property)) {
-							propertiesPerLabel.add(property);
-						}
-					}
-				}
+                List<String> propertiesPerLabel = new ArrayList<String>();
+                for (JSONObject node : nodesPerLabel) {
+                    List<String> propertiesPerNode = getAllPropertiesPerNode(node);
+                    for (String property : propertiesPerNode) {
+                        if (!propertiesPerLabel.contains(property)) {
+                            propertiesPerLabel.add(property);
+                        }
+                    }
+                }
 
-				// TODO: Get all relationships for label
-				List<String> relationshipPropertiesPerLabel = new ArrayList<String>();
-				for (JSONObject node : nodesPerLabel) {
-					Integer nodeId = (Integer) node.getJSONObject("metadata")
-							.get("id");
-					List<JSONObject> relationshipsPerNode = getOutgoingRelationshipsPerNode(nodeId);
-					for (JSONObject relationship : relationshipsPerNode) {
-						// Add the relationship as a column in the table
-						String relationshipName = relationship
-								.getString("type");
-						String relationshipNameProperty = RELATIONSHIP_COLUMN_PREFIX
-								+ relationshipName;
-						if (!relationshipPropertiesPerLabel
-								.contains(relationshipNameProperty)) {
-							relationshipPropertiesPerLabel
-									.add(relationshipNameProperty);
-						}
+                // TODO: Get all relationships for label
+                List<String> relationshipPropertiesPerLabel = new ArrayList<String>();
+                for (JSONObject node : nodesPerLabel) {
+                    Integer nodeId = (Integer) node.getJSONObject("metadata").get("id");
+                    List<JSONObject> relationshipsPerNode = getOutgoingRelationshipsPerNode(nodeId);
+                    for (JSONObject relationship : relationshipsPerNode) {
+                        // Add the relationship as a column in the table
+                        String relationshipName = relationship.getString("type");
+                        String relationshipNameProperty = RELATIONSHIP_COLUMN_PREFIX + relationshipName;
+                        if (!relationshipPropertiesPerLabel.contains(relationshipNameProperty)) {
+                            relationshipPropertiesPerLabel.add(relationshipNameProperty);
+                        }
 
-						// Add all the relationship properties as table columns
-						List<String> propertiesPerRelationship = getAllPropertiesPerRelationship(relationship);
-						relationshipPropertiesPerLabel
-								.addAll(propertiesPerRelationship);
-					}
-				}
-				propertiesPerLabel.addAll(relationshipPropertiesPerLabel);
+                        // Add all the relationship properties as table columns
+                        List<String> propertiesPerRelationship = getAllPropertiesPerRelationship(relationship);
+                        relationshipPropertiesPerLabel.addAll(propertiesPerRelationship);
+                    }
+                }
+                propertiesPerLabel.addAll(relationshipPropertiesPerLabel);
 
-				// Do not add a table if label has no nodes (empty tables are
-				// considered non-existent)
-				if (!nodesPerLabel.isEmpty()) {
-					SimpleTableDef tableDef = new SimpleTableDef(label,
-							propertiesPerLabel
-									.toArray(new String[propertiesPerLabel
-											.size()]));
-					tableDefs.add(tableDef);
-				}
-			}
-			return tableDefs.toArray(new SimpleTableDef[tableDefs.size()]);
-		} catch (JSONException e) {
-			logger.error(
-					"Error occured in parsing JSON while detecting the schema: ",
-					e);
-			throw new IllegalStateException(e);
-		}
-	}
+                // Do not add a table if label has no nodes (empty tables are
+                // considered non-existent)
+                if (!nodesPerLabel.isEmpty()) {
+                    SimpleTableDef tableDef = new SimpleTableDef(label,
+                            propertiesPerLabel.toArray(new String[propertiesPerLabel.size()]));
+                    tableDefs.add(tableDef);
+                }
+            }
+            return tableDefs.toArray(new SimpleTableDef[tableDefs.size()]);
+        } catch (JSONException e) {
+            logger.error("Error occured in parsing JSON while detecting the schema: ", e);
+            throw new IllegalStateException(e);
+        }
+    }
 
-	private List<String> getAllPropertiesPerRelationship(JSONObject relationship) {
-		List<String> propertyNames = new ArrayList<String>();
-		try {
-			String relationshipName = RELATIONSHIP_COLUMN_PREFIX
-					+ relationship.getJSONObject("metadata").getString("type");
-			JSONObject relationshipPropertiesJSONObject = relationship
-					.getJSONObject("data");
-			if (relationshipPropertiesJSONObject.length() > 0) {
-				JSONArray relationshipPropertiesNamesJSONArray = relationshipPropertiesJSONObject
-						.names();
-				for (int i = 0; i < relationshipPropertiesNamesJSONArray
-						.length(); i++) {
-					String propertyName = relationshipName + "_"
-							+ relationshipPropertiesNamesJSONArray.getString(i);
-					if (!propertyNames.contains(propertyName)) {
-						propertyNames.add(propertyName);
-					}
-				}
-			}
-			return propertyNames;
-		} catch (JSONException e) {
-			logger.error(
-					"Error occured in parsing JSON while getting relationship properties: ",
-					e);
-			throw new IllegalStateException(e);
-		}
-	}
+    private List<String> getAllPropertiesPerRelationship(JSONObject relationship) {
+        List<String> propertyNames = new ArrayList<String>();
+        try {
+            String relationshipName = RELATIONSHIP_COLUMN_PREFIX
+                    + relationship.getJSONObject("metadata").getString("type");
+            JSONObject relationshipPropertiesJSONObject = relationship.getJSONObject("data");
+            if (relationshipPropertiesJSONObject.length() > 0) {
+                JSONArray relationshipPropertiesNamesJSONArray = relationshipPropertiesJSONObject.names();
+                for (int i = 0; i < relationshipPropertiesNamesJSONArray.length(); i++) {
+                    String propertyName = relationshipName + "_" + relationshipPropertiesNamesJSONArray.getString(i);
+                    if (!propertyNames.contains(propertyName)) {
+                        propertyNames.add(propertyName);
+                    }
+                }
+            }
+            return propertyNames;
+        } catch (JSONException e) {
+            logger.error("Error occured in parsing JSON while getting relationship properties: ", e);
+            throw new IllegalStateException(e);
+        }
+    }
 
-	private List<JSONObject> getOutgoingRelationshipsPerNode(Integer nodeId) {
-		List<JSONObject> outgoingRelationshipsPerNode = new ArrayList<JSONObject>();
+    private List<JSONObject> getOutgoingRelationshipsPerNode(Integer nodeId) {
+        List<JSONObject> outgoingRelationshipsPerNode = new ArrayList<JSONObject>();
 
-		String outgoingRelationshipsPerNodeJsonString = _requestWrapper
-				.executeRestRequest(new HttpGet("/db/data/node/" + nodeId
-						+ "/relationships/out"));
+        String outgoingRelationshipsPerNodeJsonString = _requestWrapper.executeRestRequest(new HttpGet("/db/data/node/"
+                + nodeId + "/relationships/out"));
 
-		JSONArray outgoingRelationshipsPerNodeJsonArray;
-		try {
-			outgoingRelationshipsPerNodeJsonArray = new JSONArray(
-					outgoingRelationshipsPerNodeJsonString);
-			for (int i = 0; i < outgoingRelationshipsPerNodeJsonArray.length(); i++) {
-				JSONObject relationship = outgoingRelationshipsPerNodeJsonArray
-						.getJSONObject(i);
-				if (!outgoingRelationshipsPerNode.contains(relationship)) {
-					outgoingRelationshipsPerNode.add(relationship);
-				}
-			}
-			return outgoingRelationshipsPerNode;
-		} catch (JSONException e) {
-			logger.error(
-					"Error occured in parsing JSON while detecting outgoing relationships for node: "
-							+ nodeId, e);
-			throw new IllegalStateException(e);
-		}
-	}
+        JSONArray outgoingRelationshipsPerNodeJsonArray;
+        try {
+            outgoingRelationshipsPerNodeJsonArray = new JSONArray(outgoingRelationshipsPerNodeJsonString);
+            for (int i = 0; i < outgoingRelationshipsPerNodeJsonArray.length(); i++) {
+                JSONObject relationship = outgoingRelationshipsPerNodeJsonArray.getJSONObject(i);
+                if (!outgoingRelationshipsPerNode.contains(relationship)) {
+                    outgoingRelationshipsPerNode.add(relationship);
+                }
+            }
+            return outgoingRelationshipsPerNode;
+        } catch (JSONException e) {
+            logger.error("Error occured in parsing JSON while detecting outgoing relationships for node: " + nodeId, e);
+            throw new IllegalStateException(e);
+        }
+    }
 
-	private List<JSONObject> getAllNodesPerLabel(String label) {
-		List<JSONObject> allNodesPerLabel = new ArrayList<JSONObject>();
+    private List<JSONObject> getAllNodesPerLabel(String label) {
+        List<JSONObject> allNodesPerLabel = new ArrayList<JSONObject>();
 
-		String allNodesForLabelJsonString = _requestWrapper
-				.executeRestRequest(new HttpGet("/db/data/label/" + label
-						+ "/nodes"));
+        String allNodesForLabelJsonString = _requestWrapper.executeRestRequest(new HttpGet("/db/data/label/" + label
+                + "/nodes"));
 
-		JSONArray allNodesForLabelJsonArray;
-		try {
-			allNodesForLabelJsonArray = new JSONArray(
-					allNodesForLabelJsonString);
-			for (int i = 0; i < allNodesForLabelJsonArray.length(); i++) {
-				JSONObject node = allNodesForLabelJsonArray.getJSONObject(i);
-				allNodesPerLabel.add(node);
-			}
-			return allNodesPerLabel;
-		} catch (JSONException e) {
-			logger.error(
-					"Error occured in parsing JSON while detecting the nodes for a label: "
-							+ label, e);
-			throw new IllegalStateException(e);
-		}
-	}
+        JSONArray allNodesForLabelJsonArray;
+        try {
+            allNodesForLabelJsonArray = new JSONArray(allNodesForLabelJsonString);
+            for (int i = 0; i < allNodesForLabelJsonArray.length(); i++) {
+                JSONObject node = allNodesForLabelJsonArray.getJSONObject(i);
+                allNodesPerLabel.add(node);
+            }
+            return allNodesPerLabel;
+        } catch (JSONException e) {
+            logger.error("Error occured in parsing JSON while detecting the nodes for a label: " + label, e);
+            throw new IllegalStateException(e);
+        }
+    }
 
-	private List<String> getAllPropertiesPerNode(JSONObject node) {
-		List<String> properties = new ArrayList<String>();
+    private List<String> getAllPropertiesPerNode(JSONObject node) {
+        List<String> properties = new ArrayList<String>();
 
-		String propertiesEndpoint;
-		try {
-			propertiesEndpoint = node.getString("properties");
+        String propertiesEndpoint;
+        try {
+            propertiesEndpoint = node.getString("properties");
 
-			String allPropertiesPerNodeJsonString = _requestWrapper
-					.executeRestRequest(new HttpGet(propertiesEndpoint));
+            String allPropertiesPerNodeJsonString = _requestWrapper.executeRestRequest(new HttpGet(propertiesEndpoint));
 
-			JSONObject allPropertiesPerNodeJsonObject = new JSONObject(
-					allPropertiesPerNodeJsonString);
-			for (int j = 0; j < allPropertiesPerNodeJsonObject.length(); j++) {
-				JSONArray propertiesJsonArray = allPropertiesPerNodeJsonObject
-						.names();
-				for (int k = 0; k < propertiesJsonArray.length(); k++) {
-					String property = propertiesJsonArray.getString(k);
-					properties.add(property);
-				}
-			}
-			return properties;
-		} catch (JSONException e) {
-			logger.error(
-					"Error occured in parsing JSON while detecting the properties of a node: "
-							+ node, e);
-			throw new IllegalStateException(e);
-		}
-	}
+            JSONObject allPropertiesPerNodeJsonObject = new JSONObject(allPropertiesPerNodeJsonString);
+            for (int j = 0; j < allPropertiesPerNodeJsonObject.length(); j++) {
+                JSONArray propertiesJsonArray = allPropertiesPerNodeJsonObject.names();
+                for (int k = 0; k < propertiesJsonArray.length(); k++) {
+                    String property = propertiesJsonArray.getString(k);
+                    properties.add(property);
+                }
+            }
+            return properties;
+        } catch (JSONException e) {
+            logger.error("Error occured in parsing JSON while detecting the properties of a node: " + node, e);
+            throw new IllegalStateException(e);
+        }
+    }
 
-	@Override
-	protected DataSet materializeMainSchemaTable(Table table, Column[] columns,
-			int firstRow, int maxRows) {
-		if ((columns != null) && (columns.length > 0)) {
-			// Split property columns and relationship columns
-			List<Column> propertyColumns = new ArrayList<Column>();
-			List<Column> relationshipColumns = new ArrayList<Column>();
-			for (Column column : columns) {
-				if (column.getName().startsWith(RELATIONSHIP_COLUMN_PREFIX)) {
-					relationshipColumns.add(column);
-				} else {
-					propertyColumns.add(column);
-				}
-			}
+    @Override
+    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int firstRow, int maxRows) {
+        if ((columns != null) && (columns.length > 0)) {
+            Neo4jDataSet dataSet = null;
+            try {
+                String selectQuery = Neo4jCypherQueryBuilder.buildSelectQuery(table, columns, firstRow, maxRows);
+                String responseJSONString = _requestWrapper.executeCypherQuery(selectQuery);
+                JSONObject resultJSONObject = new JSONObject(responseJSONString);
+                final SelectItem[] selectItems = MetaModelHelper.createSelectItems(columns);
+                dataSet = new Neo4jDataSet(selectItems, resultJSONObject);
+            } catch (JSONException e) {
+                logger.error("Error occured in parsing JSON while materializing the schema: ", e);
+                throw new IllegalStateException(e);
+            }
 
-			Neo4jDataSet propertyDataSet = null;
-			if (propertyColumns.size() > 0) {
-				try {
-					String selectQuery = Neo4jCypherQueryBuilder
-							.buildSelectQuery(table,
-									propertyColumns
-											.toArray(new Column[propertyColumns
-													.size()]), firstRow,
-									maxRows);
-					String responseJSONString = _requestWrapper
-							.executeCypherQuery(selectQuery);
-					JSONObject resultJSONObject = new JSONObject(
-							responseJSONString);
-					final SelectItem[] selectItems = MetaModelHelper
-							.createSelectItems(propertyColumns.toArray(new Column[propertyColumns.size()]));
-					propertyDataSet = new Neo4jDataSet(selectItems,
-							resultJSONObject);
-				} catch (JSONException e) {
-					logger.error(
-							"Error occured in parsing JSON while materializing the schema: ",
-							e);
-					throw new IllegalStateException(e);
-				}
-			}
+            return dataSet;
+        } else {
+            logger.error("Encountered null or empty columns array for materializing main schema table.");
+            throw new IllegalArgumentException("Columns cannot be null or empty array");
+        }
+    }
 
-			// TODO: Query for relationships and their properties
-			Neo4jDataSet relationshipDataSet = null;
-			
-			// TODO: Merge property and relationship data sets
-			Neo4jDataSet mergedDataSet = propertyDataSet;
-			return mergedDataSet;
-		} else {
-			logger.error("Encountered null or empty columns array for materializing main schema table.");
-			throw new IllegalArgumentException(
-					"Columns cannot be null or empty array");
-		}
-	}
+    @Override
+    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+        return materializeMainSchemaTable(table, columns, 1, maxRows);
+    }
 
-	@Override
-	protected DataSet materializeMainSchemaTable(Table table, Column[] columns,
-			int maxRows) {
-		return materializeMainSchemaTable(table, columns, 1, maxRows);
-	}
+    @Override
+    protected org.apache.metamodel.data.Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems,
+            Column primaryKeyColumn, Object keyValue) {
+        return null;
+    }
 
-	@Override
-	protected org.apache.metamodel.data.Row executePrimaryKeyLookupQuery(
-			Table table, List<SelectItem> selectItems, Column primaryKeyColumn,
-			Object keyValue) {
-		return null;
-	}
-
-	@Override
+    @Override
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
         String countQuery = Neo4jCypherQueryBuilder.buildCountQuery(table.getName(), whereItems);
         String jsonResponse = _requestWrapper.executeCypherQuery(countQuery);
@@ -381,19 +313,19 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements
         }
     }
 
-	@Override
-	public void executeUpdate(UpdateScript script) {
-		throw new UnsupportedOperationException(
-				"MetaModel does not currently support write operations on Neo4j databases.");
-	}
+    @Override
+    public void executeUpdate(UpdateScript script) {
+        throw new UnsupportedOperationException(
+                "MetaModel does not currently support write operations on Neo4j databases.");
+    }
 
-	@Override
-	public DocumentSource getMixedDocumentSourceForSampling() {
-		return null;
-	}
+    @Override
+    public DocumentSource getMixedDocumentSourceForSampling() {
+        return null;
+    }
 
-	@Override
-	public DocumentSource getDocumentSourceForTable(String sourceCollectionName) {
-		return null;
-	}
+    @Override
+    public DocumentSource getDocumentSourceForTable(String sourceCollectionName) {
+        return null;
+    }
 }
