@@ -21,7 +21,7 @@ package org.apache.metamodel.data;
 /**
  * Wraps another DataSet and enforces a maximum number of rows constraint
  */
-public final class MaxRowsDataSet extends AbstractDataSet {
+public final class MaxRowsDataSet extends AbstractDataSet implements WrappingDataSet {
 
     private final DataSet _dataSet;
     private volatile int _rowsLeft;
@@ -30,6 +30,11 @@ public final class MaxRowsDataSet extends AbstractDataSet {
         super(dataSet);
         _dataSet = dataSet;
         _rowsLeft = maxRows;
+    }
+    
+    @Override
+    public DataSet getWrappedDataSet() {
+        return _dataSet;
     }
 
     @Override

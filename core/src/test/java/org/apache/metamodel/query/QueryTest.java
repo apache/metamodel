@@ -158,12 +158,6 @@ public class QueryTest extends MetaModelTestCase {
     public void testSetMaxRows() throws Exception {
         assertEquals(1, new Query().setMaxRows(1).getMaxRows().intValue());
         try {
-            new Query().setMaxRows(0);
-            fail("Exception expected");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Max rows cannot be zero", e.getMessage());
-        }
-        try {
             new Query().setMaxRows(-1);
             fail("Exception expected");
         } catch (IllegalArgumentException e) {

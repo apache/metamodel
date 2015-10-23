@@ -30,6 +30,7 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.WrappingDataSet;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 
@@ -38,7 +39,7 @@ import org.apache.metamodel.query.SelectItem;
  * 
  * @see org.apache.metamodel.jdbc.QuerySplitter
  */
-final class SplitQueriesDataSet extends AbstractDataSet {
+final class SplitQueriesDataSet extends AbstractDataSet implements WrappingDataSet {
 
     private static final Logger logger = LoggerFactory.getLogger(SplitQueriesDataSet.class);
     private final DataContext _dataContext;
@@ -60,6 +61,11 @@ final class SplitQueriesDataSet extends AbstractDataSet {
             return new ArrayList<SelectItem>(0);
         }
         return splitQueries.get(0).getSelectClause().getItems();
+    }
+
+    @Override
+    public DataSet getWrappedDataSet() {
+        return _currentDataSet;
     }
 
     @Override

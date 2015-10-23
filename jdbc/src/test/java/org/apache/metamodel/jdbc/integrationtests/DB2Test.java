@@ -45,12 +45,12 @@ public class DB2Test extends AbstractJdbIntegrationTest {
 
         JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(getDataContext(), "metamodel_db2_test");
     }
-    
+
     public void testCompositePrimaryKeyCreation() throws Exception {
         if (!isConfigured()) {
             return;
         }
-        
+
         JdbcTestTemplates.compositeKeyCreation(getDataContext(), "metamodel_test_composite_keys");
     }
 

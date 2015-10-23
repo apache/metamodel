@@ -22,7 +22,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -62,6 +61,7 @@ import org.elasticsearch.common.hppc.ObjectLookupContainer;
 import org.elasticsearch.common.hppc.cursors.ObjectCursor;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.slf4j.Logger;
@@ -69,7 +69,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * DataContext implementation for ElasticSearch analytics engine.
- * 
+ *
  * ElasticSearch has a data storage structure hierarchy that briefly goes like
  * this:
  * <ul>
@@ -77,10 +77,10 @@ import org.slf4j.LoggerFactory;
  * <li>Document type (short: Type) (within an index)</li>
  * <li>Documents (of a particular type)</li>
  * </ul>
- * 
+ *
  * When instantiating this DataContext, an index name is provided. Within this
  * index, each document type is represented as a table.
- * 
+ *
  * This implementation supports either automatic discovery of a schema or manual
  * specification of a schema, through the {@link SimpleTableDef} class.
  */
@@ -93,8 +93,12 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     public static final TimeValue TIMEOUT_SCROLL = TimeValue.timeValueSeconds(60);
 
     private final Client elasticSearchClient;
-    private final SimpleTableDef[] tableDefs;
     private final String indexName;
+    // Table definitions that are set from the beginning, not supposed to be changed.
+    private final List<SimpleTableDef> staticTableDefinitions;
+
+    // Table definitions that are discovered, these can change
+    private final List<SimpleTableDef> dynamicTableDefinitions = new ArrayList<>();
 
     /**
      * Constructs a {@link ElasticSearchDataContext}. This constructor accepts a
@@ -105,11 +109,11 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *            the ElasticSearch client
      * @param indexName
      *            the name of the ElasticSearch index to represent
-     * @param tableDefs
+     * @param tableDefinitions
      *            an array of {@link SimpleTableDef}s, which define the table
      *            and column model of the ElasticSearch index.
      */
-    public ElasticSearchDataContext(Client client, String indexName, SimpleTableDef... tableDefs) {
+    public ElasticSearchDataContext(Client client, String indexName, SimpleTableDef... tableDefinitions) {
         if (client == null) {
             throw new IllegalArgumentException("ElasticSearch Client cannot be null");
         }
@@ -118,13 +122,14 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         }
         this.elasticSearchClient = client;
         this.indexName = indexName;
-        this.tableDefs = tableDefs;
+        this.staticTableDefinitions = Arrays.asList(tableDefinitions);
+        this.dynamicTableDefinitions.addAll(Arrays.asList(detectSchema()));
     }
 
     /**
      * Constructs a {@link ElasticSearchDataContext} and automatically detects
      * the schema structure/view on all indexes (see
-     * {@link #detectSchema(Client)}).
+     * {@link this.detectSchema(Client, String)}).
      *
      * @param client
      *            the ElasticSearch client
@@ -132,7 +137,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *            the name of the ElasticSearch index to represent
      */
     public ElasticSearchDataContext(Client client, String indexName) {
-        this(client, indexName, detectSchema(client, indexName));
+        this(client, indexName, new SimpleTableDef[0]);
     }
 
     /**
@@ -141,18 +146,15 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      * based on the metadata provided by the ElasticSearch java client.
      *
      * @see #detectTable(ClusterState, String, String)
-     *
-     * @param client
-     *            the client to inspect
-     * @param indexName2
      * @return a mutable schema instance, useful for further fine tuning by the
      *         user.
      */
-    public static SimpleTableDef[] detectSchema(Client client, String indexName) {
+    private SimpleTableDef[] detectSchema() {
         logger.info("Detecting schema for index '{}'", indexName);
 
         final ClusterState cs;
-        final ClusterStateRequestBuilder clusterStateRequestBuilder = client.admin().cluster().prepareState();
+        final ClusterStateRequestBuilder clusterStateRequestBuilder =
+                getElasticSearchClient().admin().cluster().prepareState();
 
         // different methods here to set the index name, so we have to use
         // reflection :-/
@@ -172,7 +174,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         }
         cs = clusterStateRequestBuilder.execute().actionGet().getState();
 
-        final List<SimpleTableDef> result = new ArrayList<SimpleTableDef>();
+        final List<SimpleTableDef> result = new ArrayList<>();
 
         final IndexMetaData imd = cs.getMetaData().index(indexName);
         if (imd == null) {
@@ -192,7 +194,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
                 }
             }
         }
-        final SimpleTableDef[] tableDefArray = (SimpleTableDef[]) result.toArray(new SimpleTableDef[result.size()]);
+        final SimpleTableDef[] tableDefArray = result.toArray(new SimpleTableDef[result.size()]);
         Arrays.sort(tableDefArray, new Comparator<SimpleTableDef>() {
             @Override
             public int compare(SimpleTableDef o1, SimpleTableDef o2) {
@@ -228,35 +230,50 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
             throw new IllegalArgumentException("No such document type in index '" + indexName + "': " + documentType);
         }
         final Map<String, Object> mp = mappingMetaData.getSourceAsMap();
-        final Iterator<Map.Entry<String, Object>> it = mp.entrySet().iterator();
-        SimpleTableDef std = null;
-        while (it.hasNext()) {
-            final Map.Entry<String, Object> pair = it.next();
-            if (pair.getKey().equals("properties")) {
-                final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(pair.getValue());
-                std = new SimpleTableDef(documentType, metaData.getColumnNames(), metaData.getColumnTypes());
-            }
+        final Object metadataProperties = mp.get("properties");
+        if (metadataProperties != null && metadataProperties instanceof Map) {
+            @SuppressWarnings("unchecked")
+            final Map<String, ?> metadataPropertiesMap = (Map<String, ?>) metadataProperties;
+            final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(metadataPropertiesMap);
+            final SimpleTableDef std = new SimpleTableDef(documentType, metaData.getColumnNames(),
+                    metaData.getColumnTypes());
+            return std;
         }
-        if (std == null) {
-            throw new IllegalArgumentException("No properties defined for document type '" + documentType
-                    + "' in index: " + indexName);
-        }
-        return std;
+        throw new IllegalArgumentException("No mapping properties defined for document type '" + documentType
+                + "' in index: " + indexName);
     }
 
     @Override
     protected Schema getMainSchema() throws MetaModelException {
         final MutableSchema theSchema = new MutableSchema(getMainSchemaName());
-        for (final SimpleTableDef tableDef : tableDefs) {
-            final MutableTable table = tableDef.toTable().setSchema(theSchema);
-            final Column idColumn = table.getColumnByName(FIELD_ID);
-            if (idColumn != null && idColumn instanceof MutableColumn) {
-                final MutableColumn mutableColumn = (MutableColumn) idColumn;
-                mutableColumn.setPrimaryKey(true);
-            }
-            theSchema.addTable(table);
+        for (final SimpleTableDef tableDef : staticTableDefinitions) {
+            addTable(theSchema, tableDef);
         }
+
+        final SimpleTableDef[] tables = detectSchema();
+        synchronized (this) {
+            dynamicTableDefinitions.clear();
+            dynamicTableDefinitions.addAll(Arrays.asList(tables));
+            for (final SimpleTableDef tableDef : dynamicTableDefinitions) {
+                final List<String> tableNames = Arrays.asList(theSchema.getTableNames());
+
+                if (!tableNames.contains(tableDef.getName())) {
+                    addTable(theSchema, tableDef);
+                }
+            }
+        }
+
         return theSchema;
+    }
+
+    private void addTable(final MutableSchema theSchema, final SimpleTableDef tableDef) {
+        final MutableTable table = tableDef.toTable().setSchema(theSchema);
+        final Column idColumn = table.getColumnByName(FIELD_ID);
+        if (idColumn != null && idColumn instanceof MutableColumn) {
+            final MutableColumn mutableColumn = (MutableColumn) idColumn;
+            mutableColumn.setPrimaryKey(true);
+        }
+        theSchema.addTable(table);
     }
 
     @Override
@@ -307,7 +324,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     /**
      * Creates, if possible, a {@link QueryBuilder} object which can be used to
      * push down one or more {@link FilterItem}s to ElasticSearch's backend.
-     * 
+     *
      * @param table
      * @param whereItems
      * @param logicalOperator
@@ -320,7 +337,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
             return QueryBuilders.matchAllQuery();
         }
 
-        List<QueryBuilder> children = new ArrayList<QueryBuilder>(whereItems.size());
+        List<QueryBuilder> children = new ArrayList<>(whereItems.size());
         for (FilterItem item : whereItems) {
             final QueryBuilder itemQueryBuilder;
 
@@ -343,23 +360,23 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
                 final Object operand = item.getOperand();
                 final OperatorType operator = item.getOperator();
 
-                switch (operator) {
-                case EQUALS_TO:
-                    itemQueryBuilder = QueryBuilders.termQuery(fieldName, operand);
-                    break;
-                case DIFFERENT_FROM:
-                    itemQueryBuilder = QueryBuilders.boolQuery().mustNot(QueryBuilders.termQuery(fieldName, operand));
-                    break;
-                case IN:
+                if (OperatorType.EQUALS_TO.equals(operator)) {
+                    if (operand == null) {
+                        itemQueryBuilder = QueryBuilders.filteredQuery(null, FilterBuilders.missingFilter(fieldName));
+                    } else {
+                        itemQueryBuilder = QueryBuilders.termQuery(fieldName, operand);
+                    }
+                } else if (OperatorType.DIFFERENT_FROM.equals(operator)) {
+                    if (operand == null) {
+                        itemQueryBuilder = QueryBuilders.filteredQuery(null, FilterBuilders.existsFilter(fieldName));
+                    } else {
+                        itemQueryBuilder = QueryBuilders.boolQuery().mustNot(
+                                QueryBuilders.termQuery(fieldName, operand));
+                    }
+                } else if (OperatorType.IN.equals(operator)) {
                     final List<?> operands = CollectionUtils.toList(operand);
                     itemQueryBuilder = QueryBuilders.termsQuery(fieldName, operands);
-                    break;
-                case LIKE:
-                case GREATER_THAN_OR_EQUAL:
-                case GREATER_THAN:
-                case LESS_THAN:
-                case LESS_THAN_OR_EQUAL:
-                default:
+                } else {
                     // not (yet) support operator types
                     return null;
                 }
@@ -436,7 +453,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     /**
      * Gets the {@link Client} that this {@link DataContext} is wrapping.
-     * 
+     *
      * @return
      */
     public Client getElasticSearchClient() {
@@ -445,7 +462,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     /**
      * Gets the name of the index that this {@link DataContext} is working on.
-     * 
+     *
      * @return
      */
     public String getIndexName() {

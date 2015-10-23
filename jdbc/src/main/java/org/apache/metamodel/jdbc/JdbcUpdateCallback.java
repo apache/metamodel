@@ -47,7 +47,7 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
         super(dataContext);
         _dataContext = dataContext;
     }
-    
+
     protected abstract void closePreparedStatement(PreparedStatement preparedStatement);
 
     protected abstract void executePreparedStatement(PreparedStatement preparedStatement) throws SQLException;
@@ -63,10 +63,12 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
     protected final Connection getConnection() {
         if (_connection == null) {
             _connection = getDataContext().getConnection();
-            try {
-                _connection.setAutoCommit(false);
-            } catch (SQLException e) {
-                throw JdbcUtils.wrapException(e, "disable auto-commit");
+            if (_dataContext.getQueryRewriter().isTransactional()) {
+                try {
+                    _connection.setAutoCommit(false);
+                } catch (SQLException e) {
+                    throw JdbcUtils.wrapException(e, "disable auto-commit");
+                }
             }
         }
         return _connection;
@@ -78,18 +80,20 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
                 closePreparedStatement(_preparedStatement);
             }
 
-            try {
-                commitOrRollback(success);
+            if (_dataContext.getQueryRewriter().isTransactional()) {
+                try {
+                    commitOrRollback(success);
 
-                if (_dataContext.isDefaultAutoCommit()) {
-                    try {
-                        getConnection().setAutoCommit(true);
-                    } catch (SQLException e) {
-                        throw JdbcUtils.wrapException(e, "enable auto-commit");
+                    if (_dataContext.isDefaultAutoCommit()) {
+                        try {
+                            getConnection().setAutoCommit(true);
+                        } catch (SQLException e) {
+                            throw JdbcUtils.wrapException(e, "enable auto-commit");
+                        }
                     }
+                } finally {
+                    getDataContext().close(_connection, null, null);
                 }
-            } finally {
-                getDataContext().close(_connection, null, null);
             }
         }
     }

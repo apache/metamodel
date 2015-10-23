@@ -29,6 +29,7 @@ import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.SimpleDataSetHeader;
@@ -57,6 +58,15 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
     private final Schema schema = getExampleSchema();
     private final Table table1 = schema.getTableByName(TABLE_CONTRIBUTOR);
     private final Table table2 = schema.getTableByName(TABLE_ROLE);
+
+    public void testQueryMaxRows0() throws Exception {
+        final MockDataContext dc = new MockDataContext("sch", "tab", "1");
+        final Table table = dc.getDefaultSchema().getTables()[0];
+        final DataSet dataSet = dc.query().from(table).selectAll().limit(0).execute();
+        assertTrue(dataSet instanceof EmptyDataSet);
+        assertFalse(dataSet.next());
+        dataSet.close();
+    }
 
     // see issue METAMODEL-100
     public void testSelectFromColumnsWithSameName() throws Exception {
@@ -214,6 +224,56 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         assertTrue(ds.next());
         assertEquals("Row[values=[4, yo]]", ds.getRow().toString());
         assertFalse(ds.next());
+    }
+
+    public void testScalarFunctionSelect() throws Exception {
+        MockDataContext dc = new MockDataContext("sch", "tab", "1");
+        Table table = dc.getDefaultSchema().getTables()[0];
+
+        Query query = dc.query().from(table).select("foo").select(FunctionType.TO_NUMBER, "foo").select("bar")
+                .select(FunctionType.TO_STRING, "bar").select(FunctionType.TO_NUMBER, "bar").toQuery();
+        assertEquals(
+                "SELECT tab.foo, TO_NUMBER(tab.foo), tab.bar, TO_STRING(tab.bar), TO_NUMBER(tab.bar) FROM sch.tab",
+                query.toSql());
+
+        DataSet ds = dc.executeQuery(query);
+        assertTrue(ds.next());
+        Row row;
+
+        row = ds.getRow();
+        assertEquals("Row[values=[1, 1, hello, hello, null]]", row.toString());
+        Object value1 = row.getValue(1);
+        assertEquals(Integer.class, value1.getClass());
+
+        assertTrue(ds.next());
+
+        row = ds.getRow();
+        assertEquals("Row[values=[2, 2, 1, 1, 1]]", row.toString());
+        Object value2 = row.getValue(1);
+        assertEquals(Integer.class, value2.getClass());
+        Object value3 = row.getValue(4);
+        assertEquals(Integer.class, value3.getClass());
+
+        assertTrue(ds.next());
+        ds.close();
+    }
+
+    public void testScalarFunctionWhere() throws Exception {
+        MockDataContext dc = new MockDataContext("sch", "tab", "1");
+        Table table = dc.getDefaultSchema().getTables()[0];
+
+        Query query = dc.query().from(table).select("foo").where(FunctionType.TO_NUMBER, "bar").eq(1).toQuery();
+        assertEquals("SELECT tab.foo FROM sch.tab WHERE TO_NUMBER(tab.bar) = 1", query.toSql());
+
+        DataSet ds = dc.executeQuery(query);
+        assertTrue(ds.next());
+        Row row;
+
+        row = ds.getRow();
+        assertEquals("Row[values=[2]]", row.toString());
+
+        assertFalse(ds.next());
+        ds.close();
     }
 
     public void testSelectItemReferencesToFromItems() throws Exception {
@@ -454,6 +514,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
                 q.toString());
 
         DataContext dc = getDataContext();
+
         DataSet data = dc.executeQuery(q);
         assertEquals(1, data.getSelectItems().length);
         assertEquals("SUM(r.project_id)", data.getSelectItems()[0].toString());

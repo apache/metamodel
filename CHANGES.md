@@ -1,7 +1,43 @@
-### Apache MetaModel (unreleased work)
+### Apache MetaModel (work in progress)
+
+ * [METAMODEL-198] - Fixed support for JDBC TIMESTAMP precision to match the underlying database's precision.
+
+### Apache MetaModel 4.4.0
+
+ * [METAMODEL-192] - Added support for Scalar functions. We have a basic set of datatype conversion functions as well as support for UDF via implementing the ScalarFunction interface.
+ * [METAMODEL-194] - Added support for setting the "Max rows" flag of a query to 0. This will always return an empty dataset.
+ * [METAMODEL-173] - Improved CSV writing to non-file destinations. Added .write() and .append() methods to Resource interface.
+ * [METAMODEL-170] - Dropped support for Java 6.
+ * [METAMODEL-176] - Trimmed the transient dependencies of the JDBC module.
+ * [METAMODEL-178] - Added AggregateFunction and ScalarFunction interfaces. Changed FunctionType enum to be super-interface of those. Compatibility is retained but a recompile of code using FunctionType is needed.
+ * [METAMODEL-188] - Changed OperatorType enum to be an interface. Compatibility is retained but a recompile of code is needed.
+ * [METAMODEL-179] - Ensured that HdfsResource is not closing a shared HDFS file system reference.
+ * [METAMODEL-171] - Made integration tests for Cassandra module function properly in all environments.
+ * [METAMODEL-177] - Fixed a bug pertaining to the serializability of HdfsResource.
+ * [METAMODEL-172] - ElasticSearch Date types should be converted properly.
+ * [METAMODEL-184] - ElasticSearch querying with "IS NULL" and "IS NOT NULL" now uses MissingFilter and ExistsFilter.
+ * [METAMODEL-190] - Improved decimal number support in Excel module.
+ * [METAMODEL-187] - Improved memory consumption of Excel module by passing random-access-file handles to POI when possible.
+ * [METAMODEL-191] - Resolved a number of dependency conflicts/overlaps when combining multiple MetaModel modules.
+ * [METAMODEL-157] - Fixed an issue in DELETE FROM statements with WHERE clauses requiring client-side data type conversion on JDBC databases.
+ * [METAMODEL-182] - Improved HdfsResource and FileResource directory-based implementations by adding also getSize() and getLastModified() directory-based implementations.
+
+### Apache MetaModel 4.3.6
+
+ * [METAMODEL-161] - Upgraded HBase client API to version 1.1.1
+ * [METAMODEL-160] - Added support for Apache Hive via the JDBC module of MetaModel.
+ * [METAMODEL-162] - Made HdfsResource Serializable and added property getters
+ * [METAMODEL-163] - Made FileResource and HdfsResource work with folders containing file chunks instead of only single files
+ * [METAMODEL-104] - Added 'hadoop' and 'hbase' modules to dependencies of 'MetaModel-full'.
+ * [METAMODEL-164] - Fixed a bug in data type parsing of ElasticSearch mapping document.
+
+### Apache MetaModel 4.3.5
 
  * [METAMODEL-148] - Added a 'hadoop' module with a HdfsResource class to allow CSV, Excel and Fixed-width file access on HDFS.
+ * [METAMODEL-152] - Fixed an issue of not clearing schema cache when refreshSchemas() is invoked.
  * [METAMODEL-149] - Added support for COUNTER data type in Cassandra.
+ * [METAMODEL-151] - Added support for DOUBLE data type mapping in PostgreSQL
+ * [METAMODEL-154] - Use embedded Cassandra server for integration tests.
 
 ### Apache MetaModel 4.3.4
 

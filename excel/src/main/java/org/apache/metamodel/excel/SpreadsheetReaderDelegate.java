@@ -18,13 +18,10 @@
  */
 package org.apache.metamodel.excel;
 
-import java.io.InputStream;
-
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.util.Ref;
 
 /**
  * Delegate for spreadsheet-implementation specific operations in an
@@ -32,12 +29,10 @@ import org.apache.metamodel.util.Ref;
  */
 interface SpreadsheetReaderDelegate {
 
-	public void notifyTablesModified(Ref<InputStream> inputStreamRef);
+    public void notifyTablesModified();
 
-	public Schema createSchema(InputStream inputStream, String schemaName)
-			throws Exception;
+    public Schema createSchema(String schemaName) throws Exception;
 
-	public DataSet executeQuery(InputStream inputStream, Table table,
-			Column[] columns, int maxRows) throws Exception;
+    public DataSet executeQuery(Table table, Column[] columns, int maxRows) throws Exception;
 
 }

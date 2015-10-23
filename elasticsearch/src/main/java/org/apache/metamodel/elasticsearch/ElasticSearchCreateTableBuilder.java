@@ -59,7 +59,7 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
         final IndicesAdminClient indicesAdmin = dataContext.getElasticSearchClient().admin().indices();
         final String indexName = dataContext.getIndexName();
 
-        final List<Object> sourceProperties = new ArrayList<Object>();
+        final List<Object> sourceProperties = new ArrayList<>();
         for (Column column : table.getColumns()) {
             // each column is defined as a property pair of the form: ("field1",
             // "type=string,store=true")
@@ -87,7 +87,6 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
 
         final MutableSchema schema = (MutableSchema) getSchema();
         schema.addTable(table);
-
         return table;
     }
 

@@ -18,11 +18,13 @@
  */
 package org.apache.metamodel.jdbc.integrationtests;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.table.TableModel;
 
@@ -72,6 +74,15 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         }
 
         JdbcTestTemplates.compositeKeyCreation(getDataContext(), "metamodel_test_composite_keys");
+    }
+    
+    public void testTimestampValueInsertSelect() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+        
+        final Connection connection = getConnection();
+        JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.MICROSECONDS, "TIMESTAMP(6)");
     }
 
     public void testInterpretationOfNull() throws Exception {

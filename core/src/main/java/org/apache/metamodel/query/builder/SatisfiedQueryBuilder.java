@@ -24,6 +24,7 @@ import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.schema.Column;
 
 /**
@@ -77,7 +78,9 @@ public interface SatisfiedQueryBuilder<B extends SatisfiedQueryBuilder<?>> {
      */
     public SatisfiedQueryBuilder<B> maxRows(int maxRows);
 
-    public FunctionSelectBuilder<B> select(FunctionType functionType, Column column);
+    public FunctionSelectBuilder<B> select(FunctionType function, Column column);
+
+    public SatisfiedQueryBuilder<?> select(FunctionType function, String columnName);
 
     public CountSelectBuilder<B> selectCount();
 
@@ -86,6 +89,10 @@ public interface SatisfiedQueryBuilder<B extends SatisfiedQueryBuilder<?>> {
     public WhereBuilder<B> where(Column column);
 
     public WhereBuilder<B> where(String columnName);
+    
+    public WhereBuilder<B> where(ScalarFunction function, Column column);
+    
+    public WhereBuilder<B> where(ScalarFunction function, String columnName);
 
     public SatisfiedQueryBuilder<B> where(FilterItem... filters);
 

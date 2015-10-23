@@ -111,7 +111,8 @@ public class DB2QueryRewriter extends DefaultQueryRewriter implements IQueryRewr
                 return baseQueryString + " WHERE metamodel_row_number > " + (firstRow - 1);
             }
 
-            return baseQueryString + " WHERE metamodel_row_number BETWEEN " + firstRow + " AND " + (firstRow - 1 + maxRows);
+            return baseQueryString + " WHERE metamodel_row_number BETWEEN " + firstRow + " AND "
+                    + (firstRow - 1 + maxRows);
         }
     }
 
@@ -125,26 +126,26 @@ public class DB2QueryRewriter extends DefaultQueryRewriter implements IQueryRewr
 
     @Override
     public String rewriteFilterItem(FilterItem item) {
-        SelectItem _selectItem = item.getSelectItem();
-        Object _operand = item.getOperand();
-        OperatorType _operator = item.getOperator();
-        if (null != _selectItem && _operand != null) {
-            ColumnType columnType = _selectItem.getExpectedColumnType();
+        final SelectItem selectItem = item.getSelectItem();
+        final Object itemOperand = item.getOperand();
+        final OperatorType operator = item.getOperator();
+        if (null != selectItem && itemOperand != null) {
+            ColumnType columnType = selectItem.getExpectedColumnType();
             if (columnType != null) {
                 if (columnType.isTimeBased()) {
                     // special logic for DB2 based time operands.
 
                     StringBuilder sb = new StringBuilder();
-                    sb.append(_selectItem.getSameQueryAlias(true));
-                    final Object operand = FilterItem.appendOperator(sb, _operand, _operator);
+                    sb.append(selectItem.getSameQueryAlias(true));
+                    final Object operand = FilterItem.appendOperator(sb, itemOperand, operator);
 
                     if (operand instanceof SelectItem) {
                         final String selectItemString = ((SelectItem) operand).getSameQueryAlias(true);
                         sb.append(selectItemString);
                     } else {
-                        Date date = TimeComparator.toDate(_operand);
+                        Date date = TimeComparator.toDate(itemOperand);
                         if (date == null) {
-                            throw new IllegalStateException("Could not convert " + _operand + " to date");
+                            throw new IllegalStateException("Could not convert " + itemOperand + " to date");
                         }
 
                         final String sqlValue = FormatHelper.formatSqlTime(columnType, date, true, "('", "')");

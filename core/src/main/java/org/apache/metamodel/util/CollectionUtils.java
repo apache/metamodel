@@ -173,8 +173,8 @@ public final class CollectionUtils {
         if (existingArray == null) {
             return elements;
         }
-        Object result = Array.newInstance(existingArray.getClass().getComponentType(), existingArray.length
-                + elements.length);
+        Object result = Array.newInstance(existingArray.getClass().getComponentType(),
+                existingArray.length + elements.length);
         System.arraycopy(existingArray, 0, result, 0, existingArray.length);
         System.arraycopy(elements, 0, result, existingArray.length, elements.length);
         return (E[]) result;
@@ -197,7 +197,8 @@ public final class CollectionUtils {
         return result;
     }
 
-    private static <E> void addElements(boolean removeDuplicates, final List<E> result, Collection<? extends E> elements) {
+    private static <E> void addElements(boolean removeDuplicates, final List<E> result,
+            Collection<? extends E> elements) {
         for (E item : elements) {
             if (removeDuplicates) {
                 if (!result.contains(item)) {

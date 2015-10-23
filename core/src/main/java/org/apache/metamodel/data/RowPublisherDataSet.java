@@ -18,8 +18,11 @@
  */
 package org.apache.metamodel.data;
 
+import java.io.Closeable;
+
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.util.Action;
+import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.SharedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,80 +36,85 @@ import org.slf4j.LoggerFactory;
  */
 public final class RowPublisherDataSet extends AbstractDataSet {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(RowPublisherDataSet.class);
+    private static final Logger logger = LoggerFactory.getLogger(RowPublisherDataSet.class);
 
-	private final int _maxRows;
-	private final Action<RowPublisher> _publishAction;
-	private RowPublisherImpl _rowPublisher;
-	private boolean _closed;
+    private final int _maxRows;
+    private final Action<RowPublisher> _publishAction;
+    private final Closeable[] _closeables;
+    private RowPublisherImpl _rowPublisher;
+    private boolean _closed;
 
-	public RowPublisherDataSet(SelectItem[] selectItems, int maxRows,
-			Action<RowPublisher> publishAction) {
-	    super(selectItems);
-		_maxRows = maxRows;
-		_publishAction = publishAction;
-		_closed = false;
-	}
+    public RowPublisherDataSet(SelectItem[] selectItems, int maxRows, Action<RowPublisher> publishAction) {
+        this(selectItems, maxRows, publishAction, new Closeable[0]);
+    }
 
-	public int getMaxRows() {
-		return _maxRows;
-	}
+    public RowPublisherDataSet(SelectItem[] selectItems, int maxRows, Action<RowPublisher> publishAction,
+            Closeable... closeables) {
+        super(selectItems);
+        _maxRows = maxRows;
+        _publishAction = publishAction;
+        _closed = false;
+        _closeables = closeables;
+    }
 
-	@Override
-	public void close() {
-		super.close();
-		_closed = true;
-		if (_rowPublisher != null) {
-		    _rowPublisher.finished();
-		    _rowPublisher = null;
-		}
-	}
+    public int getMaxRows() {
+        return _maxRows;
+    }
 
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-		if (!_closed) {
-			logger.warn(
-					"finalize() invoked, but DataSet is not closed. Invoking close() on {}",
-					this);
-			close();
-		}
-	}
+    @Override
+    public void close() {
+        super.close();
+        _closed = true;
+        if (_rowPublisher != null) {
+            _rowPublisher.finished();
+            _rowPublisher = null;
+        }
+        if (_closeables != null) {
+            FileHelper.safeClose((Object[]) _closeables);
+        }
+    }
 
-	@Override
-	public boolean next() {
-		if (_rowPublisher == null) {
-			// first time, create the publisher
-			_rowPublisher = new RowPublisherImpl(this);
-			logger.info("Starting separate thread for publishing action: {}",
-					_publishAction);
-			Runnable runnable = new Runnable() {
-				public void run() {
-					boolean successful = false;
-					try {
-						_publishAction.run(_rowPublisher);
-						logger.debug("Publshing action finished!");
-						successful = true;
-					} catch (Exception e) {
-						_rowPublisher.failed(e);
-					}
-					if (successful) {
-						_rowPublisher.finished();
-					}
-				};
-			};
-			SharedExecutorService.get().submit(runnable);
-		}
-		return _rowPublisher.next();
-	}
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        if (!_closed) {
+            logger.warn("finalize() invoked, but DataSet is not closed. Invoking close() on {}", this);
+            close();
+        }
+    }
 
-	@Override
-	public Row getRow() {
-		if (_rowPublisher == null) {
-			return null;
-		}
-		return _rowPublisher.getRow();
-	}
+    @Override
+    public boolean next() {
+        if (_rowPublisher == null) {
+            // first time, create the publisher
+            _rowPublisher = new RowPublisherImpl(this);
+            logger.info("Starting separate thread for publishing action: {}", _publishAction);
+            Runnable runnable = new Runnable() {
+                public void run() {
+                    boolean successful = false;
+                    try {
+                        _publishAction.run(_rowPublisher);
+                        logger.debug("Publshing action finished!");
+                        successful = true;
+                    } catch (Exception e) {
+                        _rowPublisher.failed(e);
+                    }
+                    if (successful) {
+                        _rowPublisher.finished();
+                    }
+                };
+            };
+            SharedExecutorService.get().submit(runnable);
+        }
+        return _rowPublisher.next();
+    }
+
+    @Override
+    public Row getRow() {
+        if (_rowPublisher == null) {
+            return null;
+        }
+        return _rowPublisher.getRow();
+    }
 
 }
