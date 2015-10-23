@@ -56,8 +56,7 @@ import org.apache.metamodel.util.NumberComparator;
  * dataset:
  * <ul>
  * <li>First row: The first row (aka. offset) of the result of the query.</li>
- * <li>Max rows: The maximum amount of rows to return when executing the query.
- * </li>
+ * <li>Max rows: The maximum amount of rows to return when executing the query.</li>
  * </ul>
  * 
  * Queries are executed using the DataContext.executeQuery method or can
