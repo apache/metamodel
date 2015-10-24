@@ -39,6 +39,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.io.BaseEncoding;
 
+/**
+ * The class takes care of sending an {@link HttpRequestBase} or a Cypher query
+ * to the specified Neo4j instance. Also takes care of the authentication.
+ * 
+ */
 public class Neo4jRequestWrapper {
 
 	private static final Logger logger = LoggerFactory
@@ -46,7 +51,7 @@ public class Neo4jRequestWrapper {
 
 	private final CloseableHttpClient _httpClient;
 	private final HttpHost _httpHost;
-	private final HttpPost _httpPost;
+	private final HttpPost _cypherQueryHttpPost;
 	private final String _username;
 	private final String _password;
 
@@ -56,7 +61,7 @@ public class Neo4jRequestWrapper {
 		_httpHost = httpHost;
 		_username = username;
 		_password = password;
-		_httpPost = new HttpPost("/db/data/transaction/commit");
+		_cypherQueryHttpPost = new HttpPost("/db/data/transaction/commit");
 	}
 
 	public Neo4jRequestWrapper(CloseableHttpClient httpClient, HttpHost httpHost) {
@@ -104,15 +109,15 @@ public class Neo4jRequestWrapper {
 			cypherQueryRequest.put("statements", statementsArray);
 
 			String requestBody = cypherQueryRequest.toString();
-			_httpPost.setEntity(new StringEntity(requestBody,
+			_cypherQueryHttpPost.setEntity(new StringEntity(requestBody,
 					ContentType.APPLICATION_JSON));
 
-			String responseJSONString = executeRestRequest(_httpPost);
+			String responseJSONString = executeRestRequest(_cypherQueryHttpPost);
 			return responseJSONString;
 		} catch (JSONException e) {
 			logger.error(
 					"Error occured while constructing JSON request body for "
-							+ _httpPost, e);
+							+ _cypherQueryHttpPost, e);
 			throw new IllegalStateException(e);
 		}
 
