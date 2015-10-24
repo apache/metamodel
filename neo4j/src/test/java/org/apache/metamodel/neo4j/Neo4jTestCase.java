@@ -28,75 +28,79 @@ import junit.framework.TestCase;
 
 public abstract class Neo4jTestCase extends TestCase {
 
-    private String _hostname;
-    private int _port;
-    private String _username;
-    private String _password;
-    private boolean _configured;
+	private String _hostname;
+	private int _port = Neo4jDataContext.DEFAULT_PORT;
+	private String _username;
+	private String _password;
+	private boolean _configured;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
 
-        File file = new File(getPropertyFilePath());
-        if (file.exists()) {
-            loadPropertyFile(file);
-        } else {
-            // Continuous integration case
-            if (System.getenv("CONTINUOUS_INTEGRATION") != null) {
-                File travisFile = new File("../travis-metamodel-integrationtest-configuration.properties");
-                if (travisFile.exists()) {
-                    loadPropertyFile(travisFile);
-                } else {
-                    _configured = false;
-                }
-            } else {
-                _configured = false;
-            }
-        }
-    }
-    
-    private String getPropertyFilePath() {
-        String userHome = System.getProperty("user.home");
-        return userHome + "/metamodel-integrationtest-configuration.properties";
-    }
-    
-    protected String getInvalidConfigurationMessage() {
-        return "!!! WARN !!! Neo4j module ignored\n" + "Please configure Neo4j connection locally ("
-                + getPropertyFilePath() + "), to run integration tests";
-    }
-    
-    private void loadPropertyFile(File file) throws IOException, FileNotFoundException {
-        Properties properties = new Properties();
-        properties.load(new FileReader(file));
-        _hostname = properties.getProperty("neo4j.hostname");
-        String portString = properties.getProperty("neo4j.port");
-        if (portString != null) {
-            _port = Integer.parseInt(portString); 
+		File file = new File(getPropertyFilePath());
+		if (file.exists()) {
+			loadPropertyFile(file);
+		} else {
+			// Continuous integration case
+			if (System.getenv("CONTINUOUS_INTEGRATION") != null) {
+				File travisFile = new File(
+						"../travis-metamodel-integrationtest-configuration.properties");
+				if (travisFile.exists()) {
+					loadPropertyFile(travisFile);
+				} else {
+					_configured = false;
+				}
+			} else {
+				_configured = false;
+			}
+		}
+	}
 
-            _username = properties.getProperty("neo4j.username");
-            _password = properties.getProperty("neo4j.password");
-            _configured = (_hostname != null && !_hostname.isEmpty());
-        } else {
-            _configured = false;
-        }
+	private String getPropertyFilePath() {
+		String userHome = System.getProperty("user.home");
+		return userHome + "/metamodel-integrationtest-configuration.properties";
+	}
 
-        if (_configured) {
-            System.out.println("Loaded Neo4j configuration. Hostname=" + _hostname + ", port=" + _port + ", username=" + _username);
-        }
-    }
-    
-    public boolean isConfigured() {
-        return _configured;
-    }
+	protected String getInvalidConfigurationMessage() {
+		return "!!! WARN !!! Neo4j module ignored\n"
+				+ "Please configure Neo4j connection locally ("
+				+ getPropertyFilePath() + "), to run integration tests";
+	}
 
-    public String getHostname() {
-        return _hostname;
-    }
-    
-    public int getPort() {
-        return _port;
-    }
+	private void loadPropertyFile(File file) throws IOException,
+			FileNotFoundException {
+		Properties properties = new Properties();
+		properties.load(new FileReader(file));
+		_hostname = properties.getProperty("neo4j.hostname");
+		String portString = properties.getProperty("neo4j.port");
+		if (portString != null) {
+			_port = Integer.parseInt(portString);
+		}
+		_username = properties.getProperty("neo4j.username");
+		_password = properties.getProperty("neo4j.password");
+
+		_configured = (_hostname != null && !_hostname.isEmpty());
+
+		if (_configured) {
+			System.out
+					.println("Loaded Neo4j configuration. Hostname="
+							+ _hostname + ", port=" + _port + ", username="
+							+ _username);
+		}
+	}
+
+	public boolean isConfigured() {
+		return _configured;
+	}
+
+	public String getHostname() {
+		return _hostname;
+	}
+
+	public int getPort() {
+		return _port;
+	}
 
 	public String getUsername() {
 		return _username;
