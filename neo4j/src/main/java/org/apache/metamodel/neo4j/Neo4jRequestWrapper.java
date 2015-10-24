@@ -20,7 +20,6 @@ package org.apache.metamodel.neo4j;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.HashMap;
 
 import org.apache.http.HttpHost;
@@ -37,6 +36,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.io.BaseEncoding;
 
 public class Neo4jRequestWrapper {
 
@@ -69,10 +70,11 @@ public class Neo4jRequestWrapper {
 	public String executeRestRequest(HttpRequestBase httpRequest,
 			String username, String password) {
 		if ((username != null) && (password != null)) {
-			String credentials = Base64.getEncoder().encodeToString(
+			String base64credentials = BaseEncoding.base64().encode(
 					(username + ":" + password)
 							.getBytes(StandardCharsets.UTF_8));
-			httpRequest.addHeader("Authorization", "Basic " + credentials);
+			httpRequest
+					.addHeader("Authorization", "Basic " + base64credentials);
 		}
 
 		try {
