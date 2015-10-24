@@ -108,7 +108,7 @@ public class Neo4jRequestWrapperTest extends Neo4jTestCase {
 				base64Encoded = base64Encoded.replace("Basic ", "");
 				String decoded = new String(BaseEncoding.base64().decode(
 						base64Encoded), StandardCharsets.UTF_8);
-				assertEquals(getUsername() + ":" + getPassword(), decoded);
+				assertEquals("testUsername:testPassword", decoded);
 
 				assertEquals(
 						"{\"statements\":[{\"statement\":\"MATCH (n) RETURN n;\"}]}",
@@ -121,8 +121,8 @@ public class Neo4jRequestWrapperTest extends Neo4jTestCase {
 		};
 
 		Neo4jRequestWrapper wrapper = new Neo4jRequestWrapper(mockHttpClient,
-				new HttpHost(getHostname(), getPort()), getUsername(),
-				getPassword());
+				new HttpHost(getHostname(), getPort()), "testUsername",
+				"testPassword");
 		wrapper.executeCypherQuery("MATCH (n) RETURN n;");
 		// Assertions are in the HttpClient
 	}
