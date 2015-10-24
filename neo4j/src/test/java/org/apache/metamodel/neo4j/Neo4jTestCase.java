@@ -30,6 +30,8 @@ public abstract class Neo4jTestCase extends TestCase {
 
     private String _hostname;
     private int _port;
+    private String _username;
+    private String _password;
     private boolean _configured;
 
     @Override
@@ -72,14 +74,15 @@ public abstract class Neo4jTestCase extends TestCase {
         if (portString != null) {
             _port = Integer.parseInt(portString); 
 
-            // TODO: Add username and password support
+            _username = properties.getProperty("neo4j.username");
+            _password = properties.getProperty("neo4j.password");
             _configured = (_hostname != null && !_hostname.isEmpty());
         } else {
             _configured = false;
         }
 
         if (_configured) {
-            System.out.println("Loaded Neo4j configuration. Hostname=" + _hostname + ", port=" + _port);
+            System.out.println("Loaded Neo4j configuration. Hostname=" + _hostname + ", port=" + _port + ", username=" + _username);
         }
     }
     
@@ -94,5 +97,13 @@ public abstract class Neo4jTestCase extends TestCase {
     public int getPort() {
         return _port;
     }
+
+	public String getUsername() {
+		return _username;
+	}
+
+	public String getPassword() {
+		return _password;
+	}
 
 }

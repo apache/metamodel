@@ -41,69 +41,77 @@ import org.junit.Test;
 @SuppressWarnings("deprecation")
 public class Neo4jRequestWrapperTest extends Neo4jTestCase {
 
-    private class MockClosableHttpResponse extends BasicHttpResponse implements CloseableHttpResponse {
+	private class MockClosableHttpResponse extends BasicHttpResponse implements
+			CloseableHttpResponse {
 
-        public MockClosableHttpResponse(ProtocolVersion ver, int code, String reason) {
-            super(ver, code, reason);
-        }
-        
-        @Override
-        public HttpEntity getEntity() {
-            BasicHttpEntity basicHttpEntity = new BasicHttpEntity();
-            basicHttpEntity.setContent(new StringBufferInputStream("MockContent for BasicHttpEntity"));
-            return basicHttpEntity;
-        }
+		public MockClosableHttpResponse(ProtocolVersion ver, int code,
+				String reason) {
+			super(ver, code, reason);
+		}
 
-        @Override
-        public void close() throws IOException {
-            // Do nothing
-        }
-        
-    }
-    
-    @Test
-    public void testCreateCypherQuery() {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
-        
-        CloseableHttpClient mockHttpClient = new CloseableHttpClient() {
+		@Override
+		public HttpEntity getEntity() {
+			BasicHttpEntity basicHttpEntity = new BasicHttpEntity();
+			basicHttpEntity.setContent(new StringBufferInputStream(
+					"MockContent for BasicHttpEntity"));
+			return basicHttpEntity;
+		}
 
-            @Override
-            public void close() throws IOException {
-                // Do nothing
-            }
+		@Override
+		public void close() throws IOException {
+			// Do nothing
+		}
 
-            @Override
-            public HttpParams getParams() {
-                // Do nothing
-                return null;
-            }
+	}
 
-            @Override
-            public ClientConnectionManager getConnectionManager() {
-                // Do nothing
-                return null;
-            }
+	@Test
+	public void testCreateCypherQuery() {
+		if (!isConfigured()) {
+			System.err.println(getInvalidConfigurationMessage());
+			return;
+		}
 
-            @Override
-            protected CloseableHttpResponse doExecute(HttpHost target, HttpRequest request, HttpContext context)
-                    throws IOException, ClientProtocolException {
-                assertTrue(request instanceof HttpPost);
-                HttpPost httpPost = (HttpPost) request;
+		CloseableHttpClient mockHttpClient = new CloseableHttpClient() {
 
-                assertEquals("{\"statements\":[{\"statement\":\"MATCH (n) RETURN n;\"}]}",
-                        EntityUtils.toString(httpPost.getEntity()));
+			@Override
+			public void close() throws IOException {
+				// Do nothing
+			}
 
-                CloseableHttpResponse mockResponse = new MockClosableHttpResponse(HttpVersion.HTTP_1_1, 200, "OK");
-                return mockResponse;
-            }
-        };
+			@Override
+			public HttpParams getParams() {
+				// Do nothing
+				return null;
+			}
 
-        Neo4jRequestWrapper wrapper = new Neo4jRequestWrapper(mockHttpClient, new HttpHost(getHostname(), getPort()));
-        wrapper.executeCypherQuery("MATCH (n) RETURN n;");
-        // Assertions are in the HttpClient
-    }
+			@Override
+			public ClientConnectionManager getConnectionManager() {
+				// Do nothing
+				return null;
+			}
+
+			@Override
+			protected CloseableHttpResponse doExecute(HttpHost target,
+					HttpRequest request, HttpContext context)
+					throws IOException, ClientProtocolException {
+				assertTrue(request instanceof HttpPost);
+				HttpPost httpPost = (HttpPost) request;
+
+				assertEquals(
+						"{\"statements\":[{\"statement\":\"MATCH (n) RETURN n;\"}]}",
+						EntityUtils.toString(httpPost.getEntity()));
+
+				CloseableHttpResponse mockResponse = new MockClosableHttpResponse(
+						HttpVersion.HTTP_1_1, 200, "OK");
+				return mockResponse;
+			}
+		};
+
+		Neo4jRequestWrapper wrapper = new Neo4jRequestWrapper(mockHttpClient,
+				new HttpHost(getHostname(), getPort()), getUsername(),
+				getPassword());
+		wrapper.executeCypherQuery("MATCH (n) RETURN n;");
+		// Assertions are in the HttpClient
+	}
 
 }

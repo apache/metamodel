@@ -69,29 +69,29 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
 
     private final HttpHost _httpHost;
 
-    public Neo4jDataContext(String hostname, int port, SimpleTableDef... tableDefs) {
+    public Neo4jDataContext(String hostname, int port, String username, String password, SimpleTableDef... tableDefs) {
         _httpHost = new HttpHost(hostname, port);
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
+    	final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, username, password);
         _tableDefs = tableDefs;
     }
 
-    public Neo4jDataContext(String hostname, int port) {
-        _httpHost = new HttpHost(hostname, port);
-        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
-        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
+    public Neo4jDataContext(String hostname, int port, String username, String password) {
+    	_httpHost = new HttpHost(hostname, port);
+        final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, username, password);
         _tableDefs = detectTableDefs();
     }
 
     public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient) {
-        _httpHost = new HttpHost(hostname, port);
-        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
+    	_httpHost = new HttpHost(hostname, port);
+        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, null, null);
         _tableDefs = detectTableDefs();
     }
 
     public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient, SimpleTableDef... tableDefs) {
         _httpHost = new HttpHost(hostname, port);
-        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
+        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, null, null);
         _tableDefs = tableDefs;
     }
 
