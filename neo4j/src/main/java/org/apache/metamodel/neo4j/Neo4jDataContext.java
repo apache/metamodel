@@ -85,13 +85,13 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
 
     public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient) {
     	_httpHost = new HttpHost(hostname, port);
-        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, null, null);
+        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
         _tableDefs = detectTableDefs();
     }
 
     public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient, SimpleTableDef... tableDefs) {
         _httpHost = new HttpHost(hostname, port);
-        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, null, null);
+        _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
         _tableDefs = tableDefs;
     }
 

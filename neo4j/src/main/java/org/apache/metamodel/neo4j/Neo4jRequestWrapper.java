@@ -58,6 +58,10 @@ public class Neo4jRequestWrapper {
 		_httpPost = new HttpPost("/db/data/transaction/commit");
 	}
 
+	public Neo4jRequestWrapper(CloseableHttpClient httpClient, HttpHost httpHost) {
+		this(httpClient, httpHost, null, null);
+	}
+
 	public String executeRestRequest(HttpRequestBase httpRequest) {
 		return executeRestRequest(httpRequest, _username, _password);
 	}
@@ -65,10 +69,10 @@ public class Neo4jRequestWrapper {
 	public String executeRestRequest(HttpRequestBase httpRequest,
 			String username, String password) {
 		if ((username != null) && (password != null)) {
-			byte[] credentials = Base64.getEncoder().encode(
-					(username + ":" + password).getBytes(StandardCharsets.UTF_8));
-			httpRequest.addHeader("Authorization", "Basic "
-					+ new String(credentials, StandardCharsets.UTF_8));
+			String credentials = Base64.getEncoder().encodeToString(
+					(username + ":" + password)
+							.getBytes(StandardCharsets.UTF_8));
+			httpRequest.addHeader("Authorization", "Basic " + credentials);
 		}
 
 		try {
