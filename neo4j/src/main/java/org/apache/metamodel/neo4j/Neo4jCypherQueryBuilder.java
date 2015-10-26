@@ -91,8 +91,12 @@ public class Neo4jCypherQueryBuilder {
             if (addComma) {
                 cypherBuilder.append(",");
             }
-            cypherBuilder.append("n.");
-            cypherBuilder.append(nodePropertyColumnName);
+            if (nodePropertyColumnName.equals("_id")) {
+                cypherBuilder.append("id(n)");
+            } else {
+                cypherBuilder.append("n.");
+                cypherBuilder.append(nodePropertyColumnName);
+            }
             addComma = true;
         }
         int k = 0;

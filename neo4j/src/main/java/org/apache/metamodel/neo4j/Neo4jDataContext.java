@@ -238,7 +238,8 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
 
     private List<String> getAllPropertiesPerNode(JSONObject node) {
         List<String> properties = new ArrayList<String>();
-
+        properties.add("_id");
+        
         String propertiesEndpoint;
         try {
             propertiesEndpoint = node.getString("properties");

@@ -137,13 +137,13 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 		List<String> personColumnNames = Arrays.asList(tablePerson
 				.getColumnNames());
 		assertEquals(
-				"[name, age, rel_HAS_READ, rel_HAS_READ#rating, rel_HAS_BROWSED]",
+				"[_id, name, age, rel_HAS_READ, rel_HAS_READ#rating, rel_HAS_BROWSED]",
 				personColumnNames.toString());
 
 		Table tableBook = schema.getTableByName("JUnitBook");
 		List<String> bookColumnNames = Arrays
 				.asList(tableBook.getColumnNames());
-		assertEquals("[title]", bookColumnNames.toString());
+		assertEquals("[_id, title]", bookColumnNames.toString());
 	}
 
 	@Test
@@ -291,6 +291,30 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         String bookNodeId = new JSONObject(bookNodeIdJSONObject)
                 .getJSONArray("results").getJSONObject(0).getJSONArray("data")
                 .getJSONObject(0).getJSONArray("row").getString(0);
+        
+        String helenaNodeIdJSONObject = requestWrapper
+                .executeCypherQuery("MATCH (n:JUnitPerson)"
+                        + " WHERE n.name = 'Helena'"
+                        + " RETURN id(n);");
+        String helenaNodeId = new JSONObject(helenaNodeIdJSONObject)
+                .getJSONArray("results").getJSONObject(0).getJSONArray("data")
+                .getJSONObject(0).getJSONArray("row").getString(0);
+        
+        String tomaszNodeIdJSONObject = requestWrapper
+                .executeCypherQuery("MATCH (n:JUnitPerson)"
+                        + " WHERE n.name = 'Tomasz'"
+                        + " RETURN id(n);");
+        String tomaszNodeId = new JSONObject(tomaszNodeIdJSONObject)
+                .getJSONArray("results").getJSONObject(0).getJSONArray("data")
+                .getJSONObject(0).getJSONArray("row").getString(0);
+        
+        String philomeenaNodeIdJSONObject = requestWrapper
+                .executeCypherQuery("MATCH (n:JUnitPerson)"
+                        + " WHERE n.name = 'Philomeena'"
+                        + " RETURN id(n);");
+        String philomeenaNodeId = new JSONObject(philomeenaNodeIdJSONObject)
+                .getJSONArray("results").getJSONObject(0).getJSONArray("data")
+                .getJSONObject(0).getJSONArray("row").getString(0);
 
         Neo4jDataContext strategy = new Neo4jDataContext(getHostname(),
                 getPort(), getUsername(), getPassword());
@@ -307,15 +331,15 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 
                 @Override
                 public int compare(Row arg0, Row arg1) {
-                    return arg0.toString().compareTo(arg1.toString());
+                    return arg0.getValue(1).toString().compareTo(arg1.getValue(1).toString());
                 }
             });
             assertEquals(3, dataSet1Rows.size());
-            assertEquals("Row[values=[Helena, 100, null, null, null]]", dataSet1Rows.get(0)
+            assertEquals("Row[values=[" + helenaNodeId + ", Helena, 100, null, null, null]]", dataSet1Rows.get(0)
                     .toString());
-            assertEquals("Row[values=[Philomeena, 18, null, " + bookNodeId + ", null]]", dataSet1Rows.get(1)
+            assertEquals("Row[values=[" + philomeenaNodeId + ", Philomeena, 18, null, " + bookNodeId + ", null]]", dataSet1Rows.get(1)
                     .toString());
-            assertEquals("Row[values=[Tomasz, 26, " + bookNodeId + ", null, 5]]",
+            assertEquals("Row[values=[" + tomaszNodeId + ", Tomasz, 26, " + bookNodeId + ", null, 5]]",
                     dataSet1Rows.get(2).toString());
         }
     }
