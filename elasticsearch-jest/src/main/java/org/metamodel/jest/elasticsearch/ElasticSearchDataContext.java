@@ -160,7 +160,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
                 final String documentType = entry.getKey();
 
                 try {
-                    final SimpleTableDef table = detectTable(entry.getValue().getAsJsonObject(), documentType);
+                    final SimpleTableDef table = detectTable(entry.getValue().getAsJsonObject().get("properties").getAsJsonObject(), documentType);
                     result.add(table);
                 } catch (Exception e) {
                     logger.error("Unexpected error during detectTable for document type '{}'", documentType, e);
@@ -239,8 +239,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         final QueryBuilder queryBuilder = createQueryBuilderForSimpleWhere(whereItems, LogicalOperator.AND);
         if (queryBuilder != null) {
             // where clause can be pushed down to an ElasticSearch query
-            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            searchSourceBuilder.query(queryBuilder);
+            SearchSourceBuilder searchSourceBuilder = createSearchRequest(firstRow, maxRows, queryBuilder);
             SearchResult result = executeSearch(table, searchSourceBuilder, false);
 
             return new ElasticSearchDataSet(elasticSearchClient, result, selectItems);
@@ -268,7 +267,6 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
         SearchResult searchResult = executeSearch(table, createSearchRequest(1, maxRows, null), limitMaxRowsIsSet(maxRows));
-
 
         return new ElasticSearchDataSet(elasticSearchClient, searchResult, columns);
     }
@@ -394,7 +392,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
         final DataSetHeader header = new SimpleDataSetHeader(selectItems);
 
-        return ElasticSearchUtils.createRow(getResult.getJsonObject(), id, header);
+        return ElasticSearchUtils.createRow(getResult.getJsonObject().get("_source").getAsJsonObject(), id, header);
     }
 
     @Override

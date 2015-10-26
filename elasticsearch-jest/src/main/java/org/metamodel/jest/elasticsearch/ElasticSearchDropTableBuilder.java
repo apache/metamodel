@@ -49,6 +49,7 @@ final class ElasticSearchDropTableBuilder extends AbstractTableDropBuilder {
 
     @Override
     public void execute() throws MetaModelException {
+/*
         final ElasticSearchDataContext dataContext = _updateCallback.getDataContext();
         final Table table = getTable();
         final String documentType = table.getName();
@@ -66,6 +67,7 @@ final class ElasticSearchDropTableBuilder extends AbstractTableDropBuilder {
 
         final MutableSchema schema = (MutableSchema) table.getSchema();
         schema.removeTable(table);
+*/
     }
 
     /**

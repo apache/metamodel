@@ -41,6 +41,7 @@ final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<Elast
 
     @Override
     public void execute() throws MetaModelException {
+/*
         final ElasticSearchDataContext dataContext = getUpdateCallback().getDataContext();
         final Client client = dataContext.getElasticSearchClient();
         final String indexName = dataContext.getIndexName();
@@ -72,6 +73,7 @@ final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<Elast
         final IndexResponse result = requestBuilder.execute().actionGet();
         
         logger.debug("Inserted document: id={}", result.getId());
+*/
     }
 
 }

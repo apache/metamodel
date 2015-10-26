@@ -20,6 +20,8 @@ package org.metamodel.jest.elasticsearch;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestResult;
 import io.searchbox.core.SearchResult;
@@ -91,7 +93,7 @@ final class ElasticSearchDataSet extends AbstractDataSet {
 
     @Override
     public boolean next() {
-        final JsonArray hits = _searchResponse.getJsonObject().getAsJsonArray("hits");
+        final JsonArray hits = _searchResponse.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
         if (hits.size() == 0) {
             // break condition for the scroll
             _currentHit = null;
@@ -105,7 +107,7 @@ final class ElasticSearchDataSet extends AbstractDataSet {
             return true;
         }
 
-        final String scrollId = _searchResponse.getJsonObject().getAsJsonPrimitive("_scroll_id").getAsString();
+        final JsonPrimitive scrollId = _searchResponse.getJsonObject().getAsJsonPrimitive("_scroll_id");
         if (scrollId == null) {
             // this search response is not scrolleable - then it's the end.
             _currentHit = null;
@@ -113,7 +115,7 @@ final class ElasticSearchDataSet extends AbstractDataSet {
         }
 
         // try to scroll to the next set of hits
-        SearchScroll scroll = new SearchScroll.Builder(scrollId, ElasticSearchDataContext.TIMEOUT_SCROLL).build();
+        SearchScroll scroll = new SearchScroll.Builder(scrollId.getAsString(), ElasticSearchDataContext.TIMEOUT_SCROLL).build();
 
         try {
             _searchResponse = _client.execute(scroll);
@@ -134,7 +136,7 @@ final class ElasticSearchDataSet extends AbstractDataSet {
         }
 
         final JsonObject source = _currentHit.getAsJsonObject("_source");
-        final String documentId = _currentHit.getAsJsonObject("_id").getAsString();
+        final String documentId = _currentHit.get("_id").getAsString();
         return ElasticSearchUtils.createRow(source, documentId, getHeader());
 
     }

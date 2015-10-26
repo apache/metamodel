@@ -49,7 +49,7 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
 
     @Override
     public void execute() throws MetaModelException {
-        final Table table = getTable();
+/*        final Table table = getTable();
         final String documentType = table.getName();
 
         final ElasticSearchDataContext dataContext = _updateCallback.getDataContext();
@@ -76,6 +76,6 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
         deleteByQueryRequestBuilder.setQuery(queryBuilder);
         deleteByQueryRequestBuilder.execute().actionGet();
 
-        logger.debug("Deleted documents by query.");
+        logger.debug("Deleted documents by query.");*/
     }
 }

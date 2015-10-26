@@ -18,7 +18,7 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import java.util.Map;
+import java.util.Date;
 import java.util.Map.Entry;
 
 import org.apache.metamodel.schema.ColumnType;
@@ -50,9 +50,8 @@ public class ElasticSearchMetaDataParser {
         columnTypes[0] = ColumnType.STRING;
 
         int i = 1;
-        for (Entry<String, ?> metaDataField : metaDataInfo.entrySet()) {
-            @SuppressWarnings("unchecked")
-            final Map<String, ?> fieldMetadata = (Map<String, ?>) metaDataField.getValue();
+        for (Entry<String, JsonElement> metaDataField : metaDataInfo.entrySet()) {
+            JsonElement fieldMetadata = metaDataField.getValue();
 
             fieldNames[i] = metaDataField.getKey();
             columnTypes[i] = getColumnTypeFromMetadataField(fieldMetadata);
@@ -62,38 +61,30 @@ public class ElasticSearchMetaDataParser {
         return new ElasticSearchMetaData(fieldNames, columnTypes);
     }
 
-    private static ColumnType getColumnTypeFromMetadataField(Map<String, ?> fieldMetadata) {
+    private static ColumnType getColumnTypeFromMetadataField(JsonElement fieldMetadata) {
         final ColumnType columnType;
-        final String metaDataFieldType = getMetaDataFieldTypeFromMetaDataField(fieldMetadata);
+        final JsonElement typeElement = ((JsonObject) fieldMetadata).get("type");
+        if (typeElement != null) {
+            String metaDataFieldType = typeElement.getAsString();
 
-        if (metaDataFieldType == null) {
+            if (metaDataFieldType.startsWith("date")) {
+                columnType = ColumnType.DATE;
+            } else if (metaDataFieldType.equals("long")) {
+                columnType = ColumnType.BIGINT;
+            } else if (metaDataFieldType.equals("string")) {
+                columnType = ColumnType.STRING;
+            } else if (metaDataFieldType.equals("float")) {
+                columnType = ColumnType.FLOAT;
+            } else if (metaDataFieldType.equals("boolean")) {
+                columnType = ColumnType.BOOLEAN;
+            } else if (metaDataFieldType.equals("double")) {
+                columnType = ColumnType.DOUBLE;
+            } else {
+                columnType = ColumnType.STRING;
+            }
+            return columnType;
+        } else {
             return ColumnType.STRING;
         }
-
-        if (metaDataFieldType.startsWith("date")) {
-            columnType = ColumnType.DATE;
-        } else if (metaDataFieldType.equals("long")) {
-            columnType = ColumnType.BIGINT;
-        } else if (metaDataFieldType.equals("string")) {
-            columnType = ColumnType.STRING;
-        } else if (metaDataFieldType.equals("float")) {
-            columnType = ColumnType.FLOAT;
-        } else if (metaDataFieldType.equals("boolean")) {
-            columnType = ColumnType.BOOLEAN;
-        } else if (metaDataFieldType.equals("double")) {
-            columnType = ColumnType.DOUBLE;
-        } else {
-            columnType = ColumnType.STRING;
-        }
-        return columnType;
     }
-
-    private static String getMetaDataFieldTypeFromMetaDataField(Map<String, ?> metaDataField) {
-        final Object type = metaDataField.get("type");
-        if (type == null) {
-            return null;
-        }
-        return type.toString();
-    }
-
 }

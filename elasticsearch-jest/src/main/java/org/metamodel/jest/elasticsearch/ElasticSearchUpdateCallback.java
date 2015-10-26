@@ -78,10 +78,12 @@ final class ElasticSearchUpdateCallback extends AbstractUpdateCallback {
 
     public void onExecuteUpdateFinished() {
         // force refresh of the index
+/*
         final ElasticSearchDataContext dataContext = getDataContext();
         final Client client = dataContext.getElasticSearchClient();
         final String indexName = dataContext.getIndexName();
         client.admin().indices().prepareRefresh(indexName).execute().actionGet();
+*/
     }
 
 }

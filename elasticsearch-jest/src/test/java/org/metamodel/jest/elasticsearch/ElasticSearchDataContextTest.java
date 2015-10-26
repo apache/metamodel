@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.elasticsearch;
+package org.metamodel.jest.elasticsearch;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -38,7 +38,6 @@ import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.delete.DeleteFrom;
 import org.apache.metamodel.drop.DropTable;
-import org.apache.metamodel.elasticsearch.utils.EmbeddedElasticsearchServer;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
@@ -54,12 +53,16 @@ import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.metamodel.jest.elasticsearch.utils.EmbeddedElasticsearchServer;
+
+import io.searchbox.client.JestClient;
+import io.searchbox.client.JestClientFactory;
+import io.searchbox.client.config.HttpClientConfig;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.junit.Assert.*;
@@ -75,13 +78,20 @@ public class ElasticSearchDataContextTest {
     private static final String peopleIndexType = "peopletype";
     private static final String mapping = "{\"date_detection\":\"false\",\"properties\":{\"message\":{\"type\":\"string\",\"index\":\"not_analyzed\",\"doc_values\":\"true\"}}}";
     private static EmbeddedElasticsearchServer embeddedElasticsearchServer;
-    private static Client client;
+    private static JestClient client;
     private static UpdateableDataContext dataContext;
 
     @BeforeClass
     public static void beforeTests() throws Exception {
         embeddedElasticsearchServer = new EmbeddedElasticsearchServer();
-        client = embeddedElasticsearchServer.getClient();
+        final int port = 9201;//Integer.parseInt(embeddedElasticsearchServer.getClient().settings().get("http.port"));
+        JestClientFactory factory = new JestClientFactory();
+        factory.setHttpClientConfig(new HttpClientConfig
+                .Builder("http://localhost:" + port)
+                .multiThreaded(true)
+                .build());
+        client = factory.getObject();
+
         indexTweeterDocument(indexType1, 1);
         indexTweeterDocument(indexType2, 1);
         indexTweeterDocument(indexType2, 2, null);
@@ -92,8 +102,8 @@ public class ElasticSearchDataContextTest {
         // The refresh API allows to explicitly refresh one or more index,
         // making all operations performed since the last refresh available for
         // search
-        embeddedElasticsearchServer.getClient().admin().indices().prepareRefresh().execute().actionGet();
         dataContext = new ElasticSearchDataContext(client, indexName);
+        Thread.sleep(1000);
         System.out.println("Embedded ElasticSearch server created!");
     }
 
@@ -238,10 +248,8 @@ public class ElasticSearchDataContextTest {
 
     @Test
     public void testDetectOutsideChanges() throws Exception {
-        ElasticSearchDataContext elasticSearchDataContext = (ElasticSearchDataContext) dataContext;
-
         // Create the type in ES
-        final IndicesAdminClient indicesAdmin = elasticSearchDataContext.getElasticSearchClient().admin().indices();
+        final IndicesAdminClient indicesAdmin = embeddedElasticsearchServer.getClient().admin().indices();
         final String tableType = "outsideTable";
 
         Object[] sourceProperties = { "testA", "type=string, store=true", "testB", "type=string, store=true" };
@@ -386,7 +394,7 @@ public class ElasticSearchDataContextTest {
         {
             DataSet ds = dataContext.query().from(table).selectCount().execute();
             ds.next();
-            assertEquals("Row[values=[9]]", ds.getRow().toString());
+            assertEquals("Count is wrong", 9, ((Number)ds.getRow().getValue(0)).intValue());
             ds.close();
         }
 
@@ -399,7 +407,7 @@ public class ElasticSearchDataContextTest {
         } finally {
             // restore the people documents for the next tests
             insertPeopleDocuments();
-            client.admin().indices().prepareRefresh().execute().actionGet();
+            embeddedElasticsearchServer.getClient().admin().indices().prepareRefresh().execute().actionGet();
             dataContext = new ElasticSearchDataContext(client, indexName);
         }
     }
@@ -526,7 +534,7 @@ public class ElasticSearchDataContextTest {
         assertEquals(1, data.size());
         Object[] row = data.get(0);
         assertEquals(1, row.length);
-        assertEquals("[10]", Arrays.toString(row));
+        assertEquals(10, ((Number) row[0]).intValue());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -551,38 +559,39 @@ public class ElasticSearchDataContextTest {
 
     private static void createIndex() {
         CreateIndexRequest cir = new CreateIndexRequest(indexName2);
-        CreateIndexResponse response = client.admin().indices().create(cir).actionGet();
+        CreateIndexResponse response = embeddedElasticsearchServer.getClient().admin().indices().create(cir).actionGet();
 
         System.out.println("create index: " + response.isAcknowledged());
 
         PutMappingRequest pmr = new PutMappingRequest(indexName2).type(indexType3).source(mapping);
 
-        PutMappingResponse response2 = client.admin().indices().putMapping(pmr).actionGet();
+        PutMappingResponse response2 = embeddedElasticsearchServer.getClient().admin().indices().putMapping(pmr).actionGet();
         System.out.println("put mapping: " + response2.isAcknowledged());
     }
 
     private static void indexBulkDocuments(String indexName, String indexType, int numberOfDocuments) {
-        BulkRequestBuilder bulkRequest = client.prepareBulk();
+        BulkRequestBuilder bulkRequest = embeddedElasticsearchServer.getClient().prepareBulk();
 
         for (int i = 0; i < numberOfDocuments; i++) {
-            bulkRequest.add(client.prepareIndex(indexName, indexType, Integer.toString(i)).setSource(
+            bulkRequest.add(embeddedElasticsearchServer.getClient().prepareIndex(indexName, indexType,
+                    Integer.toString(i)).setSource(
                     buildTweeterJson(i)));
         }
         bulkRequest.execute().actionGet();
     }
 
     private static void indexTweeterDocument(String indexType, int id, Date date) {
-        client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id, date))
+        embeddedElasticsearchServer.getClient().prepareIndex(indexName, indexType).setSource(buildTweeterJson(id, date))
                 .setId("tweet_" + indexType + "_" + id).execute().actionGet();
     }
 
     private static void indexTweeterDocument(String indexType, int id) {
-        client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id))
+        embeddedElasticsearchServer.getClient().prepareIndex(indexName, indexType).setSource(buildTweeterJson(id))
                 .setId("tweet_" + indexType + "_" + id).execute().actionGet();
     }
 
     private static void indexOnePeopleDocument(String gender, int age, int id) throws IOException {
-        client.prepareIndex(indexName, peopleIndexType).setSource(buildPeopleJson(gender, age, id)).execute()
+        embeddedElasticsearchServer.getClient().prepareIndex(indexName, peopleIndexType).setSource(buildPeopleJson(gender, age, id)).execute()
                 .actionGet();
     }
 

@@ -47,6 +47,7 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
 
     @Override
     public Table execute() throws MetaModelException {
+/*
         final MutableTable table = getTable();
 
         if (table.getColumnByName(ElasticSearchDataContext.FIELD_ID) == null) {
@@ -88,6 +89,8 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
         final MutableSchema schema = (MutableSchema) getSchema();
         schema.addTable(table);
         return table;
+*/
+        return null;
     }
 
     /**

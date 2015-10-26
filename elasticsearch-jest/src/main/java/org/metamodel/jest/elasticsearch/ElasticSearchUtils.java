@@ -19,15 +19,18 @@
 package org.metamodel.jest.elasticsearch;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
-import com.google.gson.JsonObject;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 /**
  * Shared/common util functions for the ElasticSearch MetaModel module.
@@ -41,26 +44,34 @@ final class ElasticSearchUtils {
             final Column column = selectItem.getColumn();
 
             assert column != null;
-            assert selectItem.getFunction() == null;
+            assert !selectItem.hasFunction();
 
             if (column.isPrimaryKey()) {
                 values[i] = documentId;
             } else {
-                String value = source.get(column.getName()).getAsString();
-
-                if (column.getType() == ColumnType.DATE) {
-                    Date valueToDate = ElasticSearchDateConverter.tryToConvert(value);
-                    if (valueToDate == null) {
-                        values[i] = value;
-                    } else {
-                        values[i] = valueToDate;
-                    }
-                } else {
-                    values[i] = value;
-                }
+                values[i] = getDataFromColumnType(source.get(column.getName()), column.getType());
             }
         }
 
         return new DefaultRow(header, values);
     }
+
+    public static Object getDataFromColumnType(JsonElement field, ColumnType type){
+        if (type.isNumber()) {
+            return field.getAsNumber();
+        } else if (type.isTimeBased()) {
+            Date valueToDate = ElasticSearchDateConverter.tryToConvert(field.getAsString());
+            if (valueToDate == null) {
+                return field.getAsString();
+            } else {
+                return valueToDate;
+            }
+        } else if (type.isBoolean()) {
+            return field.getAsBoolean();
+        } else {
+            return field.getAsString();
+        }
+    }
+
+
 }
