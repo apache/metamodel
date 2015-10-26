@@ -60,7 +60,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
     public static final int DEFAULT_PORT = 7474;
 
     public static final String RELATIONSHIP_PREFIX = "rel_";
-    
+
     public static final String RELATIONSHIP_COLUMN_SEPARATOR = "#";
 
     private final SimpleTableDef[] _tableDefs;
@@ -71,20 +71,20 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
 
     public Neo4jDataContext(String hostname, int port, String username, String password, SimpleTableDef... tableDefs) {
         _httpHost = new HttpHost(hostname, port);
-    	final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, username, password);
         _tableDefs = tableDefs;
     }
 
     public Neo4jDataContext(String hostname, int port, String username, String password) {
-    	_httpHost = new HttpHost(hostname, port);
+        _httpHost = new HttpHost(hostname, port);
         final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, username, password);
         _tableDefs = detectTableDefs();
     }
 
     public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient) {
-    	_httpHost = new HttpHost(hostname, port);
+        _httpHost = new HttpHost(hostname, port);
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost);
         _tableDefs = detectTableDefs();
     }
@@ -175,13 +175,13 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
     private List<String> getAllPropertiesPerRelationship(JSONObject relationship) {
         List<String> propertyNames = new ArrayList<String>();
         try {
-            String relationshipName = RELATIONSHIP_PREFIX
-                    + relationship.getJSONObject("metadata").getString("type");
+            String relationshipName = RELATIONSHIP_PREFIX + relationship.getJSONObject("metadata").getString("type");
             JSONObject relationshipPropertiesJSONObject = relationship.getJSONObject("data");
             if (relationshipPropertiesJSONObject.length() > 0) {
                 JSONArray relationshipPropertiesNamesJSONArray = relationshipPropertiesJSONObject.names();
                 for (int i = 0; i < relationshipPropertiesNamesJSONArray.length(); i++) {
-                    String propertyName = relationshipName + RELATIONSHIP_COLUMN_SEPARATOR + relationshipPropertiesNamesJSONArray.getString(i);
+                    String propertyName = relationshipName + RELATIONSHIP_COLUMN_SEPARATOR
+                            + relationshipPropertiesNamesJSONArray.getString(i);
                     if (!propertyNames.contains(propertyName)) {
                         propertyNames.add(propertyName);
                     }
@@ -239,7 +239,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
     private List<String> getAllPropertiesPerNode(JSONObject node) {
         List<String> properties = new ArrayList<String>();
         properties.add("_id");
-        
+
         String propertiesEndpoint;
         try {
             propertiesEndpoint = node.getString("properties");
@@ -311,7 +311,10 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
             return value;
         } catch (JSONException e) {
             logger.error("Error occured in parsing JSON response: ", e);
-            throw new IllegalStateException(e);
+            // Do not throw an exception here. Returning null here will make
+            // MetaModel attempt to count records manually and therefore recover
+            // from the error.
+            return null;
         }
     }
 

@@ -169,10 +169,17 @@ public class Neo4jCypherQueryBuilder {
     private static String buildWhereClauseItem(FilterItem whereItem, String queryObjectHandle) {
         StringBuilder whereClauseItemBuilder = new StringBuilder();
         whereClauseItemBuilder.append(queryObjectHandle);
-        whereClauseItemBuilder.append(":");
+        whereClauseItemBuilder.append(".");
         whereClauseItemBuilder.append(whereItem.getSelectItem().getColumn().getName());
         whereClauseItemBuilder.append(whereItem.getOperator().toSql());
-        whereClauseItemBuilder.append(whereItem.getOperand());
+        final Object operand = whereItem.getOperand();
+        if (operand instanceof String) {
+            whereClauseItemBuilder.append("\"");
+        }
+        whereClauseItemBuilder.append(operand);
+        if (operand instanceof String) {
+            whereClauseItemBuilder.append("\"");
+        }
         return whereClauseItemBuilder.toString();
     }
 
