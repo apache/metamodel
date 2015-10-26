@@ -310,8 +310,8 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
             Number value = (Number) valueJSONArray.get(0);
             return value;
         } catch (JSONException e) {
-            // TODO Extract errors from JSON and log them
-            return null;
+            logger.error("Error occured in parsing JSON response: ", e);
+            throw new IllegalStateException(e);
         }
     }
 
