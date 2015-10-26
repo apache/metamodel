@@ -5,6 +5,7 @@
  * [METAMODEL-144] - Automated binary packaging of the MetaModel project.
  * [METAMODEL-197] - ElasticSearch schema update/change after CREATE TABLE statements.
  * [METAMODEL-199] - Fixed a bug in query parser when parsing two consecutive WHERE items with parentheses around them.
+ * [METAMODEL-203] - Upgraded MongoDB dependency version and API to the 3.x line.
 
 ### Apache MetaModel 4.4.0
 
