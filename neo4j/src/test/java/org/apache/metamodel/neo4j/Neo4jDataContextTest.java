@@ -315,22 +315,26 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 				.select(id1Column, id2Column, propertyTable1Column,
 						propertyTable2Column).where(id1Column).eq(id2Column)
 				.compile();
-		DataSet dataSet = null;
-		try {
-			dataSet = strategy.executeQuery(query);
-			assertTrue(dataSet.next());
-			assertEquals(
-					"Row[values=[1, 1, prop-table1-row1, prop-table2-row1]]",
-					dataSet.getRow().toString());
-			assertTrue(dataSet.next());
-			assertEquals(
-					"Row[values=[2, 2, prop-table1-row2, prop-table2-row2]]",
-					dataSet.getRow().toString());
-			assertFalse(dataSet.next());
-		} finally {
-			if (dataSet != null) {
-				dataSet.close();
-			}
+
+		try (final DataSet dataSet = strategy.executeQuery(query)) {
+		    List<Row> rows = new ArrayList<>();
+		    while (dataSet.next()) {
+		        rows.add(dataSet.getRow());
+		    }
+		    Collections.sort(rows, new Comparator<Row>() {
+
+                @Override
+                public int compare(Row o1, Row o2) {
+                    return o1.toString().compareTo(o2.toString());
+                }
+            });
+		    assertEquals(2, rows.size());
+		    assertEquals(
+		            "Row[values=[1, 1, prop-table1-row1, prop-table2-row1]]",
+		            rows.get(0).toString());
+		    assertEquals(
+		            "Row[values=[2, 2, prop-table1-row2, prop-table2-row2]]",
+		            rows.get(1).toString());
 		}
 	}
 
