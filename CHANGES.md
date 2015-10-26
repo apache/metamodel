@@ -1,4 +1,4 @@
-### Apache MetaModel (work in progress)
+### Apache MetaModel 4.4.1
 
  * [METAMODEL-198] - Fixed support for JDBC TIMESTAMP precision to match the underlying database's precision.
  * [METAMODEL-200] - Added optional "APPROXIMATE" keyword to query syntax for aggregate functions.
