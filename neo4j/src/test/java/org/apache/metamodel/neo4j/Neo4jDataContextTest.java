@@ -147,7 +147,7 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 	}
 
 	@Test
-	public void testSelectQuery() throws Exception {
+	public void testSelectQueryWithProjection() throws Exception {
 		if (!isConfigured()) {
 			System.err.println(getInvalidConfigurationMessage());
 			return;
@@ -175,7 +175,7 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 	}
 
 	@Test
-	public void testSelectQueryWithRelationships() throws Exception {
+	public void testSelectQueryWithProjectionAndRelationships() throws Exception {
 		if (!isConfigured()) {
 			System.err.println(getInvalidConfigurationMessage());
 			return;
@@ -258,6 +258,67 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 			assertEquals("Row[values=[null]]", dataSet2Rows.get(2).toString());
 		}
 	}
+	
+	@Test
+    public void testSelectAllQueryWithRelationships() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        // Insert nodes
+        requestWrapper
+                .executeCypherQuery("CREATE (n:JUnitPerson { name: 'Tomasz', age: 26})");
+        requestWrapper
+                .executeCypherQuery("CREATE (n:JUnitPerson { name: 'Philomeena', age: 18})");
+        requestWrapper
+                .executeCypherQuery("CREATE (n:JUnitPerson { name: 'Helena', age: 100})");
+        requestWrapper
+                .executeCypherQuery("CREATE (n:JUnitBook { title: 'Introduction to algorithms'})");
+        requestWrapper
+                .executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
+                        + "WHERE a.name = 'Tomasz' AND b.title = 'Introduction to algorithms'"
+                        + "CREATE (a)-[r:HAS_READ { rating : 5 }]->(b)");
+        requestWrapper
+                .executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
+                        + "WHERE a.name = 'Philomeena' AND b.title = 'Introduction to algorithms'"
+                        + "CREATE (a)-[r:HAS_BROWSED]->(b)");
+
+        String bookNodeIdJSONObject = requestWrapper
+                .executeCypherQuery("MATCH (n:JUnitBook)"
+                        + " WHERE n.title = 'Introduction to algorithms'"
+                        + " RETURN id(n);");
+        String bookNodeId = new JSONObject(bookNodeIdJSONObject)
+                .getJSONArray("results").getJSONObject(0).getJSONArray("data")
+                .getJSONObject(0).getJSONArray("row").getString(0);
+
+        Neo4jDataContext strategy = new Neo4jDataContext(getHostname(),
+                getPort(), getUsername(), getPassword());
+
+        CompiledQuery query1 = strategy.query().from("JUnitPerson")
+                .selectAll().compile();
+        try (DataSet dataSet1 = strategy.executeQuery(query1)) {
+            List<Row> dataSet1Rows = new ArrayList<>();
+            while (dataSet1.next()) {
+                dataSet1Rows.add(dataSet1.getRow());
+            }
+            // Sorting to have deterministic order
+            Collections.sort(dataSet1Rows, new Comparator<Row>() {
+
+                @Override
+                public int compare(Row arg0, Row arg1) {
+                    return arg0.toString().compareTo(arg1.toString());
+                }
+            });
+            assertEquals(3, dataSet1Rows.size());
+            assertEquals("Row[values=[Helena, 100, null, null, null]]", dataSet1Rows.get(0)
+                    .toString());
+            assertEquals("Row[values=[Philomeena, 18, null, " + bookNodeId + ", null]]", dataSet1Rows.get(1)
+                    .toString());
+            assertEquals("Row[values=[Tomasz, 26, " + bookNodeId + ", null, 5]]",
+                    dataSet1Rows.get(2).toString());
+        }
+    }
 
 	@Test
 	public void testWhereClause() throws Exception {

@@ -60,7 +60,15 @@ public class Neo4jCypherQueryBuilder {
                         relationships.put(relationshipName, relationshipColumnNames);
                     }
                 } else {
-                    relationships.put(columnName, new ArrayList<String>());
+                    String relationshipName = columnName;
+                    if (relationships.containsKey(relationshipName)) {
+                        List<String> relationshipColumnNames = relationships.get(relationshipName);
+                        relationshipColumnNames.add("metamodel_neo4j_relationship_marker");
+                    } else {
+                        List<String> relationshipColumnNames = new ArrayList<>();
+                        relationshipColumnNames.add("metamodel_neo4j_relationship_marker");
+                        relationships.put(relationshipName, relationshipColumnNames);
+                    }
                 }
 
             } else {
@@ -89,7 +97,7 @@ public class Neo4jCypherQueryBuilder {
         }
         int k = 0;
         for (Map.Entry<String, List<String>> relationshipEntrySet : relationships.entrySet()) {
-            if (relationshipEntrySet.getValue().isEmpty()) {
+            if (relationshipEntrySet.getValue().contains("metamodel_neo4j_relationship_marker")) {
                 k++;
                 if (addComma) {
                     cypherBuilder.append(",");
@@ -102,13 +110,15 @@ public class Neo4jCypherQueryBuilder {
         for (Map.Entry<String, List<String>> relationshipEntrySet : relationships.entrySet()) {
             j++;
             for (String relationshipColumnName : relationshipEntrySet.getValue()) {
-                if (addComma) {
-                    cypherBuilder.append(",");
+                if (!relationshipColumnName.equals("metamodel_neo4j_relationship_marker")) {
+                    if (addComma) {
+                        cypherBuilder.append(",");
+                    }
+                    cypherBuilder.append("r" + j + ".");
+                    cypherBuilder.append(relationshipColumnName);
+                    addComma = true;
+                    
                 }
-                cypherBuilder.append("r" + j + ".");
-                cypherBuilder.append(relationshipColumnName);
-                addComma = true;
-
             }
 
         }
