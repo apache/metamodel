@@ -22,9 +22,8 @@ import java.io.File;
 
 import org.apache.metamodel.excel.ExcelConfiguration;
 import org.apache.metamodel.excel.ExcelDataContext;
-import org.apache.metamodel.mongodb.MongoDbTestCase;
 
-public class ExcelDataContextFactoryTest extends MongoDbTestCase {
+public class ExcelDataContextFactoryTest extends  MongoDbTestCase{
 
     public void testCreateExcelDataContext() throws Exception {
         File file = new File("../excel/src/test/resources/xls_people.xls");
