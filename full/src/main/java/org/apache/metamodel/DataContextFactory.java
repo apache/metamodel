@@ -47,11 +47,14 @@ import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.apache.metamodel.xml.XmlDomDataContext;
 import org.elasticsearch.client.Client;
+import org.metamodel.jest.elasticsearch.JestElasticSearchDataContext;
 import org.xml.sax.InputSource;
 
 import com.datastax.driver.core.Cluster;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
+
+import io.searchbox.client.JestClient;
 
 /**
  * A factory for DataContext objects. This class substantially easens the task
@@ -143,9 +146,6 @@ public class DataContextFactory {
 
     /**
      * Creates a DataContext based on a JSON file
-     * 
-     * @param file
-     * @return
      */
     public static DataContext createJsonDataContext(File file) {
         return new JsonDataContext(file);
@@ -638,6 +638,18 @@ public class DataContextFactory {
             return new CouchDbDataContext(httpClientBuilder);
         }
         return new CouchDbDataContext(httpClientBuilder, tableDefs);
+    }
+
+    /**
+     * Creates a new JSON-based ElasticSearch datacontext.
+     * @param client
+     *       The Jest client
+     * @param indexName
+     *       The ElasticSearch index name
+     * @return a DataContext object that matches the request
+     */
+    public static UpdateableDataContext createElasticSearchDataContext(JestClient client, String indexName) {
+        return new JestElasticSearchDataContext(client, indexName);
     }
 
     /**

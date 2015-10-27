@@ -35,13 +35,13 @@ import io.searchbox.indices.mapping.DeleteMapping;
  * {@link TableDropBuilder} for dropping tables (document types) in an
  * ElasticSearch index.
  */
-final class ElasticSearchDropTableBuilder extends AbstractTableDropBuilder {
+final class JestElasticSearchDropTableBuilder extends AbstractTableDropBuilder {
 
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDropTableBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(JestElasticSearchDropTableBuilder.class);
 
-    private final ElasticSearchUpdateCallback _updateCallback;
+    private final JestElasticSearchUpdateCallback _updateCallback;
 
-    public ElasticSearchDropTableBuilder(ElasticSearchUpdateCallback updateCallback, Table table) {
+    public JestElasticSearchDropTableBuilder(JestElasticSearchUpdateCallback updateCallback, Table table) {
         super(table);
         _updateCallback = updateCallback;
     }
@@ -49,7 +49,7 @@ final class ElasticSearchDropTableBuilder extends AbstractTableDropBuilder {
     @Override
     public void execute() throws MetaModelException {
 
-        final ElasticSearchDataContext dataContext = _updateCallback.getDataContext();
+        final JestElasticSearchDataContext dataContext = _updateCallback.getDataContext();
         final Table table = getTable();
         final String documentType = table.getName();
         logger.info("Deleting mapping / document type: {}", documentType);

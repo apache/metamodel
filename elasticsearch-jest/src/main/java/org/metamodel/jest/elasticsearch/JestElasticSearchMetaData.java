@@ -26,18 +26,16 @@ import org.apache.metamodel.schema.ColumnType;
  * We will map the elasticsearch fields to columns and their
  * types to {@link ColumnType}s.
  */
-public class ElasticSearchMetaData {
+public class JestElasticSearchMetaData {
     
     private final String[] columnNames;
     private final ColumnType[] columnTypes;
 
     /**
-     * Constructs a {@link ElasticSearchMetaData}.
+     * Constructs a {@link JestElasticSearchMetaData}.
      *
-     * @param names
-     * @param types
      */
-    public ElasticSearchMetaData(String[] names, ColumnType[] types) {
+    public JestElasticSearchMetaData(String[] names, ColumnType[] types) {
         this.columnNames = names;
         this.columnTypes = types;
     }

@@ -37,15 +37,15 @@ import io.searchbox.core.DeleteByQuery;
 
 /**
  * {@link RowDeletionBuilder} implementation for
- * {@link ElasticSearchDataContext}.
+ * {@link JestElasticSearchDataContext}.
  */
-final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
+final class JestElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
 
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDeleteBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(JestElasticSearchDeleteBuilder.class);
 
-    private final ElasticSearchUpdateCallback _updateCallback;
+    private final JestElasticSearchUpdateCallback _updateCallback;
 
-    public ElasticSearchDeleteBuilder(ElasticSearchUpdateCallback updateCallback, Table table) {
+    public JestElasticSearchDeleteBuilder(JestElasticSearchUpdateCallback updateCallback, Table table) {
         super(table);
         _updateCallback = updateCallback;
     }
@@ -55,7 +55,7 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
         final Table table = getTable();
         final String documentType = table.getName();
 
-        final ElasticSearchDataContext dataContext = _updateCallback.getDataContext();
+        final JestElasticSearchDataContext dataContext = _updateCallback.getDataContext();
         final String indexName = dataContext.getIndexName();
 
         final List<FilterItem> whereItems = getWhereItems();

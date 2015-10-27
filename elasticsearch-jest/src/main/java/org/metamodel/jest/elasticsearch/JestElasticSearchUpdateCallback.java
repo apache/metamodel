@@ -34,24 +34,24 @@ import org.slf4j.LoggerFactory;
 import io.searchbox.indices.Refresh;
 
 /**
- * {@link UpdateCallback} implementation for {@link ElasticSearchDataContext}.
+ * {@link UpdateCallback} implementation for {@link JestElasticSearchDataContext}.
  */
-final class ElasticSearchUpdateCallback extends AbstractUpdateCallback {
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchUpdateCallback.class);
+final class JestElasticSearchUpdateCallback extends AbstractUpdateCallback {
+    private static final Logger logger = LoggerFactory.getLogger(JestElasticSearchUpdateCallback.class);
 
-    public ElasticSearchUpdateCallback(ElasticSearchDataContext dataContext) {
+    public JestElasticSearchUpdateCallback(JestElasticSearchDataContext dataContext) {
         super(dataContext);
     }
 
     @Override
-    public ElasticSearchDataContext getDataContext() {
-        return (ElasticSearchDataContext) super.getDataContext();
+    public JestElasticSearchDataContext getDataContext() {
+        return (JestElasticSearchDataContext) super.getDataContext();
     }
 
     @Override
     public TableCreationBuilder createTable(Schema schema, String name) throws IllegalArgumentException,
             IllegalStateException {
-        return new ElasticSearchCreateTableBuilder(this, schema, name);
+        return new JestElasticSearchCreateTableBuilder(this, schema, name);
     }
 
     @Override
@@ -62,13 +62,13 @@ final class ElasticSearchUpdateCallback extends AbstractUpdateCallback {
     @Override
     public TableDropBuilder dropTable(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        return new ElasticSearchDropTableBuilder(this, table);
+        return new JestElasticSearchDropTableBuilder(this, table);
     }
 
     @Override
     public RowInsertionBuilder insertInto(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        return new ElasticSearchInsertBuilder(this, table);
+        return new JestElasticSearchInsertBuilder(this, table);
     }
 
     @Override
@@ -79,7 +79,7 @@ final class ElasticSearchUpdateCallback extends AbstractUpdateCallback {
     @Override
     public RowDeletionBuilder deleteFrom(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        return new ElasticSearchDeleteBuilder(this, table);
+        return new JestElasticSearchDeleteBuilder(this, table);
     }
 
     public void onExecuteUpdateFinished() {

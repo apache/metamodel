@@ -18,7 +18,6 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import java.util.Date;
 import java.util.Map.Entry;
 
 import org.apache.metamodel.schema.ColumnType;
@@ -28,25 +27,25 @@ import com.google.gson.JsonObject;
 
 /**
  * Parser that transforms the ElasticSearch metadata response (json-like format)
- * into an ElasticSearchMetaData object.
+ * into an JestElasticSearchMetaData object.
  */
-public class ElasticSearchMetaDataParser {
+public class JestElasticSearchMetaDataParser {
 
     /**
-     * Parses the ElasticSearch meta data info into an ElasticSearchMetaData
+     * Parses the ElasticSearch meta data info into an JestElasticSearchMetaData
      * object. This method makes much easier to create the ElasticSearch schema.
      *
      * @param metaDataInfo
      *            ElasticSearch mapping metadata in Map format
-     * @return An ElasticSearchMetaData object
+     * @return An JestElasticSearchMetaData object
      */
-    public static ElasticSearchMetaData parse(JsonObject metaDataInfo) {
+    public static JestElasticSearchMetaData parse(JsonObject metaDataInfo) {
         final int columns = metaDataInfo.entrySet().size() + 1;
         final String[] fieldNames = new String[columns];
         final ColumnType[] columnTypes = new ColumnType[columns];
 
         // add the document ID field (fixed)
-        fieldNames[0] = ElasticSearchDataContext.FIELD_ID;
+        fieldNames[0] = JestElasticSearchDataContext.FIELD_ID;
         columnTypes[0] = ColumnType.STRING;
 
         int i = 1;
@@ -58,7 +57,7 @@ public class ElasticSearchMetaDataParser {
             i++;
 
         }
-        return new ElasticSearchMetaData(fieldNames, columnTypes);
+        return new JestElasticSearchMetaData(fieldNames, columnTypes);
     }
 
     private static ColumnType getColumnTypeFromMetadataField(JsonElement fieldMetadata) {

@@ -41,9 +41,9 @@ import io.searchbox.core.SearchScroll;
 /**
  * {@link DataSet} implementation for ElasticSearch
  */
-final class ElasticSearchDataSet extends AbstractDataSet {
+final class JestElasticSearchDataSet extends AbstractDataSet {
 
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataSet.class);
+    private static final Logger logger = LoggerFactory.getLogger(JestElasticSearchDataSet.class);
 
     private final JestClient _client;
     private final AtomicBoolean _closed;
@@ -52,14 +52,14 @@ final class ElasticSearchDataSet extends AbstractDataSet {
     private JsonObject _currentHit;
     private int _hitIndex = 0;
 
-    public ElasticSearchDataSet(JestClient client, JestResult searchResponse, List<SelectItem> selectItems) {
+    public JestElasticSearchDataSet(JestClient client, JestResult searchResponse, List<SelectItem> selectItems) {
         super(selectItems);
         _client = client;
         _searchResponse = searchResponse;
         _closed = new AtomicBoolean(false);
     }
     
-    public ElasticSearchDataSet(JestClient client, JestResult searchResponse, Column[] columns) {
+    public JestElasticSearchDataSet(JestClient client, JestResult searchResponse, Column[] columns) {
         super(columns);
         _client = client;
         _searchResponse = searchResponse;
@@ -115,7 +115,7 @@ final class ElasticSearchDataSet extends AbstractDataSet {
         }
 
         // try to scroll to the next set of hits
-        SearchScroll scroll = new SearchScroll.Builder(scrollId.getAsString(), ElasticSearchDataContext.TIMEOUT_SCROLL).build();
+        SearchScroll scroll = new SearchScroll.Builder(scrollId.getAsString(), JestElasticSearchDataContext.TIMEOUT_SCROLL).build();
 
         try {
             _searchResponse = _client.execute(scroll);
@@ -137,7 +137,7 @@ final class ElasticSearchDataSet extends AbstractDataSet {
 
         final JsonObject source = _currentHit.getAsJsonObject("_source");
         final String documentId = _currentHit.get("_id").getAsString();
-        return ElasticSearchUtils.createRow(source, documentId, getHeader());
+        return JestElasticSearchUtils.createRow(source, documentId, getHeader());
 
     }
 }

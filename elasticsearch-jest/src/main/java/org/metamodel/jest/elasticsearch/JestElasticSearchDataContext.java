@@ -84,9 +84,9 @@ import io.searchbox.params.Parameters;
  * This implementation supports either automatic discovery of a schema or manual
  * specification of a schema, through the {@link SimpleTableDef} class.
  */
-public class ElasticSearchDataContext extends QueryPostprocessDataContext implements DataContext, UpdateableDataContext {
+public class JestElasticSearchDataContext extends QueryPostprocessDataContext implements DataContext, UpdateableDataContext {
 
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
+    private static final Logger logger = LoggerFactory.getLogger(JestElasticSearchDataContext.class);
 
     public static final String FIELD_ID = "_id";
 
@@ -103,7 +103,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     private final List<SimpleTableDef> dynamicTableDefinitions = new ArrayList<>();
 
     /**
-     * Constructs a {@link ElasticSearchDataContext}. This constructor accepts a
+     * Constructs a {@link JestElasticSearchDataContext}. This constructor accepts a
      * custom array of {@link SimpleTableDef}s which allows the user to define
      * his own view on the indexes in the engine.
      *
@@ -115,7 +115,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      *            an array of {@link SimpleTableDef}s, which define the table
      *            and column model of the ElasticSearch index.
      */
-    public ElasticSearchDataContext(JestClient client, String indexName, SimpleTableDef... tableDefinitions) {
+    public JestElasticSearchDataContext(JestClient client, String indexName, SimpleTableDef... tableDefinitions) {
         if (client == null) {
             throw new IllegalArgumentException("ElasticSearch Client cannot be null");
         }
@@ -129,7 +129,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     }
 
     /**
-     * Constructs a {@link ElasticSearchDataContext} and automatically detects
+     * Constructs a {@link JestElasticSearchDataContext} and automatically detects
      * the schema structure/view on all indexes (see
      * {@link this.detectSchema(JestClient, String)}).
      *
@@ -138,7 +138,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      * @param indexName
      *            the name of the ElasticSearch index to represent
      */
-    public ElasticSearchDataContext(JestClient client, String indexName) {
+    public JestElasticSearchDataContext(JestClient client, String indexName) {
         this(client, indexName, new SimpleTableDef[0]);
     }
 
@@ -210,7 +210,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      * @return a table definition for ElasticSearch.
      */
     public static SimpleTableDef detectTable(JsonObject metadataProperties, String documentType) throws Exception {
-        final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(metadataProperties);
+        final JestElasticSearchMetaData metaData = JestElasticSearchMetaDataParser.parse(metadataProperties);
         return new SimpleTableDef(documentType, metaData.getColumnNames(),
                 metaData.getColumnTypes());
     }
@@ -262,7 +262,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
             SearchSourceBuilder searchSourceBuilder = createSearchRequest(firstRow, maxRows, queryBuilder);
             SearchResult result = executeSearch(table, searchSourceBuilder, false);
 
-            return new ElasticSearchDataSet(elasticSearchClient, result, selectItems);
+            return new JestElasticSearchDataSet(elasticSearchClient, result, selectItems);
         }
         return super.materializeMainSchemaTable(table, selectItems, whereItems, firstRow, maxRows);
     }
@@ -288,7 +288,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
         SearchResult searchResult = executeSearch(table, createSearchRequest(1, maxRows, null), limitMaxRowsIsSet(maxRows));
 
-        return new ElasticSearchDataSet(elasticSearchClient, searchResult, columns);
+        return new JestElasticSearchDataSet(elasticSearchClient, searchResult, columns);
     }
 
     private SearchSourceBuilder createSearchRequest(int firstRow, int maxRows, QueryBuilder queryBuilder) {
@@ -410,7 +410,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
         final DataSetHeader header = new SimpleDataSetHeader(selectItems);
 
-        return ElasticSearchUtils.createRow(getResult.getJsonObject().get("_source").getAsJsonObject(), id, header);
+        return JestElasticSearchUtils.createRow(getResult.getJsonObject().get("_source").getAsJsonObject(), id, header);
     }
 
     @Override
@@ -442,7 +442,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     @Override
     public void executeUpdate(UpdateScript update) {
-        final ElasticSearchUpdateCallback callback = new ElasticSearchUpdateCallback(this);
+        final JestElasticSearchUpdateCallback callback = new JestElasticSearchUpdateCallback(this);
         update.run(callback);
         callback.onExecuteUpdateFinished();
     }

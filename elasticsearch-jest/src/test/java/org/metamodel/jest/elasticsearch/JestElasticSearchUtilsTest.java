@@ -21,9 +21,7 @@ package org.metamodel.jest.elasticsearch;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -36,7 +34,7 @@ import org.apache.metamodel.schema.MutableColumn;
 
 import com.google.gson.JsonObject;
 
-public class ElasticSearchUtilsTest extends TestCase {
+public class JestElasticSearchUtilsTest extends TestCase {
 
     public void testAssignDocumentIdForPrimaryKeys() throws Exception {
         MutableColumn primaryKeyColumn = new MutableColumn("value1", ColumnType.STRING).setPrimaryKey(true);
@@ -47,7 +45,7 @@ public class ElasticSearchUtilsTest extends TestCase {
         JsonObject values = new JsonObject();
 
         values.addProperty("value1", "theValue");
-        Row row = ElasticSearchUtils.createRow(values, documentId, header);
+        Row row = JestElasticSearchUtils.createRow(values, documentId, header);
         String primaryKeyValue = (String) row.getValue(primaryKeyItem);
 
         assertEquals(primaryKeyValue, documentId);
@@ -62,7 +60,7 @@ public class ElasticSearchUtilsTest extends TestCase {
         JsonObject values = new JsonObject();
         values.addProperty("value1", "theValue");
         values.addProperty("value2", "2013-01-04T15:55:51.217+01:00");
-        Row row = ElasticSearchUtils.createRow(values, documentId, header);
+        Row row = JestElasticSearchUtils.createRow(values, documentId, header);
         Object stringValue = row.getValue(item1);
         Object dateValue = row.getValue(item2);
 

@@ -29,10 +29,10 @@ import org.elasticsearch.common.collect.MapBuilder;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-public class ElasticSearchMetaDataParserTest extends TestCase {
+public class JestElasticSearchMetaDataParserTest extends TestCase {
 
     public void testParseMetadataInfo() throws Exception {
-        Map<String, Object> metadata = new LinkedHashMap<String, Object>();
+        Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("message", MapBuilder.newMapBuilder().put("type", "long").immutableMap());
         metadata.put("postDate", MapBuilder.newMapBuilder().put("type", "date").put("format", "dateOptionalTime").immutableMap());
         metadata.put("anotherDate", MapBuilder.newMapBuilder().put("type", "date").put("format", "dateOptionalTime").immutableMap());
@@ -41,7 +41,8 @@ public class ElasticSearchMetaDataParserTest extends TestCase {
         metadata.put("income", MapBuilder.newMapBuilder().put("type", "double").immutableMap());
         metadata.put("untypedthingie", MapBuilder.newMapBuilder().put("foo", "bar").immutableMap());
         final Gson gson = new Gson();
-        ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse((JsonObject) gson.toJsonTree(metadata));
+        JestElasticSearchMetaData metaData = JestElasticSearchMetaDataParser
+                .parse((JsonObject) gson.toJsonTree(metadata));
         String[] columnNames = metaData.getColumnNames();
         ColumnType[] columnTypes = metaData.getColumnTypes();
 

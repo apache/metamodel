@@ -28,7 +28,7 @@ import org.apache.metamodel.util.TimeComparator;
  * Util class to convert date strings from ElasticSearch to
  * proper java Dates.
  */
-final class ElasticSearchDateConverter {
+final class JestElasticSearchDateConverter {
 
     public static Date tryToConvert(String dateAsString) {
         try {

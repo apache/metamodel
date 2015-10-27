@@ -22,11 +22,11 @@ import java.util.Date;
 
 import junit.framework.TestCase;
 
-public class ElasticSearchDateConverterTest extends TestCase {
+public class JestElasticSearchDateConverterTest extends TestCase {
 
     public void testConvertDateOptionalTime() throws Exception {
         String dateToConvert = "2013-01-04T15:55:51.217+01:00";
-        Date date = ElasticSearchDateConverter.tryToConvert(dateToConvert);
+        Date date = JestElasticSearchDateConverter.tryToConvert(dateToConvert);
 
         assertNotNull(date);
         assertTrue(date.toString().startsWith("Fri Jan 04"));

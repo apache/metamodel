@@ -38,11 +38,11 @@ import org.slf4j.LoggerFactory;
 import io.searchbox.client.JestResult;
 import io.searchbox.indices.mapping.PutMapping;
 
-final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder<ElasticSearchUpdateCallback> {
+final class JestElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder<JestElasticSearchUpdateCallback> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchCreateTableBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(JestElasticSearchCreateTableBuilder.class);
 
-    public ElasticSearchCreateTableBuilder(ElasticSearchUpdateCallback updateCallback, Schema schema, String name) {
+    public JestElasticSearchCreateTableBuilder(JestElasticSearchUpdateCallback updateCallback, Schema schema, String name) {
         super(updateCallback, schema, name);
     }
 
@@ -51,13 +51,13 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
 
         final MutableTable table = getTable();
 
-        if (table.getColumnByName(ElasticSearchDataContext.FIELD_ID) == null) {
-            final MutableColumn idColumn = new MutableColumn(ElasticSearchDataContext.FIELD_ID, ColumnType.STRING)
+        if (table.getColumnByName(JestElasticSearchDataContext.FIELD_ID) == null) {
+            final MutableColumn idColumn = new MutableColumn(JestElasticSearchDataContext.FIELD_ID, ColumnType.STRING)
                     .setTable(table).setPrimaryKey(true);
             table.addColumn(0, idColumn);
         }
 
-        final ElasticSearchDataContext dataContext = getUpdateCallback().getDataContext();
+        final JestElasticSearchDataContext dataContext = getUpdateCallback().getDataContext();
         final String indexName = dataContext.getIndexName();
 
         final List<Object> sourceProperties = new ArrayList<>();
@@ -65,7 +65,7 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
             // each column is defined as a property pair of the form: ("field1",
             // "type=string,store=true")
             final String columnName = column.getName();
-            if (ElasticSearchDataContext.FIELD_ID.equals(columnName)) {
+            if (JestElasticSearchDataContext.FIELD_ID.equals(columnName)) {
                 // do nothing - the ID is a client-side construct
                 continue;
             }

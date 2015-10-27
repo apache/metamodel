@@ -26,9 +26,6 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
-import org.elasticsearch.action.index.IndexRequestBuilder;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,17 +33,17 @@ import io.searchbox.core.DocumentResult;
 import io.searchbox.core.Index;
 import io.searchbox.params.Parameters;
 
-final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<ElasticSearchUpdateCallback> {
+final class JestElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<JestElasticSearchUpdateCallback> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchInsertBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(JestElasticSearchInsertBuilder.class);
 
-    public ElasticSearchInsertBuilder(ElasticSearchUpdateCallback updateCallback, Table table) {
+    public JestElasticSearchInsertBuilder(JestElasticSearchUpdateCallback updateCallback, Table table) {
         super(updateCallback, table);
     }
 
     @Override
     public void execute() throws MetaModelException {
-        final ElasticSearchDataContext dataContext = getUpdateCallback().getDataContext();
+        final JestElasticSearchDataContext dataContext = getUpdateCallback().getDataContext();
         final String indexName = dataContext.getIndexName();
         final String documentType = getTable().getName();
 
@@ -59,7 +56,7 @@ final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<Elast
             if (isSet(columns[i])) {
                 final String name = columns[i].getName();
                 final Object value = values[i];
-                if (ElasticSearchDataContext.FIELD_ID.equals(name)) {
+                if (JestElasticSearchDataContext.FIELD_ID.equals(name)) {
                     if (value != null) {
                         id = value.toString();
                     }
@@ -71,7 +68,8 @@ final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<Elast
 
         assert !source.isEmpty();
 
-        Index index = new Index.Builder(source).index(indexName).type(documentType).id(id).setParameter(Parameters.OP_TYPE, "create").build();
+        Index index = new Index.Builder(source).index(indexName).type(documentType).id(id).setParameter(
+                Parameters.OP_TYPE, "create").build();
 
         final DocumentResult result;
         try {

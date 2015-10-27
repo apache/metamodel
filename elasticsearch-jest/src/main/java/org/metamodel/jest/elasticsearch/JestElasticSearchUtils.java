@@ -34,7 +34,7 @@ import com.google.gson.JsonObject;
 /**
  * Shared/common util functions for the ElasticSearch MetaModel module.
  */
-final class ElasticSearchUtils {
+final class JestElasticSearchUtils {
 
     public static Row createRow(JsonObject source, String documentId, DataSetHeader header) {
         final Object[] values = new Object[header.size()];
@@ -61,7 +61,7 @@ final class ElasticSearchUtils {
             // (which is happily output, but not recognized by Jest/GSON).
             return NumberComparator.toNumber(field.getAsString());
         } else if (type.isTimeBased()) {
-            Date valueToDate = ElasticSearchDateConverter.tryToConvert(field.getAsString());
+            Date valueToDate = JestElasticSearchDateConverter.tryToConvert(field.getAsString());
             if (valueToDate == null) {
                 return field.getAsString();
             } else {

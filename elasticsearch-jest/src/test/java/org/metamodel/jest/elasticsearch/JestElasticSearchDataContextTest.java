@@ -67,7 +67,7 @@ import io.searchbox.client.config.HttpClientConfig;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.junit.Assert.*;
 
-public class ElasticSearchDataContextTest {
+public class JestElasticSearchDataContextTest {
 
     private static final String indexName = "twitter";
     private static final String indexType1 = "tweet1";
@@ -103,7 +103,7 @@ public class ElasticSearchDataContextTest {
         // The refresh API allows to explicitly refresh one or more index,
         // making all operations performed since the last refresh available for
         // search
-        dataContext = new ElasticSearchDataContext(client, indexName);
+        dataContext = new JestElasticSearchDataContext(client, indexName);
         Thread.sleep(1000);
         System.out.println("Embedded ElasticSearch server created!");
     }
@@ -140,7 +140,7 @@ public class ElasticSearchDataContextTest {
         assertEquals(ColumnType.BIGINT, table.getColumnByName("message").getType());
 
         try (DataSet ds = dataContext.query().from(indexType1).select("user").and("message").execute()) {
-            assertEquals(ElasticSearchDataSet.class, ds.getClass());
+            assertEquals(JestElasticSearchDataSet.class, ds.getClass());
 
             assertTrue(ds.next());
             assertEquals("Row[values=[user1, 1]]", ds.getRow().toString());
@@ -214,7 +214,7 @@ public class ElasticSearchDataContextTest {
 
         final Table table = schema.getTableByName("testCreateTable");
         assertNotNull(table);
-        assertEquals("[" + ElasticSearchDataContext.FIELD_ID + ", foo, bar]", Arrays.toString(table.getColumnNames()));
+        assertEquals("[" + JestElasticSearchDataContext.FIELD_ID + ", foo, bar]", Arrays.toString(table.getColumnNames()));
 
         final Column fooColumn = table.getColumnByName("foo");
         final Column idColumn = table.getPrimaryKeys()[0];
@@ -411,7 +411,7 @@ public class ElasticSearchDataContextTest {
             // restore the people documents for the next tests
             insertPeopleDocuments();
             embeddedElasticsearchServer.getClient().admin().indices().prepareRefresh().execute().actionGet();
-            dataContext = new ElasticSearchDataContext(client, indexName);
+            dataContext = new JestElasticSearchDataContext(client, indexName);
         }
     }
 
@@ -419,7 +419,7 @@ public class ElasticSearchDataContextTest {
     public void testWhereColumnEqualsValues() throws Exception {
         try (DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
                 .isEquals("user4").execute()) {
-            assertEquals(ElasticSearchDataSet.class, ds.getClass());
+            assertEquals(JestElasticSearchDataSet.class, ds.getClass());
 
             assertTrue(ds.next());
             assertEquals("Row[values=[user4, 4]]", ds.getRow().toString());
@@ -431,7 +431,7 @@ public class ElasticSearchDataContextTest {
     public void testWhereColumnIsNullValues() throws Exception {
         try (DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
                 .isNull().execute()) {
-            assertEquals(ElasticSearchDataSet.class, ds.getClass());
+            assertEquals(JestElasticSearchDataSet.class, ds.getClass());
 
             assertTrue(ds.next());
             assertEquals("Row[values=[2]]", ds.getRow().toString());
@@ -443,7 +443,7 @@ public class ElasticSearchDataContextTest {
     public void testWhereColumnIsNotNullValues() throws Exception {
         try (DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
                 .isNotNull().execute()) {
-            assertEquals(ElasticSearchDataSet.class, ds.getClass());
+            assertEquals(JestElasticSearchDataSet.class, ds.getClass());
 
             assertTrue(ds.next());
             assertEquals("Row[values=[1]]", ds.getRow().toString());
@@ -455,7 +455,7 @@ public class ElasticSearchDataContextTest {
     public void testWhereMultiColumnsEqualValues() throws Exception {
         try (DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
                 .isEquals("user4").and("message").ne(5).execute()) {
-            assertEquals(ElasticSearchDataSet.class, ds.getClass());
+            assertEquals(JestElasticSearchDataSet.class, ds.getClass());
 
             assertTrue(ds.next());
             assertEquals("Row[values=[user4, 4]]", ds.getRow().toString());
@@ -555,7 +555,7 @@ public class ElasticSearchDataContextTest {
     public void testNonDynamicMapingTableNames() throws Exception {
         createIndex();
 
-        ElasticSearchDataContext dataContext2 = new ElasticSearchDataContext(client, indexName2);
+        JestElasticSearchDataContext dataContext2 = new JestElasticSearchDataContext(client, indexName2);
 
         assertEquals("[tweet3]", Arrays.toString(dataContext2.getDefaultSchema().getTableNames()));
     }
