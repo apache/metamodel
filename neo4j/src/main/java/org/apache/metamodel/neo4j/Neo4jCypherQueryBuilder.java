@@ -18,7 +18,7 @@
  */
 package org.apache.metamodel.neo4j;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,93 +38,69 @@ public class Neo4jCypherQueryBuilder {
     }
 
     public static String buildSelectQuery(String tableName, String[] columnNames, int firstRow, int maxRows) {
-        // Split node property columns and relationship columns
-        List<String> nodePropertyColumnNames = new ArrayList<String>();
-        Map<String, List<String>> relationships = new LinkedHashMap<>();
+        Map<String, String> returnClauseMap = new LinkedHashMap<>();
+        Map<String, Integer> relationshipIndexMap = new LinkedHashMap<>();
         for (String columnName : columnNames) {
             if (columnName.startsWith(Neo4jDataContext.RELATIONSHIP_PREFIX)) {
                 columnName = columnName.replace(Neo4jDataContext.RELATIONSHIP_PREFIX, "");
 
+                String relationshipName;
+                String relationshipPropertyName;
+
                 if (columnName.contains(Neo4jDataContext.RELATIONSHIP_COLUMN_SEPARATOR)) {
-                    String[] parsedColumnNameArray = columnName.split("#");
+                    String[] parsedColumnNameArray = columnName.split(Neo4jDataContext.RELATIONSHIP_COLUMN_SEPARATOR);
 
-                    String relationshipName = parsedColumnNameArray[0];
-                    String relationshipColumnName = parsedColumnNameArray[1];
-
-                    if (relationships.containsKey(relationshipName)) {
-                        List<String> relationshipColumnNames = relationships.get(relationshipName);
-                        relationshipColumnNames.add(relationshipColumnName);
-                    } else {
-                        List<String> relationshipColumnNames = new ArrayList<>();
-                        relationshipColumnNames.add(relationshipColumnName);
-                        relationships.put(relationshipName, relationshipColumnNames);
-                    }
+                    relationshipName = parsedColumnNameArray[0];
+                    relationshipPropertyName = parsedColumnNameArray[1];
                 } else {
-                    String relationshipName = columnName;
-                    if (relationships.containsKey(relationshipName)) {
-                        List<String> relationshipColumnNames = relationships.get(relationshipName);
-                        relationshipColumnNames.add("metamodel_neo4j_relationship_marker");
-                    } else {
-                        List<String> relationshipColumnNames = new ArrayList<>();
-                        relationshipColumnNames.add("metamodel_neo4j_relationship_marker");
-                        relationships.put(relationshipName, relationshipColumnNames);
-                    }
+                    relationshipName = columnName;
+                    relationshipPropertyName = "metamodel_neo4j_relationship_marker";
                 }
 
+                String relationshipAlias;
+                if (relationshipIndexMap.containsKey(relationshipName)) {
+                    relationshipAlias = "r" + relationshipIndexMap.get(relationshipName);
+                } else {
+                    int nextIndex;
+                    if (relationshipIndexMap.values().isEmpty()) {
+                        nextIndex = 0;
+                    } else {
+                        nextIndex = Collections.max(relationshipIndexMap.values()) + 1;
+                    }
+                    relationshipIndexMap.put(relationshipName, nextIndex);
+                    relationshipAlias = "r" + relationshipIndexMap.get(relationshipName);
+                }
+
+                if (relationshipPropertyName.equals("metamodel_neo4j_relationship_marker")) {
+                    returnClauseMap.put(columnName, "id(" + relationshipAlias + "_relationshipEndNode)");
+                } else {
+                    returnClauseMap.put(columnName, relationshipAlias + "." + relationshipPropertyName);
+                }
             } else {
-                nodePropertyColumnNames.add(columnName);
+                if (columnName.equals("_id")) {
+                    returnClauseMap.put(columnName, "id(n)");    
+                } else {
+                    returnClauseMap.put(columnName, "n." + columnName);
+                }
             }
         }
 
         StringBuilder cypherBuilder = new StringBuilder();
         cypherBuilder.append("MATCH (n:");
         cypherBuilder.append(tableName);
-        int i = 0;
-        for (String relationship : relationships.keySet()) {
-            i++;
-            cypherBuilder.append(") OPTIONAL MATCH (n)-[r" + i + ":" + relationship + "]->(r" + i
+        for (Map.Entry<String, Integer> relationshipAliasEntry : relationshipIndexMap.entrySet()) {
+            cypherBuilder.append(") OPTIONAL MATCH (n)-[r" + relationshipAliasEntry.getValue() + ":"
+                    + relationshipAliasEntry.getKey() + "]->(r" + relationshipAliasEntry.getValue()
                     + "_relationshipEndNode");
         }
         cypherBuilder.append(") RETURN ");
         boolean addComma = false;
-        for (String nodePropertyColumnName : nodePropertyColumnNames) {
+        for (Map.Entry<String, String> returnClauseEntry : returnClauseMap.entrySet()) {
             if (addComma) {
                 cypherBuilder.append(",");
             }
-            if (nodePropertyColumnName.equals("_id")) {
-                cypherBuilder.append("id(n)");
-            } else {
-                cypherBuilder.append("n.");
-                cypherBuilder.append(nodePropertyColumnName);
-            }
+            cypherBuilder.append(returnClauseEntry.getValue());
             addComma = true;
-        }
-        int k = 0;
-        for (Map.Entry<String, List<String>> relationshipEntrySet : relationships.entrySet()) {
-            if (relationshipEntrySet.getValue().contains("metamodel_neo4j_relationship_marker")) {
-                k++;
-                if (addComma) {
-                    cypherBuilder.append(",");
-                }
-                cypherBuilder.append("id(r" + k + "_relationshipEndNode)");
-                addComma = true;
-            }
-        }
-        int j = 0;
-        for (Map.Entry<String, List<String>> relationshipEntrySet : relationships.entrySet()) {
-            j++;
-            for (String relationshipColumnName : relationshipEntrySet.getValue()) {
-                if (!relationshipColumnName.equals("metamodel_neo4j_relationship_marker")) {
-                    if (addComma) {
-                        cypherBuilder.append(",");
-                    }
-                    cypherBuilder.append("r" + j + ".");
-                    cypherBuilder.append(relationshipColumnName);
-                    addComma = true;
-                    
-                }
-            }
-
         }
 
         if (firstRow > 0) {

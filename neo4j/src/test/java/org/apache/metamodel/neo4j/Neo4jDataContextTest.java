@@ -279,9 +279,9 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
             assertEquals(3, dataSet1Rows.size());
             assertEquals("Row[values=[" + helenaNodeId + ", Helena, 100, null, null, null]]", dataSet1Rows.get(0)
                     .toString());
-            assertEquals("Row[values=[" + philomeenaNodeId + ", Philomeena, 18, null, " + bookNodeId + ", null]]",
+            assertEquals("Row[values=[" + philomeenaNodeId + ", Philomeena, 18, null, null, " + bookNodeId + "]]",
                     dataSet1Rows.get(1).toString());
-            assertEquals("Row[values=[" + tomaszNodeId + ", Tomasz, 26, " + bookNodeId + ", null, 5]]", dataSet1Rows
+            assertEquals("Row[values=[" + tomaszNodeId + ", Tomasz, 26, " + bookNodeId + ", 5, null]]", dataSet1Rows
                     .get(2).toString());
         }
     }
