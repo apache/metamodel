@@ -103,7 +103,7 @@ public class Neo4jCypherQueryBuilder {
             addComma = true;
         }
 
-        if (firstRow > 0) {
+        if (firstRow > 1) {
             cypherBuilder.append(" SKIP " + (firstRow - 1));
         }
         if (maxRows > -1) {
