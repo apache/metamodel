@@ -72,6 +72,14 @@ public class HsqldbTest extends TestCase {
         _connection.close();
     }
     
+    public void testApproximateCount() throws Exception {
+        final JdbcDataContext dataContext = new JdbcDataContext(_connection);
+        final DataSet dataSet = dataContext.executeQuery("SELECT APPROXIMATE COUNT(*) FROM customers");
+        assertTrue(dataSet.next());
+        assertEquals(122, dataSet.getRow().getValue(0));
+        assertFalse(dataSet.next());
+    }
+    
     public void testTimestampValueInsertSelect() throws Exception {
         Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:" + getName(), USERNAME, PASSWORD);
         JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.NANOSECONDS);

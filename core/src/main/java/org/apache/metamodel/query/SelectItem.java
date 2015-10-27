@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 public class SelectItem extends BaseObject implements QueryItem, Cloneable {
 
     public static final String FUNCTION_APPROXIMATION_PREFIX = "APPROXIMATE ";
-    
+
     private static final long serialVersionUID = 317475105509663973L;
     private static final Logger logger = LoggerFactory.getLogger(SelectItem.class);
 
@@ -529,6 +529,18 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     public SelectItem replaceFunction(FunctionType function) {
         return new SelectItem(_column, _fromItem, function, _expression, _subQuerySelectItem, _alias,
                 _functionApproximationAllowed);
+    }
+
+    /**
+     * Creates a copy of the {@link SelectItem}, with a different
+     * {@link #isFunctionApproximationAllowed()} flag set.
+     * 
+     * @param functionApproximationAllowed
+     * @return
+     */
+    public SelectItem replaceFunctionApproximationAllowed(boolean functionApproximationAllowed) {
+        return new SelectItem(_column, _fromItem, _function, _expression, _subQuerySelectItem, _alias,
+                functionApproximationAllowed);
     }
 
     /**
