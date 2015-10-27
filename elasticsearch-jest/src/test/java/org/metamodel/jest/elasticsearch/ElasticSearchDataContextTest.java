@@ -76,7 +76,8 @@ public class ElasticSearchDataContextTest {
     private static final String indexType3 = "tweet3";
     private static final String bulkIndexType = "bulktype";
     private static final String peopleIndexType = "peopletype";
-    private static final String mapping = "{\"date_detection\":\"false\",\"properties\":{\"message\":{\"type\":\"string\",\"index\":\"not_analyzed\",\"doc_values\":\"true\"}}}";
+    private static final String mapping =
+            "{\"date_detection\":\"false\",\"properties\":{\"message\":{\"type\":\"string\",\"index\":\"not_analyzed\",\"doc_values\":\"true\"}}}";
     private static EmbeddedElasticsearchServer embeddedElasticsearchServer;
     private static JestClient client;
     private static UpdateableDataContext dataContext;
@@ -138,7 +139,7 @@ public class ElasticSearchDataContextTest {
         assertEquals(ColumnType.DATE, table.getColumnByName("postDate").getType());
         assertEquals(ColumnType.BIGINT, table.getColumnByName("message").getType());
 
-        try(DataSet ds = dataContext.query().from(indexType1).select("user").and("message").execute()) {
+        try (DataSet ds = dataContext.query().from(indexType1).select("user").and("message").execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
             assertTrue(ds.next());
@@ -212,6 +213,7 @@ public class ElasticSearchDataContextTest {
         dataContext.executeUpdate(createTable);
 
         final Table table = schema.getTableByName("testCreateTable");
+        assertNotNull(table);
         assertEquals("[" + ElasticSearchDataContext.FIELD_ID + ", foo, bar]", Arrays.toString(table.getColumnNames()));
 
         final Column fooColumn = table.getColumnByName("foo");
@@ -228,6 +230,7 @@ public class ElasticSearchDataContextTest {
         });
 
         dataContext.refreshSchemas();
+
 
         try (DataSet ds = dataContext.query().from(table).selectAll().orderBy("bar").execute()) {
             assertTrue(ds.next());
@@ -288,7 +291,7 @@ public class ElasticSearchDataContextTest {
 
         Row row = MetaModelHelper.executeSingleRowQuery(dataContext, dataContext.query().from(table).selectCount()
                 .toQuery());
-        assertEquals("Row[values=[0]]", row.toString());
+        assertEquals("Count is wrong", 0, ((Number) row.getValue(0)).intValue());
 
         dataContext.executeUpdate(new DropTable(table));
     }
@@ -394,7 +397,7 @@ public class ElasticSearchDataContextTest {
         {
             DataSet ds = dataContext.query().from(table).selectCount().execute();
             ds.next();
-            assertEquals("Count is wrong", 9, ((Number)ds.getRow().getValue(0)).intValue());
+            assertEquals("Count is wrong", 9, ((Number) ds.getRow().getValue(0)).intValue());
             ds.close();
         }
 
@@ -402,7 +405,7 @@ public class ElasticSearchDataContextTest {
         try {
             DataSet ds = dataContext.query().from(table).selectCount().execute();
             ds.next();
-            assertEquals("Row[values=[0]]", ds.getRow().toString());
+            assertEquals("Count is wrong", 0, ((Number) ds.getRow().getValue(0)).intValue());
             ds.close();
         } finally {
             // restore the people documents for the next tests
@@ -426,8 +429,8 @@ public class ElasticSearchDataContextTest {
 
     @Test
     public void testWhereColumnIsNullValues() throws Exception {
-        try(DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
-                .isNull().execute()){
+        try (DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
+                .isNull().execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
             assertTrue(ds.next());
@@ -438,8 +441,8 @@ public class ElasticSearchDataContextTest {
 
     @Test
     public void testWhereColumnIsNotNullValues() throws Exception {
-        try(DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
-                .isNotNull().execute()){
+        try (DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
+                .isNotNull().execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
             assertTrue(ds.next());
@@ -450,8 +453,8 @@ public class ElasticSearchDataContextTest {
 
     @Test
     public void testWhereMultiColumnsEqualValues() throws Exception {
-        try(DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
-                .isEquals("user4").and("message").ne(5).execute()){
+        try (DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
+                .isEquals("user4").and("message").ne(5).execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
             assertTrue(ds.next());
@@ -559,13 +562,15 @@ public class ElasticSearchDataContextTest {
 
     private static void createIndex() {
         CreateIndexRequest cir = new CreateIndexRequest(indexName2);
-        CreateIndexResponse response = embeddedElasticsearchServer.getClient().admin().indices().create(cir).actionGet();
+        CreateIndexResponse response =
+                embeddedElasticsearchServer.getClient().admin().indices().create(cir).actionGet();
 
         System.out.println("create index: " + response.isAcknowledged());
 
         PutMappingRequest pmr = new PutMappingRequest(indexName2).type(indexType3).source(mapping);
 
-        PutMappingResponse response2 = embeddedElasticsearchServer.getClient().admin().indices().putMapping(pmr).actionGet();
+        PutMappingResponse response2 =
+                embeddedElasticsearchServer.getClient().admin().indices().putMapping(pmr).actionGet();
         System.out.println("put mapping: " + response2.isAcknowledged());
     }
 
@@ -591,7 +596,8 @@ public class ElasticSearchDataContextTest {
     }
 
     private static void indexOnePeopleDocument(String gender, int age, int id) throws IOException {
-        embeddedElasticsearchServer.getClient().prepareIndex(indexName, peopleIndexType).setSource(buildPeopleJson(gender, age, id)).execute()
+        embeddedElasticsearchServer.getClient().prepareIndex(indexName, peopleIndexType)
+                .setSource(buildPeopleJson(gender, age, id)).execute()
                 .actionGet();
     }
 

@@ -18,6 +18,7 @@
  */
 package org.metamodel.jest.elasticsearch;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +32,10 @@ import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.searchbox.core.DocumentResult;
+import io.searchbox.core.Index;
+import io.searchbox.params.Parameters;
+
 final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<ElasticSearchUpdateCallback> {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchInsertBuilder.class);
@@ -41,39 +46,42 @@ final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<Elast
 
     @Override
     public void execute() throws MetaModelException {
-/*
         final ElasticSearchDataContext dataContext = getUpdateCallback().getDataContext();
-        final Client client = dataContext.getElasticSearchClient();
         final String indexName = dataContext.getIndexName();
         final String documentType = getTable().getName();
-        final IndexRequestBuilder requestBuilder = new IndexRequestBuilder(client, indexName).setType(documentType);
 
-        final Map<String, Object> valueMap = new HashMap<>();
+
+        final Map<String, Object> source = new HashMap<>();
         final Column[] columns = getColumns();
         final Object[] values = getValues();
+        String id = null;
         for (int i = 0; i < columns.length; i++) {
             if (isSet(columns[i])) {
                 final String name = columns[i].getName();
                 final Object value = values[i];
                 if (ElasticSearchDataContext.FIELD_ID.equals(name)) {
                     if (value != null) {
-                        requestBuilder.setId(value.toString());
+                        id = value.toString();
                     }
                 } else {
-                    valueMap.put(name, value);
+                    source.put(name, value);
                 }
             }
         }
 
-        assert !valueMap.isEmpty();
+        assert !source.isEmpty();
 
-        requestBuilder.setSource(valueMap);
-        requestBuilder.setCreate(true);
+        Index index = new Index.Builder(source).index(indexName).type(documentType).id(id).setParameter(Parameters.OP_TYPE, "create").build();
 
-        final IndexResponse result = requestBuilder.execute().actionGet();
-        
+        final DocumentResult result;
+        try {
+            result = dataContext.getElasticSearchClient().execute(index);
+        } catch (IOException e) {
+            logger.warn("Could not index document", e);
+            throw new MetaModelException("Could not index document", e);
+        }
+
         logger.debug("Inserted document: id={}", result.getId());
-*/
     }
 
 }

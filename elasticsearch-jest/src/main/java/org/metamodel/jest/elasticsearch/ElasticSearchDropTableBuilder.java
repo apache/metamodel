@@ -18,19 +18,18 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import java.lang.reflect.Method;
+import java.io.IOException;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.drop.AbstractTableDropBuilder;
 import org.apache.metamodel.drop.TableDropBuilder;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Table;
-import org.elasticsearch.action.admin.indices.mapping.delete.DeleteMappingRequestBuilder;
-import org.elasticsearch.action.admin.indices.mapping.delete.DeleteMappingResponse;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.IndicesAdminClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.searchbox.client.JestResult;
+import io.searchbox.indices.mapping.DeleteMapping;
 
 /**
  * {@link TableDropBuilder} for dropping tables (document types) in an
@@ -49,57 +48,26 @@ final class ElasticSearchDropTableBuilder extends AbstractTableDropBuilder {
 
     @Override
     public void execute() throws MetaModelException {
-/*
+
         final ElasticSearchDataContext dataContext = _updateCallback.getDataContext();
         final Table table = getTable();
         final String documentType = table.getName();
         logger.info("Deleting mapping / document type: {}", documentType);
-        final Client client = dataContext.getElasticSearchClient();
-        final IndicesAdminClient indicesAdminClient = client.admin().indices();
-        final String indexName = dataContext.getIndexName();
 
-        final DeleteMappingRequestBuilder requestBuilder = new DeleteMappingRequestBuilder(indicesAdminClient)
-                .setIndices(indexName);
-        setType(requestBuilder, documentType);
+        final DeleteMapping deleteIndex = new DeleteMapping.Builder(dataContext.getIndexName(), documentType).build();
 
-        final DeleteMappingResponse result = requestBuilder.execute().actionGet();
-        logger.debug("Delete mapping response: acknowledged={}", result.isAcknowledged());
+        final JestResult result;
+        try {
+            result = dataContext.getElasticSearchClient().execute(deleteIndex);
+        } catch (IOException e) {
+            logger.warn("Could not delete mapping", e);
+            throw new MetaModelException("Could not delete mapping", e);
+        }
+
+        logger.debug("Delete mapping response: acknowledged={}", result.isSucceeded());
 
         final MutableSchema schema = (MutableSchema) table.getSchema();
         schema.removeTable(table);
-*/
-    }
 
-    /**
-     * Invokes the {@link DeleteMappingRequestBuilder#setType(String...)} method
-     * using reflection. This is done because the API of ElasticSearch was
-     * changed and the method signature differes between different versions.
-     * 
-     * @param requestBuilder
-     * @param documentType
-     */
-    private void setType(DeleteMappingRequestBuilder requestBuilder, String documentType) {
-        Object argument;
-        Method method;
-        try {
-            try {
-                method = requestBuilder.getClass().getDeclaredMethod("setType", String[].class);
-                argument = new String[] {documentType};
-            } catch (NoSuchMethodException e) {
-                logger.debug("No setType(String[]) method found, trying with a single String instead", e);
-                method = requestBuilder.getClass().getDeclaredMethod("setType", String.class);
-                argument = documentType;
-            }
-        } catch (Exception e) {
-            logger.error("Failed to resolve DeleteMappingRequestBuilder.setType(...) method", e);
-            throw new IllegalStateException("Failed to resolve DeleteMappingRequestBuilder.setType(...) method", e);
-        }
-        try {
-            method.setAccessible(true);
-            method.invoke(requestBuilder, argument);
-        } catch (Exception e) {
-            logger.error("Failed to invoke {}", method, e);
-            throw new IllegalStateException("Failed to invoke " + method, e);
-        }
     }
 }

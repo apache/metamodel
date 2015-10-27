@@ -18,14 +18,9 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.searchbox.client.JestClient;
-import io.searchbox.client.JestResult;
-import io.searchbox.core.SearchResult;
-import io.searchbox.core.SearchScroll;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSet;
@@ -35,8 +30,13 @@ import org.apache.metamodel.schema.Column;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
+import io.searchbox.client.JestClient;
+import io.searchbox.client.JestResult;
+import io.searchbox.core.SearchScroll;
 
 /**
  * {@link DataSet} implementation for ElasticSearch

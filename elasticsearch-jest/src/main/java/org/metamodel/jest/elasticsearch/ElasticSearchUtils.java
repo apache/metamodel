@@ -19,8 +19,6 @@
 package org.metamodel.jest.elasticsearch;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
@@ -28,6 +26,7 @@ import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.util.NumberComparator;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -56,9 +55,11 @@ final class ElasticSearchUtils {
         return new DefaultRow(header, values);
     }
 
-    public static Object getDataFromColumnType(JsonElement field, ColumnType type){
+    public static Object getDataFromColumnType(JsonElement field, ColumnType type) {
         if (type.isNumber()) {
-            return field.getAsNumber();
+            // Pretty terrible workaround to avoid LazilyParsedNumber
+            // (which is happily output, but not recognized by Jest/GSON).
+            return NumberComparator.toNumber(field.getAsString());
         } else if (type.isTimeBased()) {
             Date valueToDate = ElasticSearchDateConverter.tryToConvert(field.getAsString());
             if (valueToDate == null) {

@@ -18,6 +18,7 @@
  */
 package org.metamodel.jest.elasticsearch;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,12 +31,12 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.searchbox.client.JestResult;
+import io.searchbox.indices.mapping.PutMapping;
 
 final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder<ElasticSearchUpdateCallback> {
 
@@ -47,7 +48,7 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
 
     @Override
     public Table execute() throws MetaModelException {
-/*
+
         final MutableTable table = getTable();
 
         if (table.getColumnByName(ElasticSearchDataContext.FIELD_ID) == null) {
@@ -57,7 +58,6 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
         }
 
         final ElasticSearchDataContext dataContext = getUpdateCallback().getDataContext();
-        final IndicesAdminClient indicesAdmin = dataContext.getElasticSearchClient().admin().indices();
         final String indexName = dataContext.getIndexName();
 
         final List<Object> sourceProperties = new ArrayList<>();
@@ -79,18 +79,21 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
             }
         }
 
-        final PutMappingRequestBuilder requestBuilder = new PutMappingRequestBuilder(indicesAdmin)
-                .setIndices(indexName).setType(table.getName());
-        requestBuilder.setSource(sourceProperties.toArray());
-        final PutMappingResponse result = requestBuilder.execute().actionGet();
+        final PutMapping putMapping = new PutMapping.Builder(indexName, table.getName(), sourceProperties).build();
 
-        logger.debug("PutMapping response: acknowledged={}", result.isAcknowledged());
+        final JestResult result;
+        try {
+            result = dataContext.getElasticSearchClient().execute(putMapping);
+        } catch (IOException e) {
+            logger.warn("Could not add table", e);
+            throw new MetaModelException("Could not add table", e);
+        }
+
+        logger.debug("PutMapping response: acknowledged={}", result.isSucceeded());
 
         final MutableSchema schema = (MutableSchema) getSchema();
         schema.addTable(table);
         return table;
-*/
-        return null;
     }
 
     /**
@@ -101,9 +104,6 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
      * http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/mapping-core-types.html
      * </pre>
      * 
-     * 
-     * @param column
-     * @return
      */
     private String getType(Column column) {
         String nativeType = column.getNativeType();

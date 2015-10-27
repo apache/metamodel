@@ -18,6 +18,8 @@
  */
 package org.metamodel.jest.elasticsearch;
 
+import java.io.IOException;
+
 import org.apache.metamodel.AbstractUpdateCallback;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.create.TableCreationBuilder;
@@ -26,12 +28,16 @@ import org.apache.metamodel.drop.TableDropBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-import org.elasticsearch.client.Client;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.searchbox.indices.Refresh;
 
 /**
  * {@link UpdateCallback} implementation for {@link ElasticSearchDataContext}.
  */
 final class ElasticSearchUpdateCallback extends AbstractUpdateCallback {
+    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchUpdateCallback.class);
 
     public ElasticSearchUpdateCallback(ElasticSearchDataContext dataContext) {
         super(dataContext);
@@ -77,13 +83,13 @@ final class ElasticSearchUpdateCallback extends AbstractUpdateCallback {
     }
 
     public void onExecuteUpdateFinished() {
-        // force refresh of the index
-/*
-        final ElasticSearchDataContext dataContext = getDataContext();
-        final Client client = dataContext.getElasticSearchClient();
-        final String indexName = dataContext.getIndexName();
-        client.admin().indices().prepareRefresh(indexName).execute().actionGet();
-*/
-    }
+        final String indexName = getDataContext().getIndexName();
+        Refresh refresh = new Refresh.Builder().addIndex(indexName).build();
 
+        try {
+            getDataContext().getElasticSearchClient().execute(refresh);
+        } catch (IOException e) {
+            logger.warn("Refresh failed", e);
+        }
+    }
 }

@@ -18,6 +18,7 @@
  */
 package org.metamodel.jest.elasticsearch;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.metamodel.MetaModelException;
@@ -26,11 +27,13 @@ import org.apache.metamodel.delete.RowDeletionBuilder;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.LogicalOperator;
 import org.apache.metamodel.schema.Table;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.searchbox.client.JestResult;
+import io.searchbox.core.DeleteByQuery;
 
 /**
  * {@link RowDeletionBuilder} implementation for
@@ -49,22 +52,17 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
 
     @Override
     public void execute() throws MetaModelException {
-/*        final Table table = getTable();
+        final Table table = getTable();
         final String documentType = table.getName();
 
         final ElasticSearchDataContext dataContext = _updateCallback.getDataContext();
-        final Client client = dataContext.getElasticSearchClient();
         final String indexName = dataContext.getIndexName();
-
-        final DeleteByQueryRequestBuilder deleteByQueryRequestBuilder = new DeleteByQueryRequestBuilder(client);
-        deleteByQueryRequestBuilder.setIndices(indexName);
-        deleteByQueryRequestBuilder.setTypes(documentType);
 
         final List<FilterItem> whereItems = getWhereItems();
 
         // delete by query - note that creteQueryBuilderForSimpleWhere may
         // return matchAllQuery() if no where items are present.
-        final QueryBuilder queryBuilder = dataContext.createQueryBuilderForSimpleWhere(table, whereItems,
+        final QueryBuilder queryBuilder = dataContext.createQueryBuilderForSimpleWhere(whereItems,
                 LogicalOperator.AND);
         if (queryBuilder == null) {
             // TODO: The where items could not be pushed down to a query. We
@@ -73,9 +71,21 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
             throw new UnsupportedOperationException("Could not push down WHERE items to delete by query request: "
                     + whereItems);
         }
-        deleteByQueryRequestBuilder.setQuery(queryBuilder);
-        deleteByQueryRequestBuilder.execute().actionGet();
+        final SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(queryBuilder);
 
-        logger.debug("Deleted documents by query.");*/
+        final DeleteByQuery deleteByQuery =
+                new DeleteByQuery.Builder(searchSourceBuilder.toString()).addIndex(indexName).addType(
+                        documentType).build();
+
+        final JestResult result;
+        try {
+            result = dataContext.getElasticSearchClient().execute(deleteByQuery);
+        } catch (IOException e) {
+            logger.warn("Could not delete documents", e);
+            throw new MetaModelException("Could not delete documents", e);
+        }
+
+        logger.debug("Deleted documents by query, success: {}", result.isSucceeded());
     }
 }
