@@ -51,6 +51,13 @@ public class QueryParserTest extends TestCase {
         col.setType(ColumnType.INTEGER);
     };
 
+	public void testQueryWithParenthesisAnd() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc,
+                "select foo from sch.tbl where (foo= 1) and (foo=2)");
+        assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.foo = '1' AND tbl.foo = '2'",
+                q.toSql());
+    }
+
     public void testQueryInLowerCase() throws Exception {
         Query q = MetaModelHelper.parseQuery(dc,
                 "select a.foo as f from sch.tbl a inner join sch.tbl b on a.foo=b.foo order by a.foo asc");
@@ -86,6 +93,12 @@ public class QueryParserTest extends TestCase {
 
         Query q = MetaModelHelper.parseQuery(dc, "SELECT fo.o AS f FROM sch.tbl");
         assertEquals("SELECT tbl.fo.o AS f FROM sch.tbl", q.toSql());
+    }
+    
+    public void testApproximateCountQuery() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc, "SELECT APPROXIMATE COUNT(*) FROM sch.tbl");
+        assertEquals("SELECT APPROXIMATE COUNT(*) FROM sch.tbl", q.toSql());
+        assertTrue(q.getSelectClause().getItem(0).isFunctionApproximationAllowed());
     }
 
     public void testSelectAlias() throws Exception {

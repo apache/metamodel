@@ -47,6 +47,8 @@ import org.slf4j.LoggerFactory;
  */
 public class SelectItem extends BaseObject implements QueryItem, Cloneable {
 
+    public static final String FUNCTION_APPROXIMATION_PREFIX = "APPROXIMATE ";
+    
     private static final long serialVersionUID = 317475105509663973L;
     private static final Logger logger = LoggerFactory.getLogger(SelectItem.class);
 
@@ -337,7 +339,10 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
         } else if (_column != null) {
             final StringBuilder sb = new StringBuilder();
             if (_function != null) {
-                sb.append(_function.toString());
+                if (_functionApproximationAllowed) {
+                    sb.append(FUNCTION_APPROXIMATION_PREFIX);
+                }
+                sb.append(_function.getFunctionName());
                 sb.append('(');
             }
             if (includeQuotes) {
@@ -370,7 +375,11 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             sb.append(columnPrefix);
             sb.append(_column.getQuotedName());
             if (_function != null) {
-                sb.insert(0, _function + "(");
+                if (_functionApproximationAllowed) {
+                    sb.insert(0, FUNCTION_APPROXIMATION_PREFIX + _function.getFunctionName() + "(");
+                } else {
+                    sb.insert(0, _function.getFunctionName() + "(");
+                }
                 sb.append(")");
             }
             return sb.toString();
@@ -418,7 +427,11 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             sb.append(_subQuerySelectItem.getSuperQueryAlias());
         }
         if (_function != null) {
-            sb.insert(0, _function.getFunctionName() + "(");
+            if (_functionApproximationAllowed) {
+                sb.insert(0, FUNCTION_APPROXIMATION_PREFIX + _function.getFunctionName() + "(");
+            } else {
+                sb.insert(0, _function.getFunctionName() + "(");
+            }
             sb.append(")");
         }
         return sb;
