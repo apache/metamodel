@@ -34,8 +34,8 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.FileHelper;
 
-import com.mongodb.DB;
-import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoDatabase;
 
 /**
  * Simple example program that can copy data to a MongoDB collection
@@ -43,7 +43,7 @@ import com.mongodb.Mongo;
 public class MongoDbDataCopyer {
 
     private final DataContext _sourceDataContext;
-    private final DB _mongoDb;
+    private final MongoDatabase _mongoDb;
     private final String _collectionName;
     private final String _sourceSchemaName;
     private final String _sourceTableName;
@@ -64,7 +64,7 @@ public class MongoDbDataCopyer {
                 + ")derby_testdb;territory=en");
         connection.setReadOnly(true);
 
-        DB db = new Mongo().getDB("orderdb_copy");
+        MongoDatabase db = new MongoClient().getDatabase("orderdb_copy");
 
         DataContext sourceDataContext = new JdbcDataContext(connection);
 
@@ -77,7 +77,7 @@ public class MongoDbDataCopyer {
         connection.close();
     }
 
-    public MongoDbDataCopyer(DB mongoDb, String collectionName, DataContext sourceDataContext, String sourceSchemaName,
+    public MongoDbDataCopyer(MongoDatabase mongoDb, String collectionName, DataContext sourceDataContext, String sourceSchemaName,
             String sourceTableName) {
         _mongoDb = mongoDb;
         _collectionName = collectionName;

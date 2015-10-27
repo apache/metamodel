@@ -21,25 +21,26 @@ package org.apache.metamodel.mongodb;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.Column;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCursor;
 
 final class MongoDbDataSet extends AbstractDataSet {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoDbDataSet.class);
 
-    private final DBCursor _cursor;
+    private final MongoCursor<Document> _iterator;
     private final boolean _queryPostProcessed;
 
     private boolean _closed;
-    private volatile DBObject _dbObject;
+    private volatile Document _document;
 
-    public MongoDbDataSet(DBCursor cursor, Column[] columns, boolean queryPostProcessed) {
+    public MongoDbDataSet(FindIterable<Document> resultSet, Column[] columns, boolean queryPostProcessed) {
         super(columns);
-        _cursor = cursor;
+        _iterator = resultSet.iterator();
         _queryPostProcessed = queryPostProcessed;
         _closed = false;
     }
@@ -51,7 +52,6 @@ final class MongoDbDataSet extends AbstractDataSet {
     @Override
     public void close() {
         super.close();
-        _cursor.close();
         _closed = true;
     }
 
@@ -66,18 +66,19 @@ final class MongoDbDataSet extends AbstractDataSet {
 
     @Override
     public boolean next() {
-        if (_cursor.hasNext()) {
-            _dbObject = _cursor.next();
-            return true;
-        } else {
-            _dbObject = null;
-            return false;
-        }
+    	if (_iterator.hasNext()){
+    		_document = _iterator.next();
+    		return true;	
+    	}else {
+    		_document = null;
+    		return false;
+    	}
+    	
     }
 
     @Override
     public Row getRow() {
-        return MongoDBUtils.toRow(_dbObject, getHeader());
+        return MongoDBUtils.toRow(_document, getHeader());
     }
 
 }

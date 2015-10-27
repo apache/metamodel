@@ -21,13 +21,13 @@ package org.apache.metamodel.mongodb;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
 import org.apache.metamodel.schema.Table;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.result.DeleteResult;
 
 final class MongoDbDeleteBuilder extends AbstractRowDeletionBuilder {
 
@@ -42,15 +42,15 @@ final class MongoDbDeleteBuilder extends AbstractRowDeletionBuilder {
 
     @Override
     public void execute() throws MetaModelException {
-        final DBCollection collection = _updateCallback.getCollection(getTable().getName());
+        final MongoCollection<Document> collection = _updateCallback.getCollection(getTable().getName());
 
         final MongoDbDataContext dataContext = _updateCallback.getDataContext();
         final BasicDBObject query = dataContext.createMongoDbQuery(getTable(), getWhereItems());
         
-        WriteConcern writeConcern = _updateCallback.getWriteConcernAdvisor().adviceDeleteQuery(collection, query);
+//        WriteConcern writeConcern = _updateCallback.getWriteConcernAdvisor().adviceDeleteQuery(collection, query);
         
-        final WriteResult writeResult = collection.remove(query, writeConcern);
-        logger.info("Remove returned result: {}", writeResult);
+        DeleteResult result = collection.deleteMany(query);
+        logger.info("Remove returned result: {}", result.getDeletedCount());
     }
 
 }

@@ -16,23 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.mongodb;
+package org.apache.metamodel;
 
-import org.bson.Document;
+import java.io.File;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.WriteConcern;
-import com.mongodb.client.MongoCollection;
+import org.apache.metamodel.excel.ExcelConfiguration;
+import org.apache.metamodel.excel.ExcelDataContext;
+import org.apache.metamodel.mongodb.MongoDbTestCase;
 
-/**
- * Interface for component that advices MetaModel on which {@link WriteConcern}
- * to apply to given operations
- */
-public interface WriteConcernAdvisor {
+public class ExcelDataContextFactoryTest extends MongoDbTestCase {
 
-    public WriteConcern adviceDeleteQuery(MongoCollection<Document> collection, BasicDBObject query);
+    public void testCreateExcelDataContext() throws Exception {
+        File file = new File("../excel/src/test/resources/xls_people.xls");
+        assertTrue(file.exists());
 
-    public WriteConcern adviceInsert(DBCollection collection, BasicDBObject document);
+        UpdateableDataContext dc;
 
+        dc = DataContextFactory.createExcelDataContext(file);
+        assertNotNull(dc);
+        assertTrue(dc instanceof ExcelDataContext);
+
+        dc = DataContextFactory.createExcelDataContext(file,
+                new ExcelConfiguration());
+        assertNotNull(dc);
+        assertTrue(dc instanceof ExcelDataContext);
+    }
 }

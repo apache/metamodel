@@ -18,9 +18,12 @@
  */
 package org.apache.metamodel.mongodb;
 
+import org.bson.Document;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.MongoCollection;
 
 /**
  * A simple {@link WriteConcernAdvisor} that always returns the same write
@@ -38,7 +41,7 @@ public class SimpleWriteConcernAdvisor implements WriteConcernAdvisor {
     }
 
     @Override
-    public WriteConcern adviceDeleteQuery(DBCollection collection, BasicDBObject query) {
+    public WriteConcern adviceDeleteQuery(MongoCollection<Document> collection, BasicDBObject query) {
         return _writeConcern;
     }
 

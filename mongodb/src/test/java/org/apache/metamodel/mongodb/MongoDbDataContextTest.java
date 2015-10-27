@@ -18,9 +18,9 @@
  */
 package org.apache.metamodel.mongodb;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,31 +35,35 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.bson.Document;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 public class MongoDbDataContextTest extends MongoDbTestCase {
 
-    private DB db;
+    private MongoDatabase db;
+    private MongoClient client;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         if (isConfigured()) {
-            Mongo mongo = new Mongo(getHostname());
-            db = mongo.getDB(getDatabaseName());
-        }
+        	client = new MongoClient(new MongoClientURI("mongodb://"+getHostname()+":27017"));
+        	db = client.getDatabase(getDatabaseName());
+        }        
+        
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         if (isConfigured()) {
-            db.dropDatabase();
+            db.drop();
         }
     }
 
@@ -69,23 +73,19 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             return;
         }
 
-        DBCollection col = db.createCollection(getCollectionName(), new BasicDBObject());
-
-        // delete if already exists
-        {
-            col.drop();
-            col = db.createCollection(getCollectionName(), new BasicDBObject());
-        }
+        db.createCollection(getCollectionName());
+        MongoCollection<Document> col = db.getCollection(getCollectionName());
+        
 
         final BasicDBList list = new BasicDBList();
         list.add(new BasicDBObject().append("city", "Copenhagen").append("country", "Denmark"));
         list.add(new BasicDBObject().append("city", "Stockholm").append("country", "Sweden"));
 
-        final BasicDBObject dbRow = new BasicDBObject();
-        dbRow.append("name", new BasicDBObject().append("first", "John").append("last", "Doe"));
-        dbRow.append("gender", "MALE");
-        dbRow.append("addresses", list);
-        col.insert(dbRow);
+        final Document document = new Document();
+        document.append("name", new BasicDBObject().append("first", "John").append("last", "Doe"));
+        document.append("gender", "MALE");
+        document.append("addresses", list);
+        col.insertOne(document);
 
         final MongoDbDataContext dc = new MongoDbDataContext(db, new SimpleTableDef(getCollectionName(), new String[] {
                 "name.first", "name.last", "gender", "addresses", "addresses[0].city", "addresses[0].country",
@@ -110,19 +110,14 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             return;
         }
 
-        DBCollection col = db.createCollection(getCollectionName(), new BasicDBObject());
-
-        // delete if already exists
-        {
-            col.drop();
-            col = db.createCollection(getCollectionName(), new BasicDBObject());
-        }
+        db.createCollection(getCollectionName());
+        MongoCollection<Document> col = db.getCollection(getCollectionName());
 
         // create 3 records
         for (int i = 0; i < 3; i++) {
-            BasicDBObject dbRow = new BasicDBObject();
+            Document dbRow = new Document();
             dbRow.put("id", i + 1);
-            col.insert(dbRow);
+            col.insertOne(dbRow);
         }
 
         final MongoDbDataContext dc = new MongoDbDataContext(db);
@@ -160,17 +155,12 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             return;
         }
 
-        DBCollection col = db.createCollection(getCollectionName(), new BasicDBObject());
-
-        // delete if already exists
-        {
-            col.drop();
-            col = db.createCollection(getCollectionName(), new BasicDBObject());
-        }
+        db.createCollection(getCollectionName());
+        MongoCollection<Document> col = db.getCollection(getCollectionName());
 
         // create 1000 records
         for (int i = 0; i < 1000; i++) {
-            BasicDBObject dbRow = new BasicDBObject();
+            Document dbRow = new Document();
             dbRow.put("id", i);
             dbRow.put("name", "record no. " + i);
             if (i % 5 == 0) {
@@ -185,13 +175,13 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
 
             dbRow.put("list", Arrays.<Object> asList("l1", "l2", "l3", i));
 
-            col.insert(dbRow);
+            col.insertOne(dbRow);
         }
 
         // Instantiate the actual data context
         final DataContext dataContext = new MongoDbDataContext(db);
 
-        assertEquals("[" + getCollectionName() + ", system.indexes]",
+        assertEquals("[" + getCollectionName() + "]",
                 Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
         Table table = dataContext.getDefaultSchema().getTableByName(getCollectionName());
         assertEquals("[_id, baz, foo, id, list, name]", Arrays.toString(table.getColumnNames()));
@@ -209,61 +199,61 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         try {
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 0, bar, {count=0, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 0]]]",
+                    "Row[values=[record no. 0, bar, Document{{count=0, constant=foobarbaz}}, [l1, l2, l3, 0]]]",
                     ds.getRow().toString());
 
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 5, bar, {count=5, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 5]]]",
+                    "Row[values=[record no. 5, bar, Document{{count=5, constant=foobarbaz}}, [l1, l2, l3, 5]]]",
                     ds.getRow().toString());
 
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 10, bar, {count=10, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 10]]]",
+                    "Row[values=[record no. 10, bar, Document{{count=10, constant=foobarbaz}}, [l1, l2, l3, 10]]]",
                     ds.getRow().toString());
 
             for (int j = 15; j < 801; j++) {
                 if (j % 5 == 0) {
                     assertTrue(ds.next());
-                    assertEquals("Row[values=[record no. " + j + ", bar, {count=" + j
-                            + ", constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , " + j + "]]]", ds.getRow()
+                    assertEquals("Row[values=[record no. " + j + ", bar, Document{{count="+j
+                            + ", constant=foobarbaz}}, [l1, l2, l3, " + j + "]]]", ds.getRow()
                             .toString());
                 }
             }
 
             assertTrue(ds.next());
-            assertTrue(ds.getRow().getValue(2) instanceof Map);
-            assertEquals(LinkedHashMap.class, ds.getRow().getValue(2).getClass());
+            assertTrue(ds.getRow().getValue(2) instanceof Document);
+            assertEquals(Document.class, ds.getRow().getValue(2).getClass());
 
             assertTrue("unexpected type: " + ds.getRow().getValue(3).getClass(),
                     ds.getRow().getValue(3) instanceof List);
-            assertEquals(BasicDBList.class, ds.getRow().getValue(3).getClass());
+            assertEquals(ArrayList.class, ds.getRow().getValue(3).getClass());
 
             assertEquals(
-                    "Row[values=[record no. 801, baz, {count=801, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 801]]]",
+                    "Row[values=[record no. 801, baz, Document{{count=801, constant=foobarbaz}}, [l1, l2, l3, 801]]]",
                     ds.getRow().toString());
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 802, baz, {count=802, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 802]]]",
+                    "Row[values=[record no. 802, baz, Document{{count=802, constant=foobarbaz}}, [l1, l2, l3, 802]]]",
                     ds.getRow().toString());
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 803, baz, {count=803, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 803]]]",
+                    "Row[values=[record no. 803, baz, Document{{count=803, constant=foobarbaz}}, [l1, l2, l3, 803]]]",
                     ds.getRow().toString());
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 804, baz, {count=804, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 804]]]",
+                    "Row[values=[record no. 804, baz, Document{{count=804, constant=foobarbaz}}, [l1, l2, l3, 804]]]",
                     ds.getRow().toString());
             assertTrue(ds.next());
             assertEquals(
-                    "Row[values=[record no. 805, bar, {count=805, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 805]]]",
+                    "Row[values=[record no. 805, bar, Document{{count=805, constant=foobarbaz}}, [l1, l2, l3, 805]]]",
                     ds.getRow().toString());
 
             for (int i = 0; i < 194; i++) {
                 assertTrue(ds.next());
             }
             assertEquals(
-                    "Row[values=[record no. 999, baz, {count=999, constant=foobarbaz}, [ \"l1\" , \"l2\" , \"l3\" , 999]]]",
+                    "Row[values=[record no. 999, baz, Document{{count=999, constant=foobarbaz}}, [l1, l2, l3, 999]]]",
                     ds.getRow().toString());
             assertFalse(ds.next());
         } finally {
@@ -352,7 +342,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         }
 
         // test a primary key lookup query
-        BasicDBObject dbRow = new BasicDBObject();
+        Document dbRow = new Document();
         dbRow.put("_id", 123456);
         dbRow.put("id", 123456);
         dbRow.put("name", "record no. " + 123456);
@@ -364,7 +354,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
 
         dbRow.put("list", Arrays.<Object> asList("l1", "l2", "l3", 123456));
 
-        col.insert(dbRow);
+        col.insertOne(dbRow);
 
         ds = dataContext.query().from(getCollectionName()).select("id").and("name").where("_id").eq(123456).execute();
         assertTrue(ds.next());
@@ -453,7 +443,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         assertTrue(dataSet.next());
         assertEquals("Row[values=[3, hi, null, null]]", dataSet.getRow().toString());
         assertTrue(dataSet.next());
-        assertEquals("Row[values=[4, there, {123=456, foo=bar}, [ 1 , 2 , 3]]]", dataSet.getRow().toString());
+        assertEquals("Row[values=[4, there, Document{{123=456, foo=bar}}, [1, 2, 3]]]", dataSet.getRow().toString());
         assertFalse(dataSet.next());
         dataSet.close();
         assertEquals(MongoDbDataSet.class, dataSet.getClass());
@@ -497,37 +487,32 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             return;
         }
 
-        DBCollection col = db.createCollection(getCollectionName(), new BasicDBObject());
+        db.createCollection(getCollectionName());
+        MongoCollection<Document> col = db.getCollection(getCollectionName());
 
-        // delete if already exists
-        {
-            col.drop();
-            col = db.createCollection(getCollectionName(), new BasicDBObject());
-        }
-
-        final BasicDBObject dbRow = new BasicDBObject();
+        final Document dbRow = new Document();
         dbRow.append("name", new BasicDBObject().append("first", "John").append("last", "Doe"));
         dbRow.append("gender", "MALE");
-        col.insert(dbRow);
+        col.insertOne(dbRow);
 
-        final BasicDBObject dbRow2 = new BasicDBObject();
+        final Document dbRow2 = new Document();
         dbRow2.append("name", new BasicDBObject().append("first", "Mary").append("last", "Johnson"));
         dbRow2.append("gender", "FEMALE");
-        col.insert(dbRow2);
+        col.insertOne(dbRow2);
 
-        final BasicDBObject dbRow3 = new BasicDBObject();
+        final Document dbRow3 = new Document();
         dbRow3.append("name", new BasicDBObject().append("first", "X").append("last", "Unknown"));
         dbRow3.append("gender", "UNKNOWN");
-        col.insert(dbRow3);
+        col.insertOne(dbRow3);
 
         final MongoDbDataContext dc = new MongoDbDataContext(db, new SimpleTableDef(getCollectionName(), new String[] {
                 "name.first", "name.last", "gender", "addresses", "addresses[0].city", "addresses[0].country",
                 "addresses[5].foobar" }));
 
-        final DataSet ds1 = dc.executeQuery("select * from my_collection where gender LIKE '%MALE%'");
-        final DataSet ds2 = dc.executeQuery("select * from my_collection where gender LIKE 'MALE%'");
-        final DataSet ds3 = dc.executeQuery("select * from my_collection where gender LIKE '%NK%OW%'");
-        final DataSet ds4 = dc.executeQuery("select * from my_collection where gender LIKE '%MALE'");
+        final DataSet ds1 = dc.executeQuery("select * from "+getCollectionName()+" where gender LIKE '%MALE%'");
+        final DataSet ds2 = dc.executeQuery("select * from "+getCollectionName()+" where gender LIKE 'MALE%'");
+        final DataSet ds3 = dc.executeQuery("select * from "+getCollectionName()+" where gender LIKE '%NK%OW%'");
+        final DataSet ds4 = dc.executeQuery("select * from "+getCollectionName()+" where gender LIKE '%MALE'");
         try {
             assertTrue(ds1.next());
             assertTrue(ds1.next());

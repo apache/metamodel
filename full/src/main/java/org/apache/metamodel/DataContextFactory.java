@@ -56,6 +56,7 @@ import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoDatabase;
 
 /**
  * A factory for DataContext objects. This class substantially easens the task
@@ -538,7 +539,8 @@ public class DataContextFactory {
      *            should be autodetected.
      * @return a DataContext object that matches the request
      */
-    public static UpdateableDataContext createMongoDbDataContext(String hostname, Integer port, String databaseName,
+    @SuppressWarnings("resource")
+	public static UpdateableDataContext createMongoDbDataContext(String hostname, Integer port, String databaseName,
             String username, char[] password, SimpleTableDef[] tableDefs) {
         try {
             final ServerAddress serverAddress;
@@ -548,12 +550,12 @@ public class DataContextFactory {
                 serverAddress = new ServerAddress(hostname, port);
             }
 
-            final DB mongoDb;
+            final MongoDatabase mongoDb;
             if (Strings.isNullOrEmpty(username)) {
-                mongoDb = new MongoClient(serverAddress).getDB(databaseName);
+                mongoDb = new MongoClient(serverAddress).getDatabase(databaseName);
             } else {
                 final MongoCredential credential = MongoCredential.createCredential(username, databaseName, password);
-                mongoDb = new MongoClient(serverAddress, Arrays.asList(credential)).getDB(databaseName);
+                mongoDb = new MongoClient(serverAddress, Arrays.asList(credential)).getDatabase(databaseName);
             }
 
             if (tableDefs == null || tableDefs.length == 0) {
