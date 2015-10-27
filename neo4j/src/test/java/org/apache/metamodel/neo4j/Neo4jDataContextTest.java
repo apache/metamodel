@@ -387,6 +387,52 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
             assertEquals("Row[values=[2, 2, prop-table1-row2, prop-table2-row2]]", rows.get(1).toString());
         }
     }
+    
+    @Test
+    public void testJoinWithRelationships() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        requestWrapper.executeCypherQuery("CREATE (n:JUnitPerson { name: 'Tomasz', age: 26})");
+        requestWrapper.executeCypherQuery("CREATE (n:JUnitPerson { name: 'Philomeena', age: 18})");
+        requestWrapper.executeCypherQuery("CREATE (n:JUnitPerson { name: 'Helena', age: 100})");
+        requestWrapper.executeCypherQuery("CREATE (n:JUnitBook { title: 'Introduction to algorithms'})");
+        requestWrapper.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
+                + "WHERE a.name = 'Tomasz' AND b.title = 'Introduction to algorithms'"
+                + "CREATE (a)-[r:HAS_READ { rating : 5 }]->(b)");
+        requestWrapper.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
+                + "WHERE a.name = 'Philomeena' AND b.title = 'Introduction to algorithms'"
+                + "CREATE (a)-[r:HAS_BROWSED]->(b)");
+        
+        String bookNodeIdJSONObject = requestWrapper.executeCypherQuery("MATCH (n:JUnitBook)"
+                + " WHERE n.title = 'Introduction to algorithms'" + " RETURN id(n);");
+        String bookNodeId = new JSONObject(bookNodeIdJSONObject).getJSONArray("results").getJSONObject(0)
+                .getJSONArray("data").getJSONObject(0).getJSONArray("row").getString(0);
+
+        Neo4jDataContext strategy = new Neo4jDataContext(getHostname(), getPort(), getUsername(), getPassword());
+
+        Table table1 = strategy.getTableByQualifiedLabel("JUnitPerson");
+        Table table2 = strategy.getTableByQualifiedLabel("JUnitBook");
+        Column personNameColumn = table1.getColumnByName("name");
+        Column personHasReadColumn = table1.getColumnByName("rel_HAS_READ");
+        Column bookIdColumn = table2.getColumnByName("_id");
+        Column bookTitleColumn = table2.getColumnByName("title");
+
+        CompiledQuery query = strategy.query().from(table1).and(table2)
+                .select(personNameColumn, bookIdColumn, bookTitleColumn).where(personHasReadColumn)
+                .eq(bookIdColumn).compile();
+
+        try (final DataSet dataSet = strategy.executeQuery(query)) {
+            List<Row> rows = new ArrayList<>();
+            while (dataSet.next()) {
+                rows.add(dataSet.getRow());
+            }
+            assertEquals(1, rows.size());
+            assertEquals("Row[values=[Tomasz, " + bookNodeId + ", Introduction to algorithms]]", rows.get(0).toString());
+        }
+    }
 
     @Test
     public void testInsert() throws Exception {
