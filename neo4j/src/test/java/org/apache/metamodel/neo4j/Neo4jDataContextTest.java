@@ -140,17 +140,22 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 
         Neo4jDataContext strategy = new Neo4jDataContext(getHostname(), getPort(), getUsername(), getPassword());
 
-        CompiledQuery query1 = strategy.query().from("JUnitLabel").select("property1").compile();
-        DataSet dataSet1 = strategy.executeQuery(query1);
-        assertTrue(dataSet1.next());
-        assertEquals("Row[values=[1]]", dataSet1.getRow().toString());
-        assertFalse(dataSet1.next());
-
-        CompiledQuery query2 = strategy.query().from("JUnitLabel").select("property1").select("property2").compile();
-        DataSet dataSet2 = strategy.executeQuery(query2);
-        assertTrue(dataSet2.next());
-        assertEquals("Row[values=[1, 2]]", dataSet2.getRow().toString());
-        assertFalse(dataSet2.next());
+        {
+            CompiledQuery query = strategy.query().from("JUnitLabel").select("property1").compile();
+            try (final DataSet dataSet = strategy.executeQuery(query)) {
+                assertTrue(dataSet.next());
+                assertEquals("Row[values=[1]]", dataSet.getRow().toString());
+                assertFalse(dataSet.next());
+            }
+        }
+        {
+            CompiledQuery query = strategy.query().from("JUnitLabel").select("property1").select("property2").compile();
+            try (final DataSet dataSet = strategy.executeQuery(query)) {
+                assertTrue(dataSet.next());
+                assertEquals("Row[values=[1, 2]]", dataSet.getRow().toString());
+                assertFalse(dataSet.next());
+            }
+        }
     }
 
     @Test
@@ -179,45 +184,48 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 
         Neo4jDataContext strategy = new Neo4jDataContext(getHostname(), getPort(), getUsername(), getPassword());
 
-        CompiledQuery query1 = strategy.query().from("JUnitPerson").select("name", "rel_HAS_READ").compile();
-        try (DataSet dataSet1 = strategy.executeQuery(query1)) {
-            List<Row> dataSet1Rows = new ArrayList<>();
-            while (dataSet1.next()) {
-                dataSet1Rows.add(dataSet1.getRow());
-            }
-            // Sorting to have deterministic order
-            Collections.sort(dataSet1Rows, new Comparator<Row>() {
-
-                @Override
-                public int compare(Row arg0, Row arg1) {
-                    return arg0.toString().compareTo(arg1.toString());
+        {
+            CompiledQuery query = strategy.query().from("JUnitPerson").select("name", "rel_HAS_READ").compile();
+            try (DataSet dataSet = strategy.executeQuery(query)) {
+                List<Row> rows = new ArrayList<>();
+                while (dataSet.next()) {
+                    rows.add(dataSet.getRow());
                 }
-            });
-            assertEquals(3, dataSet1Rows.size());
-            assertEquals("Row[values=[Helena, null]]", dataSet1Rows.get(0).toString());
-            assertEquals("Row[values=[Philomeena, null]]", dataSet1Rows.get(1).toString());
-            assertEquals("Row[values=[Tomasz, " + bookNodeId + "]]", dataSet1Rows.get(2).toString());
+                // Sorting to have deterministic order
+                Collections.sort(rows, new Comparator<Row>() {
+
+                    @Override
+                    public int compare(Row arg0, Row arg1) {
+                        return arg0.toString().compareTo(arg1.toString());
+                    }
+                });
+                assertEquals(3, rows.size());
+                assertEquals("Row[values=[Helena, null]]", rows.get(0).toString());
+                assertEquals("Row[values=[Philomeena, null]]", rows.get(1).toString());
+                assertEquals("Row[values=[Tomasz, " + bookNodeId + "]]", rows.get(2).toString());
+            }
         }
-
-        CompiledQuery query2 = strategy.query().from("JUnitPerson").select("rel_HAS_READ#rating").compile();
-        try (DataSet dataSet2 = strategy.executeQuery(query2)) {
-            List<Row> dataSet2Rows = new ArrayList<>();
-            while (dataSet2.next()) {
-                dataSet2Rows.add(dataSet2.getRow());
-            }
-            // Sorting to have deterministic order
-            Collections.sort(dataSet2Rows, new Comparator<Row>() {
-
-                @Override
-                public int compare(Row arg0, Row arg1) {
-                    return arg0.toString().compareTo(arg1.toString());
+        {
+            CompiledQuery query = strategy.query().from("JUnitPerson").select("rel_HAS_READ#rating").compile();
+            try (DataSet dataSet = strategy.executeQuery(query)) {
+                List<Row> rows = new ArrayList<>();
+                while (dataSet.next()) {
+                    rows.add(dataSet.getRow());
                 }
-            });
+                // Sorting to have deterministic order
+                Collections.sort(rows, new Comparator<Row>() {
 
-            assertEquals(3, dataSet2Rows.size());
-            assertEquals("Row[values=[5]]", dataSet2Rows.get(0).toString());
-            assertEquals("Row[values=[null]]", dataSet2Rows.get(1).toString());
-            assertEquals("Row[values=[null]]", dataSet2Rows.get(2).toString());
+                    @Override
+                    public int compare(Row arg0, Row arg1) {
+                        return arg0.toString().compareTo(arg1.toString());
+                    }
+                });
+
+                assertEquals(3, rows.size());
+                assertEquals("Row[values=[5]]", rows.get(0).toString());
+                assertEquals("Row[values=[null]]", rows.get(1).toString());
+                assertEquals("Row[values=[null]]", rows.get(2).toString());
+            }
         }
     }
 
@@ -262,26 +270,26 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 
         Neo4jDataContext strategy = new Neo4jDataContext(getHostname(), getPort(), getUsername(), getPassword());
 
-        CompiledQuery query1 = strategy.query().from("JUnitPerson").selectAll().compile();
-        try (DataSet dataSet1 = strategy.executeQuery(query1)) {
-            List<Row> dataSet1Rows = new ArrayList<>();
-            while (dataSet1.next()) {
-                dataSet1Rows.add(dataSet1.getRow());
+        CompiledQuery query = strategy.query().from("JUnitPerson").selectAll().compile();
+        try (DataSet dataSet = strategy.executeQuery(query)) {
+            List<Row> rows = new ArrayList<>();
+            while (dataSet.next()) {
+                rows.add(dataSet.getRow());
             }
             // Sorting to have deterministic order
-            Collections.sort(dataSet1Rows, new Comparator<Row>() {
+            Collections.sort(rows, new Comparator<Row>() {
 
                 @Override
                 public int compare(Row arg0, Row arg1) {
                     return arg0.getValue(1).toString().compareTo(arg1.getValue(1).toString());
                 }
             });
-            assertEquals(3, dataSet1Rows.size());
-            assertEquals("Row[values=[" + helenaNodeId + ", Helena, 100, null, null, null]]", dataSet1Rows.get(0)
+            assertEquals(3, rows.size());
+            assertEquals("Row[values=[" + helenaNodeId + ", Helena, 100, null, null, null]]", rows.get(0)
                     .toString());
             assertEquals("Row[values=[" + philomeenaNodeId + ", Philomeena, 18, null, null, " + bookNodeId + "]]",
-                    dataSet1Rows.get(1).toString());
-            assertEquals("Row[values=[" + tomaszNodeId + ", Tomasz, 26, " + bookNodeId + ", 5, null]]", dataSet1Rows
+                    rows.get(1).toString());
+            assertEquals("Row[values=[" + tomaszNodeId + ", Tomasz, 26, " + bookNodeId + ", 5, null]]", rows
                     .get(2).toString());
         }
     }
@@ -418,26 +426,21 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         // create datacontext using detected schema
         final DataContext dc = new Neo4jDataContext(getHostname(), getPort(), getUsername(), getPassword());
 
-        final DataSet ds1 = dc.query().from("JUnitLabel").select("name").and("age").firstRow(2).execute();
-        final DataSet ds2 = dc.query().from("JUnitLabel").select("name").and("age").maxRows(1).execute();
+        try (final DataSet ds = dc.query().from("JUnitLabel").select("name").and("age").firstRow(2).execute()) {
+            assertTrue("Class: " + ds.getClass().getName(), ds instanceof Neo4jDataSet);
+            assertTrue(ds.next());
+            final Row row = ds.getRow();
+            assertEquals("Row[values=[Jane Doe, null]]", row.toString());
+            assertFalse(ds.next());
+        }
 
-        assertTrue("Class: " + ds1.getClass().getName(), ds1 instanceof Neo4jDataSet);
-        assertTrue("Class: " + ds2.getClass().getName(), ds2 instanceof Neo4jDataSet);
-
-        assertTrue(ds1.next());
-        assertTrue(ds2.next());
-
-        final Row row1 = ds1.getRow();
-        final Row row2 = ds2.getRow();
-
-        assertFalse(ds1.next());
-        assertFalse(ds2.next());
-
-        assertEquals("Row[values=[Jane Doe, null]]", row1.toString());
-        assertEquals("Row[values=[John Doe, 30]]", row2.toString());
-
-        ds1.close();
-        ds2.close();
+        try (final DataSet ds = dc.query().from("JUnitLabel").select("name").and("age").maxRows(1).execute()) {
+            assertTrue("Class: " + ds.getClass().getName(), ds instanceof Neo4jDataSet);
+            assertTrue(ds.next());
+            final Row row = ds.getRow();
+            assertEquals("Row[values=[John Doe, 30]]", row.toString());
+            assertFalse(ds.next());
+        }
     }
 
     @Test
@@ -456,21 +459,20 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         // create datacontext using detected schema
         final DataContext dc = new Neo4jDataContext(getHostname(), getPort(), getUsername(), getPassword());
 
-        try (final DataSet ds1 = dc.query().from("JUnitLabel").selectCount().where("name").eq("John Doe").execute()) {
-            assertTrue(ds1.next());
-            final Row row1 = ds1.getRow();
-            assertFalse(ds1.next());
-            assertEquals("Row[values=[1]]", row1.toString());
+        try (final DataSet ds = dc.query().from("JUnitLabel").selectCount().where("name").eq("John Doe").execute()) {
+            assertTrue(ds.next());
+            final Row row = ds.getRow();
+            assertFalse(ds.next());
+            assertEquals("Row[values=[1]]", row.toString());
 
         }
 
-        try (final DataSet ds2 = dc.query().from("JUnitLabel").selectCount().execute()) {
-            assertTrue(ds2.next());
-            final Row row2 = ds2.getRow();
-            assertFalse(ds2.next());
-            assertEquals("Row[values=[2]]", row2.toString());
+        try (final DataSet ds = dc.query().from("JUnitLabel").selectCount().execute()) {
+            assertTrue(ds.next());
+            final Row row = ds.getRow();
+            assertFalse(ds.next());
+            assertEquals("Row[values=[2]]", row.toString());
         }
-
     }
 
     @Override
