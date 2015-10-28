@@ -47,7 +47,6 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.CollectionUtils;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -346,13 +345,13 @@ public class JestElasticSearchDataContext extends QueryPostprocessDataContext im
 
                 if (OperatorType.EQUALS_TO.equals(operator)) {
                     if (operand == null) {
-                        itemQueryBuilder = QueryBuilders.filteredQuery(null, FilterBuilders.missingFilter(fieldName));
+                        itemQueryBuilder = JestElasticSearchUtils.getMissingQuery(fieldName);
                     } else {
                         itemQueryBuilder = QueryBuilders.termQuery(fieldName, operand);
                     }
                 } else if (OperatorType.DIFFERENT_FROM.equals(operator)) {
                     if (operand == null) {
-                        itemQueryBuilder = QueryBuilders.filteredQuery(null, FilterBuilders.existsFilter(fieldName));
+                        itemQueryBuilder = JestElasticSearchUtils.getExistsQuery(fieldName);
                     } else {
                         itemQueryBuilder = QueryBuilders.boolQuery().mustNot(
                                 QueryBuilders.termQuery(fieldName, operand));

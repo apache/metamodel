@@ -31,9 +31,10 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-import org.elasticsearch.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Strings;
 
 import io.searchbox.client.JestResult;
 import io.searchbox.indices.mapping.PutMapping;
