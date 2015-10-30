@@ -280,6 +280,12 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
     }
 
     protected String rewriteSelectItem(Query query, SelectItem item) {
+        if (item.isFunctionApproximationAllowed()) {
+            // function approximation is not included in any standard SQL
+            // constructions - will have to be overridden by subclasses if there
+            // are specialized dialects for it.
+            item = item.replaceFunctionApproximationAllowed(false);
+        }
         return item.toSql(isSchemaIncludedInColumnPaths());
     }
 }

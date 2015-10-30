@@ -31,6 +31,7 @@ import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 
 final class MongoDbUpdateCallback extends AbstractUpdateCallback implements UpdateCallback, Closeable {
@@ -67,7 +68,7 @@ final class MongoDbUpdateCallback extends AbstractUpdateCallback implements Upda
     }
 
     protected void createCollection(String name) {
-        DBCollection collection = _dataContext.getMongoDb().createCollection(name, null);
+        DBCollection collection = _dataContext.getMongoDb().createCollection(name, new BasicDBObject());
         _collections.put(name, collection);
     }
 

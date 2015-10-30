@@ -49,10 +49,13 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.Update;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.mapping.delete.DeleteMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -214,6 +217,8 @@ public class ElasticSearchDataContextTest {
             }
         });
 
+        dataContext.refreshSchemas();
+
         try (DataSet ds = dataContext.query().from(table).selectAll().orderBy("bar").execute()) {
             assertTrue(ds.next());
             assertEquals("hello", ds.getRow().getValue(fooColumn).toString());
@@ -225,6 +230,32 @@ public class ElasticSearchDataContextTest {
         }
 
         dataContext.executeUpdate(new DropTable(table));
+
+        dataContext.refreshSchemas();
+
+        assertNull(dataContext.getTableByQualifiedLabel(table.getName()));
+    }
+
+    @Test
+    public void testDetectOutsideChanges() throws Exception {
+        ElasticSearchDataContext elasticSearchDataContext = (ElasticSearchDataContext) dataContext;
+
+        // Create the type in ES
+        final IndicesAdminClient indicesAdmin = elasticSearchDataContext.getElasticSearchClient().admin().indices();
+        final String tableType = "outsideTable";
+
+        Object[] sourceProperties = { "testA", "type=string, store=true", "testB", "type=string, store=true" };
+
+        new PutMappingRequestBuilder(indicesAdmin).setIndices(indexName).setType(tableType).setSource(sourceProperties)
+                .execute().actionGet();
+
+        dataContext.refreshSchemas();
+
+        assertNotNull(dataContext.getDefaultSchema().getTableByName(tableType));
+
+        new DeleteMappingRequestBuilder(indicesAdmin).setIndices(indexName).setType(tableType).execute().actionGet();
+        dataContext.refreshSchemas();
+        assertNull(dataContext.getTableByQualifiedLabel(tableType));
     }
 
     @Test
