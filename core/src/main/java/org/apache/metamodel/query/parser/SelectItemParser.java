@@ -106,19 +106,25 @@ public final class SelectItemParser implements QueryPartProcessor {
 
         final String unmodifiedExpression = expression;
 
+        final boolean functionApproximation;
         final FunctionType function;
         final int startParenthesis = expression.indexOf('(');
         if (startParenthesis > 0 && expression.endsWith(")")) {
-            String functionName = expression.substring(0, startParenthesis);
+            functionApproximation = (expression.startsWith(SelectItem.FUNCTION_APPROXIMATION_PREFIX));
+            final String functionName = expression.substring(
+                    (functionApproximation ? SelectItem.FUNCTION_APPROXIMATION_PREFIX.length() : 0), startParenthesis);
             function = FunctionTypeFactory.get(functionName.toUpperCase());
             if (function != null) {
                 expression = expression.substring(startParenthesis + 1, expression.length() - 1).trim();
                 if (function instanceof CountAggregateFunction && "*".equals(expression)) {
-                    return SelectItem.getCountAllItem();
+                    final SelectItem selectItem = SelectItem.getCountAllItem();
+                    selectItem.setFunctionApproximationAllowed(functionApproximation);
+                    return selectItem;
                 }
             }
         } else {
             function = null;
+            functionApproximation = false;
         }
 
         String columnName = null;
@@ -170,6 +176,7 @@ public final class SelectItemParser implements QueryPartProcessor {
 
                 if (column != null) {
                     final SelectItem selectItem = new SelectItem(function, column, fromItem);
+                    selectItem.setFunctionApproximationAllowed(functionApproximation);
                     return selectItem;
                 }
             } else if (fromItem.getSubQuery() != null) {
@@ -191,9 +198,10 @@ public final class SelectItemParser implements QueryPartProcessor {
         }
 
         if (_allowExpressionBasedSelectItems) {
-            return new SelectItem(function, expression, null);
+            final SelectItem selectItem = new SelectItem(function, expression, null);
+            selectItem.setFunctionApproximationAllowed(functionApproximation);
+            return selectItem;
         }
         return null;
     }
-
 }

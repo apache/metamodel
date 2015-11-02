@@ -21,7 +21,7 @@ under the License.
 	<parent>
 		<artifactId>MetaModel</artifactId>
 		<groupId>org.apache.metamodel</groupId>
-		<version>4.4.1-SNAPSHOT</version>
+		<version>4.4.2-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>MetaModel-mongodb</artifactId>
@@ -35,7 +35,7 @@ under the License.
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongo-java-driver</artifactId>
-			<version>2.9.1</version>
+			<version>3.1.0</version>
 		</dependency>
 
 		<!-- Test dependencies -->

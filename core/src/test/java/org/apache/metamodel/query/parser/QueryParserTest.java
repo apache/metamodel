@@ -50,28 +50,34 @@ public class QueryParserTest extends TestCase {
         MutableColumn col = (MutableColumn) dc.getColumnByQualifiedLabel("tbl.baz");
         col.setType(ColumnType.INTEGER);
     };
-    
+
+    public void testQueryWithParenthesisAnd() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc, "select foo from sch.tbl where (foo= 1) and (foo=2)");
+        assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.foo = '1' AND tbl.foo = '2'", q.toSql());
+    }
+
     public void testQueryInLowerCase() throws Exception {
         Query q = MetaModelHelper.parseQuery(dc,
                 "select a.foo as f from sch.tbl a inner join sch.tbl b on a.foo=b.foo order by a.foo asc");
         assertEquals("SELECT a.foo AS f FROM sch.tbl a INNER JOIN sch.tbl b ON a.foo = b.foo ORDER BY a.foo ASC",
                 q.toSql());
     }
-    
+
     public void testParseScalarFunctions() throws Exception {
-        Query q = MetaModelHelper.parseQuery(dc,
-                "select TO_NUM(a.foo) from sch.tbl a WHERE BOOLEAN(a.bar) = false");
+        Query q = MetaModelHelper.parseQuery(dc, "select TO_NUM(a.foo) from sch.tbl a WHERE BOOLEAN(a.bar) = false");
         assertEquals("SELECT TO_NUMBER(a.foo) FROM sch.tbl a WHERE TO_BOOLEAN(a.bar) = FALSE", q.toSql());
     }
-    
+
     public void testSelectMapValueUsingDotNotation() throws Exception {
         // set 'baz' column to a MAP column
         MutableColumn col = (MutableColumn) dc.getColumnByQualifiedLabel("tbl.baz");
         col.setType(ColumnType.MAP);
-        
-        Query q = MetaModelHelper.parseQuery(dc, "SELECT sch.tbl.baz.foo.bar, baz.helloworld, baz.hello.world FROM sch.tbl");
+
+        Query q = MetaModelHelper.parseQuery(dc,
+                "SELECT sch.tbl.baz.foo.bar, baz.helloworld, baz.hello.world FROM sch.tbl");
         assertEquals(
-                "SELECT MAP_VALUE('foo.bar',tbl.baz), MAP_VALUE('helloworld',tbl.baz), MAP_VALUE('hello.world',tbl.baz) FROM sch.tbl", q.toSql());
+                "SELECT MAP_VALUE('foo.bar',tbl.baz), MAP_VALUE('helloworld',tbl.baz), MAP_VALUE('hello.world',tbl.baz) FROM sch.tbl",
+                q.toSql());
     }
 
     public void testSelectEverythingFromTable() throws Exception {
@@ -96,6 +102,12 @@ public class QueryParserTest extends TestCase {
 
         Query q = MetaModelHelper.parseQuery(dc, "SELECT fo.o AS f FROM sch.tbl");
         assertEquals("SELECT tbl.fo.o AS f FROM sch.tbl", q.toSql());
+    }
+
+    public void testApproximateCountQuery() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc, "SELECT APPROXIMATE COUNT(*) FROM sch.tbl");
+        assertEquals("SELECT APPROXIMATE COUNT(*) FROM sch.tbl", q.toSql());
+        assertTrue(q.getSelectClause().getItem(0).isFunctionApproximationAllowed());
     }
 
     public void testSelectAlias() throws Exception {
@@ -181,7 +193,8 @@ public class QueryParserTest extends TestCase {
 
         q = MetaModelHelper.parseQuery(dc,
                 "SELECT COUNT(*) FROM sch.tbl a LEFT JOIN sch.tbl b ON a.foo = b.foo AND a.bar = b.baz");
-        assertEquals("SELECT COUNT(*) FROM sch.tbl a LEFT JOIN sch.tbl b ON a.foo = b.foo AND a.bar = b.baz", q.toSql());
+        assertEquals("SELECT COUNT(*) FROM sch.tbl a LEFT JOIN sch.tbl b ON a.foo = b.foo AND a.bar = b.baz",
+                q.toSql());
     }
 
     public void testSimpleSelectFromWhere() throws Exception {
@@ -190,11 +203,11 @@ public class QueryParserTest extends TestCase {
 
         FilterClause whereClause = q.getWhereClause();
         assertEquals(2, whereClause.getItemCount());
-        assertNull("WHERE item was an expression based item, which indicates it was not parsed", whereClause.getItem(0)
-                .getExpression());
+        assertNull("WHERE item was an expression based item, which indicates it was not parsed",
+                whereClause.getItem(0).getExpression());
         assertEquals(2, whereClause.getItemCount());
-        assertNull("WHERE item was an expression based item, which indicates it was not parsed", whereClause.getItem(1)
-                .getExpression());
+        assertNull("WHERE item was an expression based item, which indicates it was not parsed",
+                whereClause.getItem(1).getExpression());
 
         assertEquals("baz", whereClause.getItem(0).getOperand());
         assertEquals(Integer.class, whereClause.getItem(1).getOperand().getClass());
@@ -224,8 +237,8 @@ public class QueryParserTest extends TestCase {
     }
 
     public void testCoumpoundWhereClause() throws Exception {
-        Query q = MetaModelHelper
-                .parseQuery(dc, "SELECT foo FROM sch.tbl WHERE (bar = 'baz' OR (baz > 5 AND baz < 7))");
+        Query q = MetaModelHelper.parseQuery(dc,
+                "SELECT foo FROM sch.tbl WHERE (bar = 'baz' OR (baz > 5 AND baz < 7))");
         assertEquals("SELECT tbl.foo FROM sch.tbl WHERE (tbl.bar = 'baz' OR (tbl.baz > 5 AND tbl.baz < 7))", q.toSql());
 
         FilterClause wc = q.getWhereClause();
@@ -241,8 +254,8 @@ public class QueryParserTest extends TestCase {
     }
 
     public void testCoumpoundWhereClauseDelimInLoweCase() throws Exception {
-        Query q = MetaModelHelper
-                .parseQuery(dc, "SELECT foo FROM sch.tbl WHERE (bar = 'baz' OR (baz > 5 and baz < 7))");
+        Query q = MetaModelHelper.parseQuery(dc,
+                "SELECT foo FROM sch.tbl WHERE (bar = 'baz' OR (baz > 5 and baz < 7))");
         assertEquals("SELECT tbl.foo FROM sch.tbl WHERE (tbl.bar = 'baz' OR (tbl.baz > 5 AND tbl.baz < 7))", q.toSql());
 
         FilterClause wc = q.getWhereClause();
@@ -262,8 +275,8 @@ public class QueryParserTest extends TestCase {
         assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.bar IS NULL", q.toSql());
 
         assertEquals(1, q.getWhereClause().getItemCount());
-        assertNull("WHERE item was an expression based item, which indicates it was not parsed", q.getWhereClause()
-                .getItem(0).getExpression());
+        assertNull("WHERE item was an expression based item, which indicates it was not parsed",
+                q.getWhereClause().getItem(0).getExpression());
         assertNull(q.getWhereClause().getItem(0).getOperand());
         assertEquals(OperatorType.EQUALS_TO, q.getWhereClause().getItem(0).getOperator());
     }
@@ -273,8 +286,8 @@ public class QueryParserTest extends TestCase {
         assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.bar IS NOT NULL", q.toSql());
 
         assertEquals(1, q.getWhereClause().getItemCount());
-        assertNull("WHERE item was an expression based item, which indicates it was not parsed", q.getWhereClause()
-                .getItem(0).getExpression());
+        assertNull("WHERE item was an expression based item, which indicates it was not parsed",
+                q.getWhereClause().getItem(0).getExpression());
         assertNull(q.getWhereClause().getItem(0).getOperand());
         assertEquals(OperatorType.DIFFERENT_FROM, q.getWhereClause().getItem(0).getOperator());
     }
@@ -367,7 +380,8 @@ public class QueryParserTest extends TestCase {
                         + "GROUP BY foo HAVING COUNT(*) > 2 ORDER BY foo LIMIT 20 OFFSET 10");
         assertEquals(
                 "SELECT tbl.foo, COUNT(*), MAX(tbl.baz) FROM sch.tbl WHERE tbl.bar = 'baz' AND tbl.foo = tbl.bar AND tbl.baz > 5 "
-                        + "GROUP BY tbl.foo HAVING COUNT(*) > 2 ORDER BY tbl.foo ASC", q.toSql());
+                        + "GROUP BY tbl.foo HAVING COUNT(*) > 2 ORDER BY tbl.foo ASC",
+                q.toSql());
         assertEquals(20, q.getMaxRows().intValue());
         assertEquals(11, q.getFirstRow().intValue());
 

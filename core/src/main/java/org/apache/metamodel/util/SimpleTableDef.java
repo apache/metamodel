@@ -81,6 +81,9 @@ public class SimpleTableDef implements Serializable, HasName {
      *            the column types of the columns specified.
      */
     public SimpleTableDef(String name, String[] columnNames, ColumnType[] columnTypes) {
+        if(name == null){
+            throw new NullPointerException("Table name cannot be null");
+        }
         _name = name;
         _columnNames = columnNames;
         if (columnTypes == null) {

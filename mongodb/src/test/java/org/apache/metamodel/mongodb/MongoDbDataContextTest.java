@@ -69,12 +69,12 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             return;
         }
 
-        DBCollection col = db.createCollection(getCollectionName(), null);
+        DBCollection col = db.createCollection(getCollectionName(), new BasicDBObject());
 
         // delete if already exists
         {
             col.drop();
-            col = db.createCollection(getCollectionName(), null);
+            col = db.createCollection(getCollectionName(), new BasicDBObject());
         }
 
         final BasicDBList list = new BasicDBList();
@@ -110,12 +110,12 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             return;
         }
 
-        DBCollection col = db.createCollection(getCollectionName(), null);
+        DBCollection col = db.createCollection(getCollectionName(), new BasicDBObject());
 
         // delete if already exists
         {
             col.drop();
-            col = db.createCollection(getCollectionName(), null);
+            col = db.createCollection(getCollectionName(), new BasicDBObject());
         }
 
         // create 3 records
@@ -160,12 +160,12 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             return;
         }
 
-        DBCollection col = db.createCollection(getCollectionName(), null);
+        DBCollection col = db.createCollection(getCollectionName(), new BasicDBObject());
 
         // delete if already exists
         {
             col.drop();
-            col = db.createCollection(getCollectionName(), null);
+            col = db.createCollection(getCollectionName(), new BasicDBObject());
         }
 
         // create 1000 records
@@ -497,12 +497,12 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             return;
         }
 
-        DBCollection col = db.createCollection(getCollectionName(), null);
+        DBCollection col = db.createCollection(getCollectionName(), new BasicDBObject());
 
         // delete if already exists
         {
             col.drop();
-            col = db.createCollection(getCollectionName(), null);
+            col = db.createCollection(getCollectionName(), new BasicDBObject());
         }
 
         final BasicDBObject dbRow = new BasicDBObject();
