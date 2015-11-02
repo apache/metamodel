@@ -65,12 +65,13 @@ public class QueryParserTest extends TestCase {
     }
     
     public void testSelectMapValueUsingDotNotation() throws Exception {
-        // set 'baz' column to an MAP column
+        // set 'baz' column to a MAP column
         MutableColumn col = (MutableColumn) dc.getColumnByQualifiedLabel("tbl.baz");
         col.setType(ColumnType.MAP);
         
-        Query q = MetaModelHelper.parseQuery(dc, "SELECT tbl.baz.foo.bar, baz.helloworld, baz.hello.world FROM sch.tbl");
-        assertEquals("", q.toSql());
+        Query q = MetaModelHelper.parseQuery(dc, "SELECT sch.tbl.baz.foo.bar, baz.helloworld, baz.hello.world FROM sch.tbl");
+        assertEquals(
+                "SELECT MAP_VALUE('foo.bar',tbl.baz), MAP_VALUE('helloworld',tbl.baz), MAP_VALUE('hello.world',tbl.baz) FROM sch.tbl", q.toSql());
     }
 
     public void testSelectEverythingFromTable() throws Exception {

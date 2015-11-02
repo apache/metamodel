@@ -36,6 +36,7 @@ public interface FunctionType {
     public static final ScalarFunction TO_NUMBER = new ToNumberFunction();
     public static final ScalarFunction TO_DATE = new ToDateFunction();
     public static final ScalarFunction TO_BOOLEAN = new ToBooleanFunction();
+    public static final ScalarFunction MAP_VALUE = new MapValueFunction();
 
     public ColumnType getExpectedColumnType(ColumnType type);
 

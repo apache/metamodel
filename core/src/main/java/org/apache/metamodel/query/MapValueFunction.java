@@ -30,18 +30,15 @@ import org.apache.metamodel.util.CollectionUtils;
  */
 public final class MapValueFunction extends DefaultScalarFunction {
 
-    private final String _path;
-
-    public MapValueFunction(String path) {
-        _path = path;
-    }
-
     @Override
-    public Object evaluate(Row row, SelectItem operandItem) {
+    public Object evaluate(Row row, Object[] parameters, SelectItem operandItem) {
+        if (parameters.length == 0) {
+            throw new IllegalArgumentException("Expecting path parameter to MAP_VALUE function");
+        }
         Object value = row.getValue(operandItem);
         if (value instanceof Map) {
             Map<?, ?> map = (Map<?, ?>) value;
-            return CollectionUtils.find(map, _path);
+            return CollectionUtils.find(map, (String) parameters[0]);
         }
         return null;
     }

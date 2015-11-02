@@ -60,6 +60,8 @@ public class FunctionTypeFactory {
         case "TO_DATE":
         case "DATE":
             return FunctionType.TO_DATE;
+        case "MAP_VALUE":
+            return FunctionType.MAP_VALUE;
         default:
             return null;
         }

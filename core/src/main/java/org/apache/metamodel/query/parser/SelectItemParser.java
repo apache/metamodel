@@ -121,15 +121,20 @@ public final class SelectItemParser implements QueryPartProcessor {
             function = null;
         }
 
-        int lastIndexOfDot = expression.lastIndexOf(".");
-
         String columnName = null;
         FromItem fromItem = null;
 
-        if (lastIndexOfDot != -1) {
-            String prefix = expression.substring(0, lastIndexOfDot);
-            columnName = expression.substring(lastIndexOfDot + 1);
-            fromItem = _query.getFromClause().getItemByReference(prefix);
+        // attempt to find from item by cutting up the string in prefix and
+        // suffix around dot.
+        {
+            int splitIndex = expression.lastIndexOf('.');
+            while (fromItem == null && splitIndex != -1) {
+                final String prefix = expression.substring(0, splitIndex);
+                columnName = expression.substring(splitIndex + 1);
+                fromItem = _query.getFromClause().getItemByReference(prefix);
+
+                splitIndex = expression.lastIndexOf('.', splitIndex - 1);
+            }
         }
 
         if (fromItem == null) {
@@ -159,7 +164,7 @@ public final class SelectItemParser implements QueryPartProcessor {
                     column = fromItem.getTable().getColumnByName(part1);
                     if (column != null) {
                         final String part2 = columnName.substring(offset + 1);
-                        return new SelectItem(new MapValueFunction(part2), column, fromItem);
+                        return new SelectItem(new MapValueFunction(), new Object[] { part2 }, column, fromItem);
                     }
                 }
 

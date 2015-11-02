@@ -18,7 +18,7 @@
  */
 package org.apache.metamodel.query;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,25 +30,27 @@ import org.junit.Test;
 
 public class MapValueFunctionTest {
 
+    private final ScalarFunction function = FunctionType.MAP_VALUE;
+
     @Test
     public void testGetValueFromMap() throws Exception {
-        final Map<String, Map<String,Object>> value = new HashMap<>();
+        final Map<String, Map<String, Object>> value = new HashMap<>();
         final Map<String, Object> innerMap = new HashMap<>();
         innerMap.put("bar", "baz");
         value.put("foo", innerMap);
-        final MapValueFunction f = new MapValueFunction("foo.bar");
         final SelectItem operandItem = new SelectItem("foo", "f");
-        final Row row = new DefaultRow(new SimpleDataSetHeader(new SelectItem[] { operandItem }), new Object[] { value });
-        final Object v1 = f.evaluate(row, operandItem);
+        final Row row = new DefaultRow(new SimpleDataSetHeader(new SelectItem[] { operandItem }),
+                new Object[] { value });
+        final Object v1 = function.evaluate(row, new Object[] { "foo.bar" }, operandItem);
         assertEquals("baz", v1.toString());
     }
-    
+
     @Test
     public void testNotAMap() throws Exception {
-        final MapValueFunction f = new MapValueFunction("foo.bar");
         final SelectItem operandItem = new SelectItem("foo", "f");
-        final Row row = new DefaultRow(new SimpleDataSetHeader(new SelectItem[] { operandItem }), new Object[] { "not a map" });
-        final Object v1 = f.evaluate(row, operandItem);
+        final Row row = new DefaultRow(new SimpleDataSetHeader(new SelectItem[] { operandItem }),
+                new Object[] { "not a map" });
+        final Object v1 = function.evaluate(row, new Object[] { "foo.bar" }, operandItem);
         assertEquals(null, v1);
     }
 
