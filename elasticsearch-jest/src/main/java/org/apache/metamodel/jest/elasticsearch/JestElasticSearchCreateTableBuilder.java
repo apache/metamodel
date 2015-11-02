@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.metamodel.jest.elasticsearch;
+package org.apache.metamodel.jest.elasticsearch;
 
 import com.google.common.base.Strings;
 import io.searchbox.indices.mapping.PutMapping;

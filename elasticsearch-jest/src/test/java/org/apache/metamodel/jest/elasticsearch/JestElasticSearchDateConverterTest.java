@@ -16,35 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.metamodel.jest.elasticsearch;
+package org.apache.metamodel.jest.elasticsearch;
 
-import org.apache.metamodel.schema.ColumnType;
+import junit.framework.TestCase;
 
-/**
- * MetaData representation of an ElasticSearch index type.
- *
- * We will map the elasticsearch fields to columns and their
- * types to {@link ColumnType}s.
- */
-public class JestElasticSearchMetaData {
-    
-    private final String[] columnNames;
-    private final ColumnType[] columnTypes;
+import java.util.Date;
 
-    /**
-     * Constructs a {@link JestElasticSearchMetaData}.
-     *
-     */
-    public JestElasticSearchMetaData(String[] names, ColumnType[] types) {
-        this.columnNames = names;
-        this.columnTypes = types;
-    }
+public class JestElasticSearchDateConverterTest extends TestCase {
 
-    public String[] getColumnNames() {
-        return columnNames;
-    }
+    public void testConvertDateOptionalTime() throws Exception {
+        String dateToConvert = "2013-01-04T15:55:51.217+01:00";
+        Date date = JestElasticSearchDateConverter.tryToConvert(dateToConvert);
 
-    public ColumnType[] getColumnTypes() {
-        return columnTypes;
+        assertNotNull(date);
+        assertTrue(date.toString().startsWith("Fri Jan 04"));
     }
 }

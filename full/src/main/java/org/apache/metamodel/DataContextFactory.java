@@ -18,15 +18,13 @@
  */
 package org.apache.metamodel;
 
-import java.io.File;
-import java.io.InputStream;
-import java.net.URL;
-import java.sql.Connection;
-import java.util.Arrays;
-import java.util.Collection;
-
-import javax.sql.DataSource;
-
+import com.datastax.driver.core.Cluster;
+import com.google.common.base.Strings;
+import com.mongodb.DB;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
+import io.searchbox.client.JestClient;
 import org.apache.metamodel.cassandra.CassandraDataContext;
 import org.apache.metamodel.couchdb.CouchDbDataContext;
 import org.apache.metamodel.csv.CsvConfiguration;
@@ -37,6 +35,7 @@ import org.apache.metamodel.excel.ExcelDataContext;
 import org.apache.metamodel.fixedwidth.FixedWidthConfiguration;
 import org.apache.metamodel.fixedwidth.FixedWidthDataContext;
 import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.jest.elasticsearch.JestElasticSearchDataContext;
 import org.apache.metamodel.json.JsonDataContext;
 import org.apache.metamodel.mongodb.MongoDbDataContext;
 import org.apache.metamodel.openoffice.OpenOfficeDataContext;
@@ -48,17 +47,15 @@ import org.apache.metamodel.util.SimpleTableDef;
 import org.apache.metamodel.xml.XmlDomDataContext;
 import org.ektorp.http.StdHttpClient.Builder;
 import org.elasticsearch.client.Client;
-import org.metamodel.jest.elasticsearch.JestElasticSearchDataContext;
 import org.xml.sax.InputSource;
 
-import com.datastax.driver.core.Cluster;
-import com.google.common.base.Strings;
-import com.mongodb.DB;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
-
-import io.searchbox.client.JestClient;
+import javax.sql.DataSource;
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.sql.Connection;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * A factory for DataContext objects. This class substantially easens the task

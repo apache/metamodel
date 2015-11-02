@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.metamodel.jest.elasticsearch.utils;
+package org.apache.metamodel.jest.elasticsearch.utils;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.client.Client;

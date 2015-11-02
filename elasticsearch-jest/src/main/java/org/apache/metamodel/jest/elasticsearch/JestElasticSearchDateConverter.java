@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.metamodel.jest.elasticsearch;
+package org.apache.metamodel.jest.elasticsearch;
+
+import org.apache.metamodel.util.TimeComparator;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import org.apache.metamodel.util.TimeComparator;
 
 /**
  * Util class to convert date strings from ElasticSearch to

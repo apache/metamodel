@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.metamodel.jest.elasticsearch;
+package org.apache.metamodel.jest.elasticsearch;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

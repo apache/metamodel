@@ -16,14 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.metamodel.jest.elasticsearch;
-
-import java.util.Map.Entry;
-
-import org.apache.metamodel.schema.ColumnType;
+package org.apache.metamodel.jest.elasticsearch;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.apache.metamodel.schema.ColumnType;
+
+import java.util.Map.Entry;
 
 /**
  * Parser that transforms the ElasticSearch metadata response (json-like format)

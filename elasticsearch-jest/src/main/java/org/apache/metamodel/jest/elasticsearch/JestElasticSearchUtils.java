@@ -16,11 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.metamodel.jest.elasticsearch;
+package org.apache.metamodel.jest.elasticsearch;
 
-import java.lang.reflect.Method;
-import java.util.Date;
-
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
@@ -34,8 +33,8 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import java.lang.reflect.Method;
+import java.util.Date;
 
 /**
  * Shared/common util functions for the ElasticSearch MetaModel module.

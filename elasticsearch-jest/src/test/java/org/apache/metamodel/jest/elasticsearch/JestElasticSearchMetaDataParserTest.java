@@ -16,18 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.metamodel.jest.elasticsearch;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import junit.framework.TestCase;
-
-import org.apache.metamodel.schema.ColumnType;
-import org.elasticsearch.common.collect.MapBuilder;
+package org.apache.metamodel.jest.elasticsearch;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import junit.framework.TestCase;
+import org.apache.metamodel.schema.ColumnType;
+import org.elasticsearch.common.collect.MapBuilder;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class JestElasticSearchMetaDataParserTest extends TestCase {
 
