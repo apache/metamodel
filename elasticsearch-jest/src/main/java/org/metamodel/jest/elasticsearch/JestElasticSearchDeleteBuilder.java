@@ -18,9 +18,8 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import java.io.IOException;
-import java.util.List;
-
+import io.searchbox.client.JestResult;
+import io.searchbox.core.DeleteByQuery;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
 import org.apache.metamodel.delete.RowDeletionBuilder;
@@ -32,8 +31,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.searchbox.client.JestResult;
-import io.searchbox.core.DeleteByQuery;
+import java.util.List;
 
 /**
  * {@link RowDeletionBuilder} implementation for
@@ -78,13 +76,7 @@ final class JestElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
                 new DeleteByQuery.Builder(searchSourceBuilder.toString()).addIndex(indexName).addType(
                         documentType).build();
 
-        final JestResult result;
-        try {
-            result = dataContext.getElasticSearchClient().execute(deleteByQuery);
-        } catch (IOException e) {
-            logger.warn("Could not delete documents", e);
-            throw new MetaModelException("Could not delete documents", e);
-        }
+        final JestResult result = JestClientExecutor.execute(dataContext.getElasticSearchClient(), deleteByQuery);
 
         logger.debug("Deleted documents by query, success: {}", result.isSucceeded());
     }

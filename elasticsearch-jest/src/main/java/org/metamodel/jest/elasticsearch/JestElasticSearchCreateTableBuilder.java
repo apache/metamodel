@@ -18,26 +18,16 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.base.Strings;
+import io.searchbox.indices.mapping.PutMapping;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.create.AbstractTableCreationBuilder;
-import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.schema.MutableColumn;
-import org.apache.metamodel.schema.MutableSchema;
-import org.apache.metamodel.schema.MutableTable;
-import org.apache.metamodel.schema.Schema;
-import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Strings;
-
-import io.searchbox.client.JestResult;
-import io.searchbox.indices.mapping.PutMapping;
+import java.util.ArrayList;
+import java.util.List;
 
 final class JestElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder<JestElasticSearchUpdateCallback> {
 
@@ -81,16 +71,7 @@ final class JestElasticSearchCreateTableBuilder extends AbstractTableCreationBui
         }
 
         final PutMapping putMapping = new PutMapping.Builder(indexName, table.getName(), sourceProperties).build();
-
-        final JestResult result;
-        try {
-            result = dataContext.getElasticSearchClient().execute(putMapping);
-        } catch (IOException e) {
-            logger.warn("Could not add table", e);
-            throw new MetaModelException("Could not add table", e);
-        }
-
-        logger.debug("PutMapping response: acknowledged={}", result.isSucceeded());
+        JestClientExecutor.execute(dataContext.getElasticSearchClient(), putMapping);
 
         final MutableSchema schema = (MutableSchema) getSchema();
         schema.addTable(table);

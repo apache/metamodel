@@ -18,15 +18,9 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.table.TableModel;
-
+import io.searchbox.client.JestClient;
+import io.searchbox.client.JestClientFactory;
+import io.searchbox.client.config.HttpClientConfig;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
@@ -60,9 +54,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.metamodel.jest.elasticsearch.utils.EmbeddedElasticsearchServer;
 
-import io.searchbox.client.JestClient;
-import io.searchbox.client.JestClientFactory;
-import io.searchbox.client.config.HttpClientConfig;
+import javax.swing.table.TableModel;
+import java.io.IOException;
+import java.util.*;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.junit.Assert.*;
@@ -85,7 +79,7 @@ public class JestElasticSearchDataContextTest {
     @BeforeClass
     public static void beforeTests() throws Exception {
         embeddedElasticsearchServer = new EmbeddedElasticsearchServer();
-        final int port = 9201;//Integer.parseInt(embeddedElasticsearchServer.getClient().settings().get("http.port"));
+        final int port = Integer.parseInt(embeddedElasticsearchServer.getClient().settings().get("http.port"));
         JestClientFactory factory = new JestClientFactory();
         factory.setHttpClientConfig(new HttpClientConfig
                 .Builder("http://localhost:" + port)

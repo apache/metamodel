@@ -18,8 +18,7 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import java.io.IOException;
-
+import io.searchbox.indices.Refresh;
 import org.apache.metamodel.AbstractUpdateCallback;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.create.TableCreationBuilder;
@@ -30,8 +29,6 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.searchbox.indices.Refresh;
 
 /**
  * {@link UpdateCallback} implementation for {@link JestElasticSearchDataContext}.
@@ -86,10 +83,6 @@ final class JestElasticSearchUpdateCallback extends AbstractUpdateCallback {
         final String indexName = getDataContext().getIndexName();
         Refresh refresh = new Refresh.Builder().addIndex(indexName).build();
 
-        try {
-            getDataContext().getElasticSearchClient().execute(refresh);
-        } catch (IOException e) {
-            logger.warn("Refresh failed", e);
-        }
+        JestClientExecutor.execute(getDataContext().getElasticSearchClient(), refresh, false);
     }
 }

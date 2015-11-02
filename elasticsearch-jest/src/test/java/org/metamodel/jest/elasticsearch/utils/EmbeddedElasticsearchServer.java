@@ -18,13 +18,13 @@
  */
 package org.metamodel.jest.elasticsearch.utils;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.node.Node;
+
+import java.io.File;
+import java.io.IOException;
 
 import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
 
@@ -44,7 +44,8 @@ public class EmbeddedElasticsearchServer {
 
         ImmutableSettings.Builder elasticsearchSettings = ImmutableSettings.settingsBuilder()
                 .put("http.enabled", "true")
-                .put("path.data", dataDirectory);
+                .put("path.data", dataDirectory)
+                .put("http.port", 9292);
 
         node = nodeBuilder()
                 .local(true)

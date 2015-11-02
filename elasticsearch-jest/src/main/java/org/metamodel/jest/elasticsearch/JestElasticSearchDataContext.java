@@ -18,18 +18,14 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.metamodel.DataContext;
-import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.QueryPostprocessDataContext;
-import org.apache.metamodel.UpdateScript;
-import org.apache.metamodel.UpdateableDataContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import io.searchbox.client.JestClient;
+import io.searchbox.client.JestResult;
+import io.searchbox.core.*;
+import io.searchbox.indices.mapping.GetMapping;
+import io.searchbox.params.Parameters;
+import org.apache.metamodel.*;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Row;
@@ -38,12 +34,7 @@ import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.LogicalOperator;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.MutableColumn;
-import org.apache.metamodel.schema.MutableSchema;
-import org.apache.metamodel.schema.MutableTable;
-import org.apache.metamodel.schema.Schema;
-import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.*;
 import org.apache.metamodel.util.CollectionUtils;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -53,18 +44,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import io.searchbox.client.JestClient;
-import io.searchbox.client.JestResult;
-import io.searchbox.core.Count;
-import io.searchbox.core.CountResult;
-import io.searchbox.core.Get;
-import io.searchbox.core.Search;
-import io.searchbox.core.SearchResult;
-import io.searchbox.indices.mapping.GetMapping;
-import io.searchbox.params.Parameters;
+import java.util.*;
 
 /**
  * DataContext implementation for ElasticSearch analytics engine.
@@ -398,14 +378,7 @@ public class JestElasticSearchDataContext extends QueryPostprocessDataContext im
         final String id = keyValue.toString();
 
         final Get get = new Get.Builder(indexName, id).type(documentType).build();
-
-        JestResult getResult;
-        try {
-            getResult = elasticSearchClient.execute(get);
-        } catch (Exception e){
-            logger.warn("Could not execute ElasticSearch get query", e);
-            throw new MetaModelException("Could not execute ElasticSearch get query", e);
-        }
+        final JestResult getResult = JestClientExecutor.execute(elasticSearchClient, get);
 
         final DataSetHeader header = new SimpleDataSetHeader(selectItems);
 

@@ -18,10 +18,9 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
+import io.searchbox.core.DocumentResult;
+import io.searchbox.core.Index;
+import io.searchbox.params.Parameters;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
 import org.apache.metamodel.schema.Column;
@@ -29,9 +28,8 @@ import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.searchbox.core.DocumentResult;
-import io.searchbox.core.Index;
-import io.searchbox.params.Parameters;
+import java.util.HashMap;
+import java.util.Map;
 
 final class JestElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<JestElasticSearchUpdateCallback> {
 
@@ -71,13 +69,7 @@ final class JestElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<J
         Index index = new Index.Builder(source).index(indexName).type(documentType).id(id).setParameter(
                 Parameters.OP_TYPE, "create").build();
 
-        final DocumentResult result;
-        try {
-            result = dataContext.getElasticSearchClient().execute(index);
-        } catch (IOException e) {
-            logger.warn("Could not index document", e);
-            throw new MetaModelException("Could not index document", e);
-        }
+        final DocumentResult result = JestClientExecutor.execute(dataContext.getElasticSearchClient(), index);
 
         logger.debug("Inserted document: id={}", result.getId());
     }

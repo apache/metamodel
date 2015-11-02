@@ -18,8 +18,7 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import java.io.IOException;
-
+import io.searchbox.indices.mapping.DeleteMapping;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.drop.AbstractTableDropBuilder;
 import org.apache.metamodel.drop.TableDropBuilder;
@@ -27,9 +26,6 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.searchbox.client.JestResult;
-import io.searchbox.indices.mapping.DeleteMapping;
 
 /**
  * {@link TableDropBuilder} for dropping tables (document types) in an
@@ -56,15 +52,7 @@ final class JestElasticSearchDropTableBuilder extends AbstractTableDropBuilder {
 
         final DeleteMapping deleteIndex = new DeleteMapping.Builder(dataContext.getIndexName(), documentType).build();
 
-        final JestResult result;
-        try {
-            result = dataContext.getElasticSearchClient().execute(deleteIndex);
-        } catch (IOException e) {
-            logger.warn("Could not delete mapping", e);
-            throw new MetaModelException("Could not delete mapping", e);
-        }
-
-        logger.debug("Delete mapping response: acknowledged={}", result.isSucceeded());
+        JestClientExecutor.execute(dataContext.getElasticSearchClient(), deleteIndex);
 
         final MutableSchema schema = (MutableSchema) table.getSchema();
         schema.removeTable(table);

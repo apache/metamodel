@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -18,10 +18,12 @@
  */
 package org.metamodel.jest.elasticsearch;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.metamodel.MetaModelException;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import io.searchbox.client.JestClient;
+import io.searchbox.client.JestResult;
+import io.searchbox.core.SearchScroll;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
@@ -30,13 +32,8 @@ import org.apache.metamodel.schema.Column;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-
-import io.searchbox.client.JestClient;
-import io.searchbox.client.JestResult;
-import io.searchbox.core.SearchScroll;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * {@link DataSet} implementation for ElasticSearch
@@ -58,7 +55,7 @@ final class JestElasticSearchDataSet extends AbstractDataSet {
         _searchResponse = searchResponse;
         _closed = new AtomicBoolean(false);
     }
-    
+
     public JestElasticSearchDataSet(JestClient client, JestResult searchResponse, Column[] columns) {
         super(columns);
         _client = client;
@@ -72,13 +69,7 @@ final class JestElasticSearchDataSet extends AbstractDataSet {
         boolean closeNow = _closed.compareAndSet(true, false);
         if (closeNow) {
             final String scrollId = _searchResponse.getJsonObject().getAsJsonPrimitive("_scroll_id").getAsString();
-            JestDeleteScroll scroll = new JestDeleteScroll.Builder(scrollId).build();
-
-            try {
-                _client.execute(scroll);
-            } catch (Exception e){
-                logger.warn("Could not delete ElasticSearch scroll", e);
-            }
+            JestClientExecutor.execute(_client, new JestDeleteScroll.Builder(scrollId).build(), false);
         }
     }
 
@@ -117,12 +108,7 @@ final class JestElasticSearchDataSet extends AbstractDataSet {
         // try to scroll to the next set of hits
         SearchScroll scroll = new SearchScroll.Builder(scrollId.getAsString(), JestElasticSearchDataContext.TIMEOUT_SCROLL).build();
 
-        try {
-            _searchResponse = _client.execute(scroll);
-        } catch (Exception e){
-            logger.warn("Could not execute ElasticSearch query", e);
-            throw new MetaModelException("Could not execute ElasticSearch query", e);
-        }
+        _searchResponse = JestClientExecutor.execute(_client, scroll);
 
         // start over (recursively)
         _hitIndex = 0;
