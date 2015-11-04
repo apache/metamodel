@@ -128,6 +128,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
         MongoIterable<String> collectionNames = mongoDb.listCollectionNames();
         List<SimpleTableDef> result = new ArrayList<>();
         for (String collectionName : collectionNames) {
+        	logger.info("Detecting collection {}",collectionName);
         	SimpleTableDef table = detectTable(mongoDb, collectionName);
         	result.add(table);
 		}
