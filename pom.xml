@@ -76,7 +76,7 @@ under the License.
 		<module>sugarcrm</module>
 		<module>full</module>
 		<module>spring</module>
-		<module>elasticsearch-jest</module>
+		<module>elasticsearch-rest</module>
 	</modules>
 	<issueManagement>
 		<system>Jira</system>

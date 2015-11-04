@@ -35,7 +35,7 @@ import org.apache.metamodel.excel.ExcelDataContext;
 import org.apache.metamodel.fixedwidth.FixedWidthConfiguration;
 import org.apache.metamodel.fixedwidth.FixedWidthDataContext;
 import org.apache.metamodel.jdbc.JdbcDataContext;
-import org.apache.metamodel.jest.elasticsearch.JestElasticSearchDataContext;
+import org.apache.metamodel.elasticsearch.rest.ElasticSearchRestDataContext;
 import org.apache.metamodel.json.JsonDataContext;
 import org.apache.metamodel.mongodb.MongoDbDataContext;
 import org.apache.metamodel.openoffice.OpenOfficeDataContext;
@@ -657,7 +657,7 @@ public class DataContextFactory {
      * @return a DataContext object that matches the request
      */
     public static UpdateableDataContext createElasticSearchDataContext(JestClient client, String indexName) {
-        return new JestElasticSearchDataContext(client, indexName);
+        return new ElasticSearchRestDataContext(client, indexName);
     }
 
     /**
