@@ -38,9 +38,6 @@ import java.util.List;
  * {@link ElasticSearchRestDataContext}.
  */
 final class JestElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
-
-    private static final Logger logger = LoggerFactory.getLogger(JestElasticSearchDeleteBuilder.class);
-
     private final JestElasticSearchUpdateCallback _updateCallback;
 
     public JestElasticSearchDeleteBuilder(JestElasticSearchUpdateCallback updateCallback, Table table) {
@@ -76,8 +73,6 @@ final class JestElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
                 new DeleteByQuery.Builder(searchSourceBuilder.toString()).addIndex(indexName).addType(
                         documentType).build();
 
-        final JestResult result = JestClientExecutor.execute(dataContext.getElasticSearchClient(), deleteByQuery);
-
-        logger.debug("Deleted documents by query, success: {}", result.isSucceeded());
+        JestClientExecutor.execute(dataContext.getElasticSearchClient(), deleteByQuery);
     }
 }
