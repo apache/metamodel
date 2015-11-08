@@ -81,13 +81,33 @@ final class FromItemParser implements QueryPartProcessor {
 
     private FromItem parseTableItem(String itemToken) {
     	// From token can be starting with [
-    	String tableNameToken = "";
-    	String aliasToken = "";
-    	if(itemToken.trim().startsWith("[")){
-    		int endIndex = itemToken.trim().indexOf("]");
-    		tableNameToken = itemToken.trim().substring(1,endIndex);
-    		aliasToken = itemToken.trim().substring(1+endIndex).trim();
-    	}else{
+    	final String tableNameToken;
+    	final String aliasToken;
+    	if (itemToken.trim().startsWith("[")){
+    		int endIndex=itemToken.trim().indexOf("]");
+				if (endIndex == -1) {
+					throw new QueryParserException("Not capable of parsing FROM token: " + itemToken
+	                        + ". Expected end square bracket.");
+				}
+
+    		tableNameToken = itemToken.trim().substring(1,endIndex).trim();
+    		
+    		if (itemToken.trim().substring(1+endIndex).trim().equalsIgnoreCase("")) {
+    			/*
+    			 *  As per code in FromClause Method: getItemByReference(FromItem item, String reference)
+    			 *  if (alias == null && table != null && reference.equals(table.getName())) {
+    			 *  Either we have to change the code to add alias.equals("") there or return null here.
+    			 */
+    			aliasToken = null;
+    		} else {
+    			aliasToken = itemToken.trim().substring(1+endIndex).trim();
+    		}
+    		
+    	} else {
+    		if (itemToken.trim().indexOf("]") != -1) {
+    			throw new QueryParserException("Not capable of parsing FROM token: " + itemToken
+                        + ". ']' found without '[' bracket");
+    		}
 	        final String[] tokens = itemToken.split(" ");
 	        tableNameToken = tokens[0];
 	        if (tokens.length == 2) {
