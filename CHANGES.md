@@ -1,3 +1,7 @@
+### Apache MetaModel (work-in-progress)
+
+ * [METAMODEL-207] - Ensured the serializability of the SingleLineCsvRow class.
+
 ### Apache MetaModel 4.4.1
 
  * [METAMODEL-198] - Fixed support for JDBC TIMESTAMP precision to match the underlying database's precision.
