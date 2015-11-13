@@ -52,6 +52,8 @@ import au.com.bytecode.opencsv.CSVParser;
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
+ * @TODO: Need to update code.. Just created Outline for now.
+ * Target is to complete by Nov 20th 2015
  * @author ashwinrayaprolu
  *
  */
@@ -399,10 +401,10 @@ public class CsvDirectoryDataContext extends QueryPostprocessDataContext impleme
     }
 
     @Override
-    protected CsvSchema getMainSchema() throws MetaModelException {
+    protected CsvDirectorySchema getMainSchema() throws MetaModelException {
         CsvDirectorySchema schema = new CsvDirectorySchema(getMainSchemaName(), this);
         if (_resource.isExists()) {
-            schema.setTable(new CsvTable(schema, _resource.getName()));
+           // schema.setTable(new CsvTable(schema, _resource.getName()));
         }
         return schema;
     }
@@ -426,7 +428,9 @@ public class CsvDirectoryDataContext extends QueryPostprocessDataContext impleme
     @Override
     public void executeUpdate(UpdateScript update) {
         checkWritable();
-        CsvUpdateCallback callback = new CsvUpdateCallback(this);
+        //CsvUpdateCallback callback = new CsvUpdateCallback(this);
+        // @TODO: Need to update code.. Just created Outline for now
+        CsvUpdateCallback callback = null;
         synchronized (WRITE_LOCK) {
             try {
                 update.run(callback);
