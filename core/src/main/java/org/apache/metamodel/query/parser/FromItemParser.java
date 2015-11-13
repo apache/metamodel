@@ -27,6 +27,7 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.JoinType;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.QueryConstants;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
@@ -83,13 +84,15 @@ final class FromItemParser implements QueryPartProcessor {
     	// From token can be starting with [
     	final String tableNameToken;
     	final String aliasToken;
-    	if (itemToken.trim().startsWith("[")){
-    		int endIndex=itemToken.trim().indexOf("]");
-				if (endIndex == -1) {
-					throw new QueryParserException("Not capable of parsing FROM token: " + itemToken
-	                        + ". Expected end square bracket.");
-				}
-
+    	
+    	char startDelimiter = itemToken.trim().charAt(0);
+    	if(QueryConstants.delimiterMap.containsKey(startDelimiter)) {
+    		char endDelimiter =QueryConstants.delimiterMap.get(startDelimiter);
+    		int endIndex=itemToken.trim().lastIndexOf(endDelimiter,itemToken.trim().length());
+    		if (endIndex <= 0) {
+				throw new QueryParserException("Not capable of parsing FROM token: " + itemToken
+                        + ". Expected end "+endDelimiter);
+			}
     		tableNameToken = itemToken.trim().substring(1,endIndex).trim();
     		
     		if (itemToken.trim().substring(1+endIndex).trim().equalsIgnoreCase("")) {
@@ -104,10 +107,7 @@ final class FromItemParser implements QueryPartProcessor {
     		}
     		
     	} else {
-    		if (itemToken.trim().indexOf("]") != -1) {
-    			throw new QueryParserException("Not capable of parsing FROM token: " + itemToken
-                        + ". ']' found without '[' bracket");
-    		}
+    		// Default assumption is space being delimiter for tablename and alias.. If otherwise use DoubleQuotes or [] around tableName
 	        final String[] tokens = itemToken.split(" ");
 	        tableNameToken = tokens[0];
 	        if (tokens.length == 2) {

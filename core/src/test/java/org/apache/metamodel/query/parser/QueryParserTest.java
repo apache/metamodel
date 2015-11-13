@@ -150,20 +150,31 @@ public class QueryParserTest extends TestCase {
             MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM [sch.tbl");
             fail("Exception expected");
         } catch (MetaModelException e) {
-            assertEquals("Not capable of parsing FROM token: [sch.tbl. Expected end square bracket.", e.getMessage());
+            assertEquals("Not capable of parsing FROM token: [sch.tbl. Expected end ]", e.getMessage());
         }
         
-        // Missing [ Bracket
         try {
-            MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM sch.tbl]");
+            MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM \"sch.tbl");
             fail("Exception expected");
         } catch (MetaModelException e) {
-            assertEquals("Not capable of parsing FROM token: sch.tbl]. ']' found without '[' bracket", e.getMessage());
+            assertEquals("Not capable of parsing FROM token: \"sch.tbl. Expected end \"", e.getMessage());
         }
+        // Test Delimiter in tablename
+        try {
+            MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM \"sch.tbl");
+            fail("Exception expected");
+        } catch (MetaModelException e) {
+            assertEquals("Not capable of parsing FROM token: \"sch.tbl. Expected end \"", e.getMessage());
+        }
+        
         
         // Positive test case
         q = MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM [sch.tbl]");
         assertEquals("SELECT tbl.foo AS alias FROM sch.tbl", q.toSql());
+        
+        q = MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM \"sch.tbl\"");
+        assertEquals("SELECT tbl.foo AS alias FROM sch.tbl", q.toSql());
+        
     }
 
     public void testSelectAvgInLowerCase() throws Exception {
