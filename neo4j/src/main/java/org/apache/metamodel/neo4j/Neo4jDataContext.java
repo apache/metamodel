@@ -25,11 +25,10 @@ import org.apache.http.HttpHost;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.QueryPostprocessDataContext;
-import org.apache.metamodel.UpdateScript;
-import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DocumentSource;
 import org.apache.metamodel.query.FilterItem;
@@ -50,7 +49,7 @@ import org.slf4j.LoggerFactory;
 /**
  * DataContext implementation for Neo4j
  */
-public class Neo4jDataContext extends QueryPostprocessDataContext implements UpdateableDataContext,
+public class Neo4jDataContext extends QueryPostprocessDataContext implements DataContext,
         DocumentSourceProvider {
 
     public static final Logger logger = LoggerFactory.getLogger(Neo4jDataContext.class);
@@ -289,12 +288,6 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
     }
 
     @Override
-    protected org.apache.metamodel.data.Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems,
-            Column primaryKeyColumn, Object keyValue) {
-        return null;
-    }
-
-    @Override
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
         String countQuery = Neo4jCypherQueryBuilder.buildCountQuery(table.getName(), whereItems);
         String jsonResponse = _requestWrapper.executeCypherQuery(countQuery);
@@ -316,12 +309,6 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Upd
             // from the error.
             return null;
         }
-    }
-
-    @Override
-    public void executeUpdate(UpdateScript script) {
-        throw new UnsupportedOperationException(
-                "MetaModel does not currently support write operations on Neo4j databases.");
     }
 
     @Override

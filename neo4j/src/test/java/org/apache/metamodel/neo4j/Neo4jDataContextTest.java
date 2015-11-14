@@ -28,9 +28,6 @@ import org.apache.http.HttpHost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.UpdateCallback;
-import org.apache.metamodel.UpdateScript;
-import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.CompiledQuery;
@@ -431,28 +428,6 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
             }
             assertEquals(1, rows.size());
             assertEquals("Row[values=[Tomasz, " + bookNodeId + ", Introduction to algorithms]]", rows.get(0).toString());
-        }
-    }
-
-    @Test
-    public void testInsert() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
-
-        UpdateableDataContext dataContext = new Neo4jDataContext(getHostname(), getPort(), getUsername(), getPassword());
-        try {
-            dataContext.executeUpdate(new UpdateScript() {
-
-                @Override
-                public void run(UpdateCallback callback) {
-                    callback.insertInto("JUnitLabel").value("property1", "updatedValue").execute();
-                }
-            });
-            fail();
-        } catch (UnsupportedOperationException e) {
-            assertNotNull(e);
         }
     }
 
