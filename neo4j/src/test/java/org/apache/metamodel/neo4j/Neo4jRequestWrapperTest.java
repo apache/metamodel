@@ -122,7 +122,7 @@ public class Neo4jRequestWrapperTest extends Neo4jTestCase {
 
 		Neo4jRequestWrapper wrapper = new Neo4jRequestWrapper(mockHttpClient,
 				new HttpHost(getHostname(), getPort()), "testUsername",
-				"testPassword");
+				"testPassword", getServiceRoot());
 		wrapper.executeCypherQuery("MATCH (n) RETURN n;");
 		// Assertions are in the HttpClient
 	}
@@ -175,7 +175,7 @@ public class Neo4jRequestWrapperTest extends Neo4jTestCase {
 		};
 
 		Neo4jRequestWrapper wrapper = new Neo4jRequestWrapper(mockHttpClient,
-				new HttpHost(getHostname(), getPort()));
+				new HttpHost(getHostname(), getPort()), getServiceRoot());
 		wrapper.executeCypherQuery("MATCH (n) RETURN n;");
 		// Assertions are in the HttpClient
 	}

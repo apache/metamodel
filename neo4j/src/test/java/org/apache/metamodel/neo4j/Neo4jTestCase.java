@@ -32,6 +32,7 @@ public abstract class Neo4jTestCase extends TestCase {
 	private int _port = Neo4jDataContext.DEFAULT_PORT;
 	private String _username;
 	private String _password;
+	private String _serviceRoot = "/db/data";
 	private boolean _configured;
 
 	@Override
@@ -79,6 +80,10 @@ public abstract class Neo4jTestCase extends TestCase {
 		}
 		_username = properties.getProperty("neo4j.username");
 		_password = properties.getProperty("neo4j.password");
+		String serviceRoot = properties.getProperty("neo4j.serviceroot");
+		if (serviceRoot != null) {
+			_serviceRoot = serviceRoot;
+		}
 
 		_configured = (_hostname != null && !_hostname.isEmpty());
 
@@ -86,7 +91,7 @@ public abstract class Neo4jTestCase extends TestCase {
 			System.out
 					.println("Loaded Neo4j configuration. Hostname="
 							+ _hostname + ", port=" + _port + ", username="
-							+ _username);
+							+ _username + ", _serviceRoot=" + _serviceRoot);
 		}
 	}
 
@@ -108,6 +113,10 @@ public abstract class Neo4jTestCase extends TestCase {
 
 	public String getPassword() {
 		return _password;
+	}
+	
+	public String getServiceRoot() {
+		return _serviceRoot;
 	}
 
 }

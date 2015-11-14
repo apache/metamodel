@@ -56,16 +56,16 @@ public class Neo4jRequestWrapper {
 	private final String _password;
 
 	public Neo4jRequestWrapper(CloseableHttpClient httpClient,
-			HttpHost httpHost, String username, String password) {
+			HttpHost httpHost, String username, String password, String serviceRoot) {
 		_httpClient = httpClient;
 		_httpHost = httpHost;
 		_username = username;
 		_password = password;
-		_cypherQueryHttpPost = new HttpPost("/db/data/transaction/commit");
+		_cypherQueryHttpPost = new HttpPost(serviceRoot + "/transaction/commit");
 	}
 
-	public Neo4jRequestWrapper(CloseableHttpClient httpClient, HttpHost httpHost) {
-		this(httpClient, httpHost, null, null);
+	public Neo4jRequestWrapper(CloseableHttpClient httpClient, HttpHost httpHost, String serviceRoot) {
+		this(httpClient, httpHost, null, null, serviceRoot);
 	}
 
 	public String executeRestRequest(HttpRequestBase httpRequest) {
