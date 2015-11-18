@@ -19,22 +19,31 @@
 package org.apache.metamodel.query.parser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.JoinType;
 import org.apache.metamodel.query.Query;
-import org.apache.metamodel.query.QueryConstants;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class FromItemParser implements QueryPartProcessor {
-
+	/**
+	 * This field will hold start and end character for delimiter that
+	 * can be used
+	 */
+	private static final Map<Character, Character> delimiterMap = new HashMap<Character, Character>();
+	static {
+		delimiterMap.put('\"', '\"');
+		delimiterMap.put('[', ']');
+	}
     private static final Logger logger = LoggerFactory.getLogger(FromItemParser.class);
 
     private final Query _query;
@@ -86,8 +95,8 @@ final class FromItemParser implements QueryPartProcessor {
     	final String aliasToken;
     	
     	char startDelimiter = itemToken.trim().charAt(0);
-    	if(QueryConstants.delimiterMap.containsKey(startDelimiter)) {
-    		char endDelimiter =QueryConstants.delimiterMap.get(startDelimiter);
+    	if(delimiterMap.containsKey(startDelimiter)) {
+    		char endDelimiter =delimiterMap.get(startDelimiter);
     		int endIndex=itemToken.trim().lastIndexOf(endDelimiter,itemToken.trim().length());
     		if (endIndex <= 0) {
 				throw new QueryParserException("Not capable of parsing FROM token: " + itemToken
