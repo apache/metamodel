@@ -18,24 +18,26 @@
  */
 package org.apache.metamodel;
 
-import com.datastax.driver.core.Cluster;
-import com.google.common.base.Strings;
-import com.mongodb.DB;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
-import io.searchbox.client.JestClient;
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.sql.Connection;
+import java.util.Arrays;
+import java.util.Collection;
+
+import javax.sql.DataSource;
+
 import org.apache.metamodel.cassandra.CassandraDataContext;
 import org.apache.metamodel.couchdb.CouchDbDataContext;
 import org.apache.metamodel.csv.CsvConfiguration;
 import org.apache.metamodel.csv.CsvDataContext;
-import org.apache.metamodel.elasticsearch.ElasticSearchDataContext;
+import org.apache.metamodel.elasticsearch.nativeclient.ElasticSearchDataContext;
+import org.apache.metamodel.elasticsearch.rest.ElasticSearchRestDataContext;
 import org.apache.metamodel.excel.ExcelConfiguration;
 import org.apache.metamodel.excel.ExcelDataContext;
 import org.apache.metamodel.fixedwidth.FixedWidthConfiguration;
 import org.apache.metamodel.fixedwidth.FixedWidthDataContext;
 import org.apache.metamodel.jdbc.JdbcDataContext;
-import org.apache.metamodel.elasticsearch.rest.ElasticSearchRestDataContext;
 import org.apache.metamodel.json.JsonDataContext;
 import org.apache.metamodel.mongodb.MongoDbDataContext;
 import org.apache.metamodel.openoffice.OpenOfficeDataContext;
@@ -49,13 +51,14 @@ import org.ektorp.http.StdHttpClient.Builder;
 import org.elasticsearch.client.Client;
 import org.xml.sax.InputSource;
 
-import javax.sql.DataSource;
-import java.io.File;
-import java.io.InputStream;
-import java.net.URL;
-import java.sql.Connection;
-import java.util.Arrays;
-import java.util.Collection;
+import com.datastax.driver.core.Cluster;
+import com.google.common.base.Strings;
+import com.mongodb.DB;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
+
+import io.searchbox.client.JestClient;
 
 /**
  * A factory for DataContext objects. This class substantially easens the task
