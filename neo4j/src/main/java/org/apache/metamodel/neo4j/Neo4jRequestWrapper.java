@@ -21,6 +21,7 @@ package org.apache.metamodel.neo4j;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.http.HttpHost;
 import org.apache.http.client.ClientProtocolException;
@@ -102,9 +103,28 @@ public class Neo4jRequestWrapper {
 		JSONObject cypherQueryRequest = new JSONObject();
 		HashMap<String, String> statement = new HashMap<String, String>();
 		statement.put("statement", cypherQuery);
-
+		
 		JSONArray statementsArray = new JSONArray();
 		statementsArray.put(statement);
+
+		return executeRequest(cypherQueryRequest, statementsArray);
+	}
+	
+	public String executeCypherQueries(List<String> cypherQueries) {
+		JSONObject cypherQueryRequest = new JSONObject();
+		JSONArray statementsArray = new JSONArray();
+		for (String cypherQuery : cypherQueries) {
+			HashMap<String, String> statement = new HashMap<String, String>();			
+			statement.put("statement", cypherQuery);
+			
+			statementsArray.put(statement);
+		}
+		
+		return executeRequest(cypherQueryRequest, statementsArray);
+	}
+
+	private String executeRequest(JSONObject cypherQueryRequest,
+			JSONArray statementsArray) {
 		try {
 			cypherQueryRequest.put("statements", statementsArray);
 
@@ -120,7 +140,6 @@ public class Neo4jRequestWrapper {
 							+ _cypherQueryHttpPost, e);
 			throw new IllegalStateException(e);
 		}
-
-	}
+    }
 
 }
