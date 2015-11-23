@@ -47,99 +47,90 @@ import com.google.common.io.BaseEncoding;
  */
 public class Neo4jRequestWrapper {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(Neo4jRequestWrapper.class);
+    private static final Logger logger = LoggerFactory.getLogger(Neo4jRequestWrapper.class);
 
-	private final CloseableHttpClient _httpClient;
-	private final HttpHost _httpHost;
-	private final HttpPost _cypherQueryHttpPost;
-	private final String _username;
-	private final String _password;
+    private final CloseableHttpClient _httpClient;
+    private final HttpHost _httpHost;
+    private final HttpPost _cypherQueryHttpPost;
+    private final String _username;
+    private final String _password;
 
-	public Neo4jRequestWrapper(CloseableHttpClient httpClient,
-			HttpHost httpHost, String username, String password, String serviceRoot) {
-		_httpClient = httpClient;
-		_httpHost = httpHost;
-		_username = username;
-		_password = password;
-		_cypherQueryHttpPost = new HttpPost(serviceRoot + "/transaction/commit");
-	}
+    public Neo4jRequestWrapper(CloseableHttpClient httpClient, HttpHost httpHost, String username, String password,
+            String serviceRoot) {
+        _httpClient = httpClient;
+        _httpHost = httpHost;
+        _username = username;
+        _password = password;
+        _cypherQueryHttpPost = new HttpPost(serviceRoot + "/transaction/commit");
+    }
 
-	public Neo4jRequestWrapper(CloseableHttpClient httpClient, HttpHost httpHost, String serviceRoot) {
-		this(httpClient, httpHost, null, null, serviceRoot);
-	}
+    public Neo4jRequestWrapper(CloseableHttpClient httpClient, HttpHost httpHost, String serviceRoot) {
+        this(httpClient, httpHost, null, null, serviceRoot);
+    }
 
-	public String executeRestRequest(HttpRequestBase httpRequest) {
-		return executeRestRequest(httpRequest, _username, _password);
-	}
+    public String executeRestRequest(HttpRequestBase httpRequest) {
+        return executeRestRequest(httpRequest, _username, _password);
+    }
 
-	public String executeRestRequest(HttpRequestBase httpRequest,
-			String username, String password) {
-		if ((username != null) && (password != null)) {
-			String base64credentials = BaseEncoding.base64().encode(
-					(username + ":" + password)
-							.getBytes(StandardCharsets.UTF_8));
-			httpRequest
-					.addHeader("Authorization", "Basic " + base64credentials);
-		}
+    public String executeRestRequest(HttpRequestBase httpRequest, String username, String password) {
+        if ((username != null) && (password != null)) {
+            String base64credentials = BaseEncoding.base64().encode(
+                    (username + ":" + password).getBytes(StandardCharsets.UTF_8));
+            httpRequest.addHeader("Authorization", "Basic " + base64credentials);
+        }
 
-		try {
-			CloseableHttpResponse response = _httpClient.execute(_httpHost,
-					httpRequest);
-			if (response.getEntity() != null) {
-				return EntityUtils.toString(response.getEntity());
-			}
-			return null;
-		} catch (ClientProtocolException e) {
-			logger.error("An error occured while executing " + httpRequest, e);
-			throw new IllegalStateException(e);
-		} catch (IOException e) {
-			logger.error("An error occured while executing " + httpRequest, e);
-			throw new IllegalStateException(e);
-		}
-	}
+        try {
+            CloseableHttpResponse response = _httpClient.execute(_httpHost, httpRequest);
+            if (response.getEntity() != null) {
+                return EntityUtils.toString(response.getEntity());
+            }
+            return null;
+        } catch (ClientProtocolException e) {
+            logger.error("An error occured while executing " + httpRequest, e);
+            throw new IllegalStateException(e);
+        } catch (IOException e) {
+            logger.error("An error occured while executing " + httpRequest, e);
+            throw new IllegalStateException(e);
+        }
+    }
 
-	public String executeCypherQuery(String cypherQuery) {
-		JSONObject cypherQueryRequest = new JSONObject();
-		HashMap<String, String> statement = new HashMap<String, String>();
-		statement.put("statement", cypherQuery);
-		
-		JSONArray statementsArray = new JSONArray();
-		statementsArray.put(statement);
+    public String executeCypherQuery(String cypherQuery) {
+        JSONObject cypherQueryRequest = new JSONObject();
+        HashMap<String, String> statement = new HashMap<String, String>();
+        statement.put("statement", cypherQuery);
 
-		return executeRequest(cypherQueryRequest, statementsArray);
-	}
-	
-	public String executeCypherQueries(List<String> cypherQueries) {
-		JSONObject cypherQueryRequest = new JSONObject();
-		JSONArray statementsArray = new JSONArray();
-		for (String cypherQuery : cypherQueries) {
-			HashMap<String, String> statement = new HashMap<String, String>();			
-			statement.put("statement", cypherQuery);
-			
-			statementsArray.put(statement);
-		}
-		
-		return executeRequest(cypherQueryRequest, statementsArray);
-	}
+        JSONArray statementsArray = new JSONArray();
+        statementsArray.put(statement);
 
-	private String executeRequest(JSONObject cypherQueryRequest,
-			JSONArray statementsArray) {
-		try {
-			cypherQueryRequest.put("statements", statementsArray);
+        return executeRequest(cypherQueryRequest, statementsArray);
+    }
 
-			String requestBody = cypherQueryRequest.toString();
-			_cypherQueryHttpPost.setEntity(new StringEntity(requestBody,
-					ContentType.APPLICATION_JSON));
+    public String executeCypherQueries(List<String> cypherQueries) {
+        JSONObject cypherQueryRequest = new JSONObject();
+        JSONArray statementsArray = new JSONArray();
+        for (String cypherQuery : cypherQueries) {
+            HashMap<String, String> statement = new HashMap<String, String>();
+            statement.put("statement", cypherQuery);
 
-			String responseJSONString = executeRestRequest(_cypherQueryHttpPost);
-			return responseJSONString;
-		} catch (JSONException e) {
-			logger.error(
-					"Error occured while constructing JSON request body for "
-							+ _cypherQueryHttpPost, e);
-			throw new IllegalStateException(e);
-		}
+            statementsArray.put(statement);
+        }
+
+        return executeRequest(cypherQueryRequest, statementsArray);
+    }
+
+    private String executeRequest(JSONObject cypherQueryRequest, JSONArray statementsArray) {
+        try {
+            cypherQueryRequest.put("statements", statementsArray);
+
+            String requestBody = cypherQueryRequest.toString();
+            _cypherQueryHttpPost.setEntity(new StringEntity(requestBody, ContentType.APPLICATION_JSON));
+
+            String responseJSONString = executeRestRequest(_cypherQueryHttpPost);
+            return responseJSONString;
+        } catch (JSONException e) {
+            logger.error("Error occured while constructing JSON request body for " + _cypherQueryHttpPost, e);
+            throw new IllegalStateException(e);
+        }
     }
 
 }

@@ -49,15 +49,13 @@ import org.slf4j.LoggerFactory;
 /**
  * DataContext implementation for Neo4j
  */
-public class Neo4jDataContext extends QueryPostprocessDataContext implements DataContext,
-        DocumentSourceProvider {
+public class Neo4jDataContext extends QueryPostprocessDataContext implements DataContext, DocumentSourceProvider {
 
     public static final Logger logger = LoggerFactory.getLogger(Neo4jDataContext.class);
 
     public static final String SCHEMA_NAME = "neo4j";
 
     public static final int DEFAULT_PORT = 7474;
-
 
     public static final String RELATIONSHIP_PREFIX = "rel_";
 
@@ -77,8 +75,9 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, username, password, _serviceRoot);
         _tableDefs = tableDefs;
     }
-    
-    public Neo4jDataContext(String hostname, int port, String username, String password, String serviceRoot, SimpleTableDef... tableDefs) {
+
+    public Neo4jDataContext(String hostname, int port, String username, String password, String serviceRoot,
+            SimpleTableDef... tableDefs) {
         _httpHost = new HttpHost(hostname, port);
         final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, username, password, _serviceRoot);
@@ -92,7 +91,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, username, password, _serviceRoot);
         _tableDefs = detectTableDefs();
     }
-    
+
     public Neo4jDataContext(String hostname, int port, String username, String password, String serviceRoot) {
         _httpHost = new HttpHost(hostname, port);
         final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
@@ -106,7 +105,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, _serviceRoot);
         _tableDefs = detectTableDefs();
     }
-    
+
     public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient, String serviceRoot) {
         _httpHost = new HttpHost(hostname, port);
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, _serviceRoot);
@@ -119,8 +118,9 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, _serviceRoot);
         _tableDefs = tableDefs;
     }
-    
-    public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient, String serviceRoot, SimpleTableDef... tableDefs) {
+
+    public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient, String serviceRoot,
+            SimpleTableDef... tableDefs) {
         _httpHost = new HttpHost(hostname, port);
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, _serviceRoot);
         _tableDefs = tableDefs;
@@ -150,7 +150,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
     public SimpleTableDef[] detectTableDefs() {
         List<SimpleTableDef> tableDefs = new ArrayList<SimpleTableDef>();
 
-        String labelsJsonString = _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot  + "/labels"));
+        String labelsJsonString = _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot + "/labels"));
 
         JSONArray labelsJsonArray;
         try {
@@ -229,8 +229,8 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
     private List<JSONObject> getOutgoingRelationshipsPerNode(Integer nodeId) {
         List<JSONObject> outgoingRelationshipsPerNode = new ArrayList<JSONObject>();
 
-        String outgoingRelationshipsPerNodeJsonString = _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot + "/node/"
-                + nodeId + "/relationships/out"));
+        String outgoingRelationshipsPerNodeJsonString = _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot
+                + "/node/" + nodeId + "/relationships/out"));
 
         JSONArray outgoingRelationshipsPerNodeJsonArray;
         try {
@@ -251,8 +251,8 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
     private List<JSONObject> getAllNodesPerLabel(String label) {
         List<JSONObject> allNodesPerLabel = new ArrayList<JSONObject>();
 
-        String allNodesForLabelJsonString = _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot + "/label/" + label
-                + "/nodes"));
+        String allNodesForLabelJsonString = _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot + "/label/"
+                + label + "/nodes"));
 
         JSONArray allNodesForLabelJsonArray;
         try {

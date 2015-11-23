@@ -78,7 +78,7 @@ public class Neo4jCypherQueryBuilder {
                 }
             } else {
                 if (columnName.equals("_id")) {
-                    returnClauseMap.put(columnName, "id(n)");    
+                    returnClauseMap.put(columnName, "id(n)");
                 } else {
                     returnClauseMap.put(columnName, "n." + columnName);
                 }
