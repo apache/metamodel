@@ -215,11 +215,17 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * 
      * @return
      * @deprecated use {@link #getAggregateFunction()} or
-     *             {@link #getScalarFunction()} instead
+     *             {@link #getScalarFunction()} instead,
+     *             or {@link #hasFunction()} to check if a
+     *             function is set at all.
      */
     @Deprecated
     public FunctionType getFunction() {
         return _function;
+    }
+
+    public boolean hasFunction(){
+        return _function != null;
     }
 
     public AggregateFunction getAggregateFunction() {
