@@ -1,6 +1,7 @@
 ### Apache MetaModel (work-in-progress)
 
  * [METAMODEL-207] - Ensured the serializability of the SingleLineCsvRow class.
+ * [METAMODEL-211] - Fixed a bug related to lookup by primary key (_id) on MongoDB.
 
 ### Apache MetaModel 4.4.1
 
