@@ -1,5 +1,6 @@
 ### Apache MetaModel (work-in-progress)
 
+ * [METAMODEL-212] - New module for ElasticSearch via REST client.
  * [METAMODEL-207] - Ensured the serializability of the SingleLineCsvRow class.
  * [METAMODEL-211] - Fixed a bug related to lookup by primary key (_id) on MongoDB.
  * [METAMODEL-15] - Query parser support for table names with space. Delimitters can be double quote or square brackets. 
