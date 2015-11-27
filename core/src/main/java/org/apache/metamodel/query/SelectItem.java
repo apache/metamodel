@@ -577,7 +577,11 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             fromItem = null;
         } else if (clonedQuery != null && _query != null) {
             final int indexOfFromItem = _query.getFromClause().indexOf(_fromItem);
-            fromItem = clonedQuery.getFromClause().getItem(indexOfFromItem);
+            if (indexOfFromItem != -1) {
+                fromItem = clonedQuery.getFromClause().getItem(indexOfFromItem);
+            } else {
+                fromItem = _fromItem.clone();                
+            }
         } else {
             fromItem = _fromItem.clone();
         }
