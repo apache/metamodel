@@ -39,8 +39,7 @@ import org.slf4j.LoggerFactory;
  * <li>expression function SELECTs (retrieves databased on a function and an
  * expression, only COUNT(*) is supported for non-JDBC datastores))</li>
  * <li>SELECTs from subqueries (works just like column selects, but in stead of
- * pointing to a column, it retrieves data from the select item of a subquery)
- * </li>
+ * pointing to a column, it retrieves data from the select item of a subquery)</li>
  * </ul>
  * 
  * @see SelectClause
@@ -123,6 +122,17 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      */
     public SelectItem(FunctionType function, Column column) {
         this(function, column, null);
+    }
+
+    /**
+     * Create a SelectItem that uses a function with parameters on a column.
+     * 
+     * @param function
+     * @param functionParameters
+     * @param column
+     */
+    public SelectItem(FunctionType function, Object[] functionParameters, Column column) {
+        this(function, functionParameters, column, null);
     }
 
     /**
@@ -574,8 +584,8 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @return
      */
     public SelectItem replaceFunctionApproximationAllowed(boolean functionApproximationAllowed) {
-        return new SelectItem(_column, _fromItem, _function, _expression, _subQuerySelectItem, _alias,
-                functionApproximationAllowed);
+        return new SelectItem(_column, _fromItem, _function, _functionParameters, _expression, _subQuerySelectItem,
+                _alias, functionApproximationAllowed);
     }
 
     /**

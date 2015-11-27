@@ -36,9 +36,13 @@ public interface SatisfiedFromBuilder {
 
     public ColumnSelectBuilder<?> select(Column column);
     
-    public SatisfiedQueryBuilder<?> select(FunctionType function, String columnName);
+    public FunctionSelectBuilder<?> select(FunctionType function, String columnName);
 
     public FunctionSelectBuilder<?> select(FunctionType function, Column column);
+    
+    public FunctionSelectBuilder<?> select(FunctionType function, String columnName, Object[] functionParameters);
+
+    public FunctionSelectBuilder<?> select(FunctionType function, Column column, Object[] functionParameters);
 
     public CountSelectBuilder<?> selectCount();
 
@@ -46,7 +50,7 @@ public interface SatisfiedFromBuilder {
     
     public SatisfiedSelectBuilder<?> selectAll();
 
-    public SatisfiedQueryBuilder<?> select(String selectExpression);
+    public SatisfiedSelectBuilder<?> select(String selectExpression);
 
     public SatisfiedSelectBuilder<?> select(String... columnNames);
 }

@@ -24,7 +24,7 @@ import java.util.Arrays;
 import junit.framework.TestCase;
 
 import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.query.MapValueFunction;
+import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
@@ -49,8 +49,8 @@ public class JsonDataContextTest extends TestCase {
 
     public void testUseAnotherSchemaBuilder() throws Exception {
         final SchemaBuilder schemaBuilder = new SingleMapColumnSchemaBuilder("sch", "tbl", "cl");
-        final JsonDataContext dc = new JsonDataContext(
-                new FileResource("src/test/resources/documents_on_every_line.json"), schemaBuilder);
+        final JsonDataContext dc = new JsonDataContext(new FileResource(
+                "src/test/resources/documents_on_every_line.json"), schemaBuilder);
 
         final Table table = dc.getDefaultSchema().getTable(0);
         assertEquals("tbl", table.getName());
@@ -92,8 +92,8 @@ public class JsonDataContextTest extends TestCase {
             assertTrue(ds.next());
             assertEquals("Row[values=[John, Doe, MALE, football, null, null]]", ds.getRow().toString());
             assertTrue(ds.next());
-            assertEquals("Row[values=[John, Doe, MALE, {type=sport, name=soccer}, sport, soccer]]",
-                    ds.getRow().toString());
+            assertEquals("Row[values=[John, Doe, MALE, {type=sport, name=soccer}, sport, soccer]]", ds.getRow()
+                    .toString());
             assertFalse(ds.next());
         } finally {
             ds.close();
@@ -107,19 +107,19 @@ public class JsonDataContextTest extends TestCase {
         final Schema schema = dataContext.getDefaultSchema();
         assertEquals("[nested_fields.json]", Arrays.toString(schema.getTableNames()));
 
-        final DataSet ds = dataContext.query().from(schema.getTable(0)).select(new MapValueFunction("first"), "name").execute();
+        final DataSet ds = dataContext.query().from(schema.getTable(0))
+                .select(FunctionType.MAP_VALUE, "name", new Object[] { "first" }).execute();
         try {
             assertTrue(ds.next());
             assertEquals("Row[values=[John]]", ds.getRow().toString());
             assertTrue(ds.next());
-            assertEquals("Row[values=[John]]",
-                    ds.getRow().toString());
+            assertEquals("Row[values=[John]]", ds.getRow().toString());
             assertFalse(ds.next());
         } finally {
             ds.close();
         }
     }
-    
+
     public void testUseDotNotationToGetFromNestedMap() throws Exception {
         final Resource resource = new FileResource("src/test/resources/nested_fields.json");
         final JsonDataContext dataContext = new JsonDataContext(resource);
@@ -132,8 +132,7 @@ public class JsonDataContextTest extends TestCase {
             assertTrue(ds.next());
             assertEquals("Row[values=[John]]", ds.getRow().toString());
             assertTrue(ds.next());
-            assertEquals("Row[values=[John]]",
-                    ds.getRow().toString());
+            assertEquals("Row[values=[John]]", ds.getRow().toString());
             assertFalse(ds.next());
         } finally {
             ds.close();
