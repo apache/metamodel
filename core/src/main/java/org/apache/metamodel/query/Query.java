@@ -579,7 +579,7 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
 
     @Override
     public Query clone() {
-        Query q = new Query();
+        final Query q = new Query();
         q.setMaxRows(_maxRows);
         q.setFirstRow(_firstRow);
         q.getSelectClause().setDistinct(_selectClause.isDistinct());
@@ -587,7 +587,7 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
             q.from(item.clone());
         }
         for (SelectItem item : _selectClause.getItems()) {
-            q.select(item.clone());
+            q.select(item.clone(q));
         }
         for (FilterItem item : _whereClause.getItems()) {
             q.where(item.clone());

@@ -432,7 +432,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
 
     @Override
     public String toSql(boolean includeSchemaInColumnPath) {
-        StringBuilder sb = toStringNoAlias(includeSchemaInColumnPath);
+        final StringBuilder sb = toStringNoAlias(includeSchemaInColumnPath);
         if (_alias != null) {
             sb.append(" AS ");
             sb.append(_alias);
@@ -483,7 +483,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     private String getToStringColumnPrefix(boolean includeSchemaInColumnPath) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         if (_fromItem != null && _fromItem.getAlias() != null) {
             sb.append(_fromItem.getAlias());
             sb.append('.');
@@ -557,8 +557,31 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
 
     @Override
     protected SelectItem clone() {
+        return clone(null);
+    }
+
+    /**
+     * Creates a clone of the {@link SelectItem} for use within a cloned
+     * {@link Query}.
+     * 
+     * @param clonedQuery
+     *            a new {@link Query} object that represents the clone-to-be of
+     *            a query. It is expected that {@link FromItem}s have already
+     *            been cloned in this {@link Query}.
+     * @return
+     */
+    protected SelectItem clone(Query clonedQuery) {
         final SelectItem subQuerySelectItem = (_subQuerySelectItem == null ? null : _subQuerySelectItem.clone());
-        final FromItem fromItem = (_fromItem == null ? null : _fromItem.clone());
+        final FromItem fromItem;
+        if (_fromItem == null) {
+            fromItem = null;
+        } else if (clonedQuery != null && _query != null) {
+            final int indexOfFromItem = _query.getFromClause().indexOf(_fromItem);
+            fromItem = clonedQuery.getFromClause().getItem(indexOfFromItem);
+        } else {
+            fromItem = _fromItem.clone();
+        }
+
         final SelectItem s = new SelectItem(_column, fromItem, _function, _functionParameters, _expression,
                 subQuerySelectItem, _alias, _functionApproximationAllowed);
         return s;
