@@ -20,6 +20,7 @@ package org.apache.metamodel.query;
 
 import java.util.List;
 
+import org.apache.metamodel.DataContext;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
@@ -318,6 +319,13 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
         return null;
     }
 
+    /**
+     * Returns an "expression" that this select item represents. Expressions are
+     * not necesarily portable across {@link DataContext} implementations, but
+     * may be useful for utilizing database-specific behaviour in certain cases.
+     * 
+     * @return
+     */
     public String getExpression() {
         return _expression;
     }
@@ -551,7 +559,14 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
         identifiers.add(_column);
         identifiers.add(_function);
         identifiers.add(_functionApproximationAllowed);
-        identifiers.add(_fromItem);
+        if (_fromItem == null && _column != null && _column.getTable() != null) {
+            // add a FromItem representing the column's table - this makes equal
+            // comparison work when the only difference is whether or not
+            // FromItem is specified
+            identifiers.add(new FromItem(_column.getTable()));
+        } else {
+            identifiers.add(_fromItem);
+        }
         identifiers.add(_subQuerySelectItem);
     }
 
@@ -580,7 +595,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             if (indexOfFromItem != -1) {
                 fromItem = clonedQuery.getFromClause().getItem(indexOfFromItem);
             } else {
-                fromItem = _fromItem.clone();                
+                fromItem = _fromItem.clone();
             }
         } else {
             fromItem = _fromItem.clone();

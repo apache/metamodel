@@ -51,6 +51,8 @@ public interface SatisfiedFromBuilder {
     public SatisfiedSelectBuilder<?> selectAll();
 
     public SatisfiedSelectBuilder<?> select(String selectExpression);
+    
+    public SatisfiedSelectBuilder<?> select(String selectExpression, boolean allowExpressionBasedSelectItem);
 
     public SatisfiedSelectBuilder<?> select(String... columnNames);
 }
