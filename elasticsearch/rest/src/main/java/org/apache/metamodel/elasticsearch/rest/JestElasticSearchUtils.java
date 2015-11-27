@@ -37,8 +37,6 @@ import java.util.Date;
  * Shared/common util functions for the ElasticSearch MetaModel module.
  */
 final class JestElasticSearchUtils {
-    private static final Logger logger = LoggerFactory.getLogger(JestElasticSearchUtils.class);
-
     public static Row createRow(JsonObject source, String documentId, DataSetHeader header) {
         final Object[] values = new Object[header.size()];
         for (int i = 0; i < values.length; i++) {

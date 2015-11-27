@@ -22,7 +22,6 @@ import junit.framework.TestCase;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.SimpleDataSetHeader;
-import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
@@ -34,10 +33,10 @@ public class ElasticSearchUtilsTest extends TestCase {
     public void testAssignDocumentIdForPrimaryKeys() throws Exception {
         MutableColumn primaryKeyColumn = new MutableColumn("value1", ColumnType.STRING).setPrimaryKey(true);
         SelectItem primaryKeyItem = new SelectItem(primaryKeyColumn);
-        List<SelectItem> selectItems1 = Arrays.asList(primaryKeyItem);
+        List<SelectItem> selectItems1 = Collections.singletonList(primaryKeyItem);
         String documentId = "doc1";
         DataSetHeader header = new SimpleDataSetHeader(selectItems1);
-        Map values = new HashMap<String, Object>();
+        Map<String, Object> values = new HashMap<>();
         values.put("value1", "theValue");
         Row row = NativeElasticSearchUtils.createRow(values, documentId, header);
         String primaryKeyValue = (String) row.getValue(primaryKeyItem);
@@ -45,13 +44,13 @@ public class ElasticSearchUtilsTest extends TestCase {
         assertEquals(primaryKeyValue, documentId);
     }
 
-    public void testCreateRowWithParseableDates() throws Exception {
+    public void testCreateRowWithParsableDates() throws Exception {
         SelectItem item1 = new SelectItem(new MutableColumn("value1", ColumnType.STRING));
         SelectItem item2 = new SelectItem(new MutableColumn("value2", ColumnType.DATE));
         List<SelectItem> selectItems1 = Arrays.asList(item1, item2);
         String documentId = "doc1";
         DataSetHeader header = new SimpleDataSetHeader(selectItems1);
-        Map values = new HashMap<String, Object>();
+        Map<String, Object> values = new HashMap<>();
         values.put("value1", "theValue");
         values.put("value2", "2013-01-04T15:55:51.217+01:00");
         Row row = NativeElasticSearchUtils.createRow(values, documentId, header);

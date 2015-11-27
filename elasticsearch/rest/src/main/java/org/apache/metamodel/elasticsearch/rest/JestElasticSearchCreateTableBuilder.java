@@ -24,7 +24,6 @@ import org.apache.metamodel.create.AbstractTableCreationBuilder;
 import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.schema.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 final class JestElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder<JestElasticSearchUpdateCallback> {

@@ -30,7 +30,7 @@ import org.elasticsearch.common.collect.MapBuilder;
 public class ElasticSearchMetaDataParserTest extends TestCase {
 
     public void testParseMetadataInfo() throws Exception {
-        Map<String, Object> metadata = new LinkedHashMap<String, Object>();
+        Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("message", MapBuilder.newMapBuilder().put("type", "long").immutableMap());
         metadata.put("postDate", MapBuilder.newMapBuilder().put("type", "date").put("format", "dateOptionalTime").immutableMap());
         metadata.put("anotherDate", MapBuilder.newMapBuilder().put("type", "date").put("format", "dateOptionalTime").immutableMap());
