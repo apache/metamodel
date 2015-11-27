@@ -253,7 +253,7 @@ public class DerbyTest extends TestCase {
         Schema schema = dc.getSchemaByName("APP");
         Table customersTable = schema.getTableByName("CUSTOMERS");
 
-        Query q = dc.query().from(customersTable).as("cus-tomers").select("CUSTOMERNAME").as("c|o|d|e").toQuery();
+        Query q = dc.query().from(customersTable).as("cus-tomers").select("CUSTOMERNAME AS c|o|d|e").toQuery();
         assertEquals(25000, dc.getFetchSizeCalculator().getFetchSize(q));
 
         q.setMaxRows(5);
