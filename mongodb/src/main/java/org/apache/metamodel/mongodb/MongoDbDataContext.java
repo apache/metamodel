@@ -386,8 +386,12 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
             final Column column = item.getSelectItem().getColumn();
             final String columnName = column.getName();
-            final Object operand = item.getOperand();
             final String operatorName = getOperatorName(item);
+
+            Object operand = item.getOperand();
+            if (ObjectId.isValid(String.valueOf(operand))) {
+                operand = new ObjectId(String.valueOf(operand));
+            }
 
             final BasicDBObject existingFilterObject = (BasicDBObject) query.get(columnName);
             if (existingFilterObject == null) {

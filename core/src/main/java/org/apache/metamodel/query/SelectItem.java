@@ -567,6 +567,18 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     /**
+     * Creates a copy of the {@link SelectItem}, with a different
+     * {@link #isFunctionApproximationAllowed()} flag set.
+     * 
+     * @param functionApproximationAllowed
+     * @return
+     */
+    public SelectItem replaceFunctionApproximationAllowed(boolean functionApproximationAllowed) {
+        return new SelectItem(_column, _fromItem, _function, _expression, _subQuerySelectItem, _alias,
+                functionApproximationAllowed);
+    }
+
+    /**
      * Investigates whether or not this SelectItem references a particular
      * column. This will search for direct references and indirect references
      * via subqueries.
