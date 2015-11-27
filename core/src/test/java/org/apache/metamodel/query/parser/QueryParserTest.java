@@ -51,11 +51,9 @@ public class QueryParserTest extends TestCase {
         col.setType(ColumnType.INTEGER);
     };
 
-	public void testQueryWithParenthesisAnd() throws Exception {
-        Query q = MetaModelHelper.parseQuery(dc,
-                "select foo from sch.tbl where (foo= 1) and (foo=2)");
-        assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.foo = '1' AND tbl.foo = '2'",
-                q.toSql());
+    public void testQueryWithParenthesisAnd() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc, "select foo from sch.tbl where (foo= 1) and (foo=2)");
+        assertEquals("SELECT tbl.foo FROM sch.tbl WHERE tbl.foo = '1' AND tbl.foo = '2'", q.toSql());
     }
 
     public void testQueryInLowerCase() throws Exception {
@@ -64,10 +62,9 @@ public class QueryParserTest extends TestCase {
         assertEquals("SELECT a.foo AS f FROM sch.tbl a INNER JOIN sch.tbl b ON a.foo = b.foo ORDER BY a.foo ASC",
                 q.toSql());
     }
-    
+
     public void testParseScalarFunctions() throws Exception {
-        Query q = MetaModelHelper.parseQuery(dc,
-                "select TO_NUM(a.foo) from sch.tbl a WHERE BOOLEAN(a.bar) = false");
+        Query q = MetaModelHelper.parseQuery(dc, "select TO_NUM(a.foo) from sch.tbl a WHERE BOOLEAN(a.bar) = false");
         assertEquals("SELECT TO_NUMBER(a.foo) FROM sch.tbl a WHERE TO_BOOLEAN(a.bar) = FALSE", q.toSql());
     }
 
@@ -94,7 +91,7 @@ public class QueryParserTest extends TestCase {
         Query q = MetaModelHelper.parseQuery(dc, "SELECT fo.o AS f FROM sch.tbl");
         assertEquals("SELECT tbl.fo.o AS f FROM sch.tbl", q.toSql());
     }
-    
+
     public void testApproximateCountQuery() throws Exception {
         Query q = MetaModelHelper.parseQuery(dc, "SELECT APPROXIMATE COUNT(*) FROM sch.tbl");
         assertEquals("SELECT APPROXIMATE COUNT(*) FROM sch.tbl", q.toSql());
@@ -134,6 +131,46 @@ public class QueryParserTest extends TestCase {
     public void testSelectEmptySpacesBeforeAs() throws Exception {
         Query q = MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM sch.tbl");
         assertEquals("SELECT tbl.foo AS alias FROM sch.tbl", q.toSql());
+    }
+
+    /**
+     * This will test differences cases for tablename
+     * 
+     * @throws Exception
+     */
+    public void testTableName() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM sch.tbl");
+        assertEquals("SELECT tbl.foo AS alias FROM sch.tbl", q.toSql());
+
+        // Missing ] Bracket
+        try {
+            MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM [sch.tbl");
+            fail("Exception expected");
+        } catch (MetaModelException e) {
+            assertEquals("Not capable of parsing FROM token: [sch.tbl. Expected end ]", e.getMessage());
+        }
+
+        try {
+            MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM \"sch.tbl");
+            fail("Exception expected");
+        } catch (MetaModelException e) {
+            assertEquals("Not capable of parsing FROM token: \"sch.tbl. Expected end \"", e.getMessage());
+        }
+        // Test Delimiter in tablename
+        try {
+            MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM \"sch.tbl");
+            fail("Exception expected");
+        } catch (MetaModelException e) {
+            assertEquals("Not capable of parsing FROM token: \"sch.tbl. Expected end \"", e.getMessage());
+        }
+
+        // Positive test case
+        q = MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM [sch.tbl]");
+        assertEquals("SELECT tbl.foo AS alias FROM sch.tbl", q.toSql());
+
+        q = MetaModelHelper.parseQuery(dc, "SELECT tbl.foo    AS alias FROM \"sch.tbl\"");
+        assertEquals("SELECT tbl.foo AS alias FROM sch.tbl", q.toSql());
+
     }
 
     public void testSelectAvgInLowerCase() throws Exception {
