@@ -50,4 +50,6 @@ public interface QueryClause<E> extends Serializable {
 	public String toSql(boolean includeSchemaInColumnPaths);
 
 	public String toSql();
+	
+	public int indexOf(E item);
 }

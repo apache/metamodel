@@ -33,6 +33,7 @@ import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.data.FilteredDataSet;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.parser.QueryParserException;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
@@ -178,7 +179,7 @@ public class CassandraDataContextTest {
         boolean thrown = false;
         try {
             dc.query().from(testTableName).select("nonExistingField").execute();
-        } catch (IllegalArgumentException IAex) {
+        } catch (QueryParserException ex) {
             thrown = true;
         }
         assertTrue(thrown);

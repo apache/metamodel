@@ -25,32 +25,32 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 
-final class FunctionSelectBuilderImpl extends SatisfiedSelectBuilderImpl
-		implements FunctionSelectBuilder<GroupedQueryBuilder> {
+final class FunctionSelectBuilderImpl extends SatisfiedSelectBuilderImpl implements
+        FunctionSelectBuilder<GroupedQueryBuilder> {
 
-	private SelectItem selectItem;
+    private SelectItem selectItem;
 
-	public FunctionSelectBuilderImpl(FunctionType functionType, Column column,
-			Query query, GroupedQueryBuilder queryBuilder) {
-		super(queryBuilder);
+    public FunctionSelectBuilderImpl(FunctionType functionType, Column column, Object[] functionParameters,
+            Query query, GroupedQueryBuilder queryBuilder) {
+        super(queryBuilder);
 
-		this.selectItem = new SelectItem(functionType, column);
+        this.selectItem = new SelectItem(functionType, functionParameters, column);
 
-		query.select(selectItem);
-	}
+        query.select(selectItem);
+    }
 
-	@Override
-	public GroupedQueryBuilder as(String alias) {
-		if (alias == null) {
-			throw new IllegalArgumentException("alias cannot be null");
-		}
-		selectItem.setAlias(alias);
-		return getQueryBuilder();
-	}
+    @Override
+    public GroupedQueryBuilder as(String alias) {
+        if (alias == null) {
+            throw new IllegalArgumentException("alias cannot be null");
+        }
+        selectItem.setAlias(alias);
+        return getQueryBuilder();
+    }
 
-	@Override
-	protected void decorateIdentity(List<Object> identifiers) {
-		super.decorateIdentity(identifiers);
-		identifiers.add(selectItem);
-	}
+    @Override
+    protected void decorateIdentity(List<Object> identifiers) {
+        super.decorateIdentity(identifiers);
+        identifiers.add(selectItem);
+    }
 }

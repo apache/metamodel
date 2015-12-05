@@ -73,23 +73,35 @@ abstract class SatisfiedFromBuilderCallback extends BaseObject implements Satisf
     }
 
     @Override
-    public SatisfiedQueryBuilder<?> select(FunctionType functionType, String columnName) {
+    public FunctionSelectBuilder<?> select(FunctionType function, String columnName) {
         GroupedQueryBuilderImpl queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
         Column column = queryBuilder.findColumn(columnName);
-        return select(functionType, column);
+        return select(function, column);
     }
 
     @Override
-    public FunctionSelectBuilder<?> select(FunctionType functionType, Column column) {
-        if (functionType == null) {
+    public FunctionSelectBuilder<?> select(FunctionType function, String columnName, Object[] functionParameters) {
+        GroupedQueryBuilderImpl queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
+        Column column = queryBuilder.findColumn(columnName);
+        return select(function, column, functionParameters);
+    }
+
+    @Override
+    public FunctionSelectBuilder<?> select(FunctionType function, Column column) {
+        return select(function, column, new Object[0]);
+    }
+
+    @Override
+    public FunctionSelectBuilder<?> select(FunctionType function, Column column, Object[] functionParameters) {
+        if (function == null) {
             throw new IllegalArgumentException("functionType cannot be null");
         }
         if (column == null) {
             throw new IllegalArgumentException("column cannot be null");
         }
 
-        GroupedQueryBuilder queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
-        return new FunctionSelectBuilderImpl(functionType, column, query, queryBuilder);
+        final GroupedQueryBuilder queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
+        return new FunctionSelectBuilderImpl(function, column, functionParameters, query, queryBuilder);
     }
 
     @Override
@@ -148,17 +160,22 @@ abstract class SatisfiedFromBuilderCallback extends BaseObject implements Satisf
         GroupedQueryBuilder queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
         return new SatisfiedSelectBuilderImpl(queryBuilder);
     }
-
+    
     @Override
-    public SatisfiedQueryBuilder<?> select(String columnName) {
-        if (columnName == null) {
-            throw new IllegalArgumentException("columnName cannot be null");
+    public SatisfiedSelectBuilder<?> select(String selectExpression, boolean allowExpressionBasedSelectItem) {
+        if (selectExpression == null) {
+            throw new IllegalArgumentException("selectExpression cannot be null");
         }
 
-        query.select(columnName);
+        query.select(selectExpression, allowExpressionBasedSelectItem);
 
         final GroupedQueryBuilder queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
         return new SatisfiedSelectBuilderImpl(queryBuilder);
+    }
+
+    @Override
+    public SatisfiedSelectBuilder<?> select(String selectExpression) {
+        return select(selectExpression, false);
     }
 
     @Override

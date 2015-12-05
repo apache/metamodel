@@ -20,6 +20,7 @@ package org.apache.metamodel.query;
 
 import java.util.List;
 
+import org.apache.metamodel.DataContext;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
@@ -39,8 +40,7 @@ import org.slf4j.LoggerFactory;
  * <li>expression function SELECTs (retrieves databased on a function and an
  * expression, only COUNT(*) is supported for non-JDBC datastores))</li>
  * <li>SELECTs from subqueries (works just like column selects, but in stead of
- * pointing to a column, it retrieves data from the select item of a subquery)
- * </li>
+ * pointing to a column, it retrieves data from the select item of a subquery)</li>
  * </ul>
  * 
  * @see SelectClause
@@ -123,6 +123,17 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      */
     public SelectItem(FunctionType function, Column column) {
         this(function, column, null);
+    }
+
+    /**
+     * Create a SelectItem that uses a function with parameters on a column.
+     * 
+     * @param function
+     * @param functionParameters
+     * @param column
+     */
+    public SelectItem(FunctionType function, Object[] functionParameters, Column column) {
+        this(function, functionParameters, column, null);
     }
 
     /**
@@ -314,6 +325,13 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
         return null;
     }
 
+    /**
+     * Returns an "expression" that this select item represents. Expressions are
+     * not necesarily portable across {@link DataContext} implementations, but
+     * may be useful for utilizing database-specific behaviour in certain cases.
+     * 
+     * @return
+     */
     public String getExpression() {
         return _expression;
     }
@@ -428,7 +446,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
 
     @Override
     public String toSql(boolean includeSchemaInColumnPath) {
-        StringBuilder sb = toStringNoAlias(includeSchemaInColumnPath);
+        final StringBuilder sb = toStringNoAlias(includeSchemaInColumnPath);
         if (_alias != null) {
             sb.append(" AS ");
             sb.append(_alias);
@@ -479,7 +497,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     private String getToStringColumnPrefix(boolean includeSchemaInColumnPath) {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         if (_fromItem != null && _fromItem.getAlias() != null) {
             sb.append(_fromItem.getAlias());
             sb.append('.');
@@ -547,14 +565,48 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
         identifiers.add(_column);
         identifiers.add(_function);
         identifiers.add(_functionApproximationAllowed);
-        identifiers.add(_fromItem);
+        if (_fromItem == null && _column != null && _column.getTable() != null) {
+            // add a FromItem representing the column's table - this makes equal
+            // comparison work when the only difference is whether or not
+            // FromItem is specified
+            identifiers.add(new FromItem(_column.getTable()));
+        } else {
+            identifiers.add(_fromItem);
+        }
         identifiers.add(_subQuerySelectItem);
     }
 
     @Override
     protected SelectItem clone() {
+        return clone(null);
+    }
+
+    /**
+     * Creates a clone of the {@link SelectItem} for use within a cloned
+     * {@link Query}.
+     * 
+     * @param clonedQuery
+     *            a new {@link Query} object that represents the clone-to-be of
+     *            a query. It is expected that {@link FromItem}s have already
+     *            been cloned in this {@link Query}.
+     * @return
+     */
+    protected SelectItem clone(Query clonedQuery) {
         final SelectItem subQuerySelectItem = (_subQuerySelectItem == null ? null : _subQuerySelectItem.clone());
-        final FromItem fromItem = (_fromItem == null ? null : _fromItem.clone());
+        final FromItem fromItem;
+        if (_fromItem == null) {
+            fromItem = null;
+        } else if (clonedQuery != null && _query != null) {
+            final int indexOfFromItem = _query.getFromClause().indexOf(_fromItem);
+            if (indexOfFromItem != -1) {
+                fromItem = clonedQuery.getFromClause().getItem(indexOfFromItem);
+            } else {
+                fromItem = _fromItem.clone();
+            }
+        } else {
+            fromItem = _fromItem.clone();
+        }
+
         final SelectItem s = new SelectItem(_column, fromItem, _function, _functionParameters, _expression,
                 subQuerySelectItem, _alias, _functionApproximationAllowed);
         return s;
@@ -580,8 +632,8 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @return
      */
     public SelectItem replaceFunctionApproximationAllowed(boolean functionApproximationAllowed) {
-        return new SelectItem(_column, _fromItem, _function, _expression, _subQuerySelectItem, _alias,
-                functionApproximationAllowed);
+        return new SelectItem(_column, _fromItem, _function, _functionParameters, _expression, _subQuerySelectItem,
+                _alias, functionApproximationAllowed);
     }
 
     /**
