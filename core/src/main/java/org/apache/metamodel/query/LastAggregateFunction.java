@@ -24,7 +24,7 @@ public class LastAggregateFunction extends DefaultAggregateFunction<Object> {
 
     @Override
     public AggregateBuilder<?> createAggregateBuilder() {
-        return new FirstAggregateBuilder();
+        return new LastAggregateBuilder();
     }
 
     @Override
