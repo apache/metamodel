@@ -19,6 +19,7 @@
 package org.apache.metamodel.csv;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.AbstractRow;
@@ -38,17 +39,20 @@ final class SingleLineCsvRow extends AbstractRow {
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger = LoggerFactory.getLogger(SingleLineCsvRow.class);
+
+    private final transient SingleLineCsvDataSet _dataSet;
     
-    private final SingleLineCsvDataSet _dataSet;
     private final String _line;
     private final int _columnsInTable;
     private final boolean _failOnInconsistentRowLength;
     private final int _rowNumber;
+    private final DataSetHeader _header;
     private String[] _values;
 
     public SingleLineCsvRow(SingleLineCsvDataSet dataSet, final String line, final int columnsInTable,
             final boolean failOnInconsistentRowLength, final int rowNumber) {
         _dataSet = dataSet;
+        _header = dataSet.getHeader();
         _line = line;
         _columnsInTable = columnsInTable;
         _failOnInconsistentRowLength = failOnInconsistentRowLength;
@@ -69,12 +73,11 @@ final class SingleLineCsvRow extends AbstractRow {
 
             // convert the line's values into the row values that where
             // requested
-            final DataSetHeader header = _dataSet.getHeader();
-            final int size = header.size();
+            final int size = _header.size();
             final String[] rowValues = new String[size];
 
             for (int i = 0; i < size; i++) {
-                final Column column = header.getSelectItem(i).getColumn();
+                final Column column = _header.getSelectItem(i).getColumn();
                 final int columnNumber = column.getColumnNumber();
                 if (columnNumber < csvValues.length) {
                     rowValues[i] = csvValues[columnNumber];
@@ -90,6 +93,12 @@ final class SingleLineCsvRow extends AbstractRow {
         return _values;
     }
 
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+        // ensure that values are loaded
+        getValues();
+        stream.defaultWriteObject();
+    }
+
     private String[] parseLine() {
         try {
             final CSVParser parser = _dataSet.getCsvParser();
@@ -98,7 +107,9 @@ final class SingleLineCsvRow extends AbstractRow {
             if (_failOnInconsistentRowLength) {
                 throw new MetaModelException("Failed to parse CSV line no. " + _rowNumber + ": " + _line, e);
             } else {
-                logger.warn("Encountered unparseable line no. {}, returning line as a single value with trailing nulls: {}", _rowNumber, _line);
+                logger.warn(
+                        "Encountered unparseable line no. {}, returning line as a single value with trailing nulls: {}",
+                        _rowNumber, _line);
                 String[] csvValues = new String[_columnsInTable];
                 csvValues[0] = _line;
                 return csvValues;
@@ -120,7 +131,7 @@ final class SingleLineCsvRow extends AbstractRow {
 
     @Override
     protected DataSetHeader getHeader() {
-        return _dataSet.getHeader();
+        return _header;
     }
 
 }

@@ -147,12 +147,12 @@ under the License.
 		</dependency>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-elasticsearch</artifactId>
+			<artifactId>MetaModel-excel</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-excel</artifactId>
+			<artifactId>MetaModel-neo4j</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
@@ -208,6 +208,16 @@ under the License.
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
 			<artifactId>MetaModel-xml</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-elasticsearch-rest</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-elasticsearch-native</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<!-- Test dependencies -->

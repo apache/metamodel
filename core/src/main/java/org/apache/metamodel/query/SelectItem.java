@@ -235,11 +235,17 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * 
      * @return
      * @deprecated use {@link #getAggregateFunction()} or
-     *             {@link #getScalarFunction()} instead
+     *             {@link #getScalarFunction()} instead,
+     *             or {@link #hasFunction()} to check if a
+     *             function is set at all.
      */
     @Deprecated
     public FunctionType getFunction() {
         return _function;
+    }
+
+    public boolean hasFunction(){
+        return _function != null;
     }
 
     public AggregateFunction getAggregateFunction() {
@@ -564,6 +570,18 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     public SelectItem replaceFunction(FunctionType function) {
         return new SelectItem(_column, _fromItem, function, _functionParameters, _expression, _subQuerySelectItem,
                 _alias, _functionApproximationAllowed);
+    }
+
+    /**
+     * Creates a copy of the {@link SelectItem}, with a different
+     * {@link #isFunctionApproximationAllowed()} flag set.
+     * 
+     * @param functionApproximationAllowed
+     * @return
+     */
+    public SelectItem replaceFunctionApproximationAllowed(boolean functionApproximationAllowed) {
+        return new SelectItem(_column, _fromItem, _function, _expression, _subQuerySelectItem, _alias,
+                functionApproximationAllowed);
     }
 
     /**

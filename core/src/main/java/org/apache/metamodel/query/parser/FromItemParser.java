@@ -19,8 +19,10 @@
 package org.apache.metamodel.query.parser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.metamodel.DataContext;
@@ -33,7 +35,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class FromItemParser implements QueryPartProcessor {
-
+    
+    /**
+     * This field will hold start and end character for delimiter that can be
+     * used
+     */
+    private static final Map<Character, Character> delimiterMap = new HashMap<Character, Character>();
+    static {
+        delimiterMap.put('\"', '\"');
+        delimiterMap.put('[', ']');
+    }
+    
     private static final Logger logger = LoggerFactory.getLogger(FromItemParser.class);
 
     private final Query _query;
@@ -80,44 +92,75 @@ final class FromItemParser implements QueryPartProcessor {
     }
 
     private FromItem parseTableItem(String itemToken) {
-        final String[] tokens = itemToken.split(" ");
-        final String alias;
-        if (tokens.length == 2) {
-            alias = tokens[1];
-        } else if (tokens.length == 1) {
-            alias = null;
+        // From token can be starting with [
+        final String tableNameToken;
+        final String aliasToken;
+
+        char startDelimiter = itemToken.trim().charAt(0);
+        if (delimiterMap.containsKey(startDelimiter)) {
+            char endDelimiter = delimiterMap.get(startDelimiter);
+            int endIndex = itemToken.trim().lastIndexOf(endDelimiter, itemToken.trim().length());
+            if (endIndex <= 0) {
+                throw new QueryParserException("Not capable of parsing FROM token: " + itemToken + ". Expected end "
+                        + endDelimiter);
+            }
+            tableNameToken = itemToken.trim().substring(1, endIndex).trim();
+
+            if (itemToken.trim().substring(1 + endIndex).trim().equalsIgnoreCase("")) {
+                /*
+                 * As per code in FromClause Method: getItemByReference(FromItem
+                 * item, String reference) if (alias == null && table != null &&
+                 * reference.equals(table.getName())) { Either we have to change
+                 * the code to add alias.equals("") there or return null here.
+                 */
+                aliasToken = null;
+            } else {
+                aliasToken = itemToken.trim().substring(1 + endIndex).trim();
+            }
+
         } else {
-            throw new QueryParserException("Not capable of parsing FROM token: " + itemToken);
+            // Default assumption is space being delimiter for tablename and
+            // alias.. If otherwise use DoubleQuotes or [] around tableName
+            final String[] tokens = itemToken.split(" ");
+            tableNameToken = tokens[0];
+            if (tokens.length == 2) {
+                aliasToken = tokens[1];
+            } else if (tokens.length == 1) {
+                aliasToken = null;
+            } else {
+                throw new QueryParserException("Not capable of parsing FROM token: " + itemToken);
+            }
         }
 
-        final Table table = _dataContext.getTableByQualifiedLabel(tokens[0]);
+        final Table table = _dataContext.getTableByQualifiedLabel(tableNameToken);
         if (table == null) {
             throw new QueryParserException("Not capable of parsing FROM token: " + itemToken);
         }
 
         final FromItem result = new FromItem(table);
-        result.setAlias(alias);
+        result.setAlias(aliasToken);
         result.setQuery(_query);
         return result;
     }
-    
+
     private FromItem parseAllJoinItems(final String itemToken) {
         String[] joinSplit = itemToken.split("(?i) JOIN ");
         List<String> joinsList = new ArrayList<String>();
-        for(int i = 0 ; i < joinSplit.length -1  ; i++) {
+        for (int i = 0; i < joinSplit.length - 1; i++) {
             joinSplit[i] = joinSplit[i].trim();
-            joinSplit[i+1] = joinSplit[i+1].trim();
+            joinSplit[i + 1] = joinSplit[i + 1].trim();
             String leftPart = joinSplit[i].substring(0, joinSplit[i].lastIndexOf(" "));
             String joinType = joinSplit[i].substring(joinSplit[i].lastIndexOf(" "));
-            String rightPart = (i+1 == joinSplit.length-1) ? joinSplit[i+1] : joinSplit[i+1].substring(0, joinSplit[i+1].lastIndexOf(" "));
+            String rightPart = (i + 1 == joinSplit.length - 1) ? joinSplit[i + 1] : joinSplit[i + 1].substring(0,
+                    joinSplit[i + 1].lastIndexOf(" "));
             joinsList.add((leftPart + " " + joinType + " JOIN " + rightPart).replaceAll(" +", " "));
             String rightTable = rightPart.substring(0, rightPart.toUpperCase().lastIndexOf(" ON "));
-            String nextJoinType = joinSplit[i+1].substring(joinSplit[i+1].lastIndexOf(" "));
-            joinSplit[i+1] = rightTable + " " + nextJoinType;
+            String nextJoinType = joinSplit[i + 1].substring(joinSplit[i + 1].lastIndexOf(" "));
+            joinSplit[i + 1] = rightTable + " " + nextJoinType;
         }
         Set<FromItem> fromItems = new HashSet<FromItem>();
         FromItem leftFromItem = null;
-        for(String token : joinsList) {
+        for (String token : joinsList) {
             leftFromItem = parseJoinItem(leftFromItem, token, fromItems);
         }
         return leftFromItem;
@@ -150,7 +193,7 @@ final class FromItemParser implements QueryPartProcessor {
 
         final FromItem leftSide = parseTableItem(firstTableToken);
         final FromItem rightSide = parseTableItem(secondTableToken);
-        
+
         fromItems.add(leftSide);
         fromItems.add(rightSide);
 
@@ -169,7 +212,7 @@ final class FromItemParser implements QueryPartProcessor {
             leftOn[i] = findSelectItem(leftPart, fromItems.toArray(new FromItem[fromItems.size()]));
             rightOn[i] = findSelectItem(rightPart, fromItems.toArray(new FromItem[fromItems.size()]));
         }
-        
+
         final FromItem leftItem = (leftFromItem != null) ? leftFromItem : leftSide;
         final FromItem result = new FromItem(joinType, leftItem, rightSide, leftOn, rightOn);
         result.setQuery(_query);
