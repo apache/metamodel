@@ -57,6 +57,36 @@ public class NumberComparatorTest {
     }
 
     @Test
+    public void testCompareNull() throws Exception {
+        assertTrue(NumberComparator.getComparator().compare(null, null) == 0);
+        assertTrue(NumberComparator.getComparator().compare(null, "1234") < 0);
+        assertTrue(NumberComparator.getComparator().compare("1234", null) > 0);
+    }
+
+    @Test
+    public void testCompareBoolean() throws Exception {
+        assertTrue(NumberComparator.getComparator().compare("1", "true") == 0);
+        assertTrue(NumberComparator.getComparator().compare("1", "false") > 0);
+        assertTrue(NumberComparator.getComparator().compare("0", "false") == 0);
+    }
+
+    @Test
+    public void testCompareOneNonConvertableStrings() throws Exception {
+        assertTrue(NumberComparator.getComparator().compare("1", "bar") > 0);
+        assertTrue(NumberComparator.getComparator().compare("foo", "2") < 0);
+    }
+    
+    @Test
+    public void testCompareBothNonConvertableStrings() throws Exception {
+        // odd cases we don't support - but for regression here's some
+        // "documentation" of it's behaviour
+        assertTrue(NumberComparator.getComparator().compare("foo", null) == 0);
+        assertTrue(NumberComparator.getComparator().compare("foo", "bar") == 0);
+        assertTrue(NumberComparator.getComparator().compare("foo", "") == 0);
+        assertTrue(NumberComparator.getComparator().compare(null, "bar") == 0);
+    }
+
+    @Test
     public void testCompareBigIntegers() throws Exception {
         assertTrue(NumberComparator.getComparator().compare(BigInteger.ONE, BigInteger.ONE) == 0);
         assertTrue(NumberComparator.getComparator().compare(BigInteger.ONE, BigInteger.TEN) < 0);

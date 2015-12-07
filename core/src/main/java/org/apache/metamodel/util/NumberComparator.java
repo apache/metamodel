@@ -66,18 +66,18 @@ public final class NumberComparator implements Comparator<Object> {
     }
 
     public int compare(Object o1, Object o2) {
-        if (o1 == null && o2 == null) {
-            return 0;
-        }
-        if (o1 == null) {
-            return -1;
-        }
-        if (o2 == null) {
-            return 1;
-        }
-
         final Number n1 = toNumber(o1);
         final Number n2 = toNumber(o2);
+
+        if (n1 == null && n2 == null) {
+            return 0;
+        }
+        if (n1 == null) {
+            return -1;
+        }
+        if (n2 == null) {
+            return 1;
+        }
 
         if (n1 instanceof BigInteger && n2 instanceof BigInteger) {
             return ((BigInteger) n1).compareTo((BigInteger) n2);
@@ -138,6 +138,17 @@ public final class NumberComparator implements Comparator<Object> {
             try {
                 return Double.parseDouble(stringValue);
             } catch (NumberFormatException e) {
+            }
+
+            // note: Boolean.parseBoolean does not throw NumberFormatException -
+            // it just returns false in case of invalid values.
+            {
+                if ("true".equalsIgnoreCase(stringValue)) {
+                    return 1;
+                }
+                if ("false".equalsIgnoreCase(stringValue)) {
+                    return 0;
+                }
             }
             logger.warn("Could not convert '{}' to number, returning null", value);
             return null;
