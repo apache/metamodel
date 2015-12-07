@@ -18,7 +18,11 @@
  */
 package org.apache.metamodel.util;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,79 +33,114 @@ import org.slf4j.LoggerFactory;
  */
 public final class NumberComparator implements Comparator<Object> {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(NumberComparator.class);
+    private static final Logger logger = LoggerFactory.getLogger(NumberComparator.class);
 
-	private static final Comparator<Object> _instance = new NumberComparator();
+    private static final Comparator<Object> _instance = new NumberComparator();
 
-	public static Comparator<Object> getComparator() {
-		return _instance;
-	}
+    public static Comparator<Object> getComparator() {
+        return _instance;
+    }
 
-	private NumberComparator() {
-	}
+    private NumberComparator() {
+    }
 
-	public static Comparable<Object> getComparable(Object o) {
-		final Number n = toNumber(o);
-		return new Comparable<Object>() {
+    public static Comparable<Object> getComparable(Object o) {
+        final Number n = toNumber(o);
+        return new Comparable<Object>() {
 
-			@Override
-			public boolean equals(Object obj) {
-				return _instance.equals(obj);
-			}
+            @Override
+            public boolean equals(Object obj) {
+                return _instance.equals(obj);
+            }
 
-			public int compareTo(Object o) {
-				return _instance.compare(n, o);
-			}
+            public int compareTo(Object o) {
+                return _instance.compare(n, o);
+            }
 
-			@Override
-			public String toString() {
-				return "NumberComparable[number=" + n + "]";
-			}
+            @Override
+            public String toString() {
+                return "NumberComparable[number=" + n + "]";
+            }
 
-		};
-	}
+        };
+    }
 
-	public int compare(Object o1, Object o2) {
-		if (o1 == null && o2 == null) {
-			return 0;
-		}
-		if (o1 == null) {
-			return -1;
-		}
-		if (o2 == null) {
-			return 1;
-		}
-		Number n1 = toNumber(o1);
-		Number n2 = toNumber(o2);
-		return Double.valueOf(n1.doubleValue()).compareTo(n2.doubleValue());
-	}
+    public int compare(Object o1, Object o2) {
+        if (o1 == null && o2 == null) {
+            return 0;
+        }
+        if (o1 == null) {
+            return -1;
+        }
+        if (o2 == null) {
+            return 1;
+        }
 
-	public static Number toNumber(Object value) {
-		if (value == null) {
-			return null;
-		} else if (value instanceof Number) {
-			return (Number) value;
-		} else if (value instanceof Boolean) {
-			if (Boolean.TRUE.equals(value)) {
-				return 1;
-			} else {
-				return 0;
-			}
-		} else {
-			String stringValue = value.toString();
-			try {
-				return Integer.parseInt(stringValue);
-			} catch (NumberFormatException e1) {
-				try {
-					return Double.parseDouble(stringValue);
-				} catch (NumberFormatException e2) {
-					logger.warn(
-							"Could not convert '{}' to number, returning null",
-							value);
-					return null;
-				}
-			}
-		}
-	}
+        final Number n1 = toNumber(o1);
+        final Number n2 = toNumber(o2);
+
+        if (n1 instanceof BigInteger && n2 instanceof BigInteger) {
+            return ((BigInteger) n1).compareTo((BigInteger) n2);
+        }
+
+        if (n1 instanceof BigDecimal && n2 instanceof BigDecimal) {
+            return ((BigDecimal) n1).compareTo((BigDecimal) n2);
+        }
+
+        if (isIntegerType(n1) && isIntegerType(n2)) {
+            return Long.valueOf(n1.longValue()).compareTo(n2.longValue());
+        }
+
+        return Double.valueOf(n1.doubleValue()).compareTo(n2.doubleValue());
+    }
+
+    /**
+     * Determines if a particular number is an integer-type number such as
+     * {@link Byte}, {@link Short}, {@link Integer}, {@link Long},
+     * {@link AtomicInteger} or {@link AtomicLong}.
+     * 
+     * Note that {@link BigInteger} is not included in this set of number
+     * classes since treatment of {@link BigInteger} requires different logic.
+     * 
+     * @param n
+     * @return
+     */
+    public static boolean isIntegerType(Number n) {
+        return n instanceof Byte || n instanceof Short || n instanceof Integer || n instanceof Long
+                || n instanceof AtomicInteger || n instanceof AtomicLong;
+    }
+
+    public static Number toNumber(Object value) {
+        if (value == null) {
+            return null;
+        } else if (value instanceof Number) {
+            return (Number) value;
+        } else if (value instanceof Boolean) {
+            if (Boolean.TRUE.equals(value)) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
+            final String stringValue = value.toString().trim();
+            if (stringValue.isEmpty()) {
+                return null;
+            }
+
+            try {
+                return Integer.parseInt(stringValue);
+            } catch (NumberFormatException e) {
+            }
+            try {
+                return Long.parseLong(stringValue);
+            } catch (NumberFormatException e) {
+            }
+            try {
+                return Double.parseDouble(stringValue);
+            } catch (NumberFormatException e) {
+            }
+            logger.warn("Could not convert '{}' to number, returning null", value);
+            return null;
+        }
+    }
 }
