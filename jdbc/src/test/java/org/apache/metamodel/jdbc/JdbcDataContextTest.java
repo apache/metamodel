@@ -261,6 +261,18 @@ public class JdbcDataContextTest extends JdbcTestCase {
         }
     }
 
+    public void testUnsupportedAggregateFunction() throws Exception {
+        final Connection connection = getTestDbConnection();
+        final JdbcDataContext dataContext = new JdbcDataContext(connection);
+        try {
+            dataContext.query().from("customers").select(FunctionType.RANDOM, "customernumber").execute();
+            fail("Exception expected");
+        } catch (MetaModelException e) {
+            assertEquals("Aggregate function 'RANDOM' is not supported on this JDBC database. Query rejected: "
+                    + "SELECT RANDOM(\"CUSTOMERS\".\"CUSTOMERNUMBER\") FROM PUBLIC.\"CUSTOMERS\"", e.getMessage());
+        }
+    }
+
     public void testExecuteQueryWithComparisonGreaterThanOrEquals() throws Exception {
         Connection connection = getTestDbConnection();
         JdbcDataContext dataContext = new JdbcDataContext(connection,

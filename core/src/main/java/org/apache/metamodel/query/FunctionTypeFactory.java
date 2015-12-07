@@ -42,6 +42,13 @@ public class FunctionTypeFactory {
             return FunctionType.MAX;
         case "MIN":
             return FunctionType.MIN;
+        case "RANDOM":
+        case "RAND":
+            return FunctionType.RANDOM;
+        case "FIRST":
+            return FunctionType.FIRST;
+        case "LAST":
+            return FunctionType.LAST;
         case "TO_NUMBER":
         case "NUMBER":
         case "TO_NUM":

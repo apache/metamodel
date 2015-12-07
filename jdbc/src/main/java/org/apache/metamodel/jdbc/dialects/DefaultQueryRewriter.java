@@ -19,16 +19,26 @@
 package org.apache.metamodel.jdbc.dialects;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 
 import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.query.AggregateFunction;
+import org.apache.metamodel.query.AverageAggregateFunction;
+import org.apache.metamodel.query.CountAggregateFunction;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.FunctionType;
+import org.apache.metamodel.query.MaxAggregateFunction;
+import org.apache.metamodel.query.MinAggregateFunction;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.query.SumAggregateFunction;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.CollectionUtils;
 
@@ -39,6 +49,9 @@ import org.apache.metamodel.util.CollectionUtils;
 public class DefaultQueryRewriter extends AbstractQueryRewriter {
 
     private static final String SPECIAL_ALIAS_CHARACTERS = "- ,.|*%()!#¤/\\=?;:~";
+    private static final Set<Class<? extends FunctionType>> SUPPORTED_FUNCTION_CLASSES = new HashSet<>(
+            Arrays.<Class<? extends FunctionType>> asList(CountAggregateFunction.class, SumAggregateFunction.class,
+                    MaxAggregateFunction.class, MinAggregateFunction.class, AverageAggregateFunction.class));
 
     public DefaultQueryRewriter(JdbcDataContext dataContext) {
         super(dataContext);
@@ -184,7 +197,12 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
 
     @Override
     public boolean isScalarFunctionSupported(ScalarFunction function) {
-        return false;
+        return SUPPORTED_FUNCTION_CLASSES.contains(function.getClass());
+    }
+
+    @Override
+    public boolean isAggregateFunctionSupported(AggregateFunction function) {
+        return SUPPORTED_FUNCTION_CLASSES.contains(function.getClass());
     }
 
     @Override

@@ -32,6 +32,9 @@ public interface FunctionType {
     public static final AggregateFunction SUM = new SumAggregateFunction();
     public static final AggregateFunction MAX = new MaxAggregateFunction();
     public static final AggregateFunction MIN = new MinAggregateFunction();
+    public static final AggregateFunction RANDOM = new RandomAggregateFunction();
+    public static final AggregateFunction FIRST = new FirstAggregateFunction();
+    public static final AggregateFunction LAST = new LastAggregateFunction();
     public static final ScalarFunction TO_STRING = new ToStringFunction();
     public static final ScalarFunction TO_NUMBER = new ToNumberFunction();
     public static final ScalarFunction TO_DATE = new ToDateFunction();

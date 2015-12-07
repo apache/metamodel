@@ -55,6 +55,7 @@ import org.apache.metamodel.jdbc.dialects.OracleQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.PostgresqlQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.SQLServerQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.SQLiteQueryRewriter;
+import org.apache.metamodel.query.AggregateFunction;
 import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
@@ -351,6 +352,14 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             throw new MetaModelException(
                     "Scalar functions outside of SELECT clause is not supported for JDBC databases. Query rejected: "
                             + query);
+        }
+
+        for (SelectItem selectItem : selectItems) {
+            final AggregateFunction aggregateFunction = selectItem.getAggregateFunction();
+            if (aggregateFunction != null && !_queryRewriter.isAggregateFunctionSupported(aggregateFunction)) {
+                throw new MetaModelException("Aggregate function '" + aggregateFunction.getFunctionName()
+                        + "' is not supported on this JDBC database. Query rejected: " + query);
+            }
         }
 
         if (_databaseProductName.equals(DATABASE_PRODUCT_POSTGRESQL)) {

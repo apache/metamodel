@@ -21,6 +21,7 @@ package org.apache.metamodel.jdbc.dialects;
 import java.sql.Types;
 
 import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.query.AggregateFunction;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.Query;
@@ -73,6 +74,18 @@ public interface IQueryRewriter {
      * @return
      */
     public boolean isScalarFunctionSupported(ScalarFunction function);
+
+    /**
+     * Determines whether a specific aggregate function is supported by the
+     * database or not.
+     * 
+     * If the function is not supported then MetaModel will handle the function
+     * on the client side.
+     * 
+     * @param function
+     * @return
+     */
+    public boolean isAggregateFunctionSupported(AggregateFunction function);
 
     /**
      * Escapes the quotes within a String literal of a query item.

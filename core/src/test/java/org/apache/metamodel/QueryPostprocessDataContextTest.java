@@ -185,6 +185,24 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         dataSet.close();
     }
 
+    public void testNewAggregateFunctions() throws Exception {
+        MockDataContext dc = new MockDataContext("sch", "tab", null);
+        Table table = dc.getDefaultSchema().getTables()[0];
+        DataSet dataSet = dc.query().from(table).select(FunctionType.FIRST, "foo").select(FunctionType.LAST, "foo")
+                .select(FunctionType.RANDOM, "foo").execute();
+        assertTrue(dataSet.next());
+
+        final Row row = dataSet.getRow();
+        assertEquals("1", row.getValue(0));
+        assertEquals("4", row.getValue(1));
+
+        final Object randomValue = row.getValue(2);
+        assertTrue(Arrays.asList("1", "2", "3", "4").contains(randomValue));
+
+        assertFalse(dataSet.next());
+        dataSet.close();
+    }
+
     public void testAggregateQueryWhereClauseExcludingAll() throws Exception {
         MockDataContext dc = new MockDataContext("sch", "tab", "1");
         assertSingleRowResult("Row[values=[0]]",
