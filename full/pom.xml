@@ -152,6 +152,11 @@ under the License.
 		</dependency>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-neo4j</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.metamodel</groupId>
 			<artifactId>MetaModel-fixedwidth</artifactId>
 			<version>${project.version}</version>
 		</dependency>
