@@ -549,7 +549,7 @@ public class JdbcTestTemplates {
 
         dataContext.executeUpdate(new CreateTable(defaultSchema, testTableName).withColumn("mykey")
                 .ofType(ColumnType.INTEGER).nullable(false).asPrimaryKey().withColumn("name")
-                .ofType(ColumnType.VARCHAR).ofSize(20));
+                .ofType(ColumnType.STRING).ofSize(20));
         try {
             final Table table = defaultSchema.getTableByName(testTableName);
             assertNotNull(table);
