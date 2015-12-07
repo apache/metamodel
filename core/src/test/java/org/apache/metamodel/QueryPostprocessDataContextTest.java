@@ -117,8 +117,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
     public void testAggregateQueryRegularWhereClause() throws Exception {
         MockDataContext dc = new MockDataContext("sch", "tab", "1");
         Table table = dc.getDefaultSchema().getTables()[0];
-        assertSingleRowResult("Row[values=[3]]",
-                dc.query().from(table).selectCount().where("baz").eq("world").execute());
+        assertSingleRowResult("Row[values=[3]]", dc.query().from(table).selectCount().where("baz").eq("world")
+                .execute());
     }
 
     public void testApplyFunctionToNullValues() throws Exception {
@@ -250,7 +250,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
 
         Query query = dc.query().from(table).select("foo").select(FunctionType.TO_NUMBER, "foo").select("bar")
                 .select(FunctionType.TO_STRING, "bar").select(FunctionType.TO_NUMBER, "bar").toQuery();
-        assertEquals("SELECT tab.foo, TO_NUMBER(tab.foo), tab.bar, TO_STRING(tab.bar), TO_NUMBER(tab.bar) FROM sch.tab",
+        assertEquals(
+                "SELECT tab.foo, TO_NUMBER(tab.foo), tab.bar, TO_STRING(tab.bar), TO_NUMBER(tab.bar) FROM sch.tab",
                 query.toSql());
 
         DataSet ds = dc.executeQuery(query);
@@ -779,8 +780,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         Query q = new Query();
         q.from(table1);
         q.select(table1.getColumns());
-        SelectItem countrySelectItem = q.getSelectClause()
-                .getSelectItem(table1.getColumnByName(COLUMN_CONTRIBUTOR_COUNTRY));
+        SelectItem countrySelectItem = q.getSelectClause().getSelectItem(
+                table1.getColumnByName(COLUMN_CONTRIBUTOR_COUNTRY));
         q.where(new FilterItem(countrySelectItem, OperatorType.EQUALS_TO, "denmark"));
 
         DataSet data = dc.executeQuery(q);
