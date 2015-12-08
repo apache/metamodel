@@ -1,6 +1,7 @@
 ### Apache MetaModel (work-in-progress)
 
  * [METAMODEL-212] - New module for ElasticSearch via REST client.
+ * [METAMODEL-99] - New module for Neo4j connectivity with MetaModel.
  * [METAMODEL-207] - Ensured the serializability of the SingleLineCsvRow class.
  * [METAMODEL-211] - Fixed a bug related to lookup by primary key (_id) on MongoDB.
  * [METAMODEL-216] - Added new aggregate functions: FIRST, LAST and RANDOM.
