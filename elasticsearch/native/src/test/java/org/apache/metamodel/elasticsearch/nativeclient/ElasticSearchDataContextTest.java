@@ -18,6 +18,14 @@
  */
 package org.apache.metamodel.elasticsearch.nativeclient;
 
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -43,6 +51,7 @@ import org.apache.metamodel.elasticsearch.nativeclient.utils.EmbeddedElasticsear
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.query.parser.QueryParserException;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
@@ -61,9 +70,6 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.junit.Assert.*;
 
 public class ElasticSearchDataContextTest {
 
@@ -535,7 +541,7 @@ public class ElasticSearchDataContextTest {
         dataContext.query().from("nonExistingTable").select("user").and("message").execute();
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = QueryParserException.class)
     public void testQueryForAnExistingTableAndNonExistingField() throws Exception {
         indexTweeterDocument(indexType1, 1);
         dataContext.query().from(indexType1).select("nonExistingField").execute();

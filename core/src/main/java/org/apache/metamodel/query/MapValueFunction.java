@@ -18,32 +18,40 @@
  */
 package org.apache.metamodel.query;
 
+import java.util.Map;
+
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.util.NumberComparator;
+import org.apache.metamodel.util.CollectionUtils;
 
-public class ToNumberFunction extends DefaultScalarFunction {
+/**
+ * Represents a function that retrieves a value from within a column of type
+ * {@link ColumnType#MAP} or similar.
+ */
+public final class MapValueFunction extends DefaultScalarFunction {
+
+    @Override
+    public Object evaluate(Row row, Object[] parameters, SelectItem operandItem) {
+        if (parameters.length == 0) {
+            throw new IllegalArgumentException("Expecting path parameter to MAP_VALUE function");
+        }
+        Object value = row.getValue(operandItem);
+        if (value instanceof Map) {
+            Map<?, ?> map = (Map<?, ?>) value;
+            return CollectionUtils.find(map, (String) parameters[0]);
+        }
+        return null;
+    }
 
     @Override
     public ColumnType getExpectedColumnType(ColumnType type) {
-        if (type.isNumber()) {
-            return type;
-        }
-        return ColumnType.NUMBER;
+        // the column type cannot be inferred so null is returned
+        return null;
     }
 
     @Override
     public String getFunctionName() {
-        return "TO_NUMBER";
-    }
-
-    @Override
-    public Object evaluate(Row row, Object[] parameters, SelectItem item) {
-        final Object value = row.getValue(item);
-        if (value == null || value instanceof Number) {
-            return value;
-        }
-        return NumberComparator.toNumber(value);
+        return "MAP_VALUE";
     }
 
 }

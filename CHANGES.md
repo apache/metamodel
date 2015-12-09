@@ -1,12 +1,15 @@
 ### Apache MetaModel (work-in-progress)
 
  * [METAMODEL-212] - New module for ElasticSearch via REST client.
+ * [METAMODEL-99] - New module for Neo4j connectivity with MetaModel.
  * [METAMODEL-207] - Ensured the serializability of the SingleLineCsvRow class.
  * [METAMODEL-211] - Fixed a bug related to lookup by primary key (_id) on MongoDB.
  * [METAMODEL-216] - Added new aggregate functions: FIRST, LAST and RANDOM.
+ * [METAMODEL-195] - Added new function MAP_VALUE which allows extracting a nested value from within a key/value map field.
  * [METAMODEL-15] - Query parser support for table names with space. Delimitters can be double quote or square brackets. 
  * [METAMODEL-215] - Improved the capability of NumberComparator to support Integer, Long, Double, BigInteger and other built-in Number classes.
  * [METAMODEL-218] - Fixed conversion of STRING and NUMBER types to database-specific types in JDBC module.
+ * [METAMODEL-205] - Added validation of Excel sheet name before attempting to create table (sheet).
 
 ### Apache MetaModel 4.4.1
 

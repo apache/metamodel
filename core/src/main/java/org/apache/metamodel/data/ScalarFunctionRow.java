@@ -50,7 +50,7 @@ final class ScalarFunctionRow extends AbstractRow {
         }
         final SelectItem selectItem = scalarFunctionSelectItems.get(index);
         final SelectItem selectItemWithoutFunction = selectItem.replaceFunction(null);
-        return selectItem.getScalarFunction().evaluate(_row, selectItemWithoutFunction);
+        return selectItem.getScalarFunction().evaluate(_row, selectItem.getFunctionParameters(), selectItemWithoutFunction);
     }
 
     @Override
