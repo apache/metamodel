@@ -40,7 +40,7 @@ public class ToDateFunction extends DefaultScalarFunction {
     }
 
     @Override
-    public Object evaluate(Row row, SelectItem item) {
+    public Object evaluate(Row row, Object[] parameters, SelectItem item) {
         final Object value = row.getValue(item);
         if (value == null || value instanceof Date) {
             return value;

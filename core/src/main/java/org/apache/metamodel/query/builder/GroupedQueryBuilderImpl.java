@@ -68,7 +68,7 @@ final class GroupedQueryBuilderImpl extends BaseObject implements GroupedQueryBu
             throw new IllegalArgumentException("function cannot be null");
         }
         final Column column = findColumn(columnName);
-        return new FunctionSelectBuilderImpl(function, column, _query, this);
+        return new FunctionSelectBuilderImpl(function, column, null, _query, this);
     }
 
     @Override
@@ -79,7 +79,7 @@ final class GroupedQueryBuilderImpl extends BaseObject implements GroupedQueryBu
         if (column == null) {
             throw new IllegalArgumentException("column cannot be null");
         }
-        return new FunctionSelectBuilderImpl(function, column, _query, this);
+        return new FunctionSelectBuilderImpl(function, column, null, _query, this);
     }
 
     @Override
@@ -127,13 +127,13 @@ final class GroupedQueryBuilderImpl extends BaseObject implements GroupedQueryBu
         final Column column = findColumn(columnName);
         return where(column);
     }
-    
+
     @Override
     public WhereBuilder<GroupedQueryBuilder> where(ScalarFunction function, Column column) {
         final SelectItem selectItem = new SelectItem(function, column);
         return new WhereBuilderImpl(selectItem, _query, this);
     }
-    
+
     @Override
     public WhereBuilder<GroupedQueryBuilder> where(ScalarFunction function, String columnName) {
         final Column column = findColumn(columnName);

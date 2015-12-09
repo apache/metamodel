@@ -95,6 +95,11 @@ public abstract class AbstractQueryClause<E extends QueryItem> extends BaseObjec
     public int getItemCount() {
         return _items.size();
     }
+    
+    @Override
+    public int indexOf(E item) {
+        return _items.indexOf(item);
+    }
 
     @Override
     public boolean isEmpty() {

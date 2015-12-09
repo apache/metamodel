@@ -122,13 +122,29 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
      * @return
      */
     public Query select(String expression) {
-        QueryPartParser clauseParser = new QueryPartParser(new SelectItemParser(this, true), expression, ",");
+        return select(expression, false);
+    }
+
+    /**
+     * Adds a selection to this query.
+     * 
+     * @param expression
+     *            a textual representation of the select item, e.g. "MAX(foo)"
+     *            or just "foo", where "foo" is a column name.
+     * @param allowExpressionBasedSelectItem
+     *            whether or not expression-based select items are allowed or
+     *            not (see {@link SelectItem#getExpression()}.
+     * @return
+     */
+    public Query select(String expression, boolean allowExpressionBasedSelectItem) {
+        final QueryPartParser clauseParser = new QueryPartParser(new SelectItemParser(this,
+                allowExpressionBasedSelectItem), expression, ",");
         clauseParser.parse();
         return this;
     }
 
     private SelectItem findSelectItem(String expression, boolean allowExpressionBasedSelectItem) {
-        SelectItemParser parser = new SelectItemParser(this, allowExpressionBasedSelectItem);
+        final SelectItemParser parser = new SelectItemParser(this, allowExpressionBasedSelectItem);
         return parser.findSelectItem(expression);
     }
 
@@ -579,7 +595,7 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
 
     @Override
     public Query clone() {
-        Query q = new Query();
+        final Query q = new Query();
         q.setMaxRows(_maxRows);
         q.setFirstRow(_firstRow);
         q.getSelectClause().setDistinct(_selectClause.isDistinct());
@@ -587,7 +603,7 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
             q.from(item.clone());
         }
         for (SelectItem item : _selectClause.getItems()) {
-            q.select(item.clone());
+            q.select(item.clone(q));
         }
         for (FilterItem item : _whereClause.getItems()) {
             q.where(item.clone());

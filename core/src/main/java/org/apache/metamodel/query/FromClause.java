@@ -75,7 +75,13 @@ public class FromClause extends AbstractQueryClause<FromItem> {
         return null;
     }
 
-    private FromItem getItemByReference(FromItem item, String reference) {
+    private FromItem getItemByReference(final FromItem item, final String reference) {
+        if (reference.equals(item.toStringNoAlias(false))) {
+            return item;
+        }
+        if (reference.equals(item.toStringNoAlias(true))) {
+            return item;
+        }
         final String alias = item.getAlias();
         if (reference.equals(alias)) {
             return item;

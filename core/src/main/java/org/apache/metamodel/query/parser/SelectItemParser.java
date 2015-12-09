@@ -111,7 +111,8 @@ public final class SelectItemParser implements QueryPartProcessor {
         final int startParenthesis = expression.indexOf('(');
         if (startParenthesis > 0 && expression.endsWith(")")) {
             functionApproximation = (expression.startsWith(SelectItem.FUNCTION_APPROXIMATION_PREFIX));
-            final String functionName = expression.substring((functionApproximation ? SelectItem.FUNCTION_APPROXIMATION_PREFIX.length() : 0), startParenthesis);
+            final String functionName = expression.substring(
+                    (functionApproximation ? SelectItem.FUNCTION_APPROXIMATION_PREFIX.length() : 0), startParenthesis);
             function = FunctionTypeFactory.get(functionName.toUpperCase());
             if (function != null) {
                 expression = expression.substring(startParenthesis + 1, expression.length() - 1).trim();
@@ -126,15 +127,20 @@ public final class SelectItemParser implements QueryPartProcessor {
             functionApproximation = false;
         }
 
-        int lastIndexOfDot = expression.lastIndexOf(".");
-
         String columnName = null;
         FromItem fromItem = null;
 
-        if (lastIndexOfDot != -1) {
-            String prefix = expression.substring(0, lastIndexOfDot);
-            columnName = expression.substring(lastIndexOfDot + 1);
-            fromItem = _query.getFromClause().getItemByReference(prefix);
+        // attempt to find from item by cutting up the string in prefix and
+        // suffix around dot.
+        {
+            int splitIndex = expression.lastIndexOf('.');
+            while (fromItem == null && splitIndex != -1) {
+                final String prefix = expression.substring(0, splitIndex);
+                columnName = expression.substring(splitIndex + 1);
+                fromItem = _query.getFromClause().getItemByReference(prefix);
+
+                splitIndex = expression.lastIndexOf('.', splitIndex - 1);
+            }
         }
 
         if (fromItem == null) {
@@ -151,7 +157,23 @@ public final class SelectItemParser implements QueryPartProcessor {
             if ("*".equals(columnName)) {
                 throw new MultipleSelectItemsParsedException(fromItem);
             } else if (fromItem.getTable() != null) {
-                final Column column = fromItem.getTable().getColumnByName(columnName);
+                Column column = fromItem.getTable().getColumnByName(columnName);
+                int offset = -1;
+                while (function == null && column == null) {
+                    // check for MAP_VALUE shortcut syntax
+                    offset = columnName.indexOf('.', offset + 1);
+                    if (offset == -1) {
+                        break;
+                    }
+
+                    final String part1 = columnName.substring(0, offset);
+                    column = fromItem.getTable().getColumnByName(part1);
+                    if (column != null) {
+                        final String part2 = columnName.substring(offset + 1);
+                        return new SelectItem(new MapValueFunction(), new Object[] { part2 }, column, fromItem);
+                    }
+                }
+
                 if (column != null) {
                     final SelectItem selectItem = new SelectItem(function, column, fromItem);
                     selectItem.setFunctionApproximationAllowed(functionApproximation);

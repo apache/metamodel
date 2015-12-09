@@ -5,6 +5,7 @@
  * [METAMODEL-207] - Ensured the serializability of the SingleLineCsvRow class.
  * [METAMODEL-211] - Fixed a bug related to lookup by primary key (_id) on MongoDB.
  * [METAMODEL-216] - Added new aggregate functions: FIRST, LAST and RANDOM.
+ * [METAMODEL-195] - Added new function MAP_VALUE which allows extracting a nested value from within a key/value map field.
  * [METAMODEL-15] - Query parser support for table names with space. Delimitters can be double quote or square brackets. 
  * [METAMODEL-215] - Improved the capability of NumberComparator to support Integer, Long, Double, BigInteger and other built-in Number classes.
 
