@@ -43,21 +43,21 @@ public abstract class AbstractUpdateCallback implements UpdateCallback {
     @Override
     public TableCreationBuilder createTable(String schemaName, String tableName) throws IllegalArgumentException,
             IllegalStateException {
-        Schema schema = getSchema(schemaName);
+        final Schema schema = getSchema(schemaName);
         return createTable(schema, tableName);
     }
 
     @Override
     public TableDropBuilder dropTable(String schemaName, String tableName) throws IllegalArgumentException,
             IllegalStateException, UnsupportedOperationException {
-        Table table = getTable(schemaName, tableName);
+        final Table table = getTable(schemaName, tableName);
         return dropTable(table);
     }
 
     @Override
     public TableDropBuilder dropTable(Schema schema, String tableName) throws IllegalArgumentException,
             IllegalStateException, UnsupportedOperationException {
-        Table table = schema.getTableByName(tableName);
+        final Table table = schema.getTableByName(tableName);
         if (table == null) {
             throw new IllegalArgumentException("Nu such table '" + tableName + "' found in schema: " + schema
                     + ". Available tables are: " + Arrays.toString(schema.getTableNames()));
@@ -158,5 +158,9 @@ public abstract class AbstractUpdateCallback implements UpdateCallback {
     public RowUpdationBuilder update(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
         return new DeleteAndInsertBuilder(this, table);
+    }
+    
+    public UpdateSummary getUpdateSummary() {
+        return DefaultUpdateSummary.unknownUpdates();
     }
 }

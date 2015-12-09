@@ -24,6 +24,7 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DocumentSource;
@@ -167,13 +168,14 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     @Override
-    public void executeUpdate(UpdateScript script) {
-        CouchDbUpdateCallback callback = new CouchDbUpdateCallback(this);
+    public UpdateSummary executeUpdate(UpdateScript script) {
+        final CouchDbUpdateCallback callback = new CouchDbUpdateCallback(this);
         try {
             script.run(callback);
         } finally {
             callback.close();
         }
+        return callback.getUpdateSummary();
     }
 
     @Override

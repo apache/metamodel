@@ -31,6 +31,7 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
@@ -467,14 +468,16 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     /**
      * Executes an update with a specific {@link WriteConcernAdvisor}.
+     * @return 
      */
-    public void executeUpdate(UpdateScript update, WriteConcernAdvisor writeConcernAdvisor) {
-        MongoDbUpdateCallback callback = new MongoDbUpdateCallback(this, writeConcernAdvisor);
+    public UpdateSummary executeUpdate(UpdateScript update, WriteConcernAdvisor writeConcernAdvisor) {
+        final MongoDbUpdateCallback callback = new MongoDbUpdateCallback(this, writeConcernAdvisor);
         try {
             update.run(callback);
         } finally {
             callback.close();
         }
+        return callback.getUpdateSummary();
     }
 
     /**
@@ -485,8 +488,8 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     @Override
-    public void executeUpdate(UpdateScript update) {
-        executeUpdate(update, getWriteConcernAdvisor());
+    public UpdateSummary executeUpdate(UpdateScript update) {
+        return executeUpdate(update, getWriteConcernAdvisor());
     }
 
     /**

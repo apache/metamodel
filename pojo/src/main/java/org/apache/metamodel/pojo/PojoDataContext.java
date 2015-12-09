@@ -30,6 +30,7 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.MaxRowsDataSet;
@@ -140,11 +141,12 @@ public class PojoDataContext extends QueryPostprocessDataContext implements Upda
     }
 
     @Override
-    public void executeUpdate(UpdateScript update) {
-        PojoUpdateCallback updateCallback = new PojoUpdateCallback(this);
+    public UpdateSummary executeUpdate(UpdateScript update) {
+        final PojoUpdateCallback updateCallback = new PojoUpdateCallback(this);
         synchronized (this) {
             update.run(updateCallback);
         }
+        return updateCallback.getUpdateSummary();
     }
 
     protected void addTableDataProvider(TableDataProvider<?> tableDataProvider) {

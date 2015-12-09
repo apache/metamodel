@@ -100,8 +100,8 @@ public class MockUpdateableDataContext extends QueryPostprocessDataContext imple
     }
 
     @Override
-    public void executeUpdate(UpdateScript update) {
-        update.run(new AbstractUpdateCallback(this) {
+    public UpdateSummary executeUpdate(UpdateScript update) {
+        final AbstractUpdateCallback callback = new AbstractUpdateCallback(this) {
 
             @Override
             public boolean isDeleteSupported() {
@@ -153,7 +153,11 @@ public class MockUpdateableDataContext extends QueryPostprocessDataContext imple
                     IllegalStateException {
                 throw new UnsupportedOperationException();
             }
-        });
+        };
+        
+        update.run(callback);
+        
+        return callback.getUpdateSummary();
     }
 
     private void delete(List<FilterItem> whereItems) {

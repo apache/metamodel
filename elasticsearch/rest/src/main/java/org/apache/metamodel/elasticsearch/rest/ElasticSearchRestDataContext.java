@@ -29,6 +29,7 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
@@ -82,7 +83,8 @@ import io.searchbox.params.Parameters;
  * This implementation supports either automatic discovery of a schema or manual
  * specification of a schema, through the {@link SimpleTableDef} class.
  */
-public class ElasticSearchRestDataContext extends QueryPostprocessDataContext implements DataContext, UpdateableDataContext {
+public class ElasticSearchRestDataContext extends QueryPostprocessDataContext implements DataContext,
+        UpdateableDataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchRestDataContext.class);
 
@@ -94,16 +96,17 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
     private final JestClient elasticSearchClient;
 
     private final String indexName;
-    // Table definitions that are set from the beginning, not supposed to be changed.
+    // Table definitions that are set from the beginning, not supposed to be
+    // changed.
     private final List<SimpleTableDef> staticTableDefinitions;
 
     // Table definitions that are discovered, these can change
     private final List<SimpleTableDef> dynamicTableDefinitions = new ArrayList<>();
 
     /**
-     * Constructs a {@link ElasticSearchRestDataContext}. This constructor accepts a
-     * custom array of {@link SimpleTableDef}s which allows the user to define
-     * his own view on the indexes in the engine.
+     * Constructs a {@link ElasticSearchRestDataContext}. This constructor
+     * accepts a custom array of {@link SimpleTableDef}s which allows the user
+     * to define his own view on the indexes in the engine.
      *
      * @param client
      *            the ElasticSearch client
@@ -127,9 +130,9 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
     }
 
     /**
-     * Constructs a {@link ElasticSearchRestDataContext} and automatically detects
-     * the schema structure/view on all indexes (see
-     * {@link this.detectSchema(JestClient, String)}).
+     * Constructs a {@link ElasticSearchRestDataContext} and automatically
+     * detects the schema structure/view on all indexes (see {@link
+     * this.detectSchema(JestClient, String)}).
      *
      * @param client
      *            the ElasticSearch client
@@ -157,20 +160,20 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
             final GetMapping getMapping = new GetMapping.Builder().addIndex(indexName).build();
             jestResult = elasticSearchClient.execute(getMapping);
         } catch (Exception e) {
-            logger.error("Failed to retrieve mappings" , e);
+            logger.error("Failed to retrieve mappings", e);
             throw new MetaModelException("Failed to execute request for index information needed to detect schema", e);
         }
 
-        if(!jestResult.isSucceeded()){
+        if (!jestResult.isSucceeded()) {
             logger.error("Failed to retrieve mappings; {}", jestResult.getErrorMessage());
             throw new MetaModelException("Failed to retrieve mappings; " + jestResult.getErrorMessage());
         }
 
         final List<SimpleTableDef> result = new ArrayList<>();
 
-        final Set<Map.Entry<String, JsonElement>> mappings =
-                jestResult.getJsonObject().getAsJsonObject(indexName).getAsJsonObject("mappings").entrySet();
-        if(mappings.size() == 0){
+        final Set<Map.Entry<String, JsonElement>> mappings = jestResult.getJsonObject().getAsJsonObject(indexName)
+                .getAsJsonObject("mappings").entrySet();
+        if (mappings.size() == 0) {
             logger.warn("No metadata returned for index name '{}' - no tables will be detected.");
         } else {
 
@@ -178,7 +181,8 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
                 final String documentType = entry.getKey();
 
                 try {
-                    final SimpleTableDef table = detectTable(entry.getValue().getAsJsonObject().get("properties").getAsJsonObject(), documentType);
+                    final SimpleTableDef table = detectTable(entry.getValue().getAsJsonObject().get("properties")
+                            .getAsJsonObject(), documentType);
                     result.add(table);
                 } catch (Exception e) {
                     logger.error("Unexpected error during detectTable for document type '{}'", documentType, e);
@@ -198,8 +202,8 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
 
     /**
      * Performs an analysis of an available index type in an ElasticSearch
-     * {@link JestClient} client and tries to detect the index structure based on
-     * the metadata provided by the java client.
+     * {@link JestClient} client and tries to detect the index structure based
+     * on the metadata provided by the java client.
      *
      * @param metadataProperties
      *            the ElasticSearch mapping
@@ -209,8 +213,7 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
      */
     private static SimpleTableDef detectTable(JsonObject metadataProperties, String documentType) {
         final ElasticSearchMetaData metaData = JestElasticSearchMetaDataParser.parse(metadataProperties);
-        return new SimpleTableDef(documentType, metaData.getColumnNames(),
-                metaData.getColumnTypes());
+        return new SimpleTableDef(documentType, metaData.getColumnNames(), metaData.getColumnTypes());
     }
 
     @Override
@@ -254,8 +257,8 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
     @Override
     protected DataSet materializeMainSchemaTable(Table table, List<SelectItem> selectItems,
             List<FilterItem> whereItems, int firstRow, int maxRows) {
-        final QueryBuilder queryBuilder = ElasticSearchUtils
-                .createQueryBuilderForSimpleWhere(whereItems, LogicalOperator.AND);
+        final QueryBuilder queryBuilder = ElasticSearchUtils.createQueryBuilderForSimpleWhere(whereItems,
+                LogicalOperator.AND);
         if (queryBuilder != null) {
             // where clause can be pushed down to an ElasticSearch query
             SearchSourceBuilder searchSourceBuilder = createSearchRequest(firstRow, maxRows, queryBuilder);
@@ -267,8 +270,9 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
     }
 
     private SearchResult executeSearch(Table table, SearchSourceBuilder searchSourceBuilder, boolean scroll) {
-        Search.Builder builder = new Search.Builder(searchSourceBuilder.toString()).addIndex(getIndexName()).addType(table.getName());
-        if(scroll){
+        Search.Builder builder = new Search.Builder(searchSourceBuilder.toString()).addIndex(getIndexName()).addType(
+                table.getName());
+        if (scroll) {
             builder.setParameter(Parameters.SCROLL, TIMEOUT_SCROLL);
         }
 
@@ -276,7 +280,7 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
         SearchResult result;
         try {
             result = elasticSearchClient.execute(search);
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.warn("Could not execute ElasticSearch query", e);
             throw new MetaModelException("Could not execute ElasticSearch query", e);
         }
@@ -285,7 +289,8 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
 
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-        SearchResult searchResult = executeSearch(table, createSearchRequest(1, maxRows, null), limitMaxRowsIsSet(maxRows));
+        SearchResult searchResult = executeSearch(table, createSearchRequest(1, maxRows, null),
+                limitMaxRowsIsSet(maxRows));
 
         return new JestElasticSearchDataSet(elasticSearchClient, searchResult, columns);
     }
@@ -340,7 +345,7 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
         CountResult countResult;
         try {
             countResult = elasticSearchClient.execute(count);
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.warn("Could not execute ElasticSearch get query", e);
             throw new MetaModelException("Could not execute ElasticSearch get query", e);
         }
@@ -353,10 +358,11 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
     }
 
     @Override
-    public void executeUpdate(UpdateScript update) {
+    public UpdateSummary executeUpdate(UpdateScript update) {
         final JestElasticSearchUpdateCallback callback = new JestElasticSearchUpdateCallback(this);
         update.run(callback);
         callback.onExecuteUpdateFinished();
+        return callback.getUpdateSummary();
     }
 
     /**

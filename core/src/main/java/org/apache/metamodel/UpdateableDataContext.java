@@ -23,17 +23,18 @@ package org.apache.metamodel;
  */
 public interface UpdateableDataContext extends DataContext {
 
-	/**
-	 * Submits an {@link UpdateScript} for execution on the {@link DataContext}.
-	 * 
-	 * Since implementations of the {@link DataContext} vary quite a lot, there
-	 * is no golden rule as to how an update script will be executed. But the
-	 * implementors should strive towards handling an {@link UpdateScript} as a
-	 * single transactional change to the data store.
-	 * 
-	 * @param update
-	 *            the update script to execute
-	 */
-	public void executeUpdate(UpdateScript update);
+    /**
+     * Submits an {@link UpdateScript} for execution on the {@link DataContext}.
+     * 
+     * Since implementations of the {@link DataContext} vary quite a lot, there
+     * is no golden rule as to how an update script will be executed. But the
+     * implementors should strive towards handling an {@link UpdateScript} as a
+     * single transactional change to the data store.
+     * 
+     * @param update
+     *            the update script to execute
+     * @return a summary of the updates performed
+     */
+    public UpdateSummary executeUpdate(UpdateScript update);
 
 }

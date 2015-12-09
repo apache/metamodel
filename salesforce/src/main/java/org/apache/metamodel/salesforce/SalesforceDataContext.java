@@ -25,9 +25,11 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import com.sforce.ws.ConnectorConfig;
+
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.FirstRowDataSet;
@@ -362,9 +364,10 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
     }
 
     @Override
-    public void executeUpdate(UpdateScript update) {
+    public UpdateSummary executeUpdate(UpdateScript update) {
         final SalesforceUpdateCallback callback = new SalesforceUpdateCallback(this, _connection);
         update.run(callback);
         callback.close();
+        return callback.getUpdateSummary();
     }
 }
