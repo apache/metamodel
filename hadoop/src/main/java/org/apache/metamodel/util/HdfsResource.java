@@ -28,10 +28,8 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.apache.metamodel.MetaModelException;
 
 /**
@@ -39,142 +37,6 @@ import org.apache.metamodel.MetaModelException;
  * distributed file system.
  */
 public class HdfsResource extends AbstractResource implements Serializable {
-
-    private static class HdfsFileInputStream extends InputStream {
-
-        private final InputStream _in;
-        private final FileSystem _fs;
-
-        public HdfsFileInputStream(final InputStream in, final FileSystem fs) {
-            _in = in;
-            _fs = fs;
-        }
-
-        @Override
-        public int read() throws IOException {
-            return _in.read();
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
-            return _in.read(b, off, len);
-        }
-
-        @Override
-        public int read(byte[] b) throws IOException {
-            return _in.read(b);
-        }
-
-        @Override
-        public boolean markSupported() {
-            return _in.markSupported();
-        }
-
-        @Override
-        public synchronized void mark(int readLimit) {
-            _in.mark(readLimit);
-        }
-
-        @Override
-        public int available() throws IOException {
-            return _in.available();
-        }
-
-        @Override
-        public synchronized void reset() throws IOException {
-            _in.reset();
-        }
-
-        @Override
-        public long skip(long n) throws IOException {
-            return _in.skip(n);
-        }
-
-        @Override
-        public void close() throws IOException {
-            super.close();
-            // need to close 'fs' when input stream is closed
-            FileHelper.safeClose(_fs);
-        }
-    }
-
-    private static class HdfsFileOutputStream extends OutputStream {
-
-        private final OutputStream _out;
-        private final FileSystem _fs;
-
-        public HdfsFileOutputStream(final OutputStream out, final FileSystem fs) {
-            _out = out;
-            _fs = fs;
-        }
-
-        @Override
-        public void write(int b) throws IOException {
-            _out.write(b);
-        }
-
-        @Override
-        public void write(byte[] b, int off, int len) throws IOException {
-            _out.write(b, off, len);
-        }
-
-        @Override
-        public void write(byte[] b) throws IOException {
-            _out.write(b);
-        }
-
-        @Override
-        public void flush() throws IOException {
-            _out.flush();
-        }
-
-        @Override
-        public void close() throws IOException {
-            super.close();
-            // need to close 'fs' when output stream is closed
-            FileHelper.safeClose(_fs);
-        }
-    }
-
-    private static class HdfsDirectoryInputStream extends AbstractDirectoryInputStream<FileStatus> {
-        private final Path _hadoopPath;
-        private final FileSystem _fs;
-
-        public HdfsDirectoryInputStream(final Path hadoopPath, final FileSystem fs) {
-            _hadoopPath = hadoopPath;
-            _fs = fs;
-            FileStatus[] fileStatuses;
-            try {
-                fileStatuses = _fs.listStatus(_hadoopPath, new PathFilter() {
-                    @Override
-                    public boolean accept(final Path path) {
-                        try {
-                            return _fs.isFile(path);
-                        } catch (IOException e) {
-                            return false;
-                        }
-                    }
-                });
-                // Natural ordering is the URL
-                Arrays.sort(fileStatuses);
-            } catch (IOException e) {
-                fileStatuses = new FileStatus[0];
-            }
-            _files = fileStatuses;
-        }
-
-        @Override
-        public InputStream openStream(final int index) throws IOException {
-            final Path nextPath = _files[index].getPath();
-            return _fs.open(nextPath);
-        }
-
-        @Override
-        public void close() throws IOException {
-            super.close();
-            FileHelper.safeClose(_fs);
-        }
-    }
 
     private static final long serialVersionUID = 1L;
 
