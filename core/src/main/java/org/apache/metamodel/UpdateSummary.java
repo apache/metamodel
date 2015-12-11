@@ -31,10 +31,25 @@ package org.apache.metamodel;
  */
 public interface UpdateSummary {
 
+    /**
+     * Gets the number of inserted rows, or null if this number is unknown.
+     * 
+     * @return a row count or null if the number is unknown.
+     */
     public Integer getInsertedRows();
 
+    /**
+     * Gets the number of updated rows, or null if this number is unknown.
+     * 
+     * @return a row count or null if the number is unknown.
+     */
     public Integer getUpdatedRows();
 
+    /**
+     * Gets the number of deleted rows, or null if this number is unknown.
+     * 
+     * @return a row count or null if the number is unknown.
+     */
     public Integer getDeletedRows();
 
     /**
