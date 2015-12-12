@@ -23,7 +23,6 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -39,9 +38,6 @@ import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -263,40 +259,16 @@ public final class FileHelper {
                     }
                 }
 
-                if (obj instanceof Closeable) {
+                if (obj instanceof AutoCloseable) {
                     try {
-                        ((Closeable) obj).close();
-                    } catch (IOException e) {
-                        if (debugEnabled) {
-                            logger.debug("Closing Closeable failed", e);
-                        }
-                    }
-                } else if (obj instanceof Connection) {
-                    try {
-                        ((Connection) obj).close();
+                        ((AutoCloseable) obj).close();
                     } catch (Exception e) {
                         if (debugEnabled) {
-                            logger.debug("Closing Connection failed", e);
-                        }
-                    }
-                } else if (obj instanceof Statement) {
-                    try {
-                        ((Statement) obj).close();
-                    } catch (Exception e) {
-                        if (debugEnabled) {
-                            logger.debug("Closing Statement failed", e);
-                        }
-                    }
-                } else if (obj instanceof ResultSet) {
-                    try {
-                        ((ResultSet) obj).close();
-                    } catch (Exception e) {
-                        if (debugEnabled) {
-                            logger.debug("Closing ResultSet failed", e);
+                            logger.debug("Closing AutoCloseable failed", e);
                         }
                     }
                 } else {
-                    logger.info("obj was neither Closeable, Connection, Statement or ResultSet.");
+                    logger.info("obj was not AutoCloseable, trying to find close() method via reflection.");
 
                     try {
                         Method method = obj.getClass().getMethod("close", new Class[0]);
