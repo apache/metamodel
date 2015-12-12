@@ -42,6 +42,8 @@ public class HdfsResource extends AbstractResource implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    public static final String SYSTEM_PROPERTY_HADOOP_CONF_DIR_ENABLED = "metamodel.hadoop.use_hadoop_conf_dir";
+
     public static final String SCHEME_HDFS = "hdfs";
     public static final String SCHEME_SWIFT = "swift";
     public static final String SCHEME_EMRFS = "emrfs";
@@ -298,17 +300,31 @@ public class HdfsResource extends AbstractResource implements Serializable {
     }
 
     private File getHadoopConfigurationDirectoryToUse() {
-        File candidate = getDirectoryIfExists(_hadoopConfDir);
-        if (candidate == null) {
-            candidate = getDirectoryIfExists(System.getenv("YARN_CONF_DIR"));
-            if (candidate == null) {
-                candidate = getDirectoryIfExists(System.getenv("HADOOP_CONF_DIR"));
-            }
+        File candidate = getDirectoryIfExists(null, _hadoopConfDir);
+        if ("true".equals(System.getProperty(SYSTEM_PROPERTY_HADOOP_CONF_DIR_ENABLED))) {
+            candidate = getDirectoryIfExists(candidate, System.getProperty("YARN_CONF_DIR"));
+            candidate = getDirectoryIfExists(candidate, System.getProperty("HADOOP_CONF_DIR"));
+            candidate = getDirectoryIfExists(candidate, System.getenv("YARN_CONF_DIR"));
+            candidate = getDirectoryIfExists(candidate, System.getenv("HADOOP_CONF_DIR"));
         }
         return candidate;
     }
 
-    private File getDirectoryIfExists(String path) {
+    /**
+     * Gets a candidate directory based on a file path, if it exists, and if it
+     * another candidate hasn't already been resolved.
+     * 
+     * @param existingCandidate
+     *            an existing candidate directory. If this is non-null, it will
+     *            be returned immediately.
+     * @param path
+     *            the path of a directory
+     * @return a candidate directory, or null if none was resolved.
+     */
+    private File getDirectoryIfExists(File existingCandidate, String path) {
+        if (existingCandidate != null) {
+            return existingCandidate;
+        }
         if (!Strings.isNullOrEmpty(path)) {
             final File directory = new File(path);
             if (directory.exists() && directory.isDirectory()) {
