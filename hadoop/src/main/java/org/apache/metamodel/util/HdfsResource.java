@@ -48,6 +48,8 @@ public class HdfsResource extends AbstractResource implements Serializable {
     public static final String SCHEME_SWIFT = "swift";
     public static final String SCHEME_EMRFS = "emrfs";
     public static final String SCHEME_MAPRFS = "maprfs";
+    public static final String SCHEME_S3 = "s3";
+    public static final String SCHEME_FTP = "ftp";
 
     private final String _scheme;
     private final String _hadoopConfDir;
