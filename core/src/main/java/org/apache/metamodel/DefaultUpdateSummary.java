@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel;
 
+import java.util.Optional;
+
 /**
  * Default implementation of {@link UpdateSummary}.
  */
@@ -50,23 +52,23 @@ public class DefaultUpdateSummary implements UpdateSummary {
     }
 
     @Override
-    public Integer getInsertedRows() {
-        return _insertedRows;
+    public Optional<Integer> getInsertedRows() {
+        return Optional.ofNullable(_insertedRows);
     }
 
     @Override
-    public Integer getUpdatedRows() {
-        return _updatedRows;
+    public Optional<Integer> getUpdatedRows() {
+        return Optional.ofNullable(_updatedRows);
     }
 
     @Override
-    public Integer getDeletedRows() {
-        return _deletedRows;
+    public Optional<Integer> getDeletedRows() {
+        return Optional.ofNullable(_deletedRows);
     }
 
     @Override
-    public Iterable<Object> getGeneratedKeys() {
-        return _generatedKeys;
+    public Optional<Iterable<Object>> getGeneratedKeys() {
+        return Optional.ofNullable(_generatedKeys);
     }
 
 }

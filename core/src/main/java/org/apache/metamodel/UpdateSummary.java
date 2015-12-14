@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel;
 
+import java.util.Optional;
+
 /**
  * Represents a summary of changes made in a given
  * {@link UpdateableDataContext#executeUpdate(UpdateScript)} call.
@@ -34,30 +36,30 @@ public interface UpdateSummary {
     /**
      * Gets the number of inserted rows, or null if this number is unknown.
      * 
-     * @return a row count or null if the number is unknown.
+     * @return an optional row count.
      */
-    public Integer getInsertedRows();
+    public Optional<Integer> getInsertedRows();
 
     /**
      * Gets the number of updated rows, or null if this number is unknown.
      * 
-     * @return a row count or null if the number is unknown.
+     * @return an optional row count.
      */
-    public Integer getUpdatedRows();
+    public Optional<Integer> getUpdatedRows();
 
     /**
      * Gets the number of deleted rows, or null if this number is unknown.
      * 
-     * @return a row count or null if the number is unknown.
+     * @return an optional row count.
      */
-    public Integer getDeletedRows();
+    public Optional<Integer> getDeletedRows();
 
     /**
      * Gets a collection of keys that was generated as part of the update -
      * typically because INSERTs where executed on an underlying database which
      * generated record IDs for each insert.
      * 
-     * @return a collection of generated keys, or null if not available.
+     * @return an optional collection of generated keys.
      */
-    public Iterable<Object> getGeneratedKeys();
+    public Optional<Iterable<Object>> getGeneratedKeys();
 }
