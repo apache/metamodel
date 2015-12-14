@@ -1,4 +1,4 @@
-### Apache MetaModel (work-in-progress)
+### Apache MetaModel 4.5.0
 
  * [METAMODEL-212] - New module for ElasticSearch via REST client.
  * [METAMODEL-99] - New module for Neo4j connectivity with MetaModel.
