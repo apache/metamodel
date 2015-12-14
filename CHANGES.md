@@ -11,6 +11,7 @@
  * [METAMODEL-218] - Fixed conversion of STRING and NUMBER types to database-specific types in JDBC module.
  * [METAMODEL-205] - Added validation of Excel sheet name before attempting to create table (sheet).
  * [METAMODEL-219] - Made HdfsResource capable of incorporating Hadoop configuration files core-site.xml and hdfs-site.xml
+ * [METAMODEL-220] - Made HdfsResource capable of working with other URI schemes than 'hdfs'.
 
 ### Apache MetaModel 4.4.1
 

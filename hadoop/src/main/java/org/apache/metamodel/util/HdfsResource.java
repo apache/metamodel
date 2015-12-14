@@ -23,9 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -45,8 +44,14 @@ public class HdfsResource extends AbstractResource implements Serializable {
 
     public static final String SYSTEM_PROPERTY_HADOOP_CONF_DIR_ENABLED = "metamodel.hadoop.use_hadoop_conf_dir";
 
-    private static final Pattern URL_PATTERN = Pattern.compile("hdfs://(.+):([0-9]+)/(.*)");
+    public static final String SCHEME_HDFS = "hdfs";
+    public static final String SCHEME_SWIFT = "swift";
+    public static final String SCHEME_EMRFS = "emrfs";
+    public static final String SCHEME_MAPRFS = "maprfs";
+    public static final String SCHEME_S3 = "s3";
+    public static final String SCHEME_FTP = "ftp";
 
+    private final String _scheme;
     private final String _hadoopConfDir;
     private final String _hostname;
     private final int _port;
@@ -57,7 +62,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
      * Creates a {@link HdfsResource}
      *
      * @param url
-     *            a URL of the form: hdfs://hostname:port/path/to/file
+     *            a URL of the form: scheme://hostname:port/path/to/file
      */
     public HdfsResource(String url) {
         this(url, null);
@@ -67,7 +72,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
      * Creates a {@link HdfsResource}
      *
      * @param url
-     *            a URL of the form: hdfs://hostname:port/path/to/file
+     *            a URL of the form: scheme://hostname:port/path/to/file
      * @param hadoopConfDir
      *            the path of a directory containing the Hadoop and HDFS
      *            configuration file(s).
@@ -76,19 +81,18 @@ public class HdfsResource extends AbstractResource implements Serializable {
         if (url == null) {
             throw new IllegalArgumentException("Url cannot be null");
         }
-        final Matcher matcher = URL_PATTERN.matcher(url);
-        if (!matcher.find()) {
-            throw new IllegalArgumentException(
-                    "Cannot parse url '" + url + "'. Must follow pattern: hdfs://hostname:port/path/to/file");
-        }
-        _hostname = matcher.group(1);
-        _port = Integer.parseInt(matcher.group(2));
-        _filepath = '/' + matcher.group(3);
+
+        final URI uri = URI.create(url);
+
+        _scheme = uri.getScheme();
+        _hostname = uri.getHost();
+        _port = uri.getPort();
+        _filepath = uri.getPath();
         _hadoopConfDir = hadoopConfDir;
     }
 
     /**
-     * Creates a {@link HdfsResource}
+     * Creates a {@link HdfsResource} using the "hdfs" scheme
      *
      * @param hostname
      *            the HDFS (namenode) hostname
@@ -98,12 +102,15 @@ public class HdfsResource extends AbstractResource implements Serializable {
      *            the path on HDFS to the file, starting with slash ('/')
      */
     public HdfsResource(String hostname, int port, String filepath) {
-        this(hostname, port, filepath, null);
+        this(SCHEME_HDFS, hostname, port, filepath, null);
     }
 
     /**
      * Creates a {@link HdfsResource}
      *
+     * @param scheme
+     *            the scheme to use (consider using {@link #SCHEME_HDFS} or any
+     *            of the other "SCHEME_" constants).
      * @param hostname
      *            the HDFS (namenode) hostname
      * @param port
@@ -114,11 +121,21 @@ public class HdfsResource extends AbstractResource implements Serializable {
      *            the path of a directory containing the Hadoop and HDFS
      *            configuration file(s).
      */
-    public HdfsResource(String hostname, int port, String filepath, String hadoopConfDir) {
+    public HdfsResource(String scheme, String hostname, int port, String filepath, String hadoopConfDir) {
+        _scheme = scheme;
         _hostname = hostname;
         _port = port;
         _filepath = filepath;
         _hadoopConfDir = hadoopConfDir;
+    }
+
+    public String getScheme() {
+        if (_scheme == null) {
+            // should only happen for deserialized and old objects before
+            // METAMODEL-220 introduced dynamic schemes
+            return SCHEME_HDFS;
+        }
+        return _scheme;
     }
 
     public String getFilepath() {
@@ -148,7 +165,18 @@ public class HdfsResource extends AbstractResource implements Serializable {
 
     @Override
     public String getQualifiedPath() {
-        return "hdfs://" + _hostname + ":" + _port + _filepath;
+        final StringBuilder sb = new StringBuilder();
+        sb.append(getScheme());
+        sb.append("://");
+        if (_hostname != null) {
+            sb.append(_hostname);
+        }
+        if (_port > 0) {
+            sb.append(':');
+            sb.append(_port);
+        }
+        sb.append(_filepath);
+        return sb.toString();
     }
 
     @Override
@@ -252,7 +280,9 @@ public class HdfsResource extends AbstractResource implements Serializable {
 
     public Configuration getHadoopConfiguration() {
         final Configuration conf = new Configuration();
-        conf.set("fs.defaultFS", "hdfs://" + _hostname + ":" + _port);
+        if (_hostname != null && _port > 0) {
+            conf.set("fs.defaultFS", getScheme() + "://" + _hostname + ":" + _port);
+        }
 
         final File hadoopConfigurationDirectory = getHadoopConfigurationDirectoryToUse();
         if (hadoopConfigurationDirectory != null) {
@@ -323,7 +353,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(_filepath, _hostname, _port, _hadoopConfDir);
+        return Objects.hash(getScheme(), _filepath, _hostname, _port, _hadoopConfDir);
     }
 
     @Override
@@ -333,8 +363,9 @@ public class HdfsResource extends AbstractResource implements Serializable {
         }
         if (obj instanceof HdfsResource) {
             final HdfsResource other = (HdfsResource) obj;
-            return Objects.equals(_filepath, other._filepath) && Objects.equals(_hostname, other._hostname)
-                    && Objects.equals(_port, other._port) && Objects.equals(_hadoopConfDir, other._hadoopConfDir);
+            return Objects.equals(getScheme(), other.getScheme()) && Objects.equals(_filepath, other._filepath)
+                    && Objects.equals(_hostname, other._hostname) && Objects.equals(_port, other._port)
+                    && Objects.equals(_hadoopConfDir, other._hadoopConfDir);
         }
         return false;
     }
