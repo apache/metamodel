@@ -33,6 +33,7 @@ import java.util.List;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.EmptyDataSet;
@@ -423,9 +424,10 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
     }
 
     @Override
-    public void executeUpdate(UpdateScript update) {
+    public UpdateSummary executeUpdate(UpdateScript update) {
         checkWritable();
-        CsvUpdateCallback callback = new CsvUpdateCallback(this);
+        
+        final CsvUpdateCallback callback = new CsvUpdateCallback(this);
         synchronized (WRITE_LOCK) {
             try {
                 update.run(callback);
@@ -433,5 +435,6 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
                 callback.close();
             }
         }
+        return callback.getUpdateSummary();
     }
 }
