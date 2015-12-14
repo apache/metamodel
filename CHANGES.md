@@ -1,4 +1,4 @@
-### Apache MetaModel (work-in-progress)
+### Apache MetaModel 4.5.0
 
  * [METAMODEL-212] - New module for ElasticSearch via REST client.
  * [METAMODEL-99] - New module for Neo4j connectivity with MetaModel.
@@ -8,7 +8,10 @@
  * [METAMODEL-195] - Added new function MAP_VALUE which allows extracting a nested value from within a key/value map field.
  * [METAMODEL-15] - Query parser support for table names with space. Delimitters can be double quote or square brackets. 
  * [METAMODEL-215] - Improved the capability of NumberComparator to support Integer, Long, Double, BigInteger and other built-in Number classes.
+ * [METAMODEL-218] - Fixed conversion of STRING and NUMBER types to database-specific types in JDBC module.
  * [METAMODEL-205] - Added validation of Excel sheet name before attempting to create table (sheet).
+ * [METAMODEL-219] - Made HdfsResource capable of incorporating Hadoop configuration files core-site.xml and hdfs-site.xml
+ * [METAMODEL-220] - Made HdfsResource capable of working with other URI schemes than 'hdfs'.
 
 ### Apache MetaModel 4.4.1
 

@@ -18,21 +18,21 @@
  */
 package org.apache.metamodel.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.net.URI;
+import java.util.Objects;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.apache.metamodel.MetaModelException;
+
+import com.google.common.base.Strings;
 
 /**
  * A {@link Resource} implementation that connects to Apache Hadoop's HDFS
@@ -40,146 +40,19 @@ import org.apache.metamodel.MetaModelException;
  */
 public class HdfsResource extends AbstractResource implements Serializable {
 
-    private static class HdfsFileInputStream extends InputStream {
-
-        private final InputStream _in;
-        private final FileSystem _fs;
-
-        public HdfsFileInputStream(final InputStream in, final FileSystem fs) {
-            _in = in;
-            _fs = fs;
-        }
-
-        @Override
-        public int read() throws IOException {
-            return _in.read();
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
-            return _in.read(b, off, len);
-        }
-
-        @Override
-        public int read(byte[] b) throws IOException {
-            return _in.read(b);
-        }
-
-        @Override
-        public boolean markSupported() {
-            return _in.markSupported();
-        }
-
-        @Override
-        public synchronized void mark(int readLimit) {
-            _in.mark(readLimit);
-        }
-
-        @Override
-        public int available() throws IOException {
-            return _in.available();
-        }
-
-        @Override
-        public synchronized void reset() throws IOException {
-            _in.reset();
-        }
-
-        @Override
-        public long skip(long n) throws IOException {
-            return _in.skip(n);
-        }
-
-        @Override
-        public void close() throws IOException {
-            super.close();
-            // need to close 'fs' when input stream is closed
-            FileHelper.safeClose(_fs);
-        }
-    }
-
-    private static class HdfsFileOutputStream extends OutputStream {
-
-        private final OutputStream _out;
-        private final FileSystem _fs;
-
-        public HdfsFileOutputStream(final OutputStream out, final FileSystem fs) {
-            _out = out;
-            _fs = fs;
-        }
-
-        @Override
-        public void write(int b) throws IOException {
-            _out.write(b);
-        }
-
-        @Override
-        public void write(byte[] b, int off, int len) throws IOException {
-            _out.write(b, off, len);
-        }
-
-        @Override
-        public void write(byte[] b) throws IOException {
-            _out.write(b);
-        }
-
-        @Override
-        public void flush() throws IOException {
-            _out.flush();
-        }
-
-        @Override
-        public void close() throws IOException {
-            super.close();
-            // need to close 'fs' when output stream is closed
-            FileHelper.safeClose(_fs);
-        }
-    }
-
-    private static class HdfsDirectoryInputStream extends AbstractDirectoryInputStream<FileStatus> {
-        private final Path _hadoopPath;
-        private final FileSystem _fs;
-
-        public HdfsDirectoryInputStream(final Path hadoopPath, final FileSystem fs) {
-            _hadoopPath = hadoopPath;
-            _fs = fs;
-            FileStatus[] fileStatuses;
-            try {
-                fileStatuses = _fs.listStatus(_hadoopPath, new PathFilter() {
-                    @Override
-                    public boolean accept(final Path path) {
-                        try {
-                            return _fs.isFile(path);
-                        } catch (IOException e) {
-                            return false;
-                        }
-                    }
-                });
-                // Natural ordering is the URL
-                Arrays.sort(fileStatuses);
-            } catch (IOException e) {
-                fileStatuses = new FileStatus[0];
-            }
-            _files = fileStatuses;
-        }
-
-        @Override
-        public InputStream openStream(final int index) throws IOException {
-            final Path nextPath = _files[index].getPath();
-            return _fs.open(nextPath);
-        }
-
-        @Override
-        public void close() throws IOException {
-            super.close();
-            FileHelper.safeClose(_fs);
-        }
-    }
-
     private static final long serialVersionUID = 1L;
 
-    private static final Pattern URL_PATTERN = Pattern.compile("hdfs://(.+):([0-9]+)/(.*)");
+    public static final String SYSTEM_PROPERTY_HADOOP_CONF_DIR_ENABLED = "metamodel.hadoop.use_hadoop_conf_dir";
 
+    public static final String SCHEME_HDFS = "hdfs";
+    public static final String SCHEME_SWIFT = "swift";
+    public static final String SCHEME_EMRFS = "emrfs";
+    public static final String SCHEME_MAPRFS = "maprfs";
+    public static final String SCHEME_S3 = "s3";
+    public static final String SCHEME_FTP = "ftp";
+
+    private final String _scheme;
+    private final String _hadoopConfDir;
     private final String _hostname;
     private final int _port;
     private final String _filepath;
@@ -189,24 +62,37 @@ public class HdfsResource extends AbstractResource implements Serializable {
      * Creates a {@link HdfsResource}
      *
      * @param url
-     *            a URL of the form: hdfs://hostname:port/path/to/file
+     *            a URL of the form: scheme://hostname:port/path/to/file
      */
     public HdfsResource(String url) {
-        if (url == null) {
-            throw new IllegalArgumentException("Url cannot be null");
-        }
-        final Matcher matcher = URL_PATTERN.matcher(url);
-        if (!matcher.find()) {
-            throw new IllegalArgumentException(
-                    "Cannot parse url '" + url + "'. Must follow pattern: hdfs://hostname:port/path/to/file");
-        }
-        _hostname = matcher.group(1);
-        _port = Integer.parseInt(matcher.group(2));
-        _filepath = '/' + matcher.group(3);
+        this(url, null);
     }
 
     /**
      * Creates a {@link HdfsResource}
+     *
+     * @param url
+     *            a URL of the form: scheme://hostname:port/path/to/file
+     * @param hadoopConfDir
+     *            the path of a directory containing the Hadoop and HDFS
+     *            configuration file(s).
+     */
+    public HdfsResource(String url, String hadoopConfDir) {
+        if (url == null) {
+            throw new IllegalArgumentException("Url cannot be null");
+        }
+
+        final URI uri = URI.create(url);
+
+        _scheme = uri.getScheme();
+        _hostname = uri.getHost();
+        _port = uri.getPort();
+        _filepath = uri.getPath();
+        _hadoopConfDir = hadoopConfDir;
+    }
+
+    /**
+     * Creates a {@link HdfsResource} using the "hdfs" scheme
      *
      * @param hostname
      *            the HDFS (namenode) hostname
@@ -216,9 +102,40 @@ public class HdfsResource extends AbstractResource implements Serializable {
      *            the path on HDFS to the file, starting with slash ('/')
      */
     public HdfsResource(String hostname, int port, String filepath) {
+        this(SCHEME_HDFS, hostname, port, filepath, null);
+    }
+
+    /**
+     * Creates a {@link HdfsResource}
+     *
+     * @param scheme
+     *            the scheme to use (consider using {@link #SCHEME_HDFS} or any
+     *            of the other "SCHEME_" constants).
+     * @param hostname
+     *            the HDFS (namenode) hostname
+     * @param port
+     *            the HDFS (namenode) port number
+     * @param filepath
+     *            the path on HDFS to the file, starting with slash ('/')
+     * @param hadoopConfDir
+     *            the path of a directory containing the Hadoop and HDFS
+     *            configuration file(s).
+     */
+    public HdfsResource(String scheme, String hostname, int port, String filepath, String hadoopConfDir) {
+        _scheme = scheme;
         _hostname = hostname;
         _port = port;
         _filepath = filepath;
+        _hadoopConfDir = hadoopConfDir;
+    }
+
+    public String getScheme() {
+        if (_scheme == null) {
+            // should only happen for deserialized and old objects before
+            // METAMODEL-220 introduced dynamic schemes
+            return SCHEME_HDFS;
+        }
+        return _scheme;
     }
 
     public String getFilepath() {
@@ -233,6 +150,10 @@ public class HdfsResource extends AbstractResource implements Serializable {
         return _port;
     }
 
+    public String getHadoopConfDir() {
+        return _hadoopConfDir;
+    }
+
     @Override
     public String getName() {
         final int lastSlash = _filepath.lastIndexOf('/');
@@ -244,7 +165,18 @@ public class HdfsResource extends AbstractResource implements Serializable {
 
     @Override
     public String getQualifiedPath() {
-        return "hdfs://" + _hostname + ":" + _port + _filepath;
+        final StringBuilder sb = new StringBuilder();
+        sb.append(getScheme());
+        sb.append("://");
+        if (_hostname != null) {
+            sb.append(_hostname);
+        }
+        if (_port > 0) {
+            sb.append(':');
+            sb.append(_port);
+        }
+        sb.append(_filepath);
+        return sb.toString();
     }
 
     @Override
@@ -272,7 +204,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
             if (fs.isFile(getHadoopPath())) {
                 return fs.getFileStatus(getHadoopPath()).getLen();
             } else {
-               return fs.getContentSummary(getHadoopPath()).getLength();
+                return fs.getContentSummary(getHadoopPath()).getLength();
             }
         } catch (Exception e) {
             throw wrapException(e);
@@ -348,8 +280,60 @@ public class HdfsResource extends AbstractResource implements Serializable {
 
     public Configuration getHadoopConfiguration() {
         final Configuration conf = new Configuration();
-        conf.set("fs.defaultFS", "hdfs://" + _hostname + ":" + _port);
+        if (_hostname != null && _port > 0) {
+            conf.set("fs.defaultFS", getScheme() + "://" + _hostname + ":" + _port);
+        }
+
+        final File hadoopConfigurationDirectory = getHadoopConfigurationDirectoryToUse();
+        if (hadoopConfigurationDirectory != null) {
+            addResourceIfExists(conf, hadoopConfigurationDirectory, "core-site.xml");
+            addResourceIfExists(conf, hadoopConfigurationDirectory, "hdfs-site.xml");
+        }
+
         return conf;
+    }
+
+    private void addResourceIfExists(Configuration conf, File hadoopConfigurationDirectory, String filename) {
+        final File file = new File(hadoopConfigurationDirectory, filename);
+        if (file.exists()) {
+            final InputStream inputStream = FileHelper.getInputStream(file);
+            conf.addResource(inputStream, filename);
+        }
+    }
+
+    private File getHadoopConfigurationDirectoryToUse() {
+        File candidate = getDirectoryIfExists(null, _hadoopConfDir);
+        if ("true".equals(System.getProperty(SYSTEM_PROPERTY_HADOOP_CONF_DIR_ENABLED))) {
+            candidate = getDirectoryIfExists(candidate, System.getProperty("YARN_CONF_DIR"));
+            candidate = getDirectoryIfExists(candidate, System.getProperty("HADOOP_CONF_DIR"));
+            candidate = getDirectoryIfExists(candidate, System.getenv("YARN_CONF_DIR"));
+            candidate = getDirectoryIfExists(candidate, System.getenv("HADOOP_CONF_DIR"));
+        }
+        return candidate;
+    }
+
+    /**
+     * Gets a candidate directory based on a file path, if it exists, and if it
+     * another candidate hasn't already been resolved.
+     * 
+     * @param existingCandidate
+     *            an existing candidate directory. If this is non-null, it will
+     *            be returned immediately.
+     * @param path
+     *            the path of a directory
+     * @return a candidate directory, or null if none was resolved.
+     */
+    private File getDirectoryIfExists(File existingCandidate, String path) {
+        if (existingCandidate != null) {
+            return existingCandidate;
+        }
+        if (!Strings.isNullOrEmpty(path)) {
+            final File directory = new File(path);
+            if (directory.exists() && directory.isDirectory()) {
+                return directory;
+            }
+        }
+        return null;
     }
 
     public FileSystem getHadoopFileSystem() {
@@ -369,30 +353,20 @@ public class HdfsResource extends AbstractResource implements Serializable {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(new Object[] { _filepath, _hostname, _port });
+        return Objects.hash(getScheme(), _filepath, _hostname, _port, _hadoopConfDir);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        HdfsResource other = (HdfsResource) obj;
-        if (_filepath == null) {
-            if (other._filepath != null)
-                return false;
-        } else if (!_filepath.equals(other._filepath))
-            return false;
-        if (_hostname == null) {
-            if (other._hostname != null)
-                return false;
-        } else if (!_hostname.equals(other._hostname))
-            return false;
-        if (_port != other._port)
-            return false;
-        return true;
+        }
+        if (obj instanceof HdfsResource) {
+            final HdfsResource other = (HdfsResource) obj;
+            return Objects.equals(getScheme(), other.getScheme()) && Objects.equals(_filepath, other._filepath)
+                    && Objects.equals(_hostname, other._hostname) && Objects.equals(_port, other._port)
+                    && Objects.equals(_hadoopConfDir, other._hadoopConfDir);
+        }
+        return false;
     }
 }

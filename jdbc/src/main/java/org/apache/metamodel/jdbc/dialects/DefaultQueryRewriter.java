@@ -88,11 +88,11 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
     public String rewriteColumnType(ColumnType columnType, Integer columnSize) {
         if (columnType == ColumnType.STRING) {
             // convert STRING to VARCHAR as the default SQL type for strings
-            rewriteColumnType(ColumnType.VARCHAR, columnSize);
+            return rewriteColumnType(ColumnType.VARCHAR, columnSize);
         }
         if (columnType == ColumnType.NUMBER) {
             // convert NUMBER to FLOAT as the default SQL type for numbers
-            rewriteColumnType(ColumnType.FLOAT, columnSize);
+            return rewriteColumnType(ColumnType.FLOAT, columnSize);
         }
         return super.rewriteColumnType(columnType, columnSize);
     }
