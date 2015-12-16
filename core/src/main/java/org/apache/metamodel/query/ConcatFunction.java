@@ -19,9 +19,12 @@
 package org.apache.metamodel.query;
 
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.CollectionUtils;
+import org.apache.metamodel.util.Predicate;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,6 +34,7 @@ public final class ConcatFunction extends DefaultScalarFunction {
 
     @Override
     public Object evaluate(Row row, Object[] parameters, SelectItem operandItem) {
+        SelectItem[] selectItems = row.getSelectItems();
         if (parameters.length == 0) {
             throw new IllegalArgumentException("Expecting some parameters to CONCAT function");
         }
@@ -42,10 +46,24 @@ public final class ConcatFunction extends DefaultScalarFunction {
                 String literalWithoutTicks = parameterAsString.substring(1, parameterAsString.length() - 1);
                 strBuilder.append(literalWithoutTicks);
             } else {
-                strBuilder.append(row.getValue(operandItem));
+                Column column = getColumnValueFromRow(parameterAsString, selectItems);
+                strBuilder.append(row.getValue(column));
             }
         }
         return strBuilder;
+    }
+
+    //TODO: Change the returning type to Optional when migrating to Java 8
+    private Column getColumnValueFromRow(final String columnName, SelectItem[] selectItems) {
+
+        List<SelectItem> items = CollectionUtils.filter(selectItems, new Predicate<SelectItem>() {
+            @Override
+            public Boolean eval(SelectItem selectItem) {
+                return selectItem.getColumn().getName().equals(columnName);
+            }
+        });
+        if (items.size() > 0) return items.get(0).getColumn();
+        else return null;
     }
 
     @Override

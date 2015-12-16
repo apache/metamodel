@@ -21,6 +21,9 @@ package org.apache.metamodel.query;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.SimpleDataSetHeader;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -34,21 +37,30 @@ public class ConcatFunctionTest {
 
     @Test
     public void testConcatValues() throws Exception {
-        final SelectItem operandItem1 = new SelectItem("foo", "f");
-        final SelectItem operandItem2 = new SelectItem("bar", "b");
-        final Row row = new DefaultRow(new SimpleDataSetHeader(new SelectItem[] { operandItem1 }),
-                new Object[] { 1 });
-        final Object v1 = function.evaluate(row, new Object[] { "foo", "\'stringtobeappended\'" }, operandItem1);
-        assertEquals("1stringtobeappended", v1.toString());
+        MutableColumn column1 = new MutableColumn("column1", ColumnType.VARCHAR);
+        MutableColumn column2 = new MutableColumn("column2", ColumnType.INTEGER);
+        final SelectItem operandItem1 = new SelectItem(column1);
+        final SelectItem operandItem2 = new SelectItem(column2);
+        final Row row = new DefaultRow(new SimpleDataSetHeader(new SelectItem[] { operandItem1 , operandItem2}),
+                new Object[] { 1 , "hello"});
+        final Object v1 = function.evaluate(
+                row,
+                new Object[] { "column1", "\' stringtobeappended \'", "column2" },
+                operandItem1);
+        assertEquals("1 stringtobeappended hello", v1.toString());
     }
 
-    /*@Test
-    public void testNotAMap() throws Exception {
-        final SelectItem operandItem = new SelectItem("foo", "f");
-        final Row row = new DefaultRow(new SimpleDataSetHeader(new SelectItem[] { operandItem }),
-                new Object[] { "not a map" });
-        final Object v1 = function.evaluate(row, new Object[] { "foo.bar" }, operandItem);
-        assertEquals(null, v1);
-    }*/
+    @Test
+    public void testNotAValidColumn() throws Exception {
+        MutableColumn column1 = new MutableColumn("column1", ColumnType.VARCHAR);
+        final SelectItem operandItem1 = new SelectItem(column1);
+        final Row row = new DefaultRow(new SimpleDataSetHeader(new SelectItem[] { operandItem1 }),
+                new Object[] { "hello" });
+        final Object v1 = function.evaluate(
+                row,
+                new Object[] { "column1", "\' stringtobeappended \'", "column2" },
+                operandItem1);
+        assertEquals("hello stringtobeappended null", v1.toString());
+    }
 
 }
