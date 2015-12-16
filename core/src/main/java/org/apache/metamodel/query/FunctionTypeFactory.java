@@ -69,6 +69,8 @@ public class FunctionTypeFactory {
             return FunctionType.TO_DATE;
         case "MAP_VALUE":
             return FunctionType.MAP_VALUE;
+        case "CONCAT":
+            return FunctionType.CONCAT;
         default:
             return null;
         }

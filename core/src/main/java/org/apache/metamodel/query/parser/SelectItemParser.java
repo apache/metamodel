@@ -23,6 +23,8 @@ import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.query.*;
 import org.apache.metamodel.schema.Column;
 
+import java.util.Arrays;
+
 public final class SelectItemParser implements QueryPartProcessor {
 
     public static class MultipleSelectItemsParsedException extends IllegalArgumentException {
@@ -120,6 +122,9 @@ public final class SelectItemParser implements QueryPartProcessor {
                     final SelectItem selectItem = SelectItem.getCountAllItem();
                     selectItem.setFunctionApproximationAllowed(functionApproximation);
                     return selectItem;
+                }
+                if (functionName.equals(FunctionType.CONCAT.getFunctionName())) {
+                    return new SelectItem(new ConcatFunction(), expression.split(","));
                 }
             }
         } else {
