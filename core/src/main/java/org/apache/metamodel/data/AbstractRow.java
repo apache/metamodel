@@ -159,7 +159,7 @@ public abstract class AbstractRow implements Cloneable, Row {
         for (int i = 0; i < size; i++) {
             final SelectItem selectItem = header.getSelectItem(i);
 
-            if (selectItem.getSubQuerySelectItem() != null) {
+            if (selectItem != null && selectItem.getSubQuerySelectItem() != null) {
                 values[i] = getValue(selectItem.getSubQuerySelectItem());
                 styles[i] = getStyle(selectItem.getSubQuerySelectItem());
                 if (values[i] == null) {

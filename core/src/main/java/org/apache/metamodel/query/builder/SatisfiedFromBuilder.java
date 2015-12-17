@@ -39,7 +39,9 @@ public interface SatisfiedFromBuilder {
     public FunctionSelectBuilder<?> select(FunctionType function, String columnName);
 
     public FunctionSelectBuilder<?> select(FunctionType function, Column column);
-    
+
+    public FunctionSelectBuilder<?> select(FunctionType function, Object[] functionParameters);
+
     public FunctionSelectBuilder<?> select(FunctionType function, String columnName, Object[] functionParameters);
 
     public FunctionSelectBuilder<?> select(FunctionType function, Column column, Object[] functionParameters);
