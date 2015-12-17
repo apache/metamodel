@@ -23,6 +23,7 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 
+import java.util.Arrays;
 import java.util.List;
 
 final class ConcatSelectBuilderImpl extends SatisfiedSelectBuilderImpl implements
@@ -33,7 +34,18 @@ final class ConcatSelectBuilderImpl extends SatisfiedSelectBuilderImpl implement
     public ConcatSelectBuilderImpl(FunctionType functionType,Object[] functionParameters,
                                    Query query, GroupedQueryBuilder queryBuilder) {
         super(queryBuilder);
-
+        String[] paramsAsString = Arrays.asList(functionParameters).toArray(new String[functionParameters.length]);
+        Object[] functionParams = new Object[functionParameters.length];
+        int i = 0;
+        for (String parameter : paramsAsString) {
+            try {
+                Column column = queryBuilder.findColumn(parameter);
+                functionParams[i] = column;
+            } catch(IllegalArgumentException iAEx) {
+                functionParams[i] = parameter;
+            }
+            i++;
+        }
         this.selectItem = new SelectItem(functionType, functionParameters);
 
         query.select(selectItem);

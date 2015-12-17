@@ -111,10 +111,9 @@ public final class SelectItemParser implements QueryPartProcessor {
         final boolean functionApproximation;
         final FunctionType function;
         final int startParenthesis = expression.indexOf('(');
-        if (startParenthesis > 0 && expression.endsWith(")")) {
+        if (selectItemHasParenthesis(expression)) {
             functionApproximation = (expression.startsWith(SelectItem.FUNCTION_APPROXIMATION_PREFIX));
-            final String functionName = expression.substring(
-                    (functionApproximation ? SelectItem.FUNCTION_APPROXIMATION_PREFIX.length() : 0), startParenthesis);
+            final String functionName = getFunctionName(expression, startParenthesis, functionApproximation);
             function = FunctionTypeFactory.get(functionName.toUpperCase());
             if (function != null) {
                 expression = expression.substring(startParenthesis + 1, expression.length() - 1).trim();
@@ -122,9 +121,6 @@ public final class SelectItemParser implements QueryPartProcessor {
                     final SelectItem selectItem = SelectItem.getCountAllItem();
                     selectItem.setFunctionApproximationAllowed(functionApproximation);
                     return selectItem;
-                }
-                if (functionName.equals(FunctionType.CONCAT.getFunctionName())) {
-                    return new SelectItem(new ConcatFunction(), expression.split(","));
                 }
             }
         } else {
@@ -162,6 +158,21 @@ public final class SelectItemParser implements QueryPartProcessor {
             if ("*".equals(columnName)) {
                 throw new MultipleSelectItemsParsedException(fromItem);
             } else if (fromItem.getTable() != null) {
+                if (selectItemHasParenthesis(expression)) {
+                    final String functionName = getFunctionName(expression, startParenthesis, functionApproximation);
+                    if (functionName.equals(FunctionType.CONCAT.getFunctionName())) {
+                        String[] parameters = expression.split(",");
+                        int i = 0;
+                        Object[] functionParameters = new Object[parameters.length];
+                        for (String parameter : parameters) {
+                            Column column = fromItem.getTable().getColumnByName(parameter);
+                            if (column != null) functionParameters[i] = column;
+                            else functionParameters[i] = parameter;
+                            i++;
+                        }
+                        return new SelectItem(new ConcatFunction(), functionParameters);
+                    }
+                }
                 Column column = fromItem.getTable().getColumnByName(columnName);
                 int offset = -1;
                 while (function == null && column == null) {
@@ -208,5 +219,15 @@ public final class SelectItemParser implements QueryPartProcessor {
             return selectItem;
         }
         return null;
+    }
+
+    private boolean selectItemHasParenthesis(String expression) {
+        final int startParenthesis = expression.indexOf('(');
+        return (startParenthesis > 0 && expression.endsWith(")"));
+    }
+
+    private String getFunctionName(String expression, int startParenthesis, boolean functionApproximation) {
+        return expression.substring(
+                (functionApproximation ? SelectItem.FUNCTION_APPROXIMATION_PREFIX.length() : 0), startParenthesis);
     }
 }

@@ -301,14 +301,15 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         Query query = dc.query()
                 .from(table)
                 .select(FunctionType.CONCAT,
-                        new Object[] { "foo", "\' $\'" })
+                        new Object[] { "tab.foo", "\'$\'" })
                 .where("bar")
                 .eq("hello")
                 .toQuery();
-        assertEquals("SELECT CONCAT(foo,' $') FROM sch.tab WHERE tab.bar = 'hello'", query.toSql());
+        assertEquals("SELECT CONCAT(tab.foo,'$') FROM sch.tab WHERE tab.bar = 'hello'", query.toSql());
 
         DataSet ds = dc.executeQuery(query);
         assertTrue(ds.next());
+        assertEquals("Row[values=[1$]]", ds.getRow().toString());
         assertFalse(ds.next());
     }
 
