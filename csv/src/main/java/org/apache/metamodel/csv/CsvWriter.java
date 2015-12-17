@@ -59,7 +59,7 @@ public final class CsvWriter {
                 sb.append(quoteChar);
             }
 
-            sb.append(stringContainsSpecialCharacters(nextElement) ? processLine(nextElement) : nextElement);
+            sb.append(valueNeedsEscaping(nextElement) ? processValue(nextElement) : nextElement);
 
             if (quoteChar != CsvConfiguration.NOT_A_CHAR) {
                 sb.append(quoteChar);
@@ -71,28 +71,28 @@ public final class CsvWriter {
 
     }
 
-    private boolean stringContainsSpecialCharacters(String line) {
+    private boolean valueNeedsEscaping(String line) {
         boolean result = line.indexOf(_configuration.getQuoteChar()) != -1
                 || line.indexOf(_configuration.getEscapeChar()) != -1;
         if (!result) {
             result = _configuration.getQuoteChar() == CsvConfiguration.NOT_A_CHAR
-                    && _configuration.getEscapeChar() != CsvConfiguration.NOT_A_CHAR;
+                    && line.indexOf(_configuration.getSeparatorChar()) != -1;
         }
         return result;
     }
 
-    private String processLine(String nextElement) {
+    private String processValue(String value) {
         final char escapeChar = _configuration.getEscapeChar();
         if (escapeChar == CsvConfiguration.NOT_A_CHAR) {
-            return nextElement;
+            return value;
         }
 
         final char quoteChar = _configuration.getQuoteChar();
         final char separatorChar = _configuration.getSeparatorChar();
 
-        final StringBuilder sb = new StringBuilder(nextElement.length() + 10);
-        for (int j = 0; j < nextElement.length(); j++) {
-            final char nextChar = nextElement.charAt(j);
+        final StringBuilder sb = new StringBuilder(value.length() + 10);
+        for (int j = 0; j < value.length(); j++) {
+            final char nextChar = value.charAt(j);
             if (nextChar == quoteChar) {
                 sb.append(escapeChar).append(nextChar);
             } else if (nextChar == escapeChar) {
