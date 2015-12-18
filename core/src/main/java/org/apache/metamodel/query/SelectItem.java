@@ -68,7 +68,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     /**
      * All-arguments constructor
      * 
-     * @param column
+     * @param columns
      * @param fromItem
      * @param function
      * @param functionParameters
@@ -77,10 +77,10 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @param alias
      * @param functionApproximationAllowed
      */
-    private SelectItem(Column column, FromItem fromItem, FunctionType function, Object[] functionParameters,
+    private SelectItem(Column[] columns, FromItem fromItem, FunctionType function, Object[] functionParameters,
             String expression, SelectItem subQuerySelectItem, String alias, boolean functionApproximationAllowed) {
         super();
-        _columns = oneColumnArray(column);
+        _columns = columns;
         _fromItem = fromItem;
         _function = function;
         _functionParameters = functionParameters;
@@ -166,7 +166,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @param fromItem
      */
     public SelectItem(FunctionType function, Column column, FromItem fromItem) {
-        this(column, fromItem, function, null, null, null, null, false);
+        this(new Column[] { column }, fromItem, function, null, null, null, null, false);
         if (column == null) {
             throw new IllegalArgumentException("column=null");
         }
@@ -183,10 +183,22 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @param fromItem
      */
     public SelectItem(FunctionType function, Object[] functionParameters, Column column, FromItem fromItem) {
-        this(column, fromItem, function, functionParameters, null, null, null, false);
+        this(new Column[] { column }, fromItem, function, functionParameters, null, null, null, false);
         if (column == null) {
             throw new IllegalArgumentException("column=null");
         }
+    }
+
+    /**
+     * Creates a SelectItem that uses a function on a column from a particular
+     * {@link FromItem}, for example SUM(a.price) or MAX(p.age)
+     *
+     * @param function
+     * @param columns
+     * @param functionParameters
+     */
+    public SelectItem(FunctionType function, Column[] columns, Object[] functionParameters) {
+        this(columns, null, function, functionParameters, null, null, null, false);
     }
 
     /**
@@ -607,7 +619,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             fromItem = _fromItem.clone();
         }
 
-        final SelectItem s = new SelectItem(getColumn(), fromItem, _function, _functionParameters, _expression,
+        final SelectItem s = new SelectItem(oneColumnArray(getColumn()), fromItem, _function, _functionParameters, _expression,
                 subQuerySelectItem, _alias, _functionApproximationAllowed);
         return s;
     }
@@ -620,7 +632,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @return
      */
     public SelectItem replaceFunction(FunctionType function) {
-        return new SelectItem(getColumn(), _fromItem, function, _functionParameters, _expression, _subQuerySelectItem,
+        return new SelectItem(oneColumnArray(getColumn()), _fromItem, function, _functionParameters, _expression, _subQuerySelectItem,
                 _alias, _functionApproximationAllowed);
     }
 
@@ -632,7 +644,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @return
      */
     public SelectItem replaceFunctionApproximationAllowed(boolean functionApproximationAllowed) {
-        return new SelectItem(getColumn(), _fromItem, _function, _functionParameters, _expression, _subQuerySelectItem,
+        return new SelectItem(oneColumnArray(getColumn()), _fromItem, _function, _functionParameters, _expression, _subQuerySelectItem,
                 _alias, functionApproximationAllowed);
     }
 
