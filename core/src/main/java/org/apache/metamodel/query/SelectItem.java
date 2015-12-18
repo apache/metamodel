@@ -53,7 +53,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     private static final Logger logger = LoggerFactory.getLogger(SelectItem.class);
 
     // immutable fields (essense)
-    private final Column _column;
+    private final Column[] _columns;
     private final FunctionType _function;
     private final Object[] _functionParameters;
     private final String _expression;
@@ -80,7 +80,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     private SelectItem(Column column, FromItem fromItem, FunctionType function, Object[] functionParameters,
             String expression, SelectItem subQuerySelectItem, String alias, boolean functionApproximationAllowed) {
         super();
-        _column = column;
+        _columns = oneColumnArray(column);
         _fromItem = fromItem;
         _function = function;
         _functionParameters = functionParameters;
@@ -298,7 +298,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     public Column getColumn() {
-        return _column;
+        return _columns[0];
     }
 
     /**
@@ -313,14 +313,14 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             return _subQuerySelectItem.getExpectedColumnType();
         }
         if (_function != null) {
-            if (_column != null) {
-                return _function.getExpectedColumnType(_column.getType());
+            if (columnIsNotNull()) {
+                return _function.getExpectedColumnType(getColumn().getType());
             } else {
                 return _function.getExpectedColumnType(null);
             }
         }
-        if (_column != null) {
-            return _column.getType();
+        if (columnIsNotNull()) {
+            return getColumn().getType();
         }
         return null;
     }
@@ -383,7 +383,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     public String getSuperQueryAlias(boolean includeQuotes) {
         if (_alias != null) {
             return _alias;
-        } else if (_column != null) {
+        } else if (columnIsNotNull()) {
             final StringBuilder sb = new StringBuilder();
             if (_function != null) {
                 if (_functionApproximationAllowed) {
@@ -393,9 +393,9 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
                 sb.append('(');
             }
             if (includeQuotes) {
-                sb.append(_column.getQuotedName());
+                sb.append(getColumn().getQuotedName());
             } else {
-                sb.append(_column.getName());
+                sb.append(getColumn().getName());
             }
             if (_function != null) {
                 sb.append(')');
@@ -416,11 +416,11 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      *         in the same query
      */
     public String getSameQueryAlias(boolean includeSchemaInColumnPath) {
-        if (_column != null) {
+        if (columnIsNotNull()) {
             StringBuilder sb = new StringBuilder();
             String columnPrefix = getToStringColumnPrefix(includeSchemaInColumnPath);
             sb.append(columnPrefix);
-            sb.append(_column.getQuotedName());
+            sb.append(getColumn().getQuotedName());
             if (_function != null) {
                 if (_functionApproximationAllowed) {
                     sb.insert(0, FUNCTION_APPROXIMATION_PREFIX + _function.getFunctionName() + "(");
@@ -460,9 +460,9 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
 
     public StringBuilder toStringNoAlias(boolean includeSchemaInColumnPath) {
         final StringBuilder sb = new StringBuilder();
-        if (_column != null) {
+        if (columnIsNotNull()) {
             sb.append(getToStringColumnPrefix(includeSchemaInColumnPath));
-            sb.append(_column.getQuotedName());
+            sb.append(getColumn().getQuotedName());
         }
         if (_expression != null) {
             sb.append(_expression);
@@ -502,7 +502,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             sb.append(_fromItem.getAlias());
             sb.append('.');
         } else {
-            final Table table = _column.getTable();
+            final Table table = getColumn().getTable();
             String tableLabel;
             if (_query == null) {
                 tableLabel = null;
@@ -540,10 +540,10 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
 
         EqualsBuilder eb = new EqualsBuilder();
         if (exactColumnCompare) {
-            eb.append(this._column == that._column);
+            eb.append(this._columns == that._columns);
             eb.append(this._fromItem, that._fromItem);
         } else {
-            eb.append(this._column, that._column);
+            eb.append(this._columns, that._columns);
         }
         eb.append(this._function, that._function);
         eb.append(this._functionApproximationAllowed, that._functionApproximationAllowed);
@@ -562,14 +562,14 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     protected void decorateIdentity(List<Object> identifiers) {
         identifiers.add(_expression);
         identifiers.add(_alias);
-        identifiers.add(_column);
+        identifiers.add(_columns);
         identifiers.add(_function);
         identifiers.add(_functionApproximationAllowed);
-        if (_fromItem == null && _column != null && _column.getTable() != null) {
+        if (_fromItem == null && columnIsNotNull() && getColumn().getTable() != null) {
             // add a FromItem representing the column's table - this makes equal
             // comparison work when the only difference is whether or not
             // FromItem is specified
-            identifiers.add(new FromItem(_column.getTable()));
+            identifiers.add(new FromItem(getColumn().getTable()));
         } else {
             identifiers.add(_fromItem);
         }
@@ -607,7 +607,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             fromItem = _fromItem.clone();
         }
 
-        final SelectItem s = new SelectItem(_column, fromItem, _function, _functionParameters, _expression,
+        final SelectItem s = new SelectItem(getColumn(), fromItem, _function, _functionParameters, _expression,
                 subQuerySelectItem, _alias, _functionApproximationAllowed);
         return s;
     }
@@ -620,7 +620,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @return
      */
     public SelectItem replaceFunction(FunctionType function) {
-        return new SelectItem(_column, _fromItem, function, _functionParameters, _expression, _subQuerySelectItem,
+        return new SelectItem(getColumn(), _fromItem, function, _functionParameters, _expression, _subQuerySelectItem,
                 _alias, _functionApproximationAllowed);
     }
 
@@ -632,7 +632,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @return
      */
     public SelectItem replaceFunctionApproximationAllowed(boolean functionApproximationAllowed) {
-        return new SelectItem(_column, _fromItem, _function, _functionParameters, _expression, _subQuerySelectItem,
+        return new SelectItem(getColumn(), _fromItem, _function, _functionParameters, _expression, _subQuerySelectItem,
                 _alias, functionApproximationAllowed);
     }
 
@@ -647,7 +647,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      */
     public boolean isReferenced(Column column) {
         if (column != null) {
-            if (column.equals(_column)) {
+            if (column.equals(getColumn())) {
                 return true;
             }
             if (_subQuerySelectItem != null) {
@@ -655,6 +655,15 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             }
         }
         return false;
+    }
+
+    private Column[] oneColumnArray(Column column) {
+        Column[] columns = new Column[] { column };
+        return columns;
+    }
+
+    private boolean columnIsNotNull() {
+        return _columns.length > 0 && _columns[0] != null;
     }
 
     @Override
