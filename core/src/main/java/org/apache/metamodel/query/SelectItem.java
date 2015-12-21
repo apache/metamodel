@@ -77,6 +77,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @param alias
      * @param functionApproximationAllowed
      */
+    //TODO: GET RID OF ARRAY OF COLUMNS??????????????
     private SelectItem(Column[] columns, FromItem fromItem, FunctionType function, Object[] functionParameters,
             String expression, SelectItem subQuerySelectItem, String alias, boolean functionApproximationAllowed) {
         super();
@@ -194,11 +195,10 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * {@link FromItem}, for example SUM(a.price) or MAX(p.age)
      *
      * @param function
-     * @param columns
      * @param functionParameters
      */
-    public SelectItem(FunctionType function, Column[] columns, Object[] functionParameters) {
-        this(columns, null, function, functionParameters, null, null, null, false);
+    public SelectItem(FunctionType function, Object[] functionParameters) {
+        this(null, null, function, functionParameters, null, null, null, false);
     }
 
     /**
@@ -430,7 +430,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     public String getSameQueryAlias(boolean includeSchemaInColumnPath) {
         if (columnIsNotNull()) {
             StringBuilder sb = new StringBuilder();
-            String columnPrefix = getToStringColumnPrefix(includeSchemaInColumnPath);
+            String columnPrefix = getToStringColumnPrefix(includeSchemaInColumnPath, null);
             sb.append(columnPrefix);
             sb.append(getColumn().getQuotedName());
             if (_function != null) {
@@ -473,7 +473,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     public StringBuilder toStringNoAlias(boolean includeSchemaInColumnPath) {
         final StringBuilder sb = new StringBuilder();
         if (columnIsNotNull()) {
-            sb.append(getToStringColumnPrefix(includeSchemaInColumnPath));
+            sb.append(getToStringColumnPrefix(includeSchemaInColumnPath, null));
             sb.append(getColumn().getQuotedName());
         }
         if (_expression != null) {
@@ -496,10 +496,22 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             final Object[] functionParameters = getFunctionParameters();
             if (functionParameters != null && functionParameters.length != 0) {
                 for (int i = 0; i < functionParameters.length; i++) {
-                    functionBeginning.append('\'');
-                    functionBeginning.append(functionParameters[i]);
-                    functionBeginning.append('\'');
-                    functionBeginning.append(',');
+                    if (functionParameters[i] instanceof Column) {
+                        Column col = (Column) functionParameters[i];
+                        functionBeginning.append(getToStringColumnPrefix(includeSchemaInColumnPath, col));
+                        functionBeginning.append(col.getQuotedName());
+                    } else {
+                        if (!_function.getFunctionName().equals(FunctionType.CONCAT.getFunctionName())) {
+                            functionBeginning.append('\'');
+                        }
+                        functionBeginning.append(functionParameters[i]);
+                        if (!_function.getFunctionName().equals(FunctionType.CONCAT.getFunctionName())) {
+                            functionBeginning.append('\'');
+                        }
+                    }
+                    if (i != functionParameters.length - 1) {
+                        functionBeginning.append(',');
+                    }
                 }
             }
             sb.insert(0, functionBeginning.toString());
@@ -508,13 +520,18 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
         return sb;
     }
 
-    private String getToStringColumnPrefix(boolean includeSchemaInColumnPath) {
+    private String getToStringColumnPrefix(boolean includeSchemaInColumnPath, Column column) {
         final StringBuilder sb = new StringBuilder();
         if (_fromItem != null && _fromItem.getAlias() != null) {
             sb.append(_fromItem.getAlias());
             sb.append('.');
         } else {
-            final Table table = getColumn().getTable();
+            Table table;
+            if (column != null) {
+                table = column.getTable();
+            } else {
+                table = getColumn().getTable();
+            }
             String tableLabel;
             if (_query == null) {
                 tableLabel = null;
@@ -675,7 +692,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     private boolean columnIsNotNull() {
-        return _columns.length > 0 && _columns[0] != null;
+        return _columns != null;
     }
 
     @Override

@@ -22,7 +22,9 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.query.*;
 import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.MutableColumn;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public final class SelectItemParser implements QueryPartProcessor {
@@ -111,9 +113,12 @@ public final class SelectItemParser implements QueryPartProcessor {
         final boolean functionApproximation;
         final FunctionType function;
         final int startParenthesis = expression.indexOf('(');
-        if (selectItemHasParenthesis(expression)) {
+        final boolean selectItemHasParenthesis = selectItemHasParenthesis(expression);
+        String functionName = null;
+
+        if (selectItemHasParenthesis) {
             functionApproximation = (expression.startsWith(SelectItem.FUNCTION_APPROXIMATION_PREFIX));
-            final String functionName = getFunctionName(expression, startParenthesis, functionApproximation);
+            functionName = getFunctionName(expression, startParenthesis, functionApproximation);
             function = FunctionTypeFactory.get(functionName.toUpperCase());
             if (function != null) {
                 expression = expression.substring(startParenthesis + 1, expression.length() - 1).trim();
@@ -158,20 +163,18 @@ public final class SelectItemParser implements QueryPartProcessor {
             if ("*".equals(columnName)) {
                 throw new MultipleSelectItemsParsedException(fromItem);
             } else if (fromItem.getTable() != null) {
-                if (selectItemHasParenthesis(expression)) {
-                    final String functionName = getFunctionName(expression, startParenthesis, functionApproximation);
+                if (selectItemHasParenthesis) {
                     if (functionName.equals(FunctionType.CONCAT.getFunctionName())) {
-                        String[] parameters = expression.split(",");
-                        int i = 0;
-                        Object[] functionParameters = new Object[parameters.length];
-                        for (String parameter : parameters) {
+                        String[] columnAndParametersAsString = expression.split(",");
+                        Object[] columnAndParameters = new Object[columnAndParametersAsString.length];
+                        int columnAndParamsIndex = 0;
+                        for (String parameter : columnAndParametersAsString) {
                             Column column = fromItem.getTable().getColumnByName(parameter);
-                            if (column != null) functionParameters[i] = column;
-                            else functionParameters[i] = parameter;
-                            i++;
+                            if (column != null) columnAndParameters[columnAndParamsIndex] = column;
+                            else columnAndParameters[columnAndParamsIndex] = parameter;
+                            columnAndParamsIndex++;
                         }
-                        Column[] cols = new Column[] { null };
-                        return new SelectItem(new ConcatFunction(), cols, functionParameters);
+                        return new SelectItem(new ConcatFunction(), columnAndParameters);
                     }
                 }
                 Column column = fromItem.getTable().getColumnByName(columnName);
