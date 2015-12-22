@@ -53,7 +53,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     private static final Logger logger = LoggerFactory.getLogger(SelectItem.class);
 
     // immutable fields (essense)
-    private final Column[] _columns;
+    private final Column _column;
     private final FunctionType _function;
     private final Object[] _functionParameters;
     private final String _expression;
@@ -68,7 +68,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     /**
      * All-arguments constructor
      * 
-     * @param columns
+     * @param column
      * @param fromItem
      * @param function
      * @param functionParameters
@@ -77,11 +77,10 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @param alias
      * @param functionApproximationAllowed
      */
-    //TODO: GET RID OF ARRAY OF COLUMNS??????????????
-    private SelectItem(Column[] columns, FromItem fromItem, FunctionType function, Object[] functionParameters,
+    private SelectItem(Column column, FromItem fromItem, FunctionType function, Object[] functionParameters,
             String expression, SelectItem subQuerySelectItem, String alias, boolean functionApproximationAllowed) {
         super();
-        _columns = columns;
+        _column = column;
         _fromItem = fromItem;
         _function = function;
         _functionParameters = functionParameters;
@@ -167,7 +166,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @param fromItem
      */
     public SelectItem(FunctionType function, Column column, FromItem fromItem) {
-        this(new Column[] { column }, fromItem, function, null, null, null, null, false);
+        this(column, fromItem, function, null, null, null, null, false);
         if (column == null) {
             throw new IllegalArgumentException("column=null");
         }
@@ -184,7 +183,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @param fromItem
      */
     public SelectItem(FunctionType function, Object[] functionParameters, Column column, FromItem fromItem) {
-        this(new Column[] { column }, fromItem, function, functionParameters, null, null, null, false);
+        this(column, fromItem, function, functionParameters, null, null, null, false);
         if (column == null) {
             throw new IllegalArgumentException("column=null");
         }
@@ -197,8 +196,8 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @param function
      * @param functionParameters
      */
-    public SelectItem(FunctionType function, Object[] functionParameters) {
-        this(null, null, function, functionParameters, null, null, null, false);
+    public SelectItem(Column column, FunctionType function, Object[] functionParameters) {
+        this(column, null, function, functionParameters, null, null, null, false);
     }
 
     /**
@@ -310,7 +309,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     public Column getColumn() {
-        return _columns[0];
+        return _column;
     }
 
     /**
@@ -325,13 +324,13 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             return _subQuerySelectItem.getExpectedColumnType();
         }
         if (_function != null) {
-            if (columnIsNotNull()) {
+            if (_column != null) {
                 return _function.getExpectedColumnType(getColumn().getType());
             } else {
                 return _function.getExpectedColumnType(null);
             }
         }
-        if (columnIsNotNull()) {
+        if (_column != null) {
             return getColumn().getType();
         }
         return null;
@@ -395,7 +394,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     public String getSuperQueryAlias(boolean includeQuotes) {
         if (_alias != null) {
             return _alias;
-        } else if (columnIsNotNull()) {
+        } else if (_column != null) {
             final StringBuilder sb = new StringBuilder();
             if (_function != null) {
                 if (_functionApproximationAllowed) {
@@ -428,7 +427,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      *         in the same query
      */
     public String getSameQueryAlias(boolean includeSchemaInColumnPath) {
-        if (columnIsNotNull()) {
+        if (_column != null) {
             StringBuilder sb = new StringBuilder();
             String columnPrefix = getToStringColumnPrefix(includeSchemaInColumnPath, null);
             sb.append(columnPrefix);
@@ -472,9 +471,12 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
 
     public StringBuilder toStringNoAlias(boolean includeSchemaInColumnPath) {
         final StringBuilder sb = new StringBuilder();
-        if (columnIsNotNull()) {
-            sb.append(getToStringColumnPrefix(includeSchemaInColumnPath, null));
-            sb.append(getColumn().getQuotedName());
+        if (_column != null) {
+            if (_function==null ||
+                    (_function!=null && !_function.getFunctionName().equals(FunctionType.CONCAT.getFunctionName()))) {
+                sb.append(getToStringColumnPrefix(includeSchemaInColumnPath, null));
+                sb.append(getColumn().getQuotedName());
+            }
         }
         if (_expression != null) {
             sb.append(_expression);
@@ -509,9 +511,10 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
                             functionBeginning.append('\'');
                         }
                     }
-                    if (i != functionParameters.length - 1) {
-                        functionBeginning.append(',');
-                    }
+                    functionBeginning.append(',');
+                }
+                if (_function.getFunctionName().equals(FunctionType.CONCAT.getFunctionName())) {
+                    functionBeginning.deleteCharAt(functionBeginning.length() - 1);
                 }
             }
             sb.insert(0, functionBeginning.toString());
@@ -569,10 +572,10 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
 
         EqualsBuilder eb = new EqualsBuilder();
         if (exactColumnCompare) {
-            eb.append(this._columns == that._columns);
+            eb.append(this._column == that._column);
             eb.append(this._fromItem, that._fromItem);
         } else {
-            eb.append(this._columns, that._columns);
+            eb.append(this._column, that._column);
         }
         eb.append(this._function, that._function);
         eb.append(this._functionApproximationAllowed, that._functionApproximationAllowed);
@@ -591,10 +594,10 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     protected void decorateIdentity(List<Object> identifiers) {
         identifiers.add(_expression);
         identifiers.add(_alias);
-        identifiers.add(_columns);
+        identifiers.add(_column);
         identifiers.add(_function);
         identifiers.add(_functionApproximationAllowed);
-        if (_fromItem == null && columnIsNotNull() && getColumn().getTable() != null) {
+        if (_fromItem == null && _column != null && getColumn().getTable() != null) {
             // add a FromItem representing the column's table - this makes equal
             // comparison work when the only difference is whether or not
             // FromItem is specified
@@ -636,7 +639,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             fromItem = _fromItem.clone();
         }
 
-        final SelectItem s = new SelectItem(oneColumnArray(getColumn()), fromItem, _function, _functionParameters, _expression,
+        final SelectItem s = new SelectItem(_column, fromItem, _function, _functionParameters, _expression,
                 subQuerySelectItem, _alias, _functionApproximationAllowed);
         return s;
     }
@@ -649,7 +652,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @return
      */
     public SelectItem replaceFunction(FunctionType function) {
-        return new SelectItem(oneColumnArray(getColumn()), _fromItem, function, _functionParameters, _expression, _subQuerySelectItem,
+        return new SelectItem(_column, _fromItem, function, _functionParameters, _expression, _subQuerySelectItem,
                 _alias, _functionApproximationAllowed);
     }
 
@@ -661,7 +664,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @return
      */
     public SelectItem replaceFunctionApproximationAllowed(boolean functionApproximationAllowed) {
-        return new SelectItem(oneColumnArray(getColumn()), _fromItem, _function, _functionParameters, _expression, _subQuerySelectItem,
+        return new SelectItem(_column, _fromItem, _function, _functionParameters, _expression, _subQuerySelectItem,
                 _alias, functionApproximationAllowed);
     }
 
@@ -684,15 +687,6 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             }
         }
         return false;
-    }
-
-    private Column[] oneColumnArray(Column column) {
-        Column[] columns = new Column[] { column };
-        return columns;
-    }
-
-    private boolean columnIsNotNull() {
-        return _columns != null;
     }
 
     @Override

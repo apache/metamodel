@@ -22,10 +22,8 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.query.*;
 import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public final class SelectItemParser implements QueryPartProcessor {
 
@@ -174,7 +172,8 @@ public final class SelectItemParser implements QueryPartProcessor {
                             else columnAndParameters[columnAndParamsIndex] = parameter;
                             columnAndParamsIndex++;
                         }
-                        return new SelectItem(new ConcatFunction(), columnAndParameters);
+                        MutableColumn concatColumn = new MutableColumn(expression, ColumnType.STRING);
+                        return new SelectItem(concatColumn, new ConcatFunction(), columnAndParameters);
                     }
                 }
                 Column column = fromItem.getTable().getColumnByName(columnName);
