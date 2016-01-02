@@ -62,7 +62,7 @@ final class JdbcUpdateBuilder extends AbstractRowUpdationBuilder {
         String sql = createSqlStatement();
         logger.debug("Update statement created: {}", sql);
         final boolean reuseStatement = !_inlineValues;
-        final PreparedStatement st = _updateCallback.getPreparedStatement(sql, reuseStatement);
+        final PreparedStatement st = _updateCallback.getPreparedStatement(sql, reuseStatement, false);
         try {
             if (reuseStatement) {
                 Column[] columns = getColumns();
@@ -90,7 +90,7 @@ final class JdbcUpdateBuilder extends AbstractRowUpdationBuilder {
                     }
                 }
             }
-            _updateCallback.executePreparedStatement(st, reuseStatement);
+            _updateCallback.executeUpdate(st, reuseStatement);
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "execute update statement: " + sql);
         } finally {

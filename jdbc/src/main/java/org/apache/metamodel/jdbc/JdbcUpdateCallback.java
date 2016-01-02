@@ -20,10 +20,15 @@ package org.apache.metamodel.jdbc;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Statement;
 
 import org.apache.metamodel.AbstractUpdateCallback;
 import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateSummary;
+import org.apache.metamodel.UpdateSummaryBuilder;
 import org.apache.metamodel.create.TableCreationBuilder;
 import org.apache.metamodel.delete.RowDeletionBuilder;
 import org.apache.metamodel.drop.TableDropBuilder;
@@ -31,6 +36,7 @@ import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.RowUpdationBuilder;
+import org.apache.metamodel.util.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,32 +44,60 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
 
     private static final Logger logger = LoggerFactory.getLogger(JdbcUpdateCallback.class);
 
-    private final JdbcDataContext _dataContext;
     private Connection _connection;
     private String _preparedStatementSql;
     private PreparedStatement _preparedStatement;
+    private final UpdateSummaryBuilder _updateSummaryBuilder;
 
     public JdbcUpdateCallback(JdbcDataContext dataContext) {
         super(dataContext);
-        _dataContext = dataContext;
+        _updateSummaryBuilder = new UpdateSummaryBuilder();
     }
+
+    protected final UpdateSummaryBuilder getUpdateSummaryBuilder() {
+        return _updateSummaryBuilder;
+    }
+    
+    protected abstract boolean isGeneratedKeysCollectionEnabled();
 
     protected abstract void closePreparedStatement(PreparedStatement preparedStatement);
 
-    protected abstract void executePreparedStatement(PreparedStatement preparedStatement) throws SQLException;
+    protected abstract int executePreparedStatement(PreparedStatement preparedStatement) throws SQLException;
 
-    public void executePreparedStatement(PreparedStatement preparedStatement, boolean reusedStatement)
-            throws SQLException {
-        executePreparedStatement(preparedStatement);
+    public int executePreparedStatement(PreparedStatement preparedStatement, boolean reusedStatement,
+            boolean collectGeneratedKeys) throws SQLException {
+        final int result = executePreparedStatement(preparedStatement);
+
+        if (collectGeneratedKeys && isGeneratedKeysCollectionEnabled()) {
+            try {
+                final ResultSet generatedKeysResultSet = preparedStatement.getGeneratedKeys();
+                try {
+                    while (generatedKeysResultSet.next()) {
+                        final Object key = generatedKeysResultSet.getObject(1);
+                        getUpdateSummaryBuilder().addGeneratedKey(key);
+                    }
+                } finally {
+                    FileHelper.safeClose(generatedKeysResultSet);
+                }
+            } catch (SQLFeatureNotSupportedException e) {
+                // ignore
+                logger.debug("Getting generated keys from JDBC statement is not supported by driver: {}", e
+                        .getMessage(), e);
+            } catch (SQLException | RuntimeException e) {
+                logger.warn("Failed to get generated keys from JDBC statement: {}", e.getMessage(), e);
+            }
+        }
+
         if (!reusedStatement) {
             closePreparedStatement(preparedStatement);
         }
+        return result;
     }
 
     protected final Connection getConnection() {
         if (_connection == null) {
             _connection = getDataContext().getConnection();
-            if (_dataContext.getQueryRewriter().isTransactional()) {
+            if (getDataContext().getQueryRewriter().isTransactional()) {
                 try {
                     _connection.setAutoCommit(false);
                 } catch (SQLException e) {
@@ -80,11 +114,11 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
                 closePreparedStatement(_preparedStatement);
             }
 
-            if (_dataContext.getQueryRewriter().isTransactional()) {
+            if (getDataContext().getQueryRewriter().isTransactional()) {
                 try {
                     commitOrRollback(success);
 
-                    if (_dataContext.isDefaultAutoCommit()) {
+                    if (getDataContext().isDefaultAutoCommit()) {
                         try {
                             getConnection().setAutoCommit(true);
                         } catch (SQLException e) {
@@ -122,19 +156,20 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
 
     @Override
     public final RowInsertionBuilder insertInto(Table table) throws IllegalArgumentException, IllegalStateException {
-        return new JdbcInsertBuilder(this, table, _dataContext.getQueryRewriter());
+        return new JdbcInsertBuilder(this, table, getDataContext().getQueryRewriter());
     }
 
+    // override the return type to the more specific subtype.
     @Override
     public final JdbcDataContext getDataContext() {
-        return _dataContext;
+        return (JdbcDataContext) super.getDataContext();
     }
 
     protected String quoteIfNescesary(String identifier) {
         if (identifier == null) {
             return null;
         }
-        final String quote = _dataContext.getIdentifierQuoteString();
+        final String quote = getDataContext().getIdentifierQuoteString();
         if (quote == null) {
             return identifier;
         }
@@ -153,7 +188,8 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
         return identifier;
     }
 
-    public final PreparedStatement getPreparedStatement(String sql, boolean reuseStatement) {
+    public final PreparedStatement getPreparedStatement(String sql, boolean reuseStatement,
+            boolean returnGeneratedKeys) {
         final PreparedStatement preparedStatement;
         if (reuseStatement) {
             if (sql.equals(_preparedStatementSql)) {
@@ -167,20 +203,27 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
                         throw e;
                     }
                 }
-                preparedStatement = createPreparedStatement(sql);
+                preparedStatement = createPreparedStatement(sql, returnGeneratedKeys);
                 _preparedStatement = preparedStatement;
                 _preparedStatementSql = sql;
             }
         } else {
-            preparedStatement = createPreparedStatement(sql);
+            preparedStatement = createPreparedStatement(sql, returnGeneratedKeys);
         }
         return preparedStatement;
     }
-
-    private final PreparedStatement createPreparedStatement(String sql) {
+    
+    private final PreparedStatement createPreparedStatement(String sql, boolean returnGeneratedKeys) {
         try {
+            if (returnGeneratedKeys && isGeneratedKeysCollectionEnabled()) {
+                return getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            }
             return getConnection().prepareStatement(sql);
         } catch (SQLException e) {
+            if (returnGeneratedKeys) {
+                // not all databases support the RETURN_GENERATED_KEYS flag, so retry without
+                return createPreparedStatement(sql, false);
+            }
             throw JdbcUtils.wrapException(e, "create prepared statement for: " + sql);
         }
     }
@@ -191,9 +234,9 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
     }
 
     @Override
-    public RowDeletionBuilder deleteFrom(Table table) throws IllegalArgumentException, IllegalStateException,
+    public final RowDeletionBuilder deleteFrom(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        return new JdbcDeleteBuilder(this, table, _dataContext.getQueryRewriter());
+        return new JdbcDeleteBuilder(this, table, getDataContext().getQueryRewriter());
     }
 
     @Override
@@ -204,7 +247,7 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
     @Override
     public TableDropBuilder dropTable(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        return new JdbcDropTableBuilder(this, table, _dataContext.getQueryRewriter());
+        return new JdbcDropTableBuilder(this, table, getDataContext().getQueryRewriter());
     }
 
     @Override
@@ -213,8 +256,29 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
     }
 
     @Override
-    public RowUpdationBuilder update(Table table) throws IllegalArgumentException, IllegalStateException,
+    public final RowUpdationBuilder update(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        return new JdbcUpdateBuilder(this, table, _dataContext.getQueryRewriter());
+        return new JdbcUpdateBuilder(this, table, getDataContext().getQueryRewriter());
     }
+
+    public void executeInsert(PreparedStatement st, boolean reuseStatement) throws SQLException {
+        executePreparedStatement(st, reuseStatement, true);
+        _updateSummaryBuilder.addInsert();
+    }
+
+    public void executeUpdate(PreparedStatement st, boolean reuseStatement) throws SQLException {
+        final int updates = executePreparedStatement(st, reuseStatement, false);
+        _updateSummaryBuilder.addUpdates(updates);
+    }
+
+    public void executeDelete(PreparedStatement st, boolean reuseStatement) throws SQLException {
+        final int deletes = executePreparedStatement(st, reuseStatement, false);
+        _updateSummaryBuilder.addDeletes(deletes);
+    }
+
+    @Override
+    public UpdateSummary getUpdateSummary() {
+        return _updateSummaryBuilder.build();
+    }
+
 }

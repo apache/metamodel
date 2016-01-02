@@ -66,7 +66,7 @@ final class JdbcInsertBuilder extends AbstractRowInsertionBuilder<JdbcUpdateCall
 		}
 		final JdbcUpdateCallback updateCallback = getUpdateCallback();
 		final boolean reuseStatement = !_inlineValues;
-		final PreparedStatement st = updateCallback.getPreparedStatement(sql, reuseStatement);
+		final PreparedStatement st = updateCallback.getPreparedStatement(sql, reuseStatement, true);
 		try {
 			if (reuseStatement) {
 				Column[] columns = getColumns();
@@ -81,7 +81,7 @@ final class JdbcInsertBuilder extends AbstractRowInsertionBuilder<JdbcUpdateCall
 					}
 				}
 			}
-			updateCallback.executePreparedStatement(st, reuseStatement);
+			updateCallback.executeInsert(st, reuseStatement);
 		} catch (SQLException e) {
 			throw JdbcUtils.wrapException(e, "execute insert statement: " + sql);
 		} finally {

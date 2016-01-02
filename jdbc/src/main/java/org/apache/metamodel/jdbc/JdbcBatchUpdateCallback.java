@@ -68,7 +68,13 @@ final class JdbcBatchUpdateCallback extends JdbcUpdateCallback {
     }
 
     @Override
-    protected void executePreparedStatement(PreparedStatement st) throws SQLException {
+    protected int executePreparedStatement(PreparedStatement st) throws SQLException {
         st.addBatch();
+        return -1;
+    }
+    
+    @Override
+    protected boolean isGeneratedKeysCollectionEnabled() {
+        return false;
     }
 }

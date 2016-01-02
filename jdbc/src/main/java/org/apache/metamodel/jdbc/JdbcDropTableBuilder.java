@@ -46,9 +46,9 @@ final class JdbcDropTableBuilder extends AbstractTableDropBuilder implements Tab
     @Override
     public void execute() {
         final String sql = createSqlStatement();
-        final PreparedStatement statement = _updateCallback.getPreparedStatement(sql, false);
+        final PreparedStatement statement = _updateCallback.getPreparedStatement(sql, false, false);
         try {
-            _updateCallback.executePreparedStatement(statement, false);
+            _updateCallback.executePreparedStatement(statement, false, false);
 
             // remove the table reference from the schema
             final Schema schema = getTable().getSchema();

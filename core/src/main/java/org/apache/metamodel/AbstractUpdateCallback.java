@@ -48,14 +48,14 @@ public abstract class AbstractUpdateCallback implements UpdateCallback {
     }
 
     @Override
-    public TableDropBuilder dropTable(String schemaName, String tableName) throws IllegalArgumentException,
+    public final TableDropBuilder dropTable(String schemaName, String tableName) throws IllegalArgumentException,
             IllegalStateException, UnsupportedOperationException {
         final Table table = getTable(schemaName, tableName);
         return dropTable(table);
     }
 
     @Override
-    public TableDropBuilder dropTable(Schema schema, String tableName) throws IllegalArgumentException,
+    public final TableDropBuilder dropTable(Schema schema, String tableName) throws IllegalArgumentException,
             IllegalStateException, UnsupportedOperationException {
         final Table table = schema.getTableByName(tableName);
         if (table == null) {
@@ -72,7 +72,7 @@ public abstract class AbstractUpdateCallback implements UpdateCallback {
     }
 
     @Override
-    public RowInsertionBuilder insertInto(String schemaName, String tableName) throws IllegalArgumentException,
+    public final RowInsertionBuilder insertInto(String schemaName, String tableName) throws IllegalArgumentException,
             IllegalStateException, UnsupportedOperationException {
         return insertInto(getTable(schemaName, tableName));
     }
@@ -101,7 +101,7 @@ public abstract class AbstractUpdateCallback implements UpdateCallback {
     }
 
     @Override
-    public RowDeletionBuilder deleteFrom(String schemaName, String tableName) throws IllegalArgumentException,
+    public final RowDeletionBuilder deleteFrom(String schemaName, String tableName) throws IllegalArgumentException,
             IllegalStateException, UnsupportedOperationException {
         final Table table = getTable(schemaName, tableName);
         return deleteFrom(table);
@@ -138,7 +138,7 @@ public abstract class AbstractUpdateCallback implements UpdateCallback {
 
     @Override
     public boolean isInsertSupported() {
-        // since 2.0 all updateable datacontext have create table support
+        // since 2.0 all updateable datacontext have insert into table support
         return true;
     }
 
@@ -148,7 +148,7 @@ public abstract class AbstractUpdateCallback implements UpdateCallback {
     }
 
     @Override
-    public RowUpdationBuilder update(String schemaName, String tableName) throws IllegalArgumentException,
+    public final RowUpdationBuilder update(String schemaName, String tableName) throws IllegalArgumentException,
             IllegalStateException, UnsupportedOperationException {
         final Table table = getTable(schemaName, tableName);
         return update(table);

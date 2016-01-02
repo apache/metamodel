@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.metamodel.BatchUpdateScript;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.create.ColumnCreationBuilder;
 import org.apache.metamodel.create.CreateTable;
 import org.apache.metamodel.create.TableCreationBuilder;
@@ -73,7 +74,7 @@ public class JdbcTestTemplates {
 
         final Map<Object, Object> map = new HashMap<Object, Object>();
         try {
-            dc.executeUpdate(new UpdateScript() {
+            final UpdateSummary summary = dc.executeUpdate(new UpdateScript() {
                 @Override
                 public void run(UpdateCallback cb) {
                     ColumnCreationBuilder createTableBuilder = cb.createTable(schema, "test_table").withColumn("id")
@@ -86,6 +87,7 @@ public class JdbcTestTemplates {
                     cb.insertInto(table).value("id", 4.0).value("code", "C02").execute();
                 }
             });
+            assertEquals(4, summary.getInsertedRows().get().intValue());
 
             assertEquals(1, getCount(dc.query().from("test_table").selectCount().where("code").isNull().execute()));
             assertEquals(3, getCount(dc.query().from("test_table").selectCount().where("code").isNotNull().execute()));

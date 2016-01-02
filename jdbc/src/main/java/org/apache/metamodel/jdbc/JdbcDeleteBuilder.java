@@ -62,7 +62,7 @@ final class JdbcDeleteBuilder extends AbstractRowDeletionBuilder {
 
         logger.debug("Delete statement created: {}", sql);
         final boolean reuseStatement = !_inlineValues;
-        final PreparedStatement st = _updateCallback.getPreparedStatement(sql, reuseStatement);
+        final PreparedStatement st = _updateCallback.getPreparedStatement(sql, reuseStatement, false);
         try {
             if (reuseStatement) {
                 int valueCounter = 1;
@@ -75,7 +75,7 @@ final class JdbcDeleteBuilder extends AbstractRowDeletionBuilder {
                     }
                 }
             }
-            _updateCallback.executePreparedStatement(st, reuseStatement);
+            _updateCallback.executeDelete(st, reuseStatement);
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "execute delete statement: " + sql);
         } finally {
