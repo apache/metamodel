@@ -1,3 +1,7 @@
+### Apache MetaModel 4.5.1 (work-in-progress)
+
+ * [METAMODEL-227] - Fix for respecting CSV escape character also when no quote character is set.
+
 ### Apache MetaModel 4.5.0
 
  * [METAMODEL-212] - New module for ElasticSearch via REST client.

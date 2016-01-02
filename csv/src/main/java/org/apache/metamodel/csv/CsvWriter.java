@@ -59,7 +59,7 @@ public final class CsvWriter {
                 sb.append(quoteChar);
             }
 
-            sb.append(stringContainsSpecialCharacters(nextElement) ? processLine(nextElement) : nextElement);
+            sb.append(valueNeedsEscaping(nextElement) ? processValue(nextElement) : nextElement);
 
             if (quoteChar != CsvConfiguration.NOT_A_CHAR) {
                 sb.append(quoteChar);
@@ -71,24 +71,39 @@ public final class CsvWriter {
 
     }
 
-    private boolean stringContainsSpecialCharacters(String line) {
-        return line.indexOf(_configuration.getQuoteChar()) != -1 || line.indexOf(_configuration.getEscapeChar()) != -1;
+    private boolean valueNeedsEscaping(String line) {
+        boolean result = line.indexOf(_configuration.getQuoteChar()) != -1
+                || line.indexOf(_configuration.getEscapeChar()) != -1;
+        if (!result) {
+            result = _configuration.getQuoteChar() == CsvConfiguration.NOT_A_CHAR
+                    && line.indexOf(_configuration.getSeparatorChar()) != -1;
+        }
+        return result;
     }
 
-    private StringBuilder processLine(String nextElement) {
-        final StringBuilder sb = new StringBuilder(INITIAL_STRING_SIZE);
-        for (int j = 0; j < nextElement.length(); j++) {
-            final char nextChar = nextElement.charAt(j);
-            final char escapeChar = _configuration.getEscapeChar();
-            if (escapeChar != CsvConfiguration.NOT_A_CHAR && nextChar == _configuration.getQuoteChar()) {
+    private String processValue(String value) {
+        final char escapeChar = _configuration.getEscapeChar();
+        if (escapeChar == CsvConfiguration.NOT_A_CHAR) {
+            return value;
+        }
+
+        final char quoteChar = _configuration.getQuoteChar();
+        final char separatorChar = _configuration.getSeparatorChar();
+
+        final StringBuilder sb = new StringBuilder(value.length() + 10);
+        for (int j = 0; j < value.length(); j++) {
+            final char nextChar = value.charAt(j);
+            if (nextChar == quoteChar) {
                 sb.append(escapeChar).append(nextChar);
-            } else if (escapeChar != CsvConfiguration.NOT_A_CHAR && nextChar == escapeChar) {
+            } else if (nextChar == escapeChar) {
+                sb.append(escapeChar).append(nextChar);
+            } else if (quoteChar == CsvConfiguration.NOT_A_CHAR && nextChar == separatorChar) {
                 sb.append(escapeChar).append(nextChar);
             } else {
                 sb.append(nextChar);
             }
         }
 
-        return sb;
+        return sb.toString();
     }
 }
