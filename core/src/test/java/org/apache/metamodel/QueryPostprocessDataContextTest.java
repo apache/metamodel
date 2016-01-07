@@ -313,7 +313,6 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         DataSet ds = dc.executeQuery(query);
         assertTrue(ds.next());
         assertEquals("Row[values=[1$1]]", ds.getRow().toString());
-        //assertFalse(ds.next());
     }
 
     public void testSelectItemReferencesToFromItems() throws Exception {
