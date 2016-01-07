@@ -101,11 +101,19 @@ public class SimpleDataSetHeader implements DataSetHeader {
             }
             i++;
         }
-        
+
         final boolean scalarFunctionQueried = item.getScalarFunction() != null;
         if (scalarFunctionQueried) {
             final SelectItem itemWithoutFunction = item.replaceFunction(null);
             return indexOf(itemWithoutFunction);
+        }
+
+        i = 0;
+        for (SelectItem selectItem : _items) {
+            if (item.toString().equals(selectItem.toString())) {
+                return i;
+            }
+            i++;
         }
 
         return -1;
