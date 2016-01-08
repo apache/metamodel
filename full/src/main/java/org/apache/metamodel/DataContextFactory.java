@@ -39,7 +39,7 @@ import org.apache.metamodel.fixedwidth.FixedWidthConfiguration;
 import org.apache.metamodel.fixedwidth.FixedWidthDataContext;
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.json.JsonDataContext;
-import org.apache.metamodel.mongodb.MongoDbDataContext;
+import org.apache.metamodel.mongodb.mongo2.MongoDbDataContext;
 import org.apache.metamodel.openoffice.OpenOfficeDataContext;
 import org.apache.metamodel.salesforce.SalesforceDataContext;
 import org.apache.metamodel.schema.TableType;

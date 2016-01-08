@@ -182,9 +182,14 @@ under the License.
 		</dependency>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-mongodb</artifactId>
+			<artifactId>MetaModel-mongodb-mongo2</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+            <groupId>org.apache.metamodel</groupId>
+            <artifactId>MetaModel-mongodb-mongo3</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
 			<artifactId>MetaModel-openoffice</artifactId>

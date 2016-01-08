@@ -20,7 +20,7 @@ package org.apache.metamodel.spring;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.DataContextFactory;
-import org.apache.metamodel.mongodb.MongoDbDataContext;
+import org.apache.metamodel.mongodb.mongo2.MongoDbDataContext;
 import org.apache.metamodel.util.SimpleTableDef;
 
 /**
