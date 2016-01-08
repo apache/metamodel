@@ -198,7 +198,7 @@ public class ColumnTypeImpl implements ColumnType {
 
         final ColumnType type;
         if (cls == String.class) {
-            type = ColumnType.VARCHAR;
+            type = ColumnType.STRING;
         } else if (cls == Boolean.class || cls == boolean.class) {
             type = ColumnType.BOOLEAN;
         } else if (cls == Character.class || cls == char.class || cls == Character[].class || cls == char[].class) {
@@ -217,6 +217,8 @@ public class ColumnTypeImpl implements ColumnType {
             type = ColumnType.DOUBLE;
         } else if (cls == BigDecimal.class) {
             type = ColumnType.DECIMAL;
+        } else if (Number.class.isAssignableFrom(cls)) {
+            type = ColumnType.NUMBER;
         } else if (Map.class.isAssignableFrom(cls)) {
             type = ColumnType.MAP;
         } else if (List.class.isAssignableFrom(cls)) {

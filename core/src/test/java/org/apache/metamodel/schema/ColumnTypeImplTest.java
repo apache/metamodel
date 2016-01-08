@@ -31,7 +31,7 @@ import java.util.TreeMap;
 
 import junit.framework.TestCase;
 
-public class ColumnTypeTest extends TestCase {
+public class ColumnTypeImplTest extends TestCase {
 
 	public void testConvertColumnTypeFromJdbcTypes() throws Exception {
 		ColumnType type = ColumnTypeImpl.convertColumnType(Types.VARCHAR);
@@ -55,7 +55,10 @@ public class ColumnTypeTest extends TestCase {
 	
 	public void testConvertColumnTypeFromJavaClass() throws Exception {
 		ColumnType type = ColumnTypeImpl.convertColumnType(String.class);
-		assertEquals(ColumnType.VARCHAR, type);
+		assertEquals(ColumnType.STRING, type);
+
+        type = ColumnTypeImpl.convertColumnType(Number.class);
+        assertEquals(ColumnType.NUMBER, type);
 
 		type = ColumnTypeImpl.convertColumnType(Time.class);
 		assertEquals(ColumnType.TIME, type);
