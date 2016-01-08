@@ -23,13 +23,11 @@ import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
-import org.slf4j.LoggerFactory;
+import org.bson.Document;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
+import com.mongodb.client.MongoCollection;
 
 final class MongoDbInsertionBuilder extends AbstractRowInsertionBuilder<MongoDbUpdateCallback> implements RowInsertionBuilder {
 
@@ -44,7 +42,7 @@ final class MongoDbInsertionBuilder extends AbstractRowInsertionBuilder<MongoDbU
         final Column[] columns = getColumns();
         final Object[] values = getValues();
 
-        final BasicDBObject doc = new BasicDBObject();
+        final Document doc = new Document();
 
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
@@ -54,11 +52,12 @@ final class MongoDbInsertionBuilder extends AbstractRowInsertionBuilder<MongoDbU
         }
 
         final MongoDbUpdateCallback updateCallback = getUpdateCallback();
-        final DBCollection collection = updateCallback.getCollection(getTable().getName());
+        final MongoCollection<Document> collection = updateCallback.getCollection(getTable().getName());
 
-        final WriteConcern writeConcern = updateCallback.getWriteConcernAdvisor().adviceInsert(collection, doc);
+//        final WriteConcern writeConcern = updateCallback.getWriteConcernAdvisor().adviceInsert(collection, doc);
 
-        final WriteResult writeResult = collection.insert(doc, writeConcern);
-        logger.info("Insert returned result: {}", writeResult);
+        collection.insertOne(doc);
+//        logger.info("Insert returned result: {}", writeResult);
+        logger.info("Document inserted");
     }
 }

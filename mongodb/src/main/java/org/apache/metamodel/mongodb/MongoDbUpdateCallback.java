@@ -30,21 +30,22 @@ import org.apache.metamodel.drop.TableDropBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.bson.Document;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 final class MongoDbUpdateCallback extends AbstractUpdateCallback implements UpdateCallback, Closeable {
 
     private final MongoDbDataContext _dataContext;
-    private final Map<String, DBCollection> _collections;
+    private final Map<String, MongoCollection<Document>> _collections;
     private final WriteConcernAdvisor _writeConcernAdvisor;
 
     public MongoDbUpdateCallback(MongoDbDataContext dataContext, WriteConcernAdvisor writeConcernAdvisor) {
         super(dataContext);
         _dataContext = dataContext;
         _writeConcernAdvisor = writeConcernAdvisor;
-        _collections = new HashMap<String, DBCollection>();
+        _collections = new HashMap<String, MongoCollection<Document>>();
     }
 
     @Override
@@ -68,18 +69,20 @@ final class MongoDbUpdateCallback extends AbstractUpdateCallback implements Upda
     }
 
     protected void createCollection(String name) {
-        DBCollection collection = _dataContext.getMongoDb().createCollection(name, new BasicDBObject());
+    	MongoDatabase mongoDb = _dataContext.getMongoDb();
+    	mongoDb.createCollection(name);
+        MongoCollection<Document> collection = mongoDb.getCollection(name); 
         _collections.put(name, collection);
     }
 
     protected void removeCollection(String name) {
-        DBCollection collection = getCollection(name);
+    	MongoCollection<Document> collection = getCollection(name);
         _collections.remove(name);
         collection.drop();
     }
 
-    protected DBCollection getCollection(String name) {
-        DBCollection collection = _collections.get(name);
+    protected MongoCollection<Document> getCollection(String name) {
+    	MongoCollection<Document> collection = _collections.get(name);
         if (collection == null) {
             collection = _dataContext.getMongoDb().getCollection(name);
             _collections.put(name, collection);

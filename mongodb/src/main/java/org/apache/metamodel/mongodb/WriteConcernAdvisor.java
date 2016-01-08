@@ -18,9 +18,12 @@
  */
 package org.apache.metamodel.mongodb;
 
+import org.bson.Document;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.MongoCollection;
 
 /**
  * Interface for component that advices MetaModel on which {@link WriteConcern}
@@ -28,7 +31,7 @@ import com.mongodb.WriteConcern;
  */
 public interface WriteConcernAdvisor {
 
-    public WriteConcern adviceDeleteQuery(DBCollection collection, BasicDBObject query);
+    public WriteConcern adviceDeleteQuery(MongoCollection<Document> collection, BasicDBObject query);
 
     public WriteConcern adviceInsert(DBCollection collection, BasicDBObject document);
 

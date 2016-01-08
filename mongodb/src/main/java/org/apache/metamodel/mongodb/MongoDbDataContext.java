@@ -51,6 +51,8 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,10 +60,11 @@ import org.slf4j.LoggerFactory;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
 
 /**
  * DataContext implementation for MongoDB.
@@ -75,21 +78,10 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     private static final Logger logger = LoggerFactory.getLogger(MongoDbDataSet.class);
 
-    private final DB _mongoDb;
+    private final MongoDatabase _mongoDb;
     private final SimpleTableDef[] _tableDefs;
     private WriteConcernAdvisor _writeConcernAdvisor;
     private Schema _schema;
-
-    /**
-     * Constructor available for backwards compatibility
-     *
-     * @deprecated use {@link #MongoDbDataContext(DB, SimpleTableDef...)}
-     *             instead
-     */
-    @Deprecated
-    public MongoDbDataContext(DB mongoDb, MongoDbTableDef... tableDefs) {
-        this(mongoDb, (SimpleTableDef[]) tableDefs);
-    }
 
     /**
      * Constructs a {@link MongoDbDataContext}. This constructor accepts a
@@ -104,7 +96,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
      *            {@link #detectSchema(DB)} or {@link #detectTable(DB, String)}
      *            ).
      */
-    public MongoDbDataContext(DB mongoDb, SimpleTableDef... tableDefs) {
+    public MongoDbDataContext(MongoDatabase mongoDb, SimpleTableDef... tableDefs) {
         _mongoDb = mongoDb;
         _tableDefs = tableDefs;
         _schema = null;
@@ -117,7 +109,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
      * @param mongoDb
      *            the mongo db connection
      */
-    public MongoDbDataContext(DB mongoDb) {
+    public MongoDbDataContext(MongoDatabase mongoDb) {
         this(mongoDb, detectSchema(mongoDb));
     }
 
@@ -126,22 +118,21 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
      * instance and tries to detect the table's structure based on the first
      * 1000 documents in each collection.
      *
-     * @param db
+     * @param mongoDb
      *            the mongo db to inspect
      * @return a mutable schema instance, useful for further fine tuning by the
      *         user.
      * @see #detectTable(DB, String)
      */
-    public static SimpleTableDef[] detectSchema(DB db) {
-        Set<String> collectionNames = db.getCollectionNames();
-        SimpleTableDef[] result = new SimpleTableDef[collectionNames.size()];
-        int i = 0;
+    public static SimpleTableDef[] detectSchema(MongoDatabase mongoDb) {
+        MongoIterable<String> collectionNames = mongoDb.listCollectionNames();
+        List<SimpleTableDef> result = new ArrayList<>();
         for (String collectionName : collectionNames) {
-            SimpleTableDef table = detectTable(db, collectionName);
-            result[i] = table;
-            i++;
-        }
-        return result;
+        	logger.info("Detecting collection {}",collectionName);
+        	SimpleTableDef table = detectTable(mongoDb, collectionName);
+        	result.add(table);
+		}
+        return result.toArray(new SimpleTableDef[0]);
     }
 
     /**
@@ -149,34 +140,35 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
      * instance and tries to detect the table structure based on the first 1000
      * documents in the collection.
      *
-     * @param db
+     * @param mongoDb
      *            the mongo DB
      * @param collectionName
      *            the name of the collection
      * @return a table definition for mongo db.
      */
-    public static SimpleTableDef detectTable(DB db, String collectionName) {
-        final DBCollection collection = db.getCollection(collectionName);
-        final DBCursor cursor = collection.find().limit(1000);
+    public static SimpleTableDef detectTable(MongoDatabase mongoDb, String collectionName) {
+    	
+    	logger.debug("Detecting structure for collection "+collectionName);
+    	
+        final MongoCollection<Document> collection = mongoDb.getCollection(collectionName);
+        final FindIterable<Document> cursor = collection.find().limit(10);
 
         final SortedMap<String, Set<Class<?>>> columnsAndTypes = new TreeMap<String, Set<Class<?>>>();
-        while (cursor.hasNext()) {
-            DBObject object = cursor.next();
-            Set<String> keysInObject = object.keySet();
+        for (Document document : cursor) {
+            Set<String> keysInObject = document.keySet();
             for (String key : keysInObject) {
                 Set<Class<?>> types = columnsAndTypes.get(key);
                 if (types == null) {
                     types = new HashSet<Class<?>>();
                     columnsAndTypes.put(key, types);
                 }
-                Object value = object.get(key);
+                Object value = document.get(key);
                 if (value != null) {
                     types.add(value.getClass());
                 }
             }
-        }
-        cursor.close();
-
+		}
+        
         final String[] columnNames = new String[columnsAndTypes.size()];
         final ColumnType[] columnTypes = new ColumnType[columnsAndTypes.size()];
 
@@ -231,9 +223,9 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     @Override
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
-        final DBCollection collection = _mongoDb.getCollection(table.getName());
+        final MongoCollection<Document> collection = _mongoDb.getCollection(table.getName());
 
-        final DBObject query = createMongoDbQuery(table, whereItems);
+        final Bson query = createMongoDbQuery(table, whereItems);
 
         logger.info("Executing MongoDB 'count' query: {}", query);
         final long count = collection.count(query);
@@ -244,14 +236,14 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     @Override
     protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn,
             Object keyValue) {
-        final DBCollection collection = _mongoDb.getCollection(table.getName());
+        final MongoCollection<Document> collection = _mongoDb.getCollection(table.getName());
 
         List<FilterItem> whereItems = new ArrayList<FilterItem>();
         SelectItem selectItem = new SelectItem(primaryKeyColumn);
         FilterItem primaryKeyWhereItem = new FilterItem(selectItem, OperatorType.EQUALS_TO, keyValue);
         whereItems.add(primaryKeyWhereItem);
-        final DBObject query = createMongoDbQuery(table, whereItems);
-        final DBObject resultDBObject = collection.findOne(query);
+        final Bson query = createMongoDbQuery(table, whereItems);
+        final Document resultDBObject = collection.find(query).first();
 
         DataSetHeader header = new SimpleDataSetHeader(selectItems);
 
@@ -337,12 +329,12 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     private DataSet materializeMainSchemaTableInternal(Table table, Column[] columns, List<FilterItem> whereItems,
             int firstRow, int maxRows, boolean queryPostProcessed) {
-        final DBCollection collection = _mongoDb.getCollection(table.getName());
+        final MongoCollection<Document> collection = _mongoDb.getCollection(table.getName());
 
-        final DBObject query = createMongoDbQuery(table, whereItems);
+        final Bson query = createMongoDbQuery(table, whereItems);
 
         logger.info("Executing MongoDB 'find' query: {}", query);
-        DBCursor cursor = collection.find(query);
+        FindIterable<Document> cursor = collection.find(query);
 
         if (maxRows > 0) {
             cursor = cursor.limit(maxRows);
@@ -511,7 +503,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     /**
      * Gets the {@link DB} instance that this {@link DataContext} is backed by.
      */
-    public DB getMongoDb() {
+    public MongoDatabase getMongoDb() {
         return _mongoDb;
     }
 
