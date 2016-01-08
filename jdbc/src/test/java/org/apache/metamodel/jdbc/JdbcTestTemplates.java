@@ -335,12 +335,15 @@ public class JdbcTestTemplates {
         assertFalse(ds.next());
         ds.close();
 
-        dc.executeUpdate(new UpdateScript() {
+        final UpdateSummary updateSummary = dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
                 callback.deleteFrom("test_table").where("id").in(Arrays.<String> asList("1", "2")).execute();
             }
         });
+        assertEquals(2, updateSummary.getDeletedRows().get().intValue());
+        assertEquals(0, updateSummary.getUpdatedRows().get().intValue());
+        assertEquals(0, updateSummary.getInsertedRows().get().intValue());
 
         ds = dc.query().from("test_table").selectCount().where("id").eq(2).or("id").eq(1).execute();
         assertTrue(ds.next());
@@ -433,7 +436,7 @@ public class JdbcTestTemplates {
             assertFalse(ds.next());
             ds.close();
 
-            dc.executeUpdate(new UpdateScript() {
+            final UpdateSummary updateSummary = dc.executeUpdate(new UpdateScript() {
                 @Override
                 public void run(UpdateCallback callback) {
                     // update record 1
@@ -450,6 +453,9 @@ public class JdbcTestTemplates {
                             .where("birthdate").isEquals(DateUtils.get(1982, Month.APRIL, 20)).execute();
                 }
             });
+            assertEquals(0, updateSummary.getInsertedRows().get().intValue());
+            assertEquals(0, updateSummary.getDeletedRows().get().intValue());
+            assertEquals(1, updateSummary.getUpdatedRows().get().intValue());
 
             ds = dc.query().from(schema.getTableByName(tableName)).select("id", "birthdate", "wakemeup").orderBy("id")
                     .execute();
