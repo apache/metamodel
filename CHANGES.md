@@ -1,3 +1,8 @@
+### Apache MetaModel 5.0
+
+ * [METAMODEL-6] - Added update summary containing information about changes on returning UpdateableDataContext.executeUpdate(..)
+ * [METAMODEL-222] - Added support for Java 8 lambdas, removed support for Java 7.
+
 ### Apache MetaModel 4.5.0
 
  * [METAMODEL-212] - New module for ElasticSearch via REST client.
