@@ -18,7 +18,6 @@
  */
 package org.apache.metamodel.mongodb.common;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +27,6 @@ import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.util.CollectionUtils;
-import org.bson.Document;
 
 import com.mongodb.DBObject;
 
