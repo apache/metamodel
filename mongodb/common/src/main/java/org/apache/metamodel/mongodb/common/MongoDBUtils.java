@@ -53,30 +53,20 @@ public class MongoDBUtils {
         }
 
         final Map<?,?> map = dbObject.toMap();
-
-        final int size = header.size();
-        final Object[] values = new Object[size];
-        for (int i = 0; i < values.length; i++) {
-            final SelectItem selectItem = header.getSelectItem(i);
-            final String key = selectItem.getColumn().getName();
-            final Object value = CollectionUtils.find(map, key);
-            values[i] = toValue(selectItem.getColumn(), value);
-        }
-        return new DefaultRow(header, values);
+        return toRow(map, header);
     }
     
     /**
-     * Converts a MongoDB document {@link DBObject} into MetaModel
-     * {@link Row}.
+     * Converts a map into MetaModel. This map stores data of a MongoDB document.
      * 
      * @param dbObject
-     *            a MongoDB object storing data.
+     *            a map object storing data of a MongoDB document.
      * @param header
      *            a header describing the columns of the data stored.
      * @return the MetaModel {@link Row} result object.
      */
-    public static Row toRow(Document document, DataSetHeader header) {
-        if (document == null) {
+    public static Row toRow(Map<?,?> map, DataSetHeader header) {
+        if (map == null) {
             return null;
         }
 
@@ -85,7 +75,7 @@ public class MongoDBUtils {
         for (int i = 0; i < values.length; i++) {
             final SelectItem selectItem = header.getSelectItem(i);
             final String key = selectItem.getColumn().getName();
-            final Object value = CollectionUtils.find(document, key);
+            final Object value = CollectionUtils.find(map, key);
             values[i] = toValue(selectItem.getColumn(), value);
         }
         return new DefaultRow(header, values);
