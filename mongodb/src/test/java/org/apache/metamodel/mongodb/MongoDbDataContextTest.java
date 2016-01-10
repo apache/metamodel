@@ -284,7 +284,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         assertEquals("[_id, baz, foo, id, list, name]", Arrays.toString(table.getColumnNames()));
 
         assertEquals(ColumnType.MAP, table.getColumnByName("baz").getType());
-        assertEquals(ColumnType.VARCHAR, table.getColumnByName("foo").getType());
+        assertEquals(ColumnType.STRING, table.getColumnByName("foo").getType());
         assertEquals(ColumnType.LIST, table.getColumnByName("list").getType());
         assertEquals(ColumnType.INTEGER, table.getColumnByName("id").getType());
         assertEquals(ColumnType.ROWID, table.getColumnByName("_id").getType());
