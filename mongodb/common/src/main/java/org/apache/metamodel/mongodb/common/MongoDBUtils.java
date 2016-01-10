@@ -91,29 +91,5 @@ public class MongoDBUtils {
         }
         return value;
     }
-    
-    public static Object covertArrayToList(Object arr) {
-        if (arr instanceof boolean[]) {
-            return Arrays.asList((boolean[])arr);
-        } else if (arr instanceof byte[]) {
-            return Arrays.asList((byte[])arr);
-        } else if (arr instanceof short[]) {
-            return Arrays.asList((short[])arr);
-        } else if (arr instanceof char[]) {
-            return Arrays.asList((char[])arr);
-        } else if (arr instanceof int[]) {
-            return Arrays.asList((int[])arr);
-        } else if (arr instanceof long[]) {
-            return Arrays.asList((long[])arr);
-        } else if (arr instanceof float[]) {
-            return Arrays.asList((float[])arr);
-        } else if (arr instanceof double[]) {
-            return Arrays.asList((double[])arr);
-        } else if (arr instanceof Object[]) {
-            return Arrays.asList((Object[])arr);
-        }
-        // It's not an array.
-        return null;
-    }
 
 }
