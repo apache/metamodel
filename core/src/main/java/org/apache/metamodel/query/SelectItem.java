@@ -503,13 +503,9 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
                         functionBeginning.append(getToStringColumnPrefix(includeSchemaInColumnPath, col));
                         functionBeginning.append(col.getQuotedName());
                     } else {
-                        if (!_function.getFunctionName().equals(FunctionType.CONCAT.getFunctionName())) {
-                            functionBeginning.append('\'');
-                        }
+                        functionBeginning.append('\'');
                         functionBeginning.append(functionParameters[i]);
-                        if (!_function.getFunctionName().equals(FunctionType.CONCAT.getFunctionName())) {
-                            functionBeginning.append('\'');
-                        }
+                        functionBeginning.append('\'');
                     }
                     functionBeginning.append(',');
                 }
