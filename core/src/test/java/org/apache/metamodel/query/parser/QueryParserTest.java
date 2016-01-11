@@ -81,8 +81,8 @@ public class QueryParserTest extends TestCase {
     }
 
     public void testSelectUsingConcatFunction() throws Exception {
-        Query q = MetaModelHelper.parseQuery(dc, "select CONCAT(foo, 'bar') from sch.tbl a WHERE BOOLEAN(a.bar) = false");
-        assertEquals("SELECT CONCAT(a.foo, 'bar') FROM sch.tbl a WHERE TO_BOOLEAN(a.bar) = FALSE", q.toSql());
+        Query q = MetaModelHelper.parseQuery(dc, "select CONCAT(foo,'bar') from sch.tbl a WHERE BOOLEAN(a.bar) = false");
+        assertEquals("SELECT CONCAT(a.foo,'bar') FROM sch.tbl a WHERE TO_BOOLEAN(a.bar) = FALSE", q.toSql());
     }
 
     public void testSelectEverythingFromTable() throws Exception {

@@ -169,7 +169,7 @@ public final class SelectItemParser implements QueryPartProcessor {
                         for (String parameter : columnAndParametersAsString) {
                             Column column = fromItem.getTable().getColumnByName(parameter);
                             if (column != null) columnAndParameters[columnAndParamsIndex] = column;
-                            else columnAndParameters[columnAndParamsIndex] = parameter;
+                            else columnAndParameters[columnAndParamsIndex] = parameter.substring(1,parameter.length()-1);
                             columnAndParamsIndex++;
                         }
                         MutableColumn concatColumn = new MutableColumn(expression, ColumnType.STRING);

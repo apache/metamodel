@@ -41,22 +41,8 @@ public class ConcatFunctionTest {
                 new Object[] { 1 , "hello"});
         final Object v1 = function.evaluate(
                 row,
-                new Object[] { "column1", "\' stringtobeappended \'", "column2" },
+                new Object[] { column1, " stringtobeappended ", operandItem2 },
                 operandItem1);
         assertEquals("1 stringtobeappended hello", v1.toString());
     }
-
-    @Test
-    public void testNotAValidColumn() throws Exception {
-        MutableColumn column1 = new MutableColumn("column1", ColumnType.VARCHAR);
-        final SelectItem operandItem1 = new SelectItem(column1);
-        final Row row = new DefaultRow(new SimpleDataSetHeader(new SelectItem[] { operandItem1 }),
-                new Object[] { "hello" });
-        final Object v1 = function.evaluate(
-                row,
-                new Object[] { "column1", "\' stringtobeappended \'", "column2" },
-                operandItem1);
-        assertEquals("hello stringtobeappended null", v1.toString());
-    }
-
 }

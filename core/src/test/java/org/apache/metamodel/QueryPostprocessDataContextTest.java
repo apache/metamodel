@@ -301,7 +301,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         MutableColumn col2 = new MutableColumn("bar").setTable(table);
         Object[] functionParams = new Object[3];
         functionParams[0] = col;
-        functionParams[1] = "\'$\'";
+        functionParams[1] = "$";
         functionParams[2] = col2;
         Query query = dc.query()
                 .from(table)
