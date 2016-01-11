@@ -101,7 +101,7 @@ abstract class SatisfiedFromBuilderCallback extends BaseObject implements Satisf
         }
 
         final GroupedQueryBuilder queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
-        return new ConcatSelectBuilderImpl(column, function, functionParameters, query, queryBuilder);
+        return new FunctionSelectBuilderImpl(function, column, functionParameters, query, queryBuilder);
     }
 
     @Override
