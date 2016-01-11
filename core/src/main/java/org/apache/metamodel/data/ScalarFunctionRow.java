@@ -55,11 +55,8 @@ final class ScalarFunctionRow extends AbstractRow {
             Object[] parameters = selectItem.getFunctionParameters();
             StringBuilder strBuilder = new StringBuilder();
             for (Object parameter: parameters) {
-                String parameterAsString = parameter.toString();
-                final int startLiteral = parameterAsString.indexOf('\'');
-                if (startLiteral == 0) {
-                    String literalWithoutTicks = parameterAsString.substring(1, parameterAsString.length() - 1);
-                    strBuilder.append(literalWithoutTicks);
+                if (parameter instanceof String) {
+                    strBuilder.append(parameter);
                 } else {
                     SelectItem[] items = ((DefaultRow) _row).getHeader().getSelectItems();
                     String parameterName = ((Column) parameter).getName();
