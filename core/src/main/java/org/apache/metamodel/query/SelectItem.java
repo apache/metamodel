@@ -507,10 +507,14 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
                         functionBeginning.append(functionParameters[i]);
                         functionBeginning.append('\'');
                     }
-                    functionBeginning.append(',');
-                }
-                if (_function.getFunctionName().equals(FunctionType.CONCAT.getFunctionName())) {
-                    functionBeginning.deleteCharAt(functionBeginning.length() - 1);
+                    if (sb.length() == 0) {
+                        if (i != (functionParameters.length - 1)) {
+                            functionBeginning.append(',');
+                        }
+                    }
+                    else {
+                        functionBeginning.append(',');
+                    }
                 }
             }
             sb.insert(0, functionBeginning.toString());
