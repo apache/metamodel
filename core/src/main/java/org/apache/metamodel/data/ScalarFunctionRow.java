@@ -51,32 +51,8 @@ final class ScalarFunctionRow extends AbstractRow {
             return _row.getValue(index - scalarFunctionCount);
         }
         final SelectItem selectItem = scalarFunctionSelectItems.get(index);
-        if (selectItem.getScalarFunction().equals(FunctionType.CONCAT)) {
-            Object[] parameters = selectItem.getFunctionParameters();
-            StringBuilder strBuilder = new StringBuilder();
-            for (Object parameter: parameters) {
-                if (parameter instanceof String) {
-                    strBuilder.append(parameter);
-                } else {
-                    SelectItem[] items = ((DefaultRow) _row).getHeader().getSelectItems();
-                    String parameterName = ((Column) parameter).getName();
-                    int i = 0;
-                    boolean found = false;
-                    while (i < items.length && !found) {
-                        String columnName = items[i].getColumn().getName();
-                        if (parameterName.equals(columnName)) {
-                            strBuilder.append(_row.getValue(i));
-                            found = true;
-                        }
-                        i++;
-                    }
-                }
-            }
-            return strBuilder.toString();
-        } else {
-            final SelectItem selectItemWithoutFunction = selectItem.replaceFunction(null);
-            return selectItem.getScalarFunction().evaluate(_row, selectItem.getFunctionParameters(), selectItemWithoutFunction);
-        }
+        final SelectItem selectItemWithoutFunction = selectItem.replaceFunction(null);
+        return selectItem.getScalarFunction().evaluate(_row, selectItem.getFunctionParameters(), selectItemWithoutFunction);
     }
 
     @Override
