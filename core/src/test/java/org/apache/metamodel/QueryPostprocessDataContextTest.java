@@ -305,7 +305,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         functionParams[2] = col2;
         Query query = dc.query()
                 .from(table)
-                .select(col, FunctionType.CONCAT, functionParams)
+                .select(FunctionType.CONCAT, col, functionParams)
                 .where("bar")
                 .eq("hello")
                 .toQuery();

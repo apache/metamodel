@@ -44,8 +44,6 @@ public interface SatisfiedFromBuilder {
 
     public FunctionSelectBuilder<?> select(FunctionType function, Column column, Object[] functionParameters);
 
-    public FunctionSelectBuilder<?> select(Column column, FunctionType function, Object[] functionParameters);
-
     public CountSelectBuilder<?> selectCount();
 
     public SatisfiedSelectBuilder<?> select(Column... columns);
