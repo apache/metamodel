@@ -48,13 +48,12 @@ public final class ConcatFunction extends DefaultScalarFunction {
             }
             strBuilder.append(valueToConcat.toString());
         }
-        return strBuilder;
+        return strBuilder.toString();
     }
 
     @Override
     public ColumnType getExpectedColumnType(ColumnType type) {
-        // the column type cannot be inferred so null is returned
-        return null;
+        return ColumnType.STRING;
     }
 
     @Override
