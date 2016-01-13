@@ -190,9 +190,10 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     /**
-     * Creates a SelectItem that uses a function on a column from a particular
-     * {@link FromItem}, for example SUM(a.price) or MAX(p.age)
+     * Creates a SelectItem that uses a column, a function and an array of
+     * parameters to apply the function on, for example CONCAT(a.price,'€')
      *
+     * @param column
      * @param function
      * @param functionParameters
      */
