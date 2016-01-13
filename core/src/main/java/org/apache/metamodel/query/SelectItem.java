@@ -472,12 +472,9 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
 
     public StringBuilder toStringNoAlias(boolean includeSchemaInColumnPath) {
         final StringBuilder sb = new StringBuilder();
-        if (_column != null) {
-            if (_function==null ||
-                    (_function!=null && !_function.getFunctionName().equals(FunctionType.CONCAT.getFunctionName()))) {
-                sb.append(getToStringColumnPrefix(includeSchemaInColumnPath, null));
-                sb.append(getColumn().getQuotedName());
-            }
+        if (_column != null && (_function == null || isNotAFunctionContainingColumnAndParams())) {
+            sb.append(getToStringColumnPrefix(includeSchemaInColumnPath, null));
+            sb.append(getColumn().getQuotedName());
         }
         if (_expression != null) {
             sb.append(_expression);
@@ -688,6 +685,29 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             }
         }
         return false;
+    }
+
+    private boolean isNotAFunctionContainingColumnAndParams() {
+        if (_functionParameters == null) {
+            return true;
+        } else {
+            return !(paramsContainColumnAndParam());
+        }
+    }
+
+    private boolean paramsContainColumnAndParam() {
+        boolean hasAColumn = false;
+        boolean hasAParam = false;
+        int i = 0;
+        while (i < _functionParameters.length) {
+            if (_functionParameters[i] instanceof Column) {
+                hasAColumn = true;
+            } else if (_functionParameters[i] instanceof String) {
+                hasAParam = true;
+            }
+            i++;
+        }
+        return (hasAColumn && hasAParam);
     }
 
     @Override
