@@ -162,19 +162,34 @@ public final class SelectItemParser implements QueryPartProcessor {
                 throw new MultipleSelectItemsParsedException(fromItem);
             } else if (fromItem.getTable() != null) {
                 if (selectItemHasParenthesis) {
-                    if (functionName.equals(FunctionType.CONCAT.getFunctionName())) {
                         String[] columnAndParametersAsString = expression.split(",");
                         Object[] columnAndParameters = new Object[columnAndParametersAsString.length];
                         int columnAndParamsIndex = 0;
                         for (String parameter : columnAndParametersAsString) {
                             Column column = fromItem.getTable().getColumnByName(parameter);
-                            if (column != null) columnAndParameters[columnAndParamsIndex] = column;
-                            else columnAndParameters[columnAndParamsIndex] = parameter.substring(1,parameter.length()-1);
+                            if (column != null) {
+                                columnAndParameters[columnAndParamsIndex] = column;
+                            }
+                            else if (parameter.length() > 1) {
+                               columnAndParameters[columnAndParamsIndex] = parameter.substring(1, parameter.length() - 1);
+                            }
                             columnAndParamsIndex++;
                         }
-                        MutableColumn concatColumn = new MutableColumn(expression, ColumnType.STRING);
-                        return new SelectItem(concatColumn, new ConcatFunction(), columnAndParameters);
-                    }
+                        boolean hasAColumn = false;
+                        boolean hasAParam = false;
+                        int i = 0;
+                        while (i < columnAndParameters.length) {
+                            if (columnAndParameters[i] instanceof Column) {
+                                hasAColumn = true;
+                            } else if (columnAndParameters[i] instanceof String) {
+                                hasAParam = true;
+                            }
+                            i++;
+                        }
+                        if (hasAColumn && hasAParam) {
+                            MutableColumn concatColumn = new MutableColumn(expression, ColumnType.STRING);
+                            return new SelectItem(concatColumn, new ConcatFunction(), columnAndParameters);
+                        }
                 }
                 Column column = fromItem.getTable().getColumnByName(columnName);
                 int offset = -1;
