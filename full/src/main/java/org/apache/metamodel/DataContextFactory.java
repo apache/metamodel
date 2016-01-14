@@ -39,7 +39,7 @@ import org.apache.metamodel.fixedwidth.FixedWidthConfiguration;
 import org.apache.metamodel.fixedwidth.FixedWidthDataContext;
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.json.JsonDataContext;
-import org.apache.metamodel.mongodb.mongo2.MongoDbDataContext;
+import org.apache.metamodel.mongodb.mongo3.MongoDbDataContext;
 import org.apache.metamodel.openoffice.OpenOfficeDataContext;
 import org.apache.metamodel.salesforce.SalesforceDataContext;
 import org.apache.metamodel.schema.TableType;
@@ -53,10 +53,10 @@ import org.xml.sax.InputSource;
 
 import com.datastax.driver.core.Cluster;
 import com.google.common.base.Strings;
-import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoDatabase;
 
 import io.searchbox.client.JestClient;
 
@@ -547,14 +547,15 @@ public class DataContextFactory {
             } else {
                 serverAddress = new ServerAddress(hostname, port);
             }
-
-            final DB mongoDb;
+            MongoClient mongoClient = null;
+            final MongoDatabase mongoDb;
             if (Strings.isNullOrEmpty(username)) {
-                mongoDb = new MongoClient(serverAddress).getDB(databaseName);
+                mongoClient = new MongoClient(serverAddress);
             } else {
                 final MongoCredential credential = MongoCredential.createCredential(username, databaseName, password);
-                mongoDb = new MongoClient(serverAddress, Arrays.asList(credential)).getDB(databaseName);
+                mongoClient = new MongoClient(serverAddress, Arrays.asList(credential));
             }
+            mongoDb = mongoClient.getDatabase(databaseName);
 
             if (tableDefs == null || tableDefs.length == 0) {
                 return new MongoDbDataContext(mongoDb);
