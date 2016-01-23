@@ -25,7 +25,7 @@ under the License.
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>MetaModel-mongodb-mongo2</artifactId>
-	<name>MetaModel module for MongoDB databases under version 3</name>
+	<name>MetaModel module for MongoDB 2.x</name>
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>

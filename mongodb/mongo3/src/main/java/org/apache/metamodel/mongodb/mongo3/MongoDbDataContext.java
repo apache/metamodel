@@ -39,7 +39,6 @@ import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.mongodb.common.MongoDBUtils;
-import org.apache.metamodel.mongodb.common.MongoDbTableDef;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.OperatorType;
@@ -59,6 +58,7 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.mongodb.DB;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
@@ -82,17 +82,6 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     private final SimpleTableDef[] _tableDefs;
     private WriteConcernAdvisor _writeConcernAdvisor;
     private Schema _schema;
-
-    /**
-     * Constructor available for backwards compatibility
-     *
-     * @deprecated use {@link #MongoDbDataContext(DB, SimpleTableDef...)}
-     *             instead
-     */
-    @Deprecated
-    public MongoDbDataContext(MongoDatabase mongoDb, MongoDbTableDef... tableDefs) {
-        this(mongoDb, (SimpleTableDef[]) tableDefs);
-    }
 
     /**
      * Constructs a {@link MongoDbDataContext}. This constructor accepts a
