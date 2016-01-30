@@ -19,7 +19,9 @@
 package org.apache.metamodel.neo4j;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.http.HttpHost;
 import org.apache.http.client.methods.HttpGet;
@@ -170,7 +172,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
                     }
                 }
 
-                List<String> relationshipPropertiesPerLabel = new ArrayList<String>();
+                Set<String> relationshipPropertiesPerLabel = new LinkedHashSet<String>();
                 for (JSONObject node : nodesPerLabel) {
                     Integer nodeId = (Integer) node.getJSONObject("metadata").get("id");
                     List<JSONObject> relationshipsPerNode = getOutgoingRelationshipsPerNode(nodeId);

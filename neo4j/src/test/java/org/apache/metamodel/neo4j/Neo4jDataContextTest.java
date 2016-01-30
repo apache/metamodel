@@ -100,12 +100,22 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         requestWrapper.executeCypherQuery("CREATE (n:JUnitPerson { name: 'Tomasz', age: 26})");
         requestWrapper.executeCypherQuery("CREATE (n:JUnitPerson { name: 'Philomeena', age: 18})");
         requestWrapper.executeCypherQuery("CREATE (n:JUnitBook { title: 'Introduction to algorithms'})");
+        requestWrapper.executeCypherQuery("CREATE (n:JUnitBook { title: 'Rich Dad Poor Dad'})");
         requestWrapper.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
                 + "WHERE a.name = 'Tomasz' AND b.title = 'Introduction to algorithms'"
                 + "CREATE (a)-[r:HAS_READ { rating : 5 }]->(b)");
         requestWrapper.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
                 + "WHERE a.name = 'Philomeena' AND b.title = 'Introduction to algorithms'"
                 + "CREATE (a)-[r:HAS_BROWSED]->(b)");
+        requestWrapper.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
+                + "WHERE a.name = 'Philomeena' AND b.title = 'Introduction to algorithms'"
+                + "CREATE (a)-[r:HAS_BROWSED]->(b)");
+        requestWrapper.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
+                + "WHERE a.name = 'Tomasz' AND b.title = 'Rich Dad Poor Dad'"
+                + "CREATE (a)-[r:HAS_READ { rating : 4 }]->(b)");
+        requestWrapper.executeCypherQuery("MATCH (a:JUnitPerson),(b:JUnitBook)"
+                + "WHERE a.name = 'Philomeena' AND b.title = 'Rich Dad Poor Dad'"
+                + "CREATE (a)-[r:HAS_READ { rating : 2 }]->(b)");
 
         Neo4jDataContext strategy = new Neo4jDataContext(getHostname(), getPort(), getUsername(), getPassword());
         Schema schema = strategy.getSchemaByName(strategy.getDefaultSchemaName());
