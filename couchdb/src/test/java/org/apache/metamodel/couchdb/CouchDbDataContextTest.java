@@ -65,7 +65,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
             connector = couchDbInstance.createConnector(databaseName, true);
 
             final String[] columnNames = new String[] { "name", "gender", "age" };
-            final ColumnType[] columnTypes = new ColumnType[] { ColumnType.VARCHAR, ColumnType.CHAR, ColumnType.INTEGER };
+            final ColumnType[] columnTypes = new ColumnType[] { ColumnType.STRING, ColumnType.CHAR, ColumnType.INTEGER };
             predefinedTableDef = new SimpleTableDef(databaseName, columnNames, columnTypes);
         }
 
@@ -160,11 +160,11 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         final CouchDbDataContext dc = new CouchDbDataContext(couchDbInstance);
         Table table = dc.getDefaultSchema().getTableByName(databaseName);
         assertNotNull(table);
-        assertEquals("[Column[name=_id,columnNumber=0,type=VARCHAR,nullable=false,nativeType=null,columnSize=null], "
-                + "Column[name=_rev,columnNumber=1,type=VARCHAR,nullable=false,nativeType=null,columnSize=null], "
-                + "Column[name=bar,columnNumber=2,type=VARCHAR,nullable=null,nativeType=null,columnSize=null], "
+        assertEquals("[Column[name=_id,columnNumber=0,type=STRING,nullable=false,nativeType=null,columnSize=null], "
+                + "Column[name=_rev,columnNumber=1,type=STRING,nullable=false,nativeType=null,columnSize=null], "
+                + "Column[name=bar,columnNumber=2,type=STRING,nullable=null,nativeType=null,columnSize=null], "
                 + "Column[name=baz,columnNumber=3,type=INTEGER,nullable=null,nativeType=null,columnSize=null], "
-                + "Column[name=foo,columnNumber=4,type=VARCHAR,nullable=null,nativeType=null,columnSize=null]]",
+                + "Column[name=foo,columnNumber=4,type=STRING,nullable=null,nativeType=null,columnSize=null]]",
                 Arrays.toString(table.getColumns()));
 
         // first delete the manually created database!
@@ -182,7 +182,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
             @Override
             public void run(UpdateCallback callback) {
                 Table table = callback.createTable(dc.getDefaultSchema(), databaseName).withColumn("foo")
-                        .ofType(ColumnType.VARCHAR).withColumn("greeting").ofType(ColumnType.VARCHAR).execute();
+                        .ofType(ColumnType.STRING).withColumn("greeting").ofType(ColumnType.STRING).execute();
                 assertEquals("[_id, _rev, foo, greeting]", Arrays.toString(table.getColumnNames()));
             }
         });
@@ -260,11 +260,11 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         assertEquals("[_id, _rev, age, gender, name]",
                 Arrays.toString(schema.getTableByName(getDatabaseName()).getColumnNames()));
         Column idColumn = schema.getTableByName(getDatabaseName()).getColumnByName("_id");
-        assertEquals("Column[name=_id,columnNumber=0,type=VARCHAR,nullable=false,nativeType=null,columnSize=null]",
+        assertEquals("Column[name=_id,columnNumber=0,type=STRING,nullable=false,nativeType=null,columnSize=null]",
                 idColumn.toString());
         assertTrue(idColumn.isPrimaryKey());
 
-        assertEquals("Column[name=_rev,columnNumber=1,type=VARCHAR,nullable=false,nativeType=null,columnSize=null]",
+        assertEquals("Column[name=_rev,columnNumber=1,type=STRING,nullable=false,nativeType=null,columnSize=null]",
                 schema.getTableByName(getDatabaseName()).getColumnByName("_rev").toString());
 
         DataSet ds;
