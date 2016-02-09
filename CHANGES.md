@@ -1,6 +1,8 @@
 ### Apache MetaModel 4.5.1 (work-in-progress)
 
  * [METAMODEL-227] - Fix for respecting CSV escape character also when no quote character is set.
+ * [METAMODEL-183] - MongoDB module split into three: common, Mongo2 and Mongo3 to allow use of either old or new MongoDB API.
+ * [METAMODEL-231] - Fixed a bug causing the Neo4j to represent the same table multiple times within a schema.
 
 ### Apache MetaModel 4.5.0
 
