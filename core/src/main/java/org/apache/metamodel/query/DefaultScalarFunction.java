@@ -19,6 +19,8 @@
 package org.apache.metamodel.query;
 
 public abstract class DefaultScalarFunction implements ScalarFunction {
+    
+    private static final long serialVersionUID = 1L;
 
     @Override
     public String toString() {

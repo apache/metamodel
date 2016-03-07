@@ -21,6 +21,8 @@ package org.apache.metamodel.query;
 import org.apache.metamodel.util.AggregateBuilder;
 
 public class MinAggregateFunction extends DefaultAggregateFunction<Object> {
+    
+    private static final long serialVersionUID = 1L;
 
     @Override
     public String getFunctionName() {

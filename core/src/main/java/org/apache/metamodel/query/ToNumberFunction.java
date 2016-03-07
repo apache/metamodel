@@ -23,6 +23,8 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.NumberComparator;
 
 public class ToNumberFunction extends DefaultScalarFunction {
+    
+    private static final long serialVersionUID = 1L;
 
     @Override
     public ColumnType getExpectedColumnType(ColumnType type) {

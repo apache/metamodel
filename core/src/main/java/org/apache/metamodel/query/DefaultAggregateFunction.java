@@ -26,6 +26,8 @@ import org.apache.metamodel.util.AggregateBuilder;
  */
 public abstract class DefaultAggregateFunction<T> implements AggregateFunction {
 
+    private static final long serialVersionUID = 1L;
+
     @Override
     public ColumnType getExpectedColumnType(ColumnType type) {
         return type;

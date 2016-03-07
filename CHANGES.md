@@ -1,3 +1,7 @@
+### Apache MetaModel 4.5.2
+
+ * [METAMODEL-236] - Made OperatorType and FunctionType Serializable to ensure that serialization of Query is possible.
+
 ### Apache MetaModel 4.5.1
 
  * [METAMODEL-227] - Fix for respecting CSV escape character also when no quote character is set.

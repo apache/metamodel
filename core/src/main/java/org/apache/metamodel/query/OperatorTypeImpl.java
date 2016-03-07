@@ -24,6 +24,8 @@ import java.util.Objects;
  * Simple implementation of {@link OperatorType}
  */
 public class OperatorTypeImpl implements OperatorType {
+    
+    private static final long serialVersionUID = 1L;
 
     private final String _sql;
     private final boolean _spaceDelimited;
