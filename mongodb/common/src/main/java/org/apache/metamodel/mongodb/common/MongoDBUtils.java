@@ -57,7 +57,7 @@ public class MongoDBUtils {
     /**
      * Converts a map into MetaModel. This map stores data of a MongoDB document.
      * 
-     * @param dbObject
+     * @param map
      *            a map object storing data of a MongoDB document.
      * @param header
      *            a header describing the columns of the data stored.

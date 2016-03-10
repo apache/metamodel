@@ -48,7 +48,7 @@ public interface OperatorType extends Serializable {
 
 /**
      * Determines if this operator requires a space delimitor. Operators that are written using letters usually require
-     * space delimitation whereas sign-based operators such as "=" and "<" can be applied even without any delimitaton.
+     * space delimitation whereas sign-based operators such as "=" and "&lt;" can be applied even without any delimitaton.
      * 
      * @return
      */

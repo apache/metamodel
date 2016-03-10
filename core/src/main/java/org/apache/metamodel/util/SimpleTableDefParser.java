@@ -29,8 +29,6 @@ public class SimpleTableDefParser {
     /**
      * Parses an array of table definitions.
      * 
-     * @see #setTableDefinitions(String)
-     * 
      * @param tableDefinitionsText
      * @return
      */
@@ -60,8 +58,6 @@ public class SimpleTableDefParser {
 
     /**
      * Parses a single table definition
-     * 
-     * @see #setTableDefinitions(String)
      * 
      * @param tableDefinitionText
      * @return

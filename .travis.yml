@@ -16,7 +16,7 @@ services:
   - mongodb
   
 after_success:
-  - mvn test
+  - mvn test javadoc:javadoc
  
 notifications:
   email: false

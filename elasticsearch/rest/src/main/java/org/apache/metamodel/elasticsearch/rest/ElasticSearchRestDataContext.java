@@ -129,7 +129,7 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
     /**
      * Constructs a {@link ElasticSearchRestDataContext} and automatically detects
      * the schema structure/view on all indexes (see
-     * {@link this.detectSchema(JestClient, String)}).
+     * {@link #detectTable(JsonObject, String)}).
      *
      * @param client
      *            the ElasticSearch client
@@ -145,7 +145,7 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
      * {@link JestClient} instance and detects the elasticsearch types structure
      * based on the metadata provided by the ElasticSearch java client.
      *
-     * @see #detectTable(JsonObject, String)
+     * @see {@link #detectTable(JsonObject, String)}
      * @return a mutable schema instance, useful for further fine tuning by the
      *         user.
      */

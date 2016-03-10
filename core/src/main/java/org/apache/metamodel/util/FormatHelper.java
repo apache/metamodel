@@ -150,7 +150,7 @@ public final class FormatHelper {
     /**
      * Parses a SQL string representation of a time based value
      * 
-     * @param type
+     * @param columnType
      * @param value
      * @return
      */

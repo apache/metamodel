@@ -24,8 +24,8 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.SimpleTableDef;
 
 /**
- * Defines a table layout for {@link MongoDbDataContext} tables. This class can
- * be used as an instruction set for the {@link MongoDbDataContext} to specify
+ * Defines a table layout for MongoDB tables. This class can
+ * be used as an instruction set for the MongoDB DataContext implementations to specify
  * which collections, which columns (and their types) should be included in the
  * schema structure of a Mongo DB database.
  * 

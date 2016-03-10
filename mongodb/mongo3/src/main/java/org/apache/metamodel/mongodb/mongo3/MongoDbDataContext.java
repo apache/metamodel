@@ -72,7 +72,7 @@ import com.mongodb.client.MongoIterable;
  * Since MongoDB has no schema, a virtual schema will be used in this
  * DataContext. This implementation supports either automatic discovery of a
  * schema or manual specification of a schema, through the
- * {@link MongoDbTableDef} class.
+ * {@link SimpleTableDef} class.
  */
 public class MongoDbDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
 
@@ -85,15 +85,15 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     /**
      * Constructs a {@link MongoDbDataContext}. This constructor accepts a
-     * custom array of {@link MongoDbTableDef}s which allows the user to define
+     * custom array of {@link SimpleTableDef}s which allows the user to define
      * his own view on the collections in the database.
      *
      * @param mongoDb
      *            the mongo db connection
      * @param tableDefs
-     *            an array of {@link MongoDbTableDef}s, which define the table
+     *            an array of {@link SimpleTableDef}s, which define the table
      *            and column model of the mongo db collections. (consider using
-     *            {@link #detectSchema(DB)} or {@link #detectTable(DB, String)}
+     *            {@link #detectSchema(MongoDatabase)} or {@link #detectTable(MongoDatabase, String)}
      *            ).
      */
     public MongoDbDataContext(MongoDatabase mongoDb, SimpleTableDef... tableDefs) {
@@ -104,7 +104,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     /**
      * Constructs a {@link MongoDbDataContext} and automatically detects the
-     * schema structure/view on all collections (see {@link #detectSchema(DB)}).
+     * schema structure/view on all collections (see {@link #detectSchema(MongoDatabase)}).
      *
      * @param mongoDb
      *            the mongo db connection
@@ -122,7 +122,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
      *            the mongo db to inspect
      * @return a mutable schema instance, useful for further fine tuning by the
      *         user.
-     * @see #detectTable(DB, String)
+     * @see #detectTable(MongoDatabase, String)
      */
     public static SimpleTableDef[] detectSchema(MongoDatabase mongoDb) {
         MongoIterable<String> collectionNames = mongoDb.listCollectionNames();

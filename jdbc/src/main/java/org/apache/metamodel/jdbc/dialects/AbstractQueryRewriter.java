@@ -93,7 +93,6 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
      * related. Cloning the query before modifying is recommended in order to
      * not violate referential integrity of clients (the query is mutable).
      * 
-     * @param strategy
      * @param query
      * @return the modified query
      */
