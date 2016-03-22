@@ -248,6 +248,9 @@ under the License.
 						<phase>site</phase>
 					</execution>
 				</executions>
+				<configuration>
+					<excludePackageNames>com.sugarcrm.ws.soap</excludePackageNames>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>net.ju-n.maven.plugins</groupId>
