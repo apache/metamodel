@@ -55,12 +55,15 @@ final class JestElasticSearchUtils {
     }
 
     private static Object getDataFromColumnType(JsonElement field, ColumnType type) {
+        if (field == null || field.isJsonNull()) {
+            return null;
+        }
         if (type.isNumber()) {
             // Pretty terrible workaround to avoid LazilyParsedNumber
             // (which is happily output, but not recognized by Jest/GSON).
             return NumberComparator.toNumber(field.getAsString());
         } else if (type.isTimeBased()) {
-            Date valueToDate = ElasticSearchDateConverter.tryToConvert(field.getAsString());
+            final Date valueToDate = ElasticSearchDateConverter.tryToConvert(field.getAsString());
             if (valueToDate == null) {
                 return field.getAsString();
             } else {

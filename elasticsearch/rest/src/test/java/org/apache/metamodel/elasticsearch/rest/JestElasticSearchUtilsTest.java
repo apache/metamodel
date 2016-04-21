@@ -18,22 +18,28 @@
  */
 package org.apache.metamodel.elasticsearch.rest;
 
-import com.google.gson.JsonObject;
-import junit.framework.TestCase;
-import org.apache.metamodel.data.DataSetHeader;
-import org.apache.metamodel.data.Row;
-import org.apache.metamodel.data.SimpleDataSetHeader;
-import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.schema.MutableColumn;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-public class JestElasticSearchUtilsTest extends TestCase {
+import org.apache.metamodel.data.DataSetHeader;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.SimpleDataSetHeader;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
+import org.junit.Test;
 
+import com.google.gson.JsonObject;
+
+public class JestElasticSearchUtilsTest {
+
+    @Test
     public void testAssignDocumentIdForPrimaryKeys() throws Exception {
         MutableColumn primaryKeyColumn = new MutableColumn("value1", ColumnType.STRING).setPrimaryKey(true);
         SelectItem primaryKeyItem = new SelectItem(primaryKeyColumn);
@@ -49,6 +55,50 @@ public class JestElasticSearchUtilsTest extends TestCase {
         assertEquals(primaryKeyValue, documentId);
     }
 
+    @Test
+    public void testCreateRowWithNullValues() throws Exception {
+        final Column col1 = new MutableColumn("col1", ColumnType.STRING);
+        final Column col2 = new MutableColumn("col2", ColumnType.STRING);
+        final DataSetHeader header = new SimpleDataSetHeader(new Column[] { col1, col2 });
+        final JsonObject source = new JsonObject();
+        source.addProperty("col1", "foo");
+        source.addProperty("col2", (String) null);
+        final String documentId = "row1";
+
+        final Row row = JestElasticSearchUtils.createRow(source, documentId, header);
+        assertEquals("Row[values=[foo, null]]", row.toString());
+    }
+
+    @Test
+    public void testCreateRowWithNumberValueAndStringType() throws Exception {
+        final Column col1 = new MutableColumn("col1", ColumnType.STRING);
+        final DataSetHeader header = new SimpleDataSetHeader(new Column[] { col1 });
+        final JsonObject source = new JsonObject();
+        source.addProperty("col1", 42);
+        final String documentId = "row1";
+
+        final Row row = JestElasticSearchUtils.createRow(source, documentId, header);
+        assertEquals("Row[values=[42]]", row.toString());
+    }
+
+    @Test
+    public void testCreateRowWithStringValueAndNumberType() throws Exception {
+        final Column col1 = new MutableColumn("col1", ColumnType.NUMBER);
+        final DataSetHeader header = new SimpleDataSetHeader(new Column[] { col1 });
+        final JsonObject source = new JsonObject();
+        source.addProperty("col1", "hello world");
+        final String documentId = "row1";
+
+        final Row row = JestElasticSearchUtils.createRow(source, documentId, header);
+
+        // whether or not 'null' should be returned (bad value, but preserves
+        // type) or 'hello world' should be returned (correct value, breaks
+        // type) can be debated. For now it is added here as an assertion to
+        // keep track of any regressions.
+        assertEquals("Row[values=[null]]", row.toString());
+    }
+
+    @Test
     public void testCreateRowWithParseableDates() throws Exception {
         SelectItem item1 = new SelectItem(new MutableColumn("value1", ColumnType.STRING));
         SelectItem item2 = new SelectItem(new MutableColumn("value2", ColumnType.DATE));
