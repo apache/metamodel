@@ -1,6 +1,6 @@
 .project
-.settings/
-.classpath/
+.settings
+.classpath
 .metadata/
 target/
 /.idea/
