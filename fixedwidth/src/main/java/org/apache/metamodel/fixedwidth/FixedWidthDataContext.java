@@ -122,19 +122,22 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
         final FixedWidthReader reader = createReader();
         final String[] columnNames;
         try {
-            if (_configuration.getColumnNameLineNumber() != FixedWidthConfiguration.NO_COLUMN_NAME_LINE) {
+            final boolean hasColumnHeader = _configuration
+                    .getColumnNameLineNumber() != FixedWidthConfiguration.NO_COLUMN_NAME_LINE;
+            if (hasColumnHeader) {
                 for (int i = 1; i < _configuration.getColumnNameLineNumber(); i++) {
                     reader.readLine();
                 }
                 columnNames = reader.readLine();
             } else {
-                final ColumnNamingStrategy columnNamingStrategy = _configuration.getColumnNamingStrategy();
                 columnNames = reader.readLine();
-                if (columnNames != null) {
-                    for (int i = 0; i < columnNames.length; i++) {
-                        columnNames[i] = columnNamingStrategy.getColumnName(new ColumnNamingContextImpl(table, null,
-                                i));
-                    }
+            }
+            final ColumnNamingStrategy columnNamingStrategy = _configuration.getColumnNamingStrategy();
+            if (columnNames != null) {
+                for (int i = 0; i < columnNames.length; i++) {
+                    final String intrinsicColumnName = hasColumnHeader ? columnNames[i] : null;
+                    columnNames[i] = columnNamingStrategy.getNextColumnName(new ColumnNamingContextImpl(table,
+                            intrinsicColumnName, i));
                 }
             }
         } finally {

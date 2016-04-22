@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.schema.builder.AlphabeticColumnNamingStrategy;
 import org.apache.metamodel.schema.builder.ColumnNamingStrategy;
+import org.apache.metamodel.schema.builder.DefaultColumnNamingStrategy;
 import org.apache.metamodel.util.BaseObject;
 import org.apache.metamodel.util.FileHelper;
 
@@ -96,7 +96,7 @@ public final class FixedWidthConfiguration extends BaseObject implements
 	 */
 	public ColumnNamingStrategy getColumnNamingStrategy() {
 	    if (columnNamingStrategy == null) {
-	        return new AlphabeticColumnNamingStrategy();
+	        return new DefaultColumnNamingStrategy();
 	    }
         return columnNamingStrategy;
     }

@@ -19,19 +19,13 @@
 package org.apache.metamodel.schema.builder;
 
 /**
- * A strategy that defines how columns are logically named. Such strategies are
- * mostly used when a particular datastore is not itself intrinsically
- * specifying the column name.
+ * The default (in most cases) {@link ColumnNamingStrategy} to use when no other
+ * strategy is specified.
  */
-public interface ColumnNamingStrategy {
+public class DefaultColumnNamingStrategy extends DelegatingIntrinsicSwitchColumnNamingStrategy {
 
-    /**
-     * Provides the name to apply for a given column.
-     * 
-     * @param ctx
-     *            the context of the column naming taking place. This contains
-     *            column index, intrinsic name etc. if available.
-     * @return the name to provide to the column.
-     */
-    public String getNextColumnName(ColumnNamingContext ctx);
+    public DefaultColumnNamingStrategy() {
+        super(new UniqueColumnNamingStrategy(), new AlphabeticColumnNamingStrategy());
+    }
+
 }

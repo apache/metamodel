@@ -18,15 +18,33 @@
  */
 package org.apache.metamodel.schema.builder;
 
-import org.apache.metamodel.util.AlphabeticSequence;
+import java.util.HashSet;
+import java.util.Set;
 
-public class AlphabeticColumnNamingStrategy implements ColumnNamingStrategy {
-    
-    private final AlphabeticSequence seq = new AlphabeticSequence();
+/**
+ * A {@link ColumnNamingStrategy} that uses the intrinsic column names, but
+ * ensures that all column names are unique. When duplicate names are
+ * encountered a number will be appended yielding column names like "name",
+ * "name1", "name2" etc.
+ */
+public class UniqueColumnNamingStrategy implements ColumnNamingStrategy {
+
+    private final Set<String> names = new HashSet<>();
 
     @Override
     public String getNextColumnName(ColumnNamingContext ctx) {
-        return seq.next();
+        final String intrinsicName = ctx.getIntrinsicColumnName();
+        boolean unique = names.add(intrinsicName);
+        if (unique) {
+            return intrinsicName;
+        }
+
+        String newName = null;
+        for (int i = 2; !unique; i++) {
+            newName = intrinsicName + i;
+            unique = names.add(newName);
+        }
+        return newName;
     }
 
 }

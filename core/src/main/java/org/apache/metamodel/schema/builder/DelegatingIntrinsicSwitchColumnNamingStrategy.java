@@ -18,15 +18,29 @@
  */
 package org.apache.metamodel.schema.builder;
 
-import org.apache.metamodel.util.AlphabeticSequence;
+/**
+ * A {@link ColumnNamingStrategy} that switches between two other
+ * {@link ColumnNamingStrategy} delegates depending on the availability of a
+ * intrinsic column name.
+ */
+public class DelegatingIntrinsicSwitchColumnNamingStrategy implements ColumnNamingStrategy {
 
-public class AlphabeticColumnNamingStrategy implements ColumnNamingStrategy {
-    
-    private final AlphabeticSequence seq = new AlphabeticSequence();
+    private final ColumnNamingStrategy intrinsicStrategy;
+    private final ColumnNamingStrategy nonIntrinsicStrategy;
+
+    public DelegatingIntrinsicSwitchColumnNamingStrategy(ColumnNamingStrategy intrinsicStrategy,
+            ColumnNamingStrategy nonIntrinsicStrategy) {
+        this.intrinsicStrategy = intrinsicStrategy;
+        this.nonIntrinsicStrategy = nonIntrinsicStrategy;
+    }
 
     @Override
     public String getNextColumnName(ColumnNamingContext ctx) {
-        return seq.next();
+        final String intrinsicColumnName = ctx.getIntrinsicColumnName();
+        if (intrinsicColumnName == null || intrinsicColumnName.isEmpty()) {
+            return nonIntrinsicStrategy.getNextColumnName(ctx);
+        }
+        return intrinsicStrategy.getNextColumnName(ctx);
     }
 
 }
