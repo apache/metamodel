@@ -33,7 +33,8 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
-import org.apache.metamodel.util.AlphabeticSequence;
+import org.apache.metamodel.schema.builder.ColumnNamingContextImpl;
+import org.apache.metamodel.schema.builder.ColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Resource;
@@ -127,11 +128,12 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
                 }
                 columnNames = reader.readLine();
             } else {
+                final ColumnNamingStrategy columnNamingStrategy = _configuration.getColumnNamingStrategy();
                 columnNames = reader.readLine();
                 if (columnNames != null) {
-                    AlphabeticSequence sequence = new AlphabeticSequence();
                     for (int i = 0; i < columnNames.length; i++) {
-                        columnNames[i] = sequence.next();
+                        columnNames[i] = columnNamingStrategy.getColumnName(new ColumnNamingContextImpl(table, null,
+                                i));
                     }
                 }
             }
@@ -179,11 +181,11 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
         final Reader fileReader = FileHelper.getReader(inputStream, _configuration.getEncoding());
         final FixedWidthReader reader;
         if (_configuration.isConstantValueWidth()) {
-            reader = new FixedWidthReader(fileReader, _configuration.getFixedValueWidth(),
-                    _configuration.isFailOnInconsistentLineWidth());
+            reader = new FixedWidthReader(fileReader, _configuration.getFixedValueWidth(), _configuration
+                    .isFailOnInconsistentLineWidth());
         } else {
-            reader = new FixedWidthReader(fileReader, _configuration.getValueWidths(),
-                    _configuration.isFailOnInconsistentLineWidth());
+            reader = new FixedWidthReader(fileReader, _configuration.getValueWidths(), _configuration
+                    .isFailOnInconsistentLineWidth());
         }
         return reader;
     }

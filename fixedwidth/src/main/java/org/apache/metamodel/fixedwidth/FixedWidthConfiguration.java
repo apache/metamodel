@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.schema.builder.AlphabeticColumnNamingStrategy;
+import org.apache.metamodel.schema.builder.ColumnNamingStrategy;
 import org.apache.metamodel.util.BaseObject;
 import org.apache.metamodel.util.FileHelper;
 
@@ -42,6 +44,7 @@ public final class FixedWidthConfiguration extends BaseObject implements
 	private final int[] valueWidths;
 	private final int columnNameLineNumber;
 	private final boolean failOnInconsistentLineWidth;
+	private final ColumnNamingStrategy columnNamingStrategy;
 
 	public FixedWidthConfiguration(int fixedValueWidth) {
 		this(DEFAULT_COLUMN_NAME_LINE, FileHelper.DEFAULT_ENCODING,
@@ -64,6 +67,7 @@ public final class FixedWidthConfiguration extends BaseObject implements
 		this.fixedValueWidth = fixedValueWidth;
 		this.columnNameLineNumber = columnNameLineNumber;
 		this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
+		this.columnNamingStrategy = null;
 		this.valueWidths = new int[0];
 	}
 
@@ -73,6 +77,7 @@ public final class FixedWidthConfiguration extends BaseObject implements
 		this.fixedValueWidth = -1;
 		this.columnNameLineNumber = columnNameLineNumber;
 		this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
+		this.columnNamingStrategy = null;
 		this.valueWidths = valueWidths;
 	}
 
@@ -84,6 +89,17 @@ public final class FixedWidthConfiguration extends BaseObject implements
 	public int getColumnNameLineNumber() {
 		return columnNameLineNumber;
 	}
+	
+	/**
+	 * Gets a {@link ColumnNamingStrategy} to use if needed.
+	 * @return
+	 */
+	public ColumnNamingStrategy getColumnNamingStrategy() {
+	    if (columnNamingStrategy == null) {
+	        return new AlphabeticColumnNamingStrategy();
+	    }
+        return columnNamingStrategy;
+    }
 
 	/**
 	 * Gets the file encoding to use for reading the file.
