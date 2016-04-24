@@ -21,12 +21,23 @@ package org.apache.metamodel.schema.builder;
 import org.apache.metamodel.util.AlphabeticSequence;
 
 public class AlphabeticColumnNamingStrategy implements ColumnNamingStrategy {
-    
-    private final AlphabeticSequence seq = new AlphabeticSequence();
+
+    private static final long serialVersionUID = 1L;
 
     @Override
-    public String getNextColumnName(ColumnNamingContext ctx) {
-        return seq.next();
+    public ColumnNamingSession startColumnNamingSession() {
+        return new ColumnNamingSession() {
+            private final AlphabeticSequence seq = new AlphabeticSequence();
+
+            @Override
+            public String getNextColumnName(ColumnNamingContext ctx) {
+                return seq.next();
+            }
+
+            @Override
+            public void close() {
+            }
+        };
     }
 
 }

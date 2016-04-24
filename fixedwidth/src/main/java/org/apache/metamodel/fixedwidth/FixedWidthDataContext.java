@@ -34,6 +34,7 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
 import org.apache.metamodel.schema.builder.ColumnNamingContextImpl;
+import org.apache.metamodel.schema.builder.ColumnNamingSession;
 import org.apache.metamodel.schema.builder.ColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
@@ -134,10 +135,12 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
             }
             final ColumnNamingStrategy columnNamingStrategy = _configuration.getColumnNamingStrategy();
             if (columnNames != null) {
-                for (int i = 0; i < columnNames.length; i++) {
-                    final String intrinsicColumnName = hasColumnHeader ? columnNames[i] : null;
-                    columnNames[i] = columnNamingStrategy.getNextColumnName(new ColumnNamingContextImpl(table,
-                            intrinsicColumnName, i));
+                try (final ColumnNamingSession columnNamingSession = columnNamingStrategy.startColumnNamingSession()) {
+                    for (int i = 0; i < columnNames.length; i++) {
+                        final String intrinsicColumnName = hasColumnHeader ? columnNames[i] : null;
+                        columnNames[i] = columnNamingSession.getNextColumnName(new ColumnNamingContextImpl(table,
+                                intrinsicColumnName, i));
+                    }
                 }
             }
         } finally {

@@ -25,6 +25,7 @@ package org.apache.metamodel.schema.builder;
  */
 public class DelegatingIntrinsicSwitchColumnNamingStrategy implements ColumnNamingStrategy {
 
+    private static final long serialVersionUID = 1L;
     private final ColumnNamingStrategy intrinsicStrategy;
     private final ColumnNamingStrategy nonIntrinsicStrategy;
 
@@ -35,12 +36,25 @@ public class DelegatingIntrinsicSwitchColumnNamingStrategy implements ColumnNami
     }
 
     @Override
-    public String getNextColumnName(ColumnNamingContext ctx) {
-        final String intrinsicColumnName = ctx.getIntrinsicColumnName();
-        if (intrinsicColumnName == null || intrinsicColumnName.isEmpty()) {
-            return nonIntrinsicStrategy.getNextColumnName(ctx);
-        }
-        return intrinsicStrategy.getNextColumnName(ctx);
-    }
+    public ColumnNamingSession startColumnNamingSession() {
+        final ColumnNamingSession intrinsicSession = intrinsicStrategy.startColumnNamingSession();
+        final ColumnNamingSession nonIntrinsicSession = nonIntrinsicStrategy.startColumnNamingSession();
+        return new ColumnNamingSession() {
 
+            @Override
+            public String getNextColumnName(ColumnNamingContext ctx) {
+                final String intrinsicColumnName = ctx.getIntrinsicColumnName();
+                if (intrinsicColumnName == null || intrinsicColumnName.isEmpty()) {
+                    return nonIntrinsicSession.getNextColumnName(ctx);
+                }
+                return intrinsicSession.getNextColumnName(ctx);
+            }
+
+            @Override
+            public void close() {
+                intrinsicSession.close();
+                nonIntrinsicSession.close();
+            }
+        };
+    }
 }

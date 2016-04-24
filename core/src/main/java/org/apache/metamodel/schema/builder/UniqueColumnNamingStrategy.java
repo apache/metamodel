@@ -29,22 +29,34 @@ import java.util.Set;
  */
 public class UniqueColumnNamingStrategy implements ColumnNamingStrategy {
 
-    private final Set<String> names = new HashSet<>();
+    private static final long serialVersionUID = 1L;
 
     @Override
-    public String getNextColumnName(ColumnNamingContext ctx) {
-        final String intrinsicName = ctx.getIntrinsicColumnName();
-        boolean unique = names.add(intrinsicName);
-        if (unique) {
-            return intrinsicName;
-        }
+    public ColumnNamingSession startColumnNamingSession() {
+        return new ColumnNamingSession() {
 
-        String newName = null;
-        for (int i = 2; !unique; i++) {
-            newName = intrinsicName + i;
-            unique = names.add(newName);
-        }
-        return newName;
+            private final Set<String> names = new HashSet<>();
+
+            @Override
+            public String getNextColumnName(ColumnNamingContext ctx) {
+                final String intrinsicName = ctx.getIntrinsicColumnName();
+                boolean unique = names.add(intrinsicName);
+                if (unique) {
+                    return intrinsicName;
+                }
+
+                String newName = null;
+                for (int i = 2; !unique; i++) {
+                    newName = intrinsicName + i;
+                    unique = names.add(newName);
+                }
+                return newName;
+            }
+
+            @Override
+            public void close() {
+            }
+        };
     }
 
 }
