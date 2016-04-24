@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.schema.builder.ColumnNamingStrategy;
-import org.apache.metamodel.schema.builder.DefaultColumnNamingStrategy;
+import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
+import org.apache.metamodel.schema.naming.DefaultColumnNamingStrategy;
 import org.apache.metamodel.util.BaseObject;
 import org.apache.metamodel.util.FileHelper;
 

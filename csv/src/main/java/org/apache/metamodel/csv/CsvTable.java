@@ -27,9 +27,9 @@ import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.Relationship;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.TableType;
-import org.apache.metamodel.schema.builder.ColumnNamingContextImpl;
-import org.apache.metamodel.schema.builder.ColumnNamingSession;
-import org.apache.metamodel.schema.builder.ColumnNamingStrategy;
+import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
+import org.apache.metamodel.schema.naming.ColumnNamingSession;
+import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 
 import au.com.bytecode.opencsv.CSVReader;

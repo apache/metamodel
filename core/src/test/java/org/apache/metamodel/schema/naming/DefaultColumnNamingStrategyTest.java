@@ -16,10 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.schema.builder;
+package org.apache.metamodel.schema.naming;
 
 import static org.junit.Assert.*;
 
+import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
+import org.apache.metamodel.schema.naming.ColumnNamingSession;
+import org.apache.metamodel.schema.naming.DefaultColumnNamingStrategy;
 import org.junit.Test;
 
 public class DefaultColumnNamingStrategyTest {

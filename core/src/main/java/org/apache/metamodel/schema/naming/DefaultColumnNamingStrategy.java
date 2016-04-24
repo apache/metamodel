@@ -16,7 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.schema.builder;
+package org.apache.metamodel.schema.naming;
+
+import org.apache.metamodel.schema.builder.DelegatingIntrinsicSwitchColumnNamingStrategy;
 
 /**
  * The default (in most cases) {@link ColumnNamingStrategy} to use when no other
