@@ -21,6 +21,8 @@ package org.apache.metamodel.csv;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.metamodel.schema.builder.ColumnNamingStrategy;
+import org.apache.metamodel.schema.builder.DefaultColumnNamingStrategy;
 import org.apache.metamodel.util.BaseObject;
 import org.apache.metamodel.util.FileHelper;
 
@@ -50,6 +52,7 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
     private final char escapeChar;
     private final boolean failOnInconsistentRowLength;
     private final boolean multilineValues;
+    private final ColumnNamingStrategy columnNamingStrategy;
 
     public CsvConfiguration() {
         this(DEFAULT_COLUMN_NAME_LINE);
@@ -74,9 +77,16 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
             char escapeChar, boolean failOnInconsistentRowLength) {
         this(columnNameLineNumber, encoding, separatorChar, quoteChar, escapeChar, failOnInconsistentRowLength, true);
     }
-
+    
     public CsvConfiguration(int columnNameLineNumber, String encoding, char separatorChar, char quoteChar,
             char escapeChar, boolean failOnInconsistentRowLength, boolean multilineValues) {
+        this(columnNameLineNumber, null, encoding, separatorChar, quoteChar, escapeChar, failOnInconsistentRowLength,
+                multilineValues);
+    }
+
+    public CsvConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy, String encoding,
+            char separatorChar, char quoteChar, char escapeChar, boolean failOnInconsistentRowLength,
+            boolean multilineValues) {
         this.columnNameLineNumber = columnNameLineNumber;
         this.encoding = encoding;
         this.separatorChar = separatorChar;
@@ -84,6 +94,18 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
         this.escapeChar = escapeChar;
         this.failOnInconsistentRowLength = failOnInconsistentRowLength;
         this.multilineValues = multilineValues;
+        this.columnNamingStrategy = null;
+    }
+    
+    /**
+     * Gets a {@link ColumnNamingStrategy} to use if needed.
+     * @return
+     */
+    public ColumnNamingStrategy getColumnNamingStrategy() {
+        if (columnNamingStrategy == null) {
+            return new DefaultColumnNamingStrategy();
+        }
+        return columnNamingStrategy;
     }
 
     /**

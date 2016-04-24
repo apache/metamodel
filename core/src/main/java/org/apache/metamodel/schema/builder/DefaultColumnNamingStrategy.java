@@ -24,6 +24,8 @@ package org.apache.metamodel.schema.builder;
  */
 public class DefaultColumnNamingStrategy extends DelegatingIntrinsicSwitchColumnNamingStrategy {
 
+    private static final long serialVersionUID = 1L;
+
     public DefaultColumnNamingStrategy() {
         super(new UniqueColumnNamingStrategy(), new AlphabeticColumnNamingStrategy());
     }
