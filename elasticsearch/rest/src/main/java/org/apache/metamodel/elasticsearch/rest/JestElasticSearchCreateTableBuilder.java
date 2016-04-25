@@ -18,29 +18,33 @@
  */
 package org.apache.metamodel.elasticsearch.rest;
 
-import io.searchbox.indices.mapping.PutMapping;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.create.AbstractTableCreationBuilder;
 import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
-import org.apache.metamodel.schema.*;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 
-import java.util.List;
+import io.searchbox.indices.mapping.PutMapping;
 
 final class JestElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder<JestElasticSearchUpdateCallback> {
-    public JestElasticSearchCreateTableBuilder(JestElasticSearchUpdateCallback updateCallback, Schema schema, String name) {
+    
+    public JestElasticSearchCreateTableBuilder(JestElasticSearchUpdateCallback updateCallback, Schema schema,
+            String name) {
         super(updateCallback, schema, name);
     }
 
     @Override
     public Table execute() throws MetaModelException {
         final MutableTable table = getTable();
-        final List<Object> sourceProperties = ElasticSearchUtils.getSourceProperties(table);
+        final Object source = ElasticSearchUtils.getMappingSource(table);
 
         final ElasticSearchRestDataContext dataContext = getUpdateCallback().getDataContext();
         final String indexName = dataContext.getIndexName();
 
-        final PutMapping putMapping = new PutMapping.Builder(indexName, table.getName(), sourceProperties).build();
-        JestClientExecutor.execute(dataContext.getElasticSearchClient(), putMapping);
+        final PutMapping putMapping = new PutMapping.Builder(indexName, table.getName(), source).build();
+        getUpdateCallback().execute(putMapping);
 
         final MutableSchema schema = (MutableSchema) getSchema();
         schema.addTable(table);

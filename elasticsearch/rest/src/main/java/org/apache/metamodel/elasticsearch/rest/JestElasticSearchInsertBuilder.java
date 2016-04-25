@@ -18,22 +18,19 @@
  */
 package org.apache.metamodel.elasticsearch.rest;
 
-import io.searchbox.core.DocumentResult;
-import io.searchbox.core.Index;
-import io.searchbox.params.Parameters;
-import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
-import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.Table;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.Map;
 
-final class JestElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<JestElasticSearchUpdateCallback> {
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
+import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.Table;
 
-    private static final Logger logger = LoggerFactory.getLogger(JestElasticSearchInsertBuilder.class);
+import io.searchbox.core.Index;
+import io.searchbox.params.Parameters;
+
+final class JestElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<JestElasticSearchUpdateCallback> {
 
     public JestElasticSearchInsertBuilder(JestElasticSearchUpdateCallback updateCallback, Table table) {
         super(updateCallback, table);
@@ -41,10 +38,10 @@ final class JestElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<J
 
     @Override
     public void execute() throws MetaModelException {
-        final ElasticSearchRestDataContext dataContext = getUpdateCallback().getDataContext();
+        final JestElasticSearchUpdateCallback updateCallback = getUpdateCallback();
+        final ElasticSearchRestDataContext dataContext = updateCallback.getDataContext();
         final String indexName = dataContext.getIndexName();
         final String documentType = getTable().getName();
-
 
         final Map<String, Object> source = new HashMap<>();
         final Column[] columns = getColumns();
@@ -52,26 +49,26 @@ final class JestElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<J
         String id = null;
         for (int i = 0; i < columns.length; i++) {
             if (isSet(columns[i])) {
-                final String name = columns[i].getName();
+                final String columnName = columns[i].getName();
+
                 final Object value = values[i];
-                if (ElasticSearchRestDataContext.FIELD_ID.equals(name)) {
+                if (ElasticSearchRestDataContext.FIELD_ID.equals(columnName)) {
                     if (value != null) {
                         id = value.toString();
                     }
                 } else {
-                    source.put(name, value);
+                    final String fieldName = ElasticSearchUtils.getValidatedFieldName(columnName);
+                    source.put(fieldName, value);
                 }
             }
         }
 
         assert !source.isEmpty();
 
-        Index index = new Index.Builder(source).index(indexName).type(documentType).id(id).setParameter(
+        final Index index = new Index.Builder(source).index(indexName).type(documentType).id(id).setParameter(
                 Parameters.OP_TYPE, "create").build();
 
-        final DocumentResult result = JestClientExecutor.execute(dataContext.getElasticSearchClient(), index);
-
-        logger.debug("Inserted document: id={}", result.getId());
+        getUpdateCallback().execute(index);
     }
 
 }

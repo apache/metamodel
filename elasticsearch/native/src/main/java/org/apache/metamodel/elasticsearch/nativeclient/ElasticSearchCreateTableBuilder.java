@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.elasticsearch.nativeclient;
 
-import java.util.List;
-
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.create.AbstractTableCreationBuilder;
 import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
@@ -44,7 +42,7 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
     @Override
     public Table execute() throws MetaModelException {
         final MutableTable table = getTable();
-        final List<Object> sourceProperties = ElasticSearchUtils.getSourceProperties(table);
+        final Object source = ElasticSearchUtils.getMappingSource(table);
 
         final ElasticSearchDataContext dataContext = getUpdateCallback().getDataContext();
         final IndicesAdminClient indicesAdmin = dataContext.getElasticSearchClient().admin().indices();
@@ -52,7 +50,7 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
 
         final PutMappingRequestBuilder requestBuilder = new PutMappingRequestBuilder(indicesAdmin)
                 .setIndices(indexName).setType(table.getName());
-        requestBuilder.setSource(sourceProperties.toArray());
+        requestBuilder.setSource(source);
         final PutMappingResponse result = requestBuilder.execute().actionGet();
 
         logger.debug("PutMapping response: acknowledged={}", result.isAcknowledged());
