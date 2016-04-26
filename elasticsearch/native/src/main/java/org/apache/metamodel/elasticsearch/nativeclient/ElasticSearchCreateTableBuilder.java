@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.elasticsearch.nativeclient;
 
+import java.util.Map;
+
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.create.AbstractTableCreationBuilder;
 import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
@@ -50,7 +52,12 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
 
         final PutMappingRequestBuilder requestBuilder = new PutMappingRequestBuilder(indicesAdmin)
                 .setIndices(indexName).setType(table.getName());
-        requestBuilder.setSource(source);
+        if (source instanceof Map) {
+            // ensure proper method linking
+            requestBuilder.setSource((Map<?, ?>) source);
+        } else {
+            requestBuilder.setSource(source);
+        }
         final PutMappingResponse result = requestBuilder.execute().actionGet();
 
         logger.debug("PutMapping response: acknowledged={}", result.isAcknowledged());
