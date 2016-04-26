@@ -34,7 +34,7 @@ public class DefaultColumnNamingStrategyTest {
         try (final ColumnNamingSession session = namingStrategy.startColumnNamingSession()) {
             assertEquals("foo", session.getNextColumnName(new ColumnNamingContextImpl(null, "foo", 0)));
             assertEquals("bar", session.getNextColumnName(new ColumnNamingContextImpl(null, "bar", 1)));
-            assertEquals("foo2", session.getNextColumnName(new ColumnNamingContextImpl(null, "foo", 2)));
+            assertEquals("foo_2", session.getNextColumnName(new ColumnNamingContextImpl(null, "foo", 2)));
         }
     }
 
