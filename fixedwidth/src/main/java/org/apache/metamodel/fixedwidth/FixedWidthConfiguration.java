@@ -97,7 +97,7 @@ public final class FixedWidthConfiguration extends BaseObject implements
         this.encoding = encoding;
         this.fixedValueWidth = -1;
         this.columnNameLineNumber = NO_COLUMN_NAME_LINE;
-        this.columnNamingStrategy = new CustomColumnNamingStrategy(CollectionUtils.map(columnSpecs,
+        this.columnNamingStrategy = ColumnNamingStrategies.customNames(CollectionUtils.map(columnSpecs,
                 new HasNameMapper()));
         this.valueWidths = new int[columnSpecs.size()];
         for (int i = 0; i < valueWidths.length; i++) {

@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.schema.naming;
 
+import java.util.List;
+
 /**
  * Constructors and common utilities for {@link ColumnNamingStrategy} objects.
  */
@@ -31,5 +33,13 @@ public class ColumnNamingStrategies {
 
     public static ColumnNamingStrategy defaultStrategy() {
         return DEFAULT_STRATEGY;
+    }
+
+    public static ColumnNamingStrategy customNames(List<String> columnNames) {
+        return new CustomColumnNamingStrategy(columnNames);
+    }
+
+    public static ColumnNamingStrategy customNames(String ... columnNames) {
+        return new CustomColumnNamingStrategy(columnNames);
     }
 }
