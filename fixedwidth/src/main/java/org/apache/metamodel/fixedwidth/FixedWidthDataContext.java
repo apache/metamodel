@@ -33,7 +33,9 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
-import org.apache.metamodel.util.AlphabeticSequence;
+import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
+import org.apache.metamodel.schema.naming.ColumnNamingSession;
+import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Resource;
@@ -121,17 +123,23 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
         final FixedWidthReader reader = createReader();
         final String[] columnNames;
         try {
-            if (_configuration.getColumnNameLineNumber() != FixedWidthConfiguration.NO_COLUMN_NAME_LINE) {
+            final boolean hasColumnHeader = _configuration
+                    .getColumnNameLineNumber() != FixedWidthConfiguration.NO_COLUMN_NAME_LINE;
+            if (hasColumnHeader) {
                 for (int i = 1; i < _configuration.getColumnNameLineNumber(); i++) {
                     reader.readLine();
                 }
                 columnNames = reader.readLine();
             } else {
                 columnNames = reader.readLine();
-                if (columnNames != null) {
-                    AlphabeticSequence sequence = new AlphabeticSequence();
+            }
+            final ColumnNamingStrategy columnNamingStrategy = _configuration.getColumnNamingStrategy();
+            if (columnNames != null) {
+                try (final ColumnNamingSession columnNamingSession = columnNamingStrategy.startColumnNamingSession()) {
                     for (int i = 0; i < columnNames.length; i++) {
-                        columnNames[i] = sequence.next();
+                        final String intrinsicColumnName = hasColumnHeader ? columnNames[i] : null;
+                        columnNames[i] = columnNamingSession.getNextColumnName(new ColumnNamingContextImpl(table,
+                                intrinsicColumnName, i));
                     }
                 }
             }
@@ -179,11 +187,11 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
         final Reader fileReader = FileHelper.getReader(inputStream, _configuration.getEncoding());
         final FixedWidthReader reader;
         if (_configuration.isConstantValueWidth()) {
-            reader = new FixedWidthReader(fileReader, _configuration.getFixedValueWidth(),
-                    _configuration.isFailOnInconsistentLineWidth());
+            reader = new FixedWidthReader(fileReader, _configuration.getFixedValueWidth(), _configuration
+                    .isFailOnInconsistentLineWidth());
         } else {
-            reader = new FixedWidthReader(fileReader, _configuration.getValueWidths(),
-                    _configuration.isFailOnInconsistentLineWidth());
+            reader = new FixedWidthReader(fileReader, _configuration.getValueWidths(), _configuration
+                    .isFailOnInconsistentLineWidth());
         }
         return reader;
     }
