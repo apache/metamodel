@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.elasticsearch.rest;
 
+import java.util.List;
+
 import org.apache.metamodel.AbstractUpdateCallback;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.UpdateCallback;
@@ -27,6 +29,7 @@ import org.apache.metamodel.drop.TableDropBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.elasticsearch.action.bulk.BulkRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +38,8 @@ import io.searchbox.action.BulkableAction;
 import io.searchbox.client.JestResult;
 import io.searchbox.core.Bulk;
 import io.searchbox.core.Bulk.Builder;
+import io.searchbox.core.BulkResult;
+import io.searchbox.core.BulkResult.BulkResultItem;
 import io.searchbox.indices.Refresh;
 
 /**
@@ -139,6 +144,13 @@ final class JestElasticSearchUpdateCallback extends AbstractUpdateCallback {
     private void executeBlocking(Action<?> action) {
         final JestResult result = JestClientExecutor.execute(getDataContext().getElasticSearchClient(), action);
         if (!result.isSucceeded()) {
+            if (result instanceof BulkResult) {
+                final List<BulkResultItem> failedItems = ((BulkResult) result).getFailedItems();
+                for (int i = 0; i < failedItems.size(); i++) {
+                    final BulkResultItem failedItem = failedItems.get(i);
+                    logger.error("Bulk failed with item no. {} of {}: id={} op={} status={} error={}", i+1, failedItems.size(), failedItem.id, failedItem.operation, failedItem.status, failedItem.error);
+                }
+            }
             throw new MetaModelException(result.getResponseCode() + " - " + result.getErrorMessage());
         }
     }
