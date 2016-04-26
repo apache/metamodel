@@ -16,11 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.schema.builder;
-
-import org.apache.metamodel.schema.naming.ColumnNamingContext;
-import org.apache.metamodel.schema.naming.ColumnNamingSession;
-import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
+package org.apache.metamodel.schema.naming;
 
 /**
  * A {@link ColumnNamingStrategy} that switches between two other

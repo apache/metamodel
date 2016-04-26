@@ -25,7 +25,7 @@ import java.util.Set;
  * A {@link ColumnNamingStrategy} that uses the intrinsic column names, but
  * ensures that all column names are unique. When duplicate names are
  * encountered a number will be appended yielding column names like "name",
- * "name1", "name2" etc.
+ * "name_2", "name_3" etc.
  */
 public class UniqueColumnNamingStrategy implements ColumnNamingStrategy {
 
@@ -47,7 +47,7 @@ public class UniqueColumnNamingStrategy implements ColumnNamingStrategy {
 
                 String newName = null;
                 for (int i = 2; !unique; i++) {
-                    newName = intrinsicName + i;
+                    newName = intrinsicName + '_' + i;
                     unique = names.add(newName);
                 }
                 return newName;

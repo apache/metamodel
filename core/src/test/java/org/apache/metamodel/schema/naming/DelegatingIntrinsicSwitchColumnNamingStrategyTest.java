@@ -20,21 +20,23 @@ package org.apache.metamodel.schema.naming;
 
 import static org.junit.Assert.*;
 
-import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
-import org.apache.metamodel.schema.naming.ColumnNamingSession;
-import org.apache.metamodel.schema.naming.DefaultColumnNamingStrategy;
 import org.junit.Test;
 
-public class DefaultColumnNamingStrategyTest {
+public class DelegatingIntrinsicSwitchColumnNamingStrategyTest {
 
-    private final DefaultColumnNamingStrategy namingStrategy = new DefaultColumnNamingStrategy();
+    private final ColumnNamingStrategy namingStrategy = ColumnNamingStrategies.defaultStrategy();
+    
+    @Test
+    public void testItIsTheDefaultStrategy() throws Exception {
+        assertTrue(namingStrategy instanceof DelegatingIntrinsicSwitchColumnNamingStrategy);
+    }
 
     @Test
     public void testDuplicateColumnNames() throws Exception {
         try (final ColumnNamingSession session = namingStrategy.startColumnNamingSession()) {
             assertEquals("foo", session.getNextColumnName(new ColumnNamingContextImpl(null, "foo", 0)));
             assertEquals("bar", session.getNextColumnName(new ColumnNamingContextImpl(null, "bar", 1)));
-            assertEquals("foo2", session.getNextColumnName(new ColumnNamingContextImpl(null, "foo", 2)));
+            assertEquals("foo_2", session.getNextColumnName(new ColumnNamingContextImpl(null, "foo", 2)));
         }
     }
 

@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.schema.naming;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -33,6 +34,10 @@ public class CustomColumnNamingStrategy implements ColumnNamingStrategy {
 
     public CustomColumnNamingStrategy(List<String> columnNames) {
         this.columnNames = columnNames;
+    }
+
+    public CustomColumnNamingStrategy(String... columnNames) {
+        this.columnNames = Arrays.asList(columnNames);
     }
 
     @Override

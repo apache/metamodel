@@ -18,18 +18,18 @@
  */
 package org.apache.metamodel.schema.naming;
 
-import org.apache.metamodel.schema.builder.DelegatingIntrinsicSwitchColumnNamingStrategy;
-
 /**
- * The default (in most cases) {@link ColumnNamingStrategy} to use when no other
- * strategy is specified.
+ * Constructors and common utilities for {@link ColumnNamingStrategy} objects.
  */
-public class DefaultColumnNamingStrategy extends DelegatingIntrinsicSwitchColumnNamingStrategy {
+public class ColumnNamingStrategies {
 
-    private static final long serialVersionUID = 1L;
+    private static final DelegatingIntrinsicSwitchColumnNamingStrategy DEFAULT_STRATEGY = new DelegatingIntrinsicSwitchColumnNamingStrategy(
+            new UniqueColumnNamingStrategy(), new AlphabeticColumnNamingStrategy());
 
-    public DefaultColumnNamingStrategy() {
-        super(new UniqueColumnNamingStrategy(), new AlphabeticColumnNamingStrategy());
+    private ColumnNamingStrategies() {
     }
 
+    public static ColumnNamingStrategy defaultStrategy() {
+        return DEFAULT_STRATEGY;
+    }
 }

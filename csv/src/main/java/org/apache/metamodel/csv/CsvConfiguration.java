@@ -21,8 +21,8 @@ package org.apache.metamodel.csv;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.metamodel.schema.naming.ColumnNamingStrategies;
 import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
-import org.apache.metamodel.schema.naming.DefaultColumnNamingStrategy;
 import org.apache.metamodel.util.BaseObject;
 import org.apache.metamodel.util.FileHelper;
 
@@ -103,7 +103,7 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
      */
     public ColumnNamingStrategy getColumnNamingStrategy() {
         if (columnNamingStrategy == null) {
-            return new DefaultColumnNamingStrategy();
+            return ColumnNamingStrategies.defaultStrategy();
         }
         return columnNamingStrategy;
     }
