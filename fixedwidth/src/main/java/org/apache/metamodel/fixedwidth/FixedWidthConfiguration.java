@@ -25,7 +25,6 @@ import java.util.List;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.naming.ColumnNamingStrategies;
 import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
-import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
 import org.apache.metamodel.util.BaseObject;
 import org.apache.metamodel.util.CollectionUtils;
 import org.apache.metamodel.util.FileHelper;
