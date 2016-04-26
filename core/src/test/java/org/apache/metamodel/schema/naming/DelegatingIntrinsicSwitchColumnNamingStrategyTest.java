@@ -18,13 +18,18 @@
  */
 package org.apache.metamodel.schema.naming;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-public class DefaultColumnNamingStrategyTest {
+public class DelegatingIntrinsicSwitchColumnNamingStrategyTest {
 
     private final ColumnNamingStrategy namingStrategy = ColumnNamingStrategies.defaultStrategy();
+    
+    @Test
+    public void testItIsTheDefaultStrategy() throws Exception {
+        assertTrue(namingStrategy instanceof DelegatingIntrinsicSwitchColumnNamingStrategy);
+    }
 
     @Test
     public void testDuplicateColumnNames() throws Exception {
