@@ -2,6 +2,7 @@
 
  * [METAMODEL-235] - Fixed a bug related to handling of null or missing values in ElasticSearch using REST client.
  * [METAMODEL-225] - Fixed support for nested objects and arrays in ElasticSearch using REST client.
+ * [METAMODEL-244] - Added ColumnNamingStrategies concept which allows custom column naming and column name overriding.
 
 ### Apache MetaModel 4.5.2
 
