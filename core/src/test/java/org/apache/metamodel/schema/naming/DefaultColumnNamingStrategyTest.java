@@ -18,16 +18,13 @@
  */
 package org.apache.metamodel.schema.naming;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
-import org.apache.metamodel.schema.naming.ColumnNamingSession;
-import org.apache.metamodel.schema.naming.DefaultColumnNamingStrategy;
 import org.junit.Test;
 
 public class DefaultColumnNamingStrategyTest {
 
-    private final DefaultColumnNamingStrategy namingStrategy = new DefaultColumnNamingStrategy();
+    private final ColumnNamingStrategy namingStrategy = ColumnNamingStrategies.defaultStrategy();
 
     @Test
     public void testDuplicateColumnNames() throws Exception {
