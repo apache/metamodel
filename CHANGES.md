@@ -4,6 +4,7 @@
  * [METAMODEL-225] - Fixed support for nested objects and arrays in ElasticSearch using REST client.
  * [METAMODEL-244] - Added ColumnNamingStrategies concept which allows custom column naming and column name overriding.
  * [METAMODEL-242] - Fixed issue when de-serializing old enum-instances of FunctionType.
+ * [METAMODEL-247] - Added FixedWidthConfigurationReader for reading fixed width file metadata from external files.
 
 ### Apache MetaModel 4.5.2
 
