@@ -26,7 +26,9 @@ import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.naming.ColumnNamingStrategies;
 import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.util.BaseObject;
+import org.apache.metamodel.util.CollectionUtils;
 import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.HasNameMapper;
 
 /**
  * Configuration of metadata about a fixed width values datacontext.
@@ -84,8 +86,26 @@ public final class FixedWidthConfiguration extends BaseObject implements
         this.columnNamingStrategy = columnNamingStrategy;
         this.valueWidths = valueWidths;
     }
+    
+    public FixedWidthConfiguration(String encoding, List<FixedWidthColumnSpec> columnSpecs) {
+        this(encoding, columnSpecs, false);
+    }
 
-	/**
+    public FixedWidthConfiguration(String encoding, List<FixedWidthColumnSpec> columnSpecs,
+            boolean failOnInconsistentLineWidth) {
+        this.encoding = encoding;
+        this.fixedValueWidth = -1;
+        this.columnNameLineNumber = NO_COLUMN_NAME_LINE;
+        this.columnNamingStrategy = ColumnNamingStrategies.customNames(CollectionUtils.map(columnSpecs,
+                new HasNameMapper()));
+        this.valueWidths = new int[columnSpecs.size()];
+        for (int i = 0; i < valueWidths.length; i++) {
+            valueWidths[i] = columnSpecs.get(i).getWidth();
+        }
+        this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
+    }
+
+    /**
 	 * The line number (1 based) from which to get the names of the columns.
 	 * 
 	 * @return an int representing the line number of the column headers/names.
