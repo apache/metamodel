@@ -37,7 +37,7 @@ public class CustomColumnNamingStrategy implements ColumnNamingStrategy {
     }
 
     public CustomColumnNamingStrategy(String... columnNames) {
-        this.columnNames = Arrays.asList(columnNames);
+        this(Arrays.asList(columnNames));
     }
 
     @Override
