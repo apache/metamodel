@@ -18,17 +18,10 @@
  */
 package org.apache.metamodel;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
+import com.google.common.collect.Lists;
 import org.apache.metamodel.data.CachingDataSetHeader;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
@@ -46,6 +39,7 @@ import org.apache.metamodel.data.SubSelectionDataSet;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.GroupByItem;
+import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.OrderByItem;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.ScalarFunction;
@@ -176,70 +170,35 @@ public final class MetaModelHelper {
     public static DataSet getCarthesianProduct(DataSet... fromDataSets) {
         return getCarthesianProduct(fromDataSets, new FilterItem[0]);
     }
+    
+    
+    
 
     public static DataSet getCarthesianProduct(DataSet[] fromDataSets, Iterable<FilterItem> whereItems) {
+        assert(fromDataSets.length>0);
         // First check if carthesian product is even nescesary
         if (fromDataSets.length == 1) {
             return getFiltered(fromDataSets[0], whereItems);
         }
+        // do a nested loop join, no matter what
+        Iterator<DataSet> dsIter = Lists.newArrayList(fromDataSets).iterator();
 
-        List<SelectItem> selectItems = new ArrayList<SelectItem>();
-        for (DataSet dataSet : fromDataSets) {
-            for (int i = 0; i < dataSet.getSelectItems().length; i++) {
-                SelectItem item = dataSet.getSelectItems()[i];
-                selectItems.add(item);
-            }
+        DataSet joined = dsIter.next();
+
+        while(dsIter.hasNext()){
+            joined = JoinHelper.nestedLoopJoin(
+                    dsIter.next(),
+                    joined,
+                    Lists.newArrayList(whereItems));
+
         }
 
-        int selectItemOffset = 0;
-        List<Object[]> data = new ArrayList<Object[]>();
-        for (int fromDataSetIndex = 0; fromDataSetIndex < fromDataSets.length; fromDataSetIndex++) {
-            DataSet fromDataSet = fromDataSets[fromDataSetIndex];
-            SelectItem[] fromSelectItems = fromDataSet.getSelectItems();
-            if (fromDataSetIndex == 0) {
-                while (fromDataSet.next()) {
-                    Object[] values = fromDataSet.getRow().getValues();
-                    Object[] row = new Object[selectItems.size()];
-                    System.arraycopy(values, 0, row, selectItemOffset, values.length);
-                    data.add(row);
-                }
-                fromDataSet.close();
-            } else {
-                List<Object[]> fromDataRows = new ArrayList<Object[]>();
-                while (fromDataSet.next()) {
-                    fromDataRows.add(fromDataSet.getRow().getValues());
-                }
-                fromDataSet.close();
-                for (int i = 0; i < data.size(); i = i + fromDataRows.size()) {
-                    Object[] originalRow = data.get(i);
-                    data.remove(i);
-                    for (int j = 0; j < fromDataRows.size(); j++) {
-                        Object[] newRow = fromDataRows.get(j);
-                        System.arraycopy(newRow, 0, originalRow, selectItemOffset, newRow.length);
-                        data.add(i + j, originalRow.clone());
-                    }
-                }
-            }
-            selectItemOffset += fromSelectItems.length;
-        }
+        return joined;
 
-        if (data.isEmpty()) {
-            return new EmptyDataSet(selectItems);
-        }
 
-        final DataSetHeader header = new CachingDataSetHeader(selectItems);
-        final List<Row> rows = new ArrayList<Row>(data.size());
-        for (Object[] objects : data) {
-            rows.add(new DefaultRow(header, objects, null));
-        }
-
-        DataSet result = new InMemoryDataSet(header, rows);
-        if (whereItems != null) {
-            DataSet filteredResult = getFiltered(result, whereItems);
-            result = filteredResult;
-        }
-        return result;
     }
+
+    
 
     public static DataSet getCarthesianProduct(DataSet[] fromDataSets, FilterItem... filterItems) {
         return getCarthesianProduct(fromDataSets, Arrays.asList(filterItems));
