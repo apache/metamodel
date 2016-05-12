@@ -399,6 +399,10 @@ final class JdbcMetadataLoader implements MetadataLoader {
     
     @Override
     public void loadRelations(JdbcSchema jdbcSchema) {
+        final int identity = System.identityHashCode(jdbcSchema);
+        if (_loadedRelations.contains(identity)) {
+            return;
+        }
         final Connection connection = _dataContext.getConnection();
         try {
             loadRelations(jdbcSchema, connection);
