@@ -149,6 +149,11 @@ final class JdbcMetadataLoader implements MetadataLoader {
     
     @Override
     public void loadIndexes(JdbcTable jdbcTable) {
+        final int identity = System.identityHashCode(jdbcTable);
+        if (_loadedIndexes.contains(identity)) {
+            return;
+        }
+
         final Connection connection = _dataContext.getConnection();
         try {
             loadIndexes(jdbcTable, connection);
@@ -180,6 +185,11 @@ final class JdbcMetadataLoader implements MetadataLoader {
     
     @Override
     public void loadPrimaryKeys(JdbcTable jdbcTable) {
+        final int identity = System.identityHashCode(jdbcTable);
+        if (_loadedPrimaryKeys.contains(identity)) {
+            return;
+        }
+
         final Connection connection = _dataContext.getConnection();
         try {
             loadPrimaryKeys(jdbcTable, connection);
@@ -268,6 +278,11 @@ final class JdbcMetadataLoader implements MetadataLoader {
     
     @Override
     public void loadColumns(JdbcTable jdbcTable) {
+        final int identity = System.identityHashCode(jdbcTable);
+        if (_loadedColumns.contains(identity)) {
+            return;
+        }
+
         final Connection connection = _dataContext.getConnection();
         try {
             loadColumns(jdbcTable, connection);
@@ -384,6 +399,10 @@ final class JdbcMetadataLoader implements MetadataLoader {
     
     @Override
     public void loadRelations(JdbcSchema jdbcSchema) {
+        final int identity = System.identityHashCode(jdbcSchema);
+        if (_loadedRelations.contains(identity)) {
+            return;
+        }
         final Connection connection = _dataContext.getConnection();
         try {
             loadRelations(jdbcSchema, connection);
