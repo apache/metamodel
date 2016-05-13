@@ -1,0 +1,4 @@
+Name,SASColumnType,BeginPosition,EndPosition,ReadFlag,Desc,SASFormat,SASInformat
+Record type,C,1,1,y,Record Type,$char.,$char.
+Description,C,2,21,y,Description of record,$char.,$char.
+Initials,C,22,23,y,Initials of record,,

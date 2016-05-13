@@ -24,6 +24,7 @@ import java.net.URL;
 import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -37,10 +38,14 @@ import org.apache.metamodel.excel.ExcelConfiguration;
 import org.apache.metamodel.excel.ExcelDataContext;
 import org.apache.metamodel.fixedwidth.FixedWidthConfiguration;
 import org.apache.metamodel.fixedwidth.FixedWidthDataContext;
+import org.apache.metamodel.hbase.HBaseConfiguration;
+import org.apache.metamodel.hbase.HBaseDataContext;
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.json.JsonDataContext;
 import org.apache.metamodel.mongodb.mongo3.MongoDbDataContext;
 import org.apache.metamodel.openoffice.OpenOfficeDataContext;
+import org.apache.metamodel.pojo.PojoDataContext;
+import org.apache.metamodel.pojo.TableDataProvider;
 import org.apache.metamodel.salesforce.SalesforceDataContext;
 import org.apache.metamodel.schema.TableType;
 import org.apache.metamodel.sugarcrm.SugarCrmDataContext;
@@ -689,4 +694,91 @@ public class DataContextFactory {
     public static DataContext createCassandraDataContext(Cluster cluster, String keySpaceName) {
         return new CassandraDataContext(cluster, keySpaceName);
     }
+    
+	/**
+	 * Creates a new HBase datacontext.
+	 * 
+	 * @param configuration
+	 *            {@code HBaseConfiguration} object containing detailed HBase
+	 *            configuration properties.
+	 * 
+	 * @return a DataContext object that matches the request
+	 */
+    public static DataContext createHBaseDataContext(HBaseConfiguration configuration){
+    	return new HBaseDataContext(configuration);
+    }
+    
+	/**
+	 * Creates a new HBase datacontext.
+	 * 
+	 * @param configuration
+	 *            {@code HBaseConfiguration} object containing detailed HBase
+	 *            configuration properties.
+	 * 
+	 * @param connection
+	 *            A cluster connection encapsulating lower level individual
+	 *            connections to actual servers and a connection to zookeeper.
+	 * 
+	 * @return a DataContext object that matches the request
+	 */
+	public static DataContext createHBaseDataContext(HBaseConfiguration configuration,org.apache.hadoop.hbase.client.Connection connection) {
+		return new HBaseDataContext(configuration, connection);
+	}
+	
+	/**
+	 * Creates a new POJO data context that is empty but can be populated at
+	 * will.
+	 * 
+	 * @return a DataContext object that matches the request
+	 * 
+	 */
+	public static DataContext createPojoDataContext() {
+		return new PojoDataContext();
+	}
+
+	/**
+	 * Creates a new POJO data context based on the provided
+	 * {@link TableDataProvider}s.
+	 * 
+	 * @param tables
+	 *            list of tables
+	 * 
+	 * @return DataContext object that matches the request
+	 */
+	public static DataContext createPojoDataContext(List<TableDataProvider<?>> tables) {
+		return new PojoDataContext(tables);
+	}
+
+	/**
+	 * Creates a new POJO data context based on the provided
+	 * {@link TableDataProvider}s.
+	 * 
+	 * @param schemaName
+	 *            the name of the created schema
+	 * 
+	 * @param tables
+	 *            table information
+	 * 
+	 * @return DataContext object that matches the request
+	 * 
+	 */
+	public static DataContext createPojoDataContext(String schemaName,TableDataProvider<?>[] tables) {
+		return new PojoDataContext(schemaName, tables);
+	}
+
+	/**
+	 * Creates a new POJO data context based on the provided
+	 * {@link TableDataProvider}s.
+	 * 
+	 * @param schemaName
+	 *            the name of the created schema
+	 * 
+	 * @param tables
+	 *            list of tables
+	 * 
+	 * @return DataContext object that matches the request
+	 */
+	public static DataContext createPojoDataContext(String schemaName,List<TableDataProvider<?>> tables) {
+		return new PojoDataContext(schemaName, tables);
+	}
 }

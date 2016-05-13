@@ -53,7 +53,8 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         super.setUp();
 
         if (isConfigured()) {
-            httpClient = new StdHttpClient.Builder().host(getHostname()).build();
+            final int timeout = 8 * 1000; // 8 seconds should be more than enough
+            httpClient = new StdHttpClient.Builder().socketTimeout(timeout).host(getHostname()).build();
 
             // set up a simple database
             couchDbInstance = new StdCouchDbInstance(httpClient);

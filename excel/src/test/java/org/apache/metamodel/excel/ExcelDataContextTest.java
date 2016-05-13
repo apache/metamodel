@@ -276,7 +276,7 @@ public class ExcelDataContextTest extends TestCase {
 
         assertNotNull(table);
 
-        assertEquals("[[Column 1], hello]", Arrays.toString(table.getColumnNames()));
+        assertEquals("[A, hello]", Arrays.toString(table.getColumnNames()));
 
         Query q = dc.query().from(table).select(table.getColumns()).toQuery();
         DataSet ds = dc.executeQuery(q);
@@ -427,7 +427,7 @@ public class ExcelDataContextTest extends TestCase {
         Table table = schema.getTables()[0];
         assertEquals("[Column[name=a,columnNumber=0,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
                 + "Column[name=b,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
-                + "Column[name=[Column 3],columnNumber=2,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=A,columnNumber=2,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
                 + "Column[name=d,columnNumber=3,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]]",
                 Arrays.toString(table.getColumns()));
 

@@ -16,30 +16,30 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.schema.naming;
+package org.apache.metamodel.fixedwidth;
 
-import java.util.List;
+import org.apache.metamodel.util.HasName;
 
 /**
- * Constructors and common utilities for {@link ColumnNamingStrategy} objects.
+ * Represents the specification of a single column for a
+ * {@link FixedWidthDataContext}.
  */
-public class ColumnNamingStrategies {
+public final class FixedWidthColumnSpec implements HasName {
 
-    private static final DelegatingIntrinsicSwitchColumnNamingStrategy DEFAULT_STRATEGY = new DelegatingIntrinsicSwitchColumnNamingStrategy(
-            new UniqueColumnNamingStrategy(), new AlphabeticColumnNamingStrategy());
+    private final String name;
+    private final int width;
 
-    private ColumnNamingStrategies() {
+    public FixedWidthColumnSpec(String name, int width) {
+        this.name = name;
+        this.width = width;
     }
 
-    public static ColumnNamingStrategy defaultStrategy() {
-        return DEFAULT_STRATEGY;
+    @Override
+    public String getName() {
+        return name;
     }
 
-    public static ColumnNamingStrategy customNames(List<String> columnNames) {
-        return new CustomColumnNamingStrategy(columnNames);
-    }
-
-    public static ColumnNamingStrategy customNames(String ... columnNames) {
-        return new CustomColumnNamingStrategy(columnNames);
+    public int getWidth() {
+        return width;
     }
 }

@@ -21,6 +21,8 @@ package org.apache.metamodel.excel;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.metamodel.schema.naming.ColumnNamingStrategies;
+import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.util.BaseObject;
 
 /**
@@ -37,6 +39,7 @@ public final class ExcelConfiguration extends BaseObject implements
 	public static final int DEFAULT_COLUMN_NAME_LINE = 1;
 
 	private final int columnNameLineNumber;
+	private final ColumnNamingStrategy columnNamingStrategy;
 	private final boolean skipEmptyLines;
 	private final boolean skipEmptyColumns;
 
@@ -44,12 +47,28 @@ public final class ExcelConfiguration extends BaseObject implements
 		this(DEFAULT_COLUMN_NAME_LINE, true, false);
 	}
 
-	public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines,
-			boolean skipEmptyColumns) {
-		this.columnNameLineNumber = columnNameLineNumber;
-		this.skipEmptyLines = skipEmptyLines;
-		this.skipEmptyColumns = skipEmptyColumns;
-	}
+    public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns) {
+        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns);
+    }
+
+    public ExcelConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy,
+            boolean skipEmptyLines, boolean skipEmptyColumns) {
+        this.columnNameLineNumber = columnNameLineNumber;
+        this.skipEmptyLines = skipEmptyLines;
+        this.skipEmptyColumns = skipEmptyColumns;
+        this.columnNamingStrategy = columnNamingStrategy;
+    }
+    
+    /**
+     * Gets a {@link ColumnNamingStrategy} to use if needed.
+     * @return
+     */
+    public ColumnNamingStrategy getColumnNamingStrategy() {
+        if (columnNamingStrategy == null) {
+            return ColumnNamingStrategies.defaultStrategy();
+        }
+        return columnNamingStrategy;
+    }
 
 	/**
 	 * The line number (1 based) from which to get the names of the columns.
