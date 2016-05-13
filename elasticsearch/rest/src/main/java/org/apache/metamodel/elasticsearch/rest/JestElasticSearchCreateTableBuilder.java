@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.elasticsearch.rest;
 
+import java.util.Map;
+
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.create.AbstractTableCreationBuilder;
 import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
@@ -38,7 +40,7 @@ final class JestElasticSearchCreateTableBuilder extends AbstractTableCreationBui
     @Override
     public Table execute() throws MetaModelException {
         final MutableTable table = getTable();
-        final Object source = ElasticSearchUtils.getMappingSource(table);
+        final Map<String, ?> source = ElasticSearchUtils.getMappingSource(table);
 
         final ElasticSearchRestDataContext dataContext = getUpdateCallback().getDataContext();
         final String indexName = dataContext.getIndexName();

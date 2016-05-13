@@ -86,7 +86,7 @@ public class ElasticSearchUtils {
         return getFilteredQuery("exists", fieldName);
     }
 
-    public static Object getMappingSource(final MutableTable table) {
+    public static Map<String, ?> getMappingSource(final MutableTable table) {
         if (table.getColumnByName(FIELD_ID) == null) {
             final MutableColumn idColumn = new MutableColumn(FIELD_ID, ColumnType.STRING).setTable(table).setPrimaryKey(
                     true);
@@ -96,8 +96,6 @@ public class ElasticSearchUtils {
         final Map<String, Map<String, String>> propertiesMap = new LinkedHashMap<>();
         
         for (Column column : table.getColumns()) {
-            // each column is defined as a property pair of the form: ("field1",
-            // "type=string,store=true")
             final String columnName = column.getName();
             if (FIELD_ID.equals(columnName)) {
                 // do nothing - the ID is a client-side construct
@@ -108,7 +106,6 @@ public class ElasticSearchUtils {
             final Map<String, String> propertyMap = new HashMap<>();
             final String type = getType(column);
             propertyMap.put("type", type);
-//            propertyMap.put("store", "true");
             
             propertiesMap.put(fieldName, propertyMap);
         }
