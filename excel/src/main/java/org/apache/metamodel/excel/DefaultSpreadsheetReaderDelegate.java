@@ -30,7 +30,10 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.util.AlphabeticSequence;
+import org.apache.metamodel.schema.naming.ColumnNamingContext;
+import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
+import org.apache.metamodel.schema.naming.ColumnNamingSession;
+import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.Resource;
 import org.apache.poi.ss.usermodel.Cell;
@@ -131,19 +134,22 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                 row = rowIterator.next();
             }
 
-            // build columns by using alphabetic sequences
-            // (A,B,C...)
-            AlphabeticSequence sequence = new AlphabeticSequence();
+            // build columns without any intrinsic column names
+            final ColumnNamingStrategy columnNamingStrategy = _configuration.getColumnNamingStrategy();
+            try (final ColumnNamingSession columnNamingSession = columnNamingStrategy.startColumnNamingSession()) {
+                final int offset = getColumnOffset(row);
+                for (int i = 0; i < offset; i++) {
+                    columnNamingSession.getNextColumnName(new ColumnNamingContextImpl(i));
+                }
 
-            final int offset = getColumnOffset(row);
-            for (int i = 0; i < offset; i++) {
-                sequence.next();
+                for (int j = offset; j < row.getLastCellNum(); j++) {
+                    final ColumnNamingContext namingContext = new ColumnNamingContextImpl(table, null, j);
+                    final Column column = new MutableColumn(columnNamingSession.getNextColumnName(namingContext),
+                            ColumnType.STRING, table, j, true);
+                    table.addColumn(column);
+                }
             }
 
-            for (int j = offset; j < row.getLastCellNum(); j++) {
-                Column column = new MutableColumn(sequence.next(), ColumnType.STRING, table, j, true);
-                table.addColumn(column);
-            }
         } else {
 
             boolean hasColumns = true;
@@ -183,14 +189,17 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         final int offset = getColumnOffset(row);
 
         // build columns based on cell values.
-        for (int j = offset; j < rowLength; j++) {
-            Cell cell = row.getCell(j);
-            String columnName = ExcelUtils.getCellValue(wb, cell);
-            if (columnName == null || "".equals(columnName)) {
-                columnName = "[Column " + (j + 1) + "]";
+        try (final ColumnNamingSession columnNamingSession = _configuration.getColumnNamingStrategy()
+                .startColumnNamingSession()) {
+            for (int j = offset; j < rowLength; j++) {
+                final Cell cell = row.getCell(j);
+                final String intrinsicColumnName = ExcelUtils.getCellValue(wb, cell);
+                final ColumnNamingContext columnNamingContext = new ColumnNamingContextImpl(table, intrinsicColumnName,
+                        j);
+                final String columnName = columnNamingSession.getNextColumnName(columnNamingContext);
+                final Column column = new MutableColumn(columnName, ColumnType.VARCHAR, table, j, true);
+                table.addColumn(column);
             }
-            Column column = new MutableColumn(columnName, ColumnType.VARCHAR, table, j, true);
-            table.addColumn(column);
         }
     }
 
