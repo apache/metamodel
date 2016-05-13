@@ -41,7 +41,8 @@ final class NativeElasticSearchUtils {
             final Column column = selectItem.getColumn();
 
             assert column != null;
-            assert selectItem.getFunction() == null;
+            assert selectItem.getAggregateFunction() == null;
+            assert selectItem.getScalarFunction() == null;
 
             if (column.isPrimaryKey()) {
                 values[i] = documentId;

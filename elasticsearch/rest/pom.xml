@@ -27,7 +27,7 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 
 	<properties>
-		<jest.version>0.1.7</jest.version>
+		<jest.version>2.0.2</jest.version>
 		<elasticsearch.version>1.4.4</elasticsearch.version>
 	</properties>
 
