@@ -235,7 +235,7 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
             break;
         case CLASS_NAME_FUNCTION_TYPE:
             if (isEnumExpected(objectStreamClass)) {
-                final ObjectStreamClass legacyOperatorTypeResult = ObjectStreamClass.lookup(LegacyOperatorType.class);
+                final ObjectStreamClass legacyOperatorTypeResult = ObjectStreamClass.lookup(LegacyFunctionType.class);
                 return legacyOperatorTypeResult;
             }
             break;

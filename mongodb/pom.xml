@@ -25,41 +25,12 @@ under the License.
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>MetaModel-mongodb</artifactId>
-	<name>MetaModel module for MongoDB databases</name>
-	<dependencies>
-		<dependency>
-			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-core</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongo-java-driver</artifactId>
-			<version>3.1.0</version>
-		</dependency>
-
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>org.apache.metamodel</groupId>
-			<artifactId>MetaModel-jdbc</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.derby</groupId>
-			<artifactId>derby</artifactId>
-			<version>10.8.1.2</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-nop</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+	<packaging>pom</packaging>
+	<name>MetaModel module for MongoDB</name>
+	
+	<modules>
+		<module>common</module>
+		<module>mongo2</module>
+		<module>mongo3</module>
+	</modules>
 </project>

@@ -60,6 +60,12 @@ public class DB2QueryRewriterTest extends TestCase {
         assertEquals("SELECT sch.foo.bar FROM sch.foo FETCH FIRST 200 ROWS ONLY", str);
     }
 
+    public void testRewriteFirstRowIsOneAndMaxRowsIsNull() throws Exception {
+        Query q = new Query().from(table).select(col).setFirstRow(1);
+        String str = new DB2QueryRewriter(null).rewriteQuery(q);
+        assertEquals("SELECT sch.foo.bar FROM sch.foo", str);
+    }
+
     public void testRewriteFirstRow() throws Exception {
         Query q = new Query().from(table).select(col).setFirstRow(401);
         String str = new DB2QueryRewriter(null).rewriteQuery(q);

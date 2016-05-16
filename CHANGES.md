@@ -3,6 +3,28 @@
  * [METAMODEL-6] - Added update summary containing information about changes on returning UpdateableDataContext.executeUpdate(..)
  * [METAMODEL-222] - Added support for Java 8 lambdas, removed support for Java 7.
 
+### Apache MetaModel 4.5.3 (work in progress)
+
+ * [METAMODEL-235] - Fixed a bug related to handling of null or missing values in ElasticSearch using REST client.
+ * [METAMODEL-225] - Fixed support for nested objects and arrays in ElasticSearch using REST client.
+ * [METAMODEL-244] - Added ColumnNamingStrategies concept which allows custom column naming and column name overriding.
+ * [METAMODEL-242] - Fixed issue when de-serializing old enum-instances of FunctionType.
+ * [METAMODEL-247] - Added FixedWidthConfigurationReader for reading fixed width file metadata from external files.
+ * [METAMODEL-159] - DataContextFactory misses methods to create HBase and POJO data contexts.
+ * [METAMODEL-252] - Fixed a bug that caused JDBC updates to unnecessarily refresh schema objects.
+ * [METAMODEL-1082] - Improved performance of batch ElasticSearch operations by using bulk API.
+
+### Apache MetaModel 4.5.2
+
+ * [METAMODEL-236] - Made OperatorType and FunctionType Serializable to ensure that serialization of Query is possible.
+
+### Apache MetaModel 4.5.1
+
+ * [METAMODEL-227] - Fix for respecting CSV escape character also when no quote character is set.
+ * [METAMODEL-183] - MongoDB module split into three: common, Mongo2 and Mongo3 to allow use of either old or new MongoDB API.
+ * [METAMODEL-231] - Fixed a bug causing the Neo4j to represent the same table multiple times within a schema.
+ * [METAMODEL-228] - Fixed a bug causing Number.class to not be converted to ColumnType.NUMBER.
+
 ### Apache MetaModel 4.5.0
 
  * [METAMODEL-212] - New module for ElasticSearch via REST client.

@@ -22,7 +22,7 @@ package org.apache.metamodel.convert;
  * Defines an interface for converting values from and to their physical
  * materializations and their virtual representations.
  * 
- * @see ConvertedDataContext
+ * @see Converters
  * 
  * @param <P>
  *            the physical type of value

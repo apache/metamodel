@@ -18,8 +18,10 @@
  */
 package org.apache.metamodel.elasticsearch.rest;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
@@ -29,7 +31,9 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.NumberComparator;
 
-import java.util.Date;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 /**
  * Shared/common util functions for the ElasticSearch MetaModel module.
@@ -55,12 +59,23 @@ final class JestElasticSearchUtils {
     }
 
     private static Object getDataFromColumnType(JsonElement field, ColumnType type) {
+        if (field == null || field.isJsonNull()) {
+            return null;
+        }
+
+        if (field.isJsonObject()) {
+            return new Gson().fromJson(field, Map.class);
+        }
+        if (field.isJsonArray()) {
+            return new Gson().fromJson(field, List.class);
+        }
+
         if (type.isNumber()) {
             // Pretty terrible workaround to avoid LazilyParsedNumber
             // (which is happily output, but not recognized by Jest/GSON).
             return NumberComparator.toNumber(field.getAsString());
         } else if (type.isTimeBased()) {
-            Date valueToDate = ElasticSearchDateConverter.tryToConvert(field.getAsString());
+            final Date valueToDate = ElasticSearchDateConverter.tryToConvert(field.getAsString());
             if (valueToDate == null) {
                 return field.getAsString();
             } else {
@@ -72,5 +87,4 @@ final class JestElasticSearchUtils {
             return field.getAsString();
         }
     }
-
 }

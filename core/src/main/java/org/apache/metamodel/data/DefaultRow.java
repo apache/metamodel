@@ -194,7 +194,7 @@ public final class DefaultRow extends AbstractRow implements Row {
     /**
      * Method invoked by the Java serialization framework while deserializing
      * Row instances. Since previous versions of MetaModel did not use a
-     * DataSetHeader, but had a reference to a List<SelectItem>, this
+     * DataSetHeader, but had a reference to a List&lt;SelectItem&gt;, this
      * deserialization is particularly tricky. We check if the items variable is
      * there, and if it is, we convert it to a header instead.
      * 

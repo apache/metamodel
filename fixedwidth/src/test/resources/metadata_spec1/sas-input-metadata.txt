@@ -1,0 +1,19 @@
+INPUT
+
+   @1 COL1 $char1.
+
+   @2 COL2 $char20.
+
+   @22 COL3 $char2.
+   
+;
+
+LABEL
+
+   COL1 "Record type"
+
+   COL2 "Description"
+
+   COL3 "Initials"
+
+;

@@ -29,6 +29,8 @@ import org.apache.metamodel.util.CollectionUtils;
  * {@link ColumnType#MAP} or similar.
  */
 public final class MapValueFunction extends DefaultScalarFunction {
+    
+    private static final long serialVersionUID = 1L;
 
     @Override
     public Object evaluate(Row row, Object[] parameters, SelectItem operandItem) {

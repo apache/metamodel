@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.metamodel.BatchUpdateScript;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
@@ -130,9 +131,9 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
     }
 
     /**
-     * Constructs a {@link ElasticSearchRestDataContext} and automatically
-     * detects the schema structure/view on all indexes (see {@link
-     * this.detectSchema(JestClient, String)}).
+     * Constructs a {@link ElasticSearchRestDataContext} and automatically detects
+     * the schema structure/view on all indexes (see
+     * {@link #detectTable(JsonObject, String)}).
      *
      * @param client
      *            the ElasticSearch client
@@ -148,7 +149,7 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
      * {@link JestClient} instance and detects the elasticsearch types structure
      * based on the metadata provided by the ElasticSearch java client.
      *
-     * @see #detectTable(JsonObject, String)
+     * @see {@link #detectTable(JsonObject, String)}
      * @return a mutable schema instance, useful for further fine tuning by the
      *         user.
      */
@@ -359,7 +360,8 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
 
     @Override
     public UpdateSummary executeUpdate(UpdateScript update) {
-        final JestElasticSearchUpdateCallback callback = new JestElasticSearchUpdateCallback(this);
+        final boolean isBatch = update instanceof BatchUpdateScript;
+        final JestElasticSearchUpdateCallback callback = new JestElasticSearchUpdateCallback(this, isBatch);
         update.run(callback);
         callback.onExecuteUpdateFinished();
         return callback.getUpdateSummary();

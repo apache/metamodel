@@ -69,11 +69,11 @@ public class DB2QueryRewriter extends DefaultQueryRewriter implements IQueryRewr
         final Integer firstRow = query.getFirstRow();
         final Integer maxRows = query.getMaxRows();
 
-        if (maxRows == null && firstRow == null) {
+        if (maxRows == null && (firstRow == null || firstRow.intValue() == 1)) {
             return super.rewriteQuery(query);
         }
 
-        if (firstRow == null || firstRow.intValue() == 1) {
+        if ((firstRow == null || firstRow.intValue() == 1) && maxRows != null && maxRows > 0) {
             // We prefer to use the "FETCH FIRST [n] ROWS ONLY" approach, if
             // firstRow is not specified.
             return super.rewriteQuery(query) + " FETCH FIRST " + maxRows + " ROWS ONLY";

@@ -22,6 +22,8 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.AggregateBuilder;
 
 public class SumAggregateFunction extends DefaultAggregateFunction<Double> {
+    
+    private static final long serialVersionUID = 1L;
 
     @Override
     public String getFunctionName() {

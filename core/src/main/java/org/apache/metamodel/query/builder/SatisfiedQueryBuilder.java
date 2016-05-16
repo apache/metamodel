@@ -65,7 +65,7 @@ public interface SatisfiedQueryBuilder<B extends SatisfiedQueryBuilder<?>> {
     /**
      * Sets the limit (aka. max rows) of the query that is being built.
      * 
-     * @param maxRows
+     * @param limit
      * @return
      */
     public SatisfiedQueryBuilder<B> limit(int limit);

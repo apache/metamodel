@@ -24,6 +24,8 @@ import java.util.Objects;
  * Simple implementation of {@link OperatorType}
  */
 public class OperatorTypeImpl implements OperatorType {
+    
+    private static final long serialVersionUID = 1L;
 
     private final String _sql;
     private final boolean _spaceDelimited;
@@ -63,8 +65,8 @@ public class OperatorTypeImpl implements OperatorType {
     }
 
 /**
-     * Converts from SQL string literals to an OperatorType. Valid SQL values are "=", "<>", "LIKE", ">", ">=", "<" and
-     * "<=".
+     * Converts from SQL string literals to an OperatorType. Valid SQL values are "=", "&lt;&gt;", "LIKE", "&gt;", "&gt;=", "&lt;" and
+     * "&lt;=".
      *
      * @param sqlType
      * @return a OperatorType object representing the specified SQL type

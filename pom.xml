@@ -22,7 +22,7 @@ under the License.
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sshwagon.version>2.6</sshwagon.version>
-		<javadoc.version>2.9.1</javadoc.version>
+		<javadoc.version>2.10.3</javadoc.version>
 		<slf4j.version>1.7.7</slf4j.version>
 		<junit.version>4.11</junit.version>
 		<guava.version>16.0.1</guava.version>
@@ -246,11 +246,11 @@ under the License.
 							<goal>aggregate</goal>
 						</goals>
 						<phase>site</phase>
-						<configuration>
-							<excludePackageNames>org.apache.metamodel.jdbc.dialects:org.apache.metamodel.detect</excludePackageNames>
-						</configuration>
 					</execution>
 				</executions>
+				<configuration>
+					<excludePackageNames>com.sugarcrm.ws.soap</excludePackageNames>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>net.ju-n.maven.plugins</groupId>

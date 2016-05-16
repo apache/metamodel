@@ -163,7 +163,7 @@ public interface DataContext {
      * {@link #parseQuery(String)} and then {@link #executeQuery(Query)} with
      * the parsed query.
      * 
-     * @param query
+     * @param queryString
      *            the SQL query to parse
      * @return the {@link DataSet} produced from executing the query
      * @throws MetaModelException

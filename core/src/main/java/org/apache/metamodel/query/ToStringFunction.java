@@ -22,6 +22,8 @@ import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.ColumnType;
 
 public class ToStringFunction extends DefaultScalarFunction {
+    
+    private static final long serialVersionUID = 1L;
 
     @Override
     public ColumnType getExpectedColumnType(ColumnType type) {

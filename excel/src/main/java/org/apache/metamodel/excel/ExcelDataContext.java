@@ -166,8 +166,8 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
             return new MutableSchema(getMainSchemaName());
         }
         try {
-            SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate();
-            Schema schema = delegate.createSchema(getMainSchemaName());
+            final SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate();
+            final Schema schema = delegate.createSchema(getMainSchemaName());
             assert getMainSchemaName().equals(schema.getName());
             return schema;
         } catch (Exception e) {

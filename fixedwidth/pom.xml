@@ -32,6 +32,12 @@ under the License.
 			<artifactId>MetaModel-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+	  <dependency>
+      <groupId>org.apache.metamodel</groupId>
+      <artifactId>MetaModel-csv</artifactId>
+      <version>${project.version}</version>
+      <optional>true</optional>
+    </dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-nop</artifactId>

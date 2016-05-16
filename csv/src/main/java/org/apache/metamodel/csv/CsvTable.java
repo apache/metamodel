@@ -27,7 +27,9 @@ import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.Relationship;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.TableType;
-import org.apache.metamodel.util.AlphabeticSequence;
+import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
+import org.apache.metamodel.schema.naming.ColumnNamingSession;
+import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -109,23 +111,23 @@ final class CsvTable extends AbstractTable {
         if (columnNames == null) {
             return new Column[0];
         }
-
+        
         final CsvConfiguration configuration = _schema.getDataContext().getConfiguration();
         final int columnNameLineNumber = configuration.getColumnNameLineNumber();
         final boolean nullable = !configuration.isFailOnInconsistentRowLength();
+        final ColumnNamingStrategy columnNamingStrategy = configuration.getColumnNamingStrategy();
 
         final Column[] columns = new Column[columnNames.length];
-        final AlphabeticSequence sequence = new AlphabeticSequence();
-        for (int i = 0; i < columnNames.length; i++) {
-            final String columnName;
-            if (columnNameLineNumber == CsvConfiguration.NO_COLUMN_NAME_LINE) {
-                columnName = sequence.next();
-            } else {
-                columnName = columnNames[i];
+        try (final ColumnNamingSession namingSession = columnNamingStrategy.startColumnNamingSession()) {
+            for (int i = 0; i < columnNames.length; i++) {
+                final String intrinsicColumnName = columnNameLineNumber == CsvConfiguration.NO_COLUMN_NAME_LINE ? null
+                        : columnNames[i];
+                final String columnName = namingSession.getNextColumnName(new ColumnNamingContextImpl(this,
+                        intrinsicColumnName, i));
+                final Column column = new MutableColumn(columnName, ColumnType.STRING, this, i, null, null, nullable,
+                        null, false, null);
+                columns[i] = column;
             }
-            Column column = new MutableColumn(columnName, ColumnType.STRING, this, i, null, null, nullable, null,
-                    false, null);
-            columns[i] = column;
         }
         return columns;
     }

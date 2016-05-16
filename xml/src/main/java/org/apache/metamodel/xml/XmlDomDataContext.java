@@ -122,8 +122,8 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
     /**
      * Creates an XML DataContext strategy based on a file.
      * 
-     * @param file
-     *            the file to parse
+     * @param resource
+     *            the resource to parse
      * @param autoFlattenTables
      *            a parameter indicating whether or not tags with only text
      *            content or a single attribute should be flattened with it's

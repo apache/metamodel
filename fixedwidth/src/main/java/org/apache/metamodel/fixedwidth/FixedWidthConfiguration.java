@@ -23,8 +23,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.schema.naming.ColumnNamingStrategies;
+import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.util.BaseObject;
+import org.apache.metamodel.util.CollectionUtils;
 import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.HasNameMapper;
 
 /**
  * Configuration of metadata about a fixed width values datacontext.
@@ -42,6 +46,7 @@ public final class FixedWidthConfiguration extends BaseObject implements
 	private final int[] valueWidths;
 	private final int columnNameLineNumber;
 	private final boolean failOnInconsistentLineWidth;
+	private final ColumnNamingStrategy columnNamingStrategy;
 
 	public FixedWidthConfiguration(int fixedValueWidth) {
 		this(DEFAULT_COLUMN_NAME_LINE, FileHelper.DEFAULT_ENCODING,
@@ -53,30 +58,54 @@ public final class FixedWidthConfiguration extends BaseObject implements
 				false);
 	}
 
-	public FixedWidthConfiguration(int columnNameLineNumber, String encoding,
-			int fixedValueWidth) {
-		this(columnNameLineNumber, encoding, fixedValueWidth, false);
-	}
+    public FixedWidthConfiguration(int columnNameLineNumber, String encoding, int fixedValueWidth) {
+        this(columnNameLineNumber, encoding, fixedValueWidth, false);
+    }
 
-	public FixedWidthConfiguration(int columnNameLineNumber, String encoding,
-			int fixedValueWidth, boolean failOnInconsistentLineWidth) {
-		this.encoding = encoding;
-		this.fixedValueWidth = fixedValueWidth;
-		this.columnNameLineNumber = columnNameLineNumber;
-		this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
-		this.valueWidths = new int[0];
-	}
+    public FixedWidthConfiguration(int columnNameLineNumber, String encoding, int fixedValueWidth,
+            boolean failOnInconsistentLineWidth) {
+        this.encoding = encoding;
+        this.fixedValueWidth = fixedValueWidth;
+        this.columnNameLineNumber = columnNameLineNumber;
+        this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
+        this.columnNamingStrategy = null;
+        this.valueWidths = new int[0];
+    }
 
-	public FixedWidthConfiguration(int columnNameLineNumber, String encoding,
-			int[] valueWidths, boolean failOnInconsistentLineWidth) {
-		this.encoding = encoding;
-		this.fixedValueWidth = -1;
-		this.columnNameLineNumber = columnNameLineNumber;
-		this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
-		this.valueWidths = valueWidths;
-	}
+    public FixedWidthConfiguration(int columnNameLineNumber, String encoding,
+            int[] valueWidths, boolean failOnInconsistentLineWidth) {
+        this(columnNameLineNumber, null, encoding, valueWidths, failOnInconsistentLineWidth);
+    }
+    
+    public FixedWidthConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy, String encoding,
+            int[] valueWidths, boolean failOnInconsistentLineWidth) {
+        this.encoding = encoding;
+        this.fixedValueWidth = -1;
+        this.columnNameLineNumber = columnNameLineNumber;
+        this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
+        this.columnNamingStrategy = columnNamingStrategy;
+        this.valueWidths = valueWidths;
+    }
+    
+    public FixedWidthConfiguration(String encoding, List<FixedWidthColumnSpec> columnSpecs) {
+        this(encoding, columnSpecs, false);
+    }
 
-	/**
+    public FixedWidthConfiguration(String encoding, List<FixedWidthColumnSpec> columnSpecs,
+            boolean failOnInconsistentLineWidth) {
+        this.encoding = encoding;
+        this.fixedValueWidth = -1;
+        this.columnNameLineNumber = NO_COLUMN_NAME_LINE;
+        this.columnNamingStrategy = ColumnNamingStrategies.customNames(CollectionUtils.map(columnSpecs,
+                new HasNameMapper()));
+        this.valueWidths = new int[columnSpecs.size()];
+        for (int i = 0; i < valueWidths.length; i++) {
+            valueWidths[i] = columnSpecs.get(i).getWidth();
+        }
+        this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
+    }
+
+    /**
 	 * The line number (1 based) from which to get the names of the columns.
 	 * 
 	 * @return an int representing the line number of the column headers/names.
@@ -84,6 +113,17 @@ public final class FixedWidthConfiguration extends BaseObject implements
 	public int getColumnNameLineNumber() {
 		return columnNameLineNumber;
 	}
+	
+	/**
+	 * Gets a {@link ColumnNamingStrategy} to use if needed.
+	 * @return
+	 */
+	public ColumnNamingStrategy getColumnNamingStrategy() {
+	    if (columnNamingStrategy == null) {
+	        return ColumnNamingStrategies.defaultStrategy();
+	    }
+        return columnNamingStrategy;
+    }
 
 	/**
 	 * Gets the file encoding to use for reading the file.

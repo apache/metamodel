@@ -69,7 +69,7 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
      *            the index of the column
      * @return the column with the specified index
      * @throws IndexOutOfBoundsException
-     *             if the index is out of bounds (index >= column count)
+     *             if the index is out of bounds (index &gt;= column count)
      */
     public Column getColumn(int index) throws IndexOutOfBoundsException;
 

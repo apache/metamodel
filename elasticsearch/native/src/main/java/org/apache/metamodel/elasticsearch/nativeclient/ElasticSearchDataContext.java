@@ -126,8 +126,8 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     /**
      * Constructs a {@link ElasticSearchDataContext} and automatically detects
-     * the schema structure/view on all indexes (see {@link
-     * this.detectSchema(Client, String)}).
+     * the schema structure/view on all indexes (see
+     * {@link #detectTable(ClusterState, String, String)}).
      *
      * @param client
      *            the ElasticSearch client
@@ -143,7 +143,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      * {@link Client} instance and detects the elasticsearch types structure
      * based on the metadata provided by the ElasticSearch java client.
      *
-     * @see #detectTable(ClusterState, String, String)
+     * @see {@link #detectTable(ClusterState, String, String)}
      * @return a mutable schema instance, useful for further fine tuning by the
      *         user.
      */

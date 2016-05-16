@@ -18,12 +18,14 @@
  */
 package org.apache.metamodel.query;
 
+import java.io.Serializable;
+
 /**
  * Defines the types of operators that can be used in filters.
  *
  * @see FilterItem
  */
-public interface OperatorType {
+public interface OperatorType extends Serializable {
 
     public static final OperatorType EQUALS_TO = new OperatorTypeImpl("=", false);
 
@@ -46,7 +48,7 @@ public interface OperatorType {
 
 /**
      * Determines if this operator requires a space delimitor. Operators that are written using letters usually require
-     * space delimitation whereas sign-based operators such as "=" and "<" can be applied even without any delimitaton.
+     * space delimitation whereas sign-based operators such as "=" and "&lt;" can be applied even without any delimitaton.
      * 
      * @return
      */

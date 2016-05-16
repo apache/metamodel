@@ -106,7 +106,7 @@ final class JestElasticSearchDataSet extends AbstractDataSet {
         }
 
         // try to scroll to the next set of hits
-        SearchScroll scroll = new SearchScroll.Builder(scrollId.getAsString(), ElasticSearchRestDataContext.TIMEOUT_SCROLL).build();
+        final SearchScroll scroll = new SearchScroll.Builder(scrollId.getAsString(), ElasticSearchRestDataContext.TIMEOUT_SCROLL).build();
 
         _searchResponse = JestClientExecutor.execute(_client, scroll);
 

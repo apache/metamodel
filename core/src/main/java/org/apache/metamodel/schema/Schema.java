@@ -89,7 +89,7 @@ public interface Schema extends Comparable<Schema>, Serializable, NamedStructure
 	 * @return the column with the specified index
 	 * 
 	 * @throws IndexOutOfBoundsException
-	 *             if the index is out of bounds (index >= table count)
+	 *             if the index is out of bounds (index &gt;= table count)
 	 */
 	public Table getTable(int index) throws IndexOutOfBoundsException;
 
