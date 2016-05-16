@@ -8,6 +8,7 @@
  * [METAMODEL-159] - DataContextFactory misses methods to create HBase and POJO data contexts.
  * [METAMODEL-252] - Fixed a bug that caused JDBC updates to unnecessarily refresh schema objects.
  * [METAMODEL-1082] - Improved performance of batch ElasticSearch operations by using bulk API.
+ * [METAMODEL-241] - Fixed deserialization of legacy enum types on OpenJDK after rev. 7c1d34773aa6.
 
 ### Apache MetaModel 4.5.2
 
