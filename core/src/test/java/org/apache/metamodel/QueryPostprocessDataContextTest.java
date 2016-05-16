@@ -494,8 +494,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         DataSet data = dc.executeQuery(q);
         assertEquals(1, data.getSelectItems().length);
 
-        @SuppressWarnings("deprecation")
-        TableModel tableModel = data.toTableModel();
+        TableModel tableModel = new DataSetTableModel(data);
 
         // should correspond to these lines:
 
@@ -537,8 +536,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         assertEquals(1, data.getSelectItems().length);
         assertEquals("SUM(r.project_id)", data.getSelectItems()[0].toString());
 
-        @SuppressWarnings("deprecation")
-        TableModel tableModel = data.toTableModel();
+        TableModel tableModel = new DataSetTableModel(data);
         assertEquals(3, tableModel.getRowCount());
         assertEquals(1, tableModel.getColumnCount());
         assertEquals(1.0, tableModel.getValueAt(0, 0));

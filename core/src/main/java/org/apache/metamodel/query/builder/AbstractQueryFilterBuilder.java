@@ -126,12 +126,6 @@ abstract class AbstractQueryFilterBuilder<B> extends GroupedQueryBuilderCallback
         return _filterBuilder.differentFrom(obj);
     }
 
-    @Deprecated
-    @Override
-    public B higherThan(Column arg) {
-        return _filterBuilder.higherThan(arg);
-    }
-
     public B greaterThan(Column column) {
         return _filterBuilder.greaterThan(column);
     }
@@ -141,32 +135,14 @@ abstract class AbstractQueryFilterBuilder<B> extends GroupedQueryBuilderCallback
         return _filterBuilder.greaterThan(obj);
     }
 
-    @Deprecated
-    @Override
-    public B higherThan(Date arg) {
-        return _filterBuilder.higherThan(arg);
-    }
-
     @Override
     public B greaterThan(Date date) {
         return _filterBuilder.greaterThan(date);
     }
 
-    @Deprecated
-    @Override
-    public B higherThan(Number arg) {
-        return _filterBuilder.higherThan(arg);
-    }
-
     @Override
     public B greaterThan(Number number) {
         return _filterBuilder.greaterThan(number);
-    }
-
-    @Deprecated
-    @Override
-    public B higherThan(String arg) {
-        return _filterBuilder.higherThan(arg);
     }
 
     @Override
@@ -399,36 +375,6 @@ abstract class AbstractQueryFilterBuilder<B> extends GroupedQueryBuilderCallback
     @Override
     public B ne(Object obj) {
         return differentFrom(obj);
-    }
-
-    @Override
-    @Deprecated
-    public B equals(Boolean bool) {
-        return isEquals(bool);
-    }
-
-    @Override
-    @Deprecated
-    public B equals(Column column) {
-        return isEquals(column);
-    }
-
-    @Override
-    @Deprecated
-    public B equals(Date date) {
-        return isEquals(date);
-    }
-
-    @Override
-    @Deprecated
-    public B equals(Number number) {
-        return isEquals(number);
-    }
-
-    @Override
-    @Deprecated
-    public B equals(String string) {
-        return isEquals(string);
     }
 
     @Override

@@ -122,12 +122,6 @@ public abstract class AbstractRow implements Cloneable, Row {
     }
 
     @Override
-    public Row getSubSelection(final SelectItem[] selectItems) {
-        final DataSetHeader header = new SimpleDataSetHeader(selectItems);
-        return getSubSelection(header);
-    }
-
-    @Override
     public final SelectItem[] getSelectItems() {
         return getHeader().getSelectItems();
     }

@@ -114,20 +114,6 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
     }
 
     /**
-     * Gets the Excel file being read.
-     * 
-     * @return a file.
-     * @deprecated
-     */
-    @Deprecated
-    public File getFile() {
-        if (_resource instanceof FileResource) {
-            return ((FileResource) _resource).getFile();
-        }
-        return null;
-    }
-
-    /**
      * Gets the Excel resource being read
      * 
      * @return

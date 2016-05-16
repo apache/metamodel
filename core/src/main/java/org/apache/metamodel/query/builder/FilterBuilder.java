@@ -124,46 +124,6 @@ public interface FilterBuilder<B> {
     public B isEquals(Object obj);
 
     /**
-     * Equal to ...
-     *
-     * @deprecated use 'eq' or 'isEquals' instead.
-     */
-    @Deprecated
-    public B equals(Column column);
-
-    /**
-     * Equal to ...
-     *
-     * @deprecated use 'eq' or 'isEquals' instead.
-     */
-    @Deprecated
-    public B equals(Date date);
-
-    /**
-     * Equal to ...
-     *
-     * @deprecated use 'eq' or 'isEquals' instead.
-     */
-    @Deprecated
-    public B equals(Number number);
-
-    /**
-     * Equal to ...
-     *
-     * @deprecated use 'eq' or 'isEquals' instead.
-     */
-    @Deprecated
-    public B equals(String string);
-
-    /**
-     * Equal to ...
-     *
-     * @deprecated use 'eq' or 'isEquals' instead.
-     */
-    @Deprecated
-    public B equals(Boolean bool);
-
-    /**
      * Not equal to ...
      */
     public B differentFrom(Column column);
@@ -225,14 +185,6 @@ public interface FilterBuilder<B> {
 
     /**
      * Greater than ...
-     *
-     * @deprecated use {@link #greaterThan(Column)} instead
-     */
-    @Deprecated
-    public B higherThan(Column column);
-
-    /**
-     * Greater than ...
      */
     public B greaterThan(Column column);
 
@@ -253,14 +205,6 @@ public interface FilterBuilder<B> {
 
     /**
      * Greater than ...
-     *
-     * @deprecated use {@link #greaterThan(Date)} instead
-     */
-    @Deprecated
-    public B higherThan(Date date);
-
-    /**
-     * Greater than ...
      */
     public B greaterThan(Date date);
 
@@ -268,12 +212,6 @@ public interface FilterBuilder<B> {
      * Greater than ...
      */
     public B gt(Date date);
-
-    /**
-     * @deprecated use {@link #greaterThan(Number)} instead
-     */
-    @Deprecated
-    public B higherThan(Number number);
 
     /**
      * Greater than ...
@@ -284,14 +222,6 @@ public interface FilterBuilder<B> {
      * Greater than ...
      */
     public B gt(Number number);
-
-    /**
-     * Greater than ...
-     *
-     * @deprecated use {@link #greaterThan(String)} instead
-     */
-    @Deprecated
-    public B higherThan(String string);
 
     /**
      * Greater than ...

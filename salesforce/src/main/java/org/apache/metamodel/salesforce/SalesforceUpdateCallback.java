@@ -244,7 +244,7 @@ final class SalesforceUpdateCallback extends AbstractUpdateCallback implements C
 
         final Object operand = whereItem.getOperand();
 
-        if (column == null || operand == null || selectItem.getFunction() != null) {
+        if (column == null || operand == null || selectItem.hasFunction()) {
             throw new IllegalStateException(
                     "Salesforce only allows deletion of records by their specific IDs. Violated by where item: "
                             + whereItem);

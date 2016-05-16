@@ -98,7 +98,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     public static boolean isCountAllItem(SelectItem item) {
-        if (item != null && item.getFunction() != null && item.getFunction().toString().equals("COUNT")
+        if (item != null && item.getAggregateFunction() != null && item.getAggregateFunction().toString().equals("COUNT")
                 && item.getExpression() == "*") {
             return true;
         }
@@ -242,19 +242,6 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
         return this;
     }
 
-    /**
-     * 
-     * @return
-     * @deprecated use {@link #getAggregateFunction()} or
-     *             {@link #getScalarFunction()} instead,
-     *             or {@link #hasFunction()} to check if a
-     *             function is set at all.
-     */
-    @Deprecated
-    public FunctionType getFunction() {
-        return _function;
-    }
-
     public boolean hasFunction(){
         return _function != null;
     }
@@ -347,14 +334,6 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
 
     public SelectItem getSubQuerySelectItem() {
         return _subQuerySelectItem;
-    }
-
-    /**
-     * @deprecated use {@link #getFromItem()} instead
-     */
-    @Deprecated
-    public FromItem getSubQueryFromItem() {
-        return _fromItem;
     }
 
     public FromItem getFromItem() {

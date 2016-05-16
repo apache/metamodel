@@ -49,26 +49,6 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
     private final Resource _resource;
     private final FixedWidthConfiguration _configuration;
 
-    /**
-     * @deprecated use
-     *             {@link #FixedWidthDataContext(File, FixedWidthConfiguration)}
-     *             instead
-     */
-    @Deprecated
-    public FixedWidthDataContext(String filename, String fileEncoding, int fixedValueWidth) {
-        this(new FileResource(filename), new FixedWidthConfiguration(fixedValueWidth));
-    }
-
-    /**
-     * @deprecated use
-     *             {@link #FixedWidthDataContext(File, FixedWidthConfiguration)}
-     *             instead
-     */
-    @Deprecated
-    public FixedWidthDataContext(File file, String fileEncoding, int fixedValueWidth, int headerLineNumber) {
-        this(file, new FixedWidthConfiguration(headerLineNumber, fileEncoding, fixedValueWidth));
-    }
-
     public FixedWidthDataContext(File file, FixedWidthConfiguration configuration) {
         _resource = new FileResource(file);
         _configuration = configuration;
@@ -86,21 +66,6 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
      */
     public FixedWidthConfiguration getConfiguration() {
         return _configuration;
-    }
-
-    /**
-     * Gets the file being read.
-     * 
-     * @return a file
-     * 
-     * @deprecated use {@link #getResource()} instead.
-     */
-    @Deprecated
-    public File getFile() {
-        if (_resource instanceof FileResource) {
-            return ((FileResource) _resource).getFile();
-        }
-        return null;
     }
 
     /**

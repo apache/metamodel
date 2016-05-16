@@ -324,7 +324,7 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
     }
 
     private static void validateSoqlSupportedSelectItem(SelectItem selectItem) throws UnsupportedOperationException {
-        if (selectItem.getFunction() != null) {
+        if (selectItem.hasFunction()) {
             throw new UnsupportedOperationException("Function select items not supported: " + selectItem);
         }
         if (selectItem.getSubQuerySelectItem() != null) {

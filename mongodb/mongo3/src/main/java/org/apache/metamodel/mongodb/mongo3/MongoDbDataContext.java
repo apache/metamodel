@@ -276,7 +276,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                 // "SELECT [columns] FROM [table] WHERE [conditions]"
                 // query.
                 for (SelectItem selectItem : selectItems) {
-                    if (selectItem.getFunction() != null || selectItem.getColumn() == null) {
+                    if (selectItem.hasFunction() || selectItem.getColumn() == null) {
                         allSelectItemsAreColumns = false;
                         break;
                     }
