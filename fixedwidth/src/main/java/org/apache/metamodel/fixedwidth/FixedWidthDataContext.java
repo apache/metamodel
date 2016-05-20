@@ -184,16 +184,18 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
 
     private FixedWidthReader createReader() {
         final InputStream inputStream = _resource.read();
-        final Reader fileReader = FileHelper.getReader(inputStream, _configuration.getEncoding());
         final FixedWidthReader reader;
+
         if (_configuration.isConstantValueWidth()) {
-            reader = new FixedWidthReader(fileReader, _configuration.getFixedValueWidth(), _configuration
-                    .isFailOnInconsistentLineWidth());
+            reader = new FixedWidthReader(inputStream, _configuration.getEncoding(),
+                    _configuration.getFixedValueWidth(), _configuration.isFailOnInconsistentLineWidth(),
+                    _configuration.isHeaderPresent(), _configuration.isEolPresent());
         } else {
-            reader = new FixedWidthReader(fileReader, _configuration.getValueWidths(), _configuration
-                    .isFailOnInconsistentLineWidth());
+            reader = new FixedWidthReader(inputStream, _configuration.getEncoding(), _configuration.getValueWidths(),
+                    _configuration.isFailOnInconsistentLineWidth(), _configuration.isHeaderPresent(),
+                    _configuration.isEolPresent());
         }
+
         return reader;
     }
-
 }

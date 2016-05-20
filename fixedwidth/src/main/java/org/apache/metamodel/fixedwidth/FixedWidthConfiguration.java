@@ -46,6 +46,8 @@ public final class FixedWidthConfiguration extends BaseObject implements
 	private final int[] valueWidths;
 	private final int columnNameLineNumber;
 	private final boolean failOnInconsistentLineWidth;
+	private final boolean headerPresent;
+	private final boolean eolPresent;
 	private final ColumnNamingStrategy columnNamingStrategy;
 
 	public FixedWidthConfiguration(int fixedValueWidth) {
@@ -54,45 +56,49 @@ public final class FixedWidthConfiguration extends BaseObject implements
 	}
 
 	public FixedWidthConfiguration(int[] valueWidth) {
-		this(DEFAULT_COLUMN_NAME_LINE, FileHelper.DEFAULT_ENCODING, valueWidth,
-				false);
+		this(DEFAULT_COLUMN_NAME_LINE, FileHelper.DEFAULT_ENCODING, valueWidth, false, false, true);
 	}
 
     public FixedWidthConfiguration(int columnNameLineNumber, String encoding, int fixedValueWidth) {
-        this(columnNameLineNumber, encoding, fixedValueWidth, false);
+        this(columnNameLineNumber, encoding, fixedValueWidth, false, false, true);
     }
 
     public FixedWidthConfiguration(int columnNameLineNumber, String encoding, int fixedValueWidth,
-            boolean failOnInconsistentLineWidth) {
+            boolean failOnInconsistentLineWidth, boolean headerPresent, boolean eolPresent) {
         this.encoding = encoding;
         this.fixedValueWidth = fixedValueWidth;
         this.columnNameLineNumber = columnNameLineNumber;
         this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
+		this.headerPresent = headerPresent;
+		this.eolPresent = eolPresent;
         this.columnNamingStrategy = null;
         this.valueWidths = new int[0];
     }
 
     public FixedWidthConfiguration(int columnNameLineNumber, String encoding,
-            int[] valueWidths, boolean failOnInconsistentLineWidth) {
-        this(columnNameLineNumber, null, encoding, valueWidths, failOnInconsistentLineWidth);
+            int[] valueWidths, boolean failOnInconsistentLineWidth, boolean headerPresent, boolean eolPresent) {
+        this(columnNameLineNumber, null, encoding, valueWidths, failOnInconsistentLineWidth, headerPresent,
+				eolPresent);
     }
     
     public FixedWidthConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy, String encoding,
-            int[] valueWidths, boolean failOnInconsistentLineWidth) {
+            int[] valueWidths, boolean failOnInconsistentLineWidth, boolean headerPresent, boolean eolPresent) {
         this.encoding = encoding;
         this.fixedValueWidth = -1;
         this.columnNameLineNumber = columnNameLineNumber;
         this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
+		this.headerPresent = headerPresent;
+		this.eolPresent = eolPresent;
         this.columnNamingStrategy = columnNamingStrategy;
         this.valueWidths = valueWidths;
     }
     
     public FixedWidthConfiguration(String encoding, List<FixedWidthColumnSpec> columnSpecs) {
-        this(encoding, columnSpecs, false);
+        this(encoding, columnSpecs, false, false, true);
     }
 
     public FixedWidthConfiguration(String encoding, List<FixedWidthColumnSpec> columnSpecs,
-            boolean failOnInconsistentLineWidth) {
+            boolean failOnInconsistentLineWidth, boolean headerPresent, boolean eolPresent) {
         this.encoding = encoding;
         this.fixedValueWidth = -1;
         this.columnNameLineNumber = NO_COLUMN_NAME_LINE;
@@ -103,6 +109,8 @@ public final class FixedWidthConfiguration extends BaseObject implements
             valueWidths[i] = columnSpecs.get(i).getWidth();
         }
         this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
+		this.headerPresent = headerPresent;
+		this.eolPresent = eolPresent;
     }
 
     /**
@@ -156,6 +164,24 @@ public final class FixedWidthConfiguration extends BaseObject implements
 	 */
 	public boolean isFailOnInconsistentLineWidth() {
 		return failOnInconsistentLineWidth;
+	}
+
+	/**
+	 * Determines if the input file contains a header that should be skipped before reading records data.
+	 *
+	 * @return a boolean indicating whether or not the input contains a header.
+	 */
+	public boolean isHeaderPresent() {
+		return headerPresent;
+	}
+
+	/**
+	 * Determines if the input file contains new line characters.
+	 *
+	 * @return a boolean indicating whether or not the input contains new line characters.
+	 */
+	public boolean isEolPresent() {
+		return eolPresent;
 	}
 
 	@Override

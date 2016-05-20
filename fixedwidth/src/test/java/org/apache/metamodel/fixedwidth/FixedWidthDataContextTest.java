@@ -98,7 +98,7 @@ public class FixedWidthDataContextTest extends TestCase {
 
     public void testFailOnInconsistentWidth() throws Exception {
         FixedWidthConfiguration conf = new FixedWidthConfiguration(FixedWidthConfiguration.NO_COLUMN_NAME_LINE, "UTF8",
-                10, true);
+                10, true, false, true);
         FixedWidthDataContext dc = new FixedWidthDataContext(new File("src/test/resources/example_simple1.txt"), conf);
 
         String[] schemaNames = dc.getSchemaNames();
@@ -160,7 +160,7 @@ public class FixedWidthDataContextTest extends TestCase {
 
     public void testVaryingValueLengthsTooShortLength() throws Exception {
         DataContext dc = new FixedWidthDataContext(new File("src/test/resources/example_simple2.txt"),
-                new FixedWidthConfiguration(0, "UTF8", new int[] { 1, 5, 7 }, true));
+                new FixedWidthConfiguration(0, "UTF8", new int[] { 1, 5, 7 }, true, false, true));
         try {
             dc.getDefaultSchema().getTables();
             fail("Exception expected");
@@ -174,7 +174,7 @@ public class FixedWidthDataContextTest extends TestCase {
     public void testVaryingValueLengthsTooShortLengthErrorTolerant() throws Exception {
         DataContext dc = new FixedWidthDataContext(new File("src/test/resources/example_simple2.txt"),
                 new FixedWidthConfiguration(FixedWidthConfiguration.DEFAULT_COLUMN_NAME_LINE, "UTF8", new int[] { 1, 5,
-                        7 }, false));
+                        7 }, false, false, true));
 
         Table table = dc.getDefaultSchema().getTables()[0];
         assertEquals("[i, greet, inggree]", Arrays.toString(table.getColumnNames()));
@@ -193,7 +193,7 @@ public class FixedWidthDataContextTest extends TestCase {
 
     public void testVaryingValueLengthsTooLongLength() throws Exception {
         DataContext dc = new FixedWidthDataContext(new File("src/test/resources/example_simple2.txt"),
-                new FixedWidthConfiguration(0, "UTF8", new int[] { 1, 8, 9 }, true));
+                new FixedWidthConfiguration(0, "UTF8", new int[] { 1, 8, 9 }, true, false, true));
 
         try {
             dc.getDefaultSchema().getTables();
@@ -208,7 +208,7 @@ public class FixedWidthDataContextTest extends TestCase {
     public void testVaryingValueLengthsTooLongLengthErrorTolerant() throws Exception {
         DataContext dc = new FixedWidthDataContext(new File("src/test/resources/example_simple2.txt"),
                 new FixedWidthConfiguration(FixedWidthConfiguration.DEFAULT_COLUMN_NAME_LINE, "UTF8", new int[] { 1, 8,
-                        9 }, false));
+                        9 }, false, false, true));
 
         Table table = dc.getDefaultSchema().getTables()[0];
         assertEquals("[i, greeting, greeter]", Arrays.toString(table.getColumnNames()));
