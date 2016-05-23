@@ -92,17 +92,17 @@ final public class FixedWidthReader implements Closeable {
 	 * @throws IllegalStateException
 	 *             if an exception occurs while reading the file.
 	 */
-	public String[] readLine() throws IllegalStateException{
+	public String[] readLine() throws IllegalStateException {
         String line;
         try {
             line = _reader.readLine();
             return readLine(line);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new IllegalStateException(e);
         }
 	}
 	
-	public String[] readLine(String line) throws Exception {
+	public String[] readLine(String line) throws IOException {
 
 
 			final List<String> values = new ArrayList<String>();
