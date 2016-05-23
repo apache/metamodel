@@ -71,6 +71,6 @@ final class JestElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
                 new DeleteByQuery.Builder(searchSourceBuilder.toString()).addIndex(indexName).addType(
                         documentType).build();
 
-        JestClientExecutor.execute(dataContext.getElasticSearchClient(), deleteByQuery);
+        _updateCallback.execute(deleteByQuery);
     }
 }

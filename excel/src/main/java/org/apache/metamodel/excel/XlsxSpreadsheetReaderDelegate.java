@@ -39,7 +39,9 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.util.AlphabeticSequence;
+import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
+import org.apache.metamodel.schema.naming.ColumnNamingSession;
+import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Resource;
@@ -141,8 +143,8 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
         for (Column column : columns) {
             selectItems.add(new SelectItem(column));
         }
-        final XlsxRowPublisherAction publishAction = new XlsxRowPublisherAction(_configuration, columns,
-                relationshipId, xssfReader);
+        final XlsxRowPublisherAction publishAction = new XlsxRowPublisherAction(_configuration, columns, relationshipId,
+                xssfReader);
 
         return new RowPublisherDataSet(selectItems.toArray(new SelectItem[selectItems.size()]), maxRows, publishAction,
                 new Closeable() {
@@ -161,26 +163,31 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
             @Override
             public boolean row(int rowNumber, List<String> values, List<Style> styles) {
                 final int columnNameLineNumber = _configuration.getColumnNameLineNumber();
-                if (columnNameLineNumber == ExcelConfiguration.NO_COLUMN_NAME_LINE) {
-                    AlphabeticSequence alphabeticSequence = new AlphabeticSequence();
-                    List<String> generatedColumnNames = new ArrayList<String>(values.size());
-                    for (String originalColumnName : values) {
-                        String columnName = alphabeticSequence.next();
-                        if (originalColumnName == null) {
-                            columnName = null;
-                        }
-                        generatedColumnNames.add(columnName);
-                    }
-                    buildColumns(table, generatedColumnNames);
-                    return false;
-                } else {
+                final boolean hasColumnNameLine = columnNameLineNumber != ExcelConfiguration.NO_COLUMN_NAME_LINE;
+
+                if (hasColumnNameLine) {
                     final int zeroBasedLineNumber = columnNameLineNumber - 1;
-                    if (rowNumber >= zeroBasedLineNumber) {
-                        buildColumns(table, values);
-                        return false;
+                    if (rowNumber < zeroBasedLineNumber) {
+                        // jump to read the next line
+                        return true;
                     }
                 }
-                return true;
+
+                final ColumnNamingStrategy columnNamingStrategy = _configuration.getColumnNamingStrategy();
+                try (ColumnNamingSession session = columnNamingStrategy.startColumnNamingSession()) {
+                    for (int i = 0; i < values.size(); i++) {
+                        final String intrinsicColumnName = hasColumnNameLine ? values.get(i) : null;
+                        final String columnName = session.getNextColumnName(new ColumnNamingContextImpl(table,
+                                intrinsicColumnName, i));
+
+                        if (!(_configuration.isSkipEmptyColumns() && values.get(i) == null)) {
+                            table.addColumn(new MutableColumn(columnName, ColumnType.STRING, table, i, true));
+                        }
+                    }
+                }
+
+                // now we're done, no more reading
+                return false;
             }
         };
         final XlsxSheetToRowsHandler handler = new XlsxSheetToRowsHandler(rowCallback, xssfReader, _configuration);
@@ -193,19 +200,6 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
             logger.debug("Parsing stop signal thrown");
         } finally {
             FileHelper.safeClose(sheetData);
-        }
-    }
-
-    protected void buildColumns(final MutableTable table, final List<String> columnNames) {
-        int columnNumber = 0;
-        for (String columnName : columnNames) {
-            if (columnName != null || !_configuration.isSkipEmptyColumns()) {
-                if (columnName == null) {
-                    columnName = "[Column " + (columnNumber + 1) + "]";
-                }
-                table.addColumn(new MutableColumn(columnName, ColumnType.STRING, table, columnNumber, true));
-            }
-            columnNumber++;
         }
     }
 

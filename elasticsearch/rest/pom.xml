@@ -21,13 +21,13 @@ under the License.
 	<parent>
 		<artifactId>MetaModel-elasticsearch</artifactId>
 		<groupId>org.apache.metamodel</groupId>
-		<version>4.5.3-SNAPSHOT</version>
+		<version>4.5.4-SNAPSHOT</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 
 	<properties>
-		<jest.version>0.1.7</jest.version>
+		<jest.version>2.0.2</jest.version>
 		<elasticsearch.version>1.4.4</elasticsearch.version>
 	</properties>
 

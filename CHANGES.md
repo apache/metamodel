@@ -1,11 +1,14 @@
-### Apache MetaModel 4.5.3 (work in progress)
+### Apache MetaModel 4.5.3
 
  * [METAMODEL-235] - Fixed a bug related to handling of null or missing values in ElasticSearch using REST client.
  * [METAMODEL-225] - Fixed support for nested objects and arrays in ElasticSearch using REST client.
  * [METAMODEL-244] - Added ColumnNamingStrategies concept which allows custom column naming and column name overriding.
  * [METAMODEL-242] - Fixed issue when de-serializing old enum-instances of FunctionType.
  * [METAMODEL-247] - Added FixedWidthConfigurationReader for reading fixed width file metadata from external files.
- * [METAMODEL-159] - DataContextFactory misses methods to create HBase and POJO data contexts
+ * [METAMODEL-159] - DataContextFactory misses methods to create HBase and POJO data contexts.
+ * [METAMODEL-252] - Fixed a bug that caused JDBC updates to unnecessarily refresh schema objects.
+ * [METAMODEL-1082] - Improved performance of batch ElasticSearch operations by using bulk API.
+ * [METAMODEL-241] - Fixed deserialization of legacy enum types on OpenJDK after rev. 7c1d34773aa6.
 
 ### Apache MetaModel 4.5.2
 

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.metamodel.BatchUpdateScript;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
@@ -354,7 +355,8 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
 
     @Override
     public void executeUpdate(UpdateScript update) {
-        final JestElasticSearchUpdateCallback callback = new JestElasticSearchUpdateCallback(this);
+        final boolean isBatch = update instanceof BatchUpdateScript;
+        final JestElasticSearchUpdateCallback callback = new JestElasticSearchUpdateCallback(this, isBatch);
         update.run(callback);
         callback.onExecuteUpdateFinished();
     }
