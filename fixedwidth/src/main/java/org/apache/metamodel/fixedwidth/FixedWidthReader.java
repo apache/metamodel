@@ -106,6 +106,7 @@ final class FixedWidthReader implements Closeable {
                 skipHeader();
             }
 
+            _rowNumber++;
             return getValues();
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -131,16 +132,25 @@ final class FixedWidthReader implements Closeable {
             result = correctResult(result);
         }
 
-        if (_failOnInconsistentLineWidth) {
-            throwInconsistentValueException(singleRecordData, result, values.size());
-        }
+        validateConsistentValue(singleRecordData, result, values.size());
 
         return result;
     }
 
-    private void throwInconsistentValueException(String singleRecordData, String[] result, int valuesSize) {
-        InconsistentValueWidthException inconsistentValueException =
-                buildInconsistentValueWidthException(singleRecordData, result, valuesSize);
+    private void validateConsistentValue(String recordData, String[] result, int valuesSize) {
+        if (!_failOnInconsistentLineWidth) {
+            return;
+        }
+
+        InconsistentValueWidthException inconsistentValueException = null;
+
+        if (_constantWidth) {
+            if (recordData.length() % _fixedValueWidth != 0) {
+                inconsistentValueException = new InconsistentValueWidthException(result, recordData, _rowNumber);
+            }
+        } else if (result.length != valuesSize || recordData.length() != _expectedLineLength) {
+            inconsistentValueException = new InconsistentValueWidthException(result, recordData, _rowNumber);
+        }
 
         if (inconsistentValueException != null) {
             throw inconsistentValueException;
@@ -256,27 +266,6 @@ final class FixedWidthReader implements Closeable {
         }
 
         return result;
-    }
-
-    private InconsistentValueWidthException buildInconsistentValueWidthException(String recordData, String[] result,
-            int valuesSize) {
-        _rowNumber++;
-
-        if (_constantWidth) {
-            if (recordData.length() % _fixedValueWidth != 0) {
-                return new InconsistentValueWidthException(result, recordData, _rowNumber);
-            }
-        } else {
-            if (result.length != valuesSize) {
-                return new InconsistentValueWidthException(result, recordData, _rowNumber);
-            }
-
-            if (recordData.length() != _expectedLineLength) {
-                return new InconsistentValueWidthException(result, recordData, _rowNumber);
-            }
-        }
-
-        return null;
     }
 
     private void skipHeader() throws IOException {
