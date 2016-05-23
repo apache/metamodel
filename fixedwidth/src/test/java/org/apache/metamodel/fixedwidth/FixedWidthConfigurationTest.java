@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.fixedwidth;
 
-import org.apache.metamodel.fixedwidth.FixedWidthConfiguration;
-
 import junit.framework.TestCase;
 
 public class FixedWidthConfigurationTest extends TestCase {
@@ -31,14 +29,11 @@ public class FixedWidthConfigurationTest extends TestCase {
 	}
 
 	public void testEquals() throws Exception {
-		FixedWidthConfiguration conf1 = new FixedWidthConfiguration(1, "UTF8",
-				10, true, false, true);
-		FixedWidthConfiguration conf2 = new FixedWidthConfiguration(1, "UTF8",
-				10, true, false, true);
+		FixedWidthConfiguration conf1 = new FixedWidthConfiguration(1, "UTF8", 10, true);
+		FixedWidthConfiguration conf2 = new FixedWidthConfiguration(1, "UTF8", 10, true);
 		assertEquals(conf1, conf2);
 
-		FixedWidthConfiguration conf3 = new FixedWidthConfiguration(1, "UTF8",
-				10, false, false, true);
+		FixedWidthConfiguration conf3 = new FixedWidthConfiguration(1, "UTF8", 10, false);
 		assertFalse(conf1.equals(conf3));
 	}
 }

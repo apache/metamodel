@@ -62,6 +62,11 @@ public final class FixedWidthConfiguration extends BaseObject implements Seriali
     }
 
     public FixedWidthConfiguration(int columnNameLineNumber, String encoding, int fixedValueWidth,
+            boolean failOnInconsistentLineWidth) {
+        this(columnNameLineNumber, encoding, fixedValueWidth, failOnInconsistentLineWidth, false, true);
+    }
+
+    public FixedWidthConfiguration(int columnNameLineNumber, String encoding, int fixedValueWidth,
             boolean failOnInconsistentLineWidth, boolean headerPresent, boolean eolPresent) {
         this.encoding = encoding;
         this.fixedValueWidth = fixedValueWidth;
@@ -121,7 +126,7 @@ public final class FixedWidthConfiguration extends BaseObject implements Seriali
 
     /**
      * Gets a {@link ColumnNamingStrategy} to use if needed.
-     * @return
+     * @return column naming strategy
      */
     public ColumnNamingStrategy getColumnNamingStrategy() {
         if (columnNamingStrategy == null) {
