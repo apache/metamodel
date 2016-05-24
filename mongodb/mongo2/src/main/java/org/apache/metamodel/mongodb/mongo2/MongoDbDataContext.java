@@ -280,20 +280,23 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                 final List<FilterItem> whereItems = query.getWhereClause().getItems();
 
                 // if all of the select items are "pure" column selection
-                boolean allSelectItemsAreColumns = true;
+                boolean allSelectItemsAreColumnsWithoutAliases = true;
                 List<SelectItem> selectItems = query.getSelectClause().getItems();
 
                 // if it is a
                 // "SELECT [columns] FROM [table] WHERE [conditions]"
                 // query.
                 for (SelectItem selectItem : selectItems) {
-                    if (selectItem.getFunction() != null || selectItem.getColumn() == null) {
-                        allSelectItemsAreColumns = false;
+                    if (selectItem.getAggregateFunction() != null
+                            || selectItem.getScalarFunction() != null
+                                || selectItem.getAlias() != null
+                                    || selectItem.getColumn() == null) {
+                        allSelectItemsAreColumnsWithoutAliases = false;
                         break;
                     }
                 }
 
-                if (allSelectItemsAreColumns) {
+                if (allSelectItemsAreColumnsWithoutAliases) {
                     logger.debug("Query can be expressed in full MongoDB, no post processing needed.");
 
                     // prepare for a non-post-processed query
