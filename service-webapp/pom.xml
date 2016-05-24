@@ -35,6 +35,16 @@ under the License.
 
 	<dependencies>
 		<dependency>
+			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-spring</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-full</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
 		</dependency>
