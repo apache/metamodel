@@ -22,7 +22,6 @@ import au.com.bytecode.opencsv.CSVParser;
 import au.com.bytecode.opencsv.CSVReader;
 import java.io.*;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.List;
 import org.apache.metamodel.*;
 import org.apache.metamodel.data.DataSet;
@@ -227,7 +226,7 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
         file = fileCandidate;
 
         final BufferedWriter writer = FileHelper.getBufferedWriter(file, encoding);
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName(encoding)));
+        final BufferedReader reader = FileHelper.getBufferedReader(inputStream, encoding);
 
         try {
             file.createNewFile();
