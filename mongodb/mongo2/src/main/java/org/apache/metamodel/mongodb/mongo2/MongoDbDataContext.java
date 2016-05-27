@@ -280,7 +280,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                 final List<FilterItem> whereItems = query.getWhereClause().getItems();
 
                 // if all of the select items are "pure" column selection
-                boolean allSelectItemsAreColumnsWithoutAliases = true;
+                boolean allSelectItemsAreColumns = true;
                 List<SelectItem> selectItems = query.getSelectClause().getItems();
 
                 // if it is a
@@ -289,14 +289,13 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                 for (SelectItem selectItem : selectItems) {
                     if (selectItem.getAggregateFunction() != null
                             || selectItem.getScalarFunction() != null
-                                || selectItem.getAlias() != null
                                     || selectItem.getColumn() == null) {
-                        allSelectItemsAreColumnsWithoutAliases = false;
+                        allSelectItemsAreColumns = false;
                         break;
                     }
                 }
 
-                if (allSelectItemsAreColumnsWithoutAliases) {
+                if (allSelectItemsAreColumns) {
                     logger.debug("Query can be expressed in full MongoDB, no post processing needed.");
 
                     // prepare for a non-post-processed query
@@ -328,10 +327,29 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
                     int firstRow = (query.getFirstRow() == null ? 1 : query.getFirstRow());
                     int maxRows = (query.getMaxRows() == null ? -1 : query.getMaxRows());
+                    boolean thereIsAtLeastOneAlias = false;
 
-                    final DataSet dataSet = materializeMainSchemaTableInternal(table, columns, whereItems, firstRow,
-                            maxRows, false);
-                    return dataSet;
+                    for (SelectItem selectItem : selectItems) {
+                        if (selectItem.getAlias() != null) {
+                            thereIsAtLeastOneAlias = true;
+                            break;
+                        }
+                    }
+
+                    if (thereIsAtLeastOneAlias) {
+                        final SelectItem[] selectItemsAsArray = selectItems.toArray(new SelectItem[selectItems.size()]);
+                        final DataSet dataSet = materializeMainSchemaTableInternal(
+                                table,
+                                selectItemsAsArray,
+                                whereItems,
+                                firstRow,
+                                maxRows, false);
+                        return dataSet;
+                    } else {
+                        final DataSet dataSet = materializeMainSchemaTableInternal(table, columns, whereItems, firstRow,
+                                maxRows, false);
+                        return dataSet;
+                    }
                 }
             }
         }
@@ -342,6 +360,19 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     private DataSet materializeMainSchemaTableInternal(Table table, Column[] columns, List<FilterItem> whereItems,
             int firstRow, int maxRows, boolean queryPostProcessed) {
+        DBCursor cursor = getCursor(table, whereItems, firstRow, maxRows);
+
+        return new MongoDbDataSet(cursor, columns, queryPostProcessed);
+    }
+
+    private DataSet materializeMainSchemaTableInternal(Table table, SelectItem[] selectItems,
+            List<FilterItem> whereItems, int firstRow, int maxRows, boolean queryPostProcessed) {
+        DBCursor cursor = getCursor(table, whereItems, firstRow, maxRows);
+
+        return new MongoDbDataSet(cursor, selectItems, queryPostProcessed);
+    }
+
+    private DBCursor getCursor(Table table, List<FilterItem> whereItems, int firstRow, int maxRows) {
         final DBCollection collection = _mongoDb.getCollection(table.getName());
 
         final DBObject query = createMongoDbQuery(table, whereItems);
@@ -356,8 +387,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
             final int skip = firstRow - 1;
             cursor = cursor.skip(skip);
         }
-
-        return new MongoDbDataSet(cursor, columns, queryPostProcessed);
+        return cursor;
     }
 
     protected BasicDBObject createMongoDbQuery(Table table, List<FilterItem> whereItems) {
