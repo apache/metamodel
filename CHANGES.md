@@ -1,3 +1,8 @@
+### Apache MetaModel 4.5.4 (work in progress)
+
+ * [METAMODEL-1088] - Add support for aliases in MongoDB
+
+
 ### Apache MetaModel 4.5.3
 
  * [METAMODEL-235] - Fixed a bug related to handling of null or missing values in ElasticSearch using REST client.

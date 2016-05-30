@@ -632,4 +632,39 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             ds4.close();
         }
     }
+
+    public void testSelectWithAlias() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        DBCollection col = db.createCollection(getCollectionName(), new BasicDBObject());
+
+        // delete if already exists
+        {
+            col.drop();
+            col = db.createCollection(getCollectionName(), new BasicDBObject());
+        }
+
+        final BasicDBObject dbRow = new BasicDBObject();
+        dbRow.append("name", new BasicDBObject().append("first", "John").append("last", "Doe"));
+        dbRow.append("gender", "MALE");
+        col.insert(dbRow);
+
+        final MongoDbDataContext dc = new MongoDbDataContext(db, new SimpleTableDef(getCollectionName(), new String[] {
+                "name.first", "name.last", "gender", "addresses", "addresses[0].city", "addresses[0].country",
+                "addresses[5].foobar" }));
+
+        final DataSet ds1 = dc.executeQuery("select gender AS my_gender, name.first AS my_name from my_collection where gender LIKE '%MALE%'");
+        final SelectItem[] selectItems = ds1.getSelectItems();
+        SelectItem firstSelectItem = selectItems[0];
+        SelectItem secondSelectItem = selectItems[1];
+        try {
+            assertNotNull(firstSelectItem.getAlias());
+            assertNotNull(secondSelectItem.getAlias());
+        } finally {
+            ds1.close();
+        }
+    }
 }
