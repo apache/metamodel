@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.apache.commons.pool.PoolableObjectFactory;
+import org.apache.metamodel.util.FileHelper;
 
 /**
  * Factory for the object pool of {@link JdbcCompiledQueryLease}s.
@@ -52,9 +53,9 @@ final class JdbcCompiledQueryLeaseFactory implements PoolableObjectFactory<JdbcC
 
     @Override
     public void destroyObject(JdbcCompiledQueryLease lease) throws Exception {
-        final PreparedStatement statement = lease.getStatement();
+        FileHelper.safeClose(lease.getStatement());
         final Connection connection = lease.getConnection();
-        _dataContext.close(connection, null, statement);
+        _dataContext.close(connection);
     }
 
     @Override
