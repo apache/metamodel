@@ -25,17 +25,18 @@ import java.net.URI;
  * Represents a hyper-link to a service (typically provided in the REST
  * responses)
  */
-public class Link implements Serializable {
+public class RestLink implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private String name;
+
     private URI uri;
 
-    public Link() {
+    public RestLink() {
     }
 
-    public Link(String name, URI uri) {
+    public RestLink(String name, URI uri) {
         this();
         this.name = name;
         this.uri = uri;

@@ -16,20 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.service.app;
+package org.apache.metamodel.service.controllers.model;
 
-import java.util.List;
+import javax.validation.constraints.NotNull;
 
-import org.apache.metamodel.DataContext;
+import org.apache.metamodel.service.app.DataContextDefinition;
 
-/**
- * Represents a user's/tenant's registry of {@link DataContext}s.
- */
-public interface DataContextRegistry {
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-    public List<String> getDataContextIdentifiers();
+public class RestDataContextDefinition implements DataContextDefinition {
 
-    public String registerDataContext(String dataContextIdentifier, DataContextDefinition dataContextDef) throws IllegalArgumentException;
+    @JsonProperty(value = "type", required = true)
+    @NotNull
+    public String type;
 
-    public DataContext openDataContext(String dataContextIdentifier) throws IllegalArgumentException;
 }

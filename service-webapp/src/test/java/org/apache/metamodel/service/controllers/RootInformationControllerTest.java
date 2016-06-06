@@ -47,7 +47,7 @@ public class RootInformationControllerTest {
     }
 
     @Test
-    public void testGenericMessageSuccess() throws Exception {
+    public void testGet() throws Exception {
         final MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/").contentType(
                 MediaType.APPLICATION_JSON);
 

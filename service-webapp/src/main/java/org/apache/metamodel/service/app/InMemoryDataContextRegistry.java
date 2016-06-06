@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.metamodel.DataContext;
+import org.apache.metamodel.pojo.PojoDataContext;
 
 public class InMemoryDataContextRegistry implements DataContextRegistry {
 
@@ -32,6 +33,22 @@ public class InMemoryDataContextRegistry implements DataContextRegistry {
 
     public InMemoryDataContextRegistry() {
         dataContextIdentifiers = new LinkedHashMap<>();
+    }
+
+    @Override
+    public String registerDataContext(final String dataContextIdentifier, final DataContextDefinition dataContextDef)
+            throws IllegalArgumentException {
+        if (dataContextIdentifiers.containsKey(dataContextIdentifier)) {
+            throw new IllegalArgumentException("DataContext already exist: " + dataContextIdentifier);
+        }
+        dataContextIdentifiers.put(dataContextIdentifier, new Supplier<DataContext>() {
+            @Override
+            public DataContext get() {
+                // TODO: Do a proper transformation from definition to instance
+                return new PojoDataContext();
+            }
+        });
+        return dataContextIdentifier;
     }
 
     @Override

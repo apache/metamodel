@@ -18,50 +18,67 @@
  */
 package org.apache.metamodel.service.controllers;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.metamodel.service.app.TenantContext;
 import org.apache.metamodel.service.app.TenantRegistry;
-import org.apache.metamodel.service.controllers.model.Link;
+import org.apache.metamodel.service.controllers.model.RestLink;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpServerErrorException;
 
 @RestController
 @RequestMapping(value = "/{tenant}", produces = MediaType.APPLICATION_JSON_VALUE)
 public class TenantController {
 
+    private final TenantRegistry tenantRegistry;
+
     @Autowired
-    TenantRegistry tenantRegistry;
+    public TenantController(TenantRegistry tenantRegistry) {
+        this.tenantRegistry = tenantRegistry;
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> getTenant(@PathVariable("tenant") String tenantName) {
+        final TenantContext tenantContext = tenantRegistry.getTenantContext(tenantName);
+        if (tenantContext == null) {
+            throw new IllegalArgumentException("No such tenant: " + tenantName);
+        }
+
+        final String tenantIdentifier = tenantContext.getTenantIdentifier();
+
+        final UriBuilder uriBuilder = UriBuilder.fromPath("/{tenant}/{dataContext}");
+
+        final List<String> dataContextIdentifiers = tenantContext.getDataContextRegistry().getDataContextIdentifiers();
+        final List<RestLink> dataContextLinks = dataContextIdentifiers.stream().map(s -> new RestLink(s, uriBuilder.build(
+                tenantIdentifier, s))).collect(Collectors.toList());
+
+        final Map<String, Object> map = new LinkedHashMap<>();
+        map.put("type", "tenant");
+        map.put("name", tenantIdentifier);
+        map.put("data-contexts", dataContextLinks);
+        return map;
+    }
 
     @RequestMapping(method = RequestMethod.PUT)
     @ResponseBody
     public Map<String, Object> putTenant(@PathVariable("tenant") String tenantName) {
-        final TenantContext tenantContext;
-        try {
-            tenantContext = tenantRegistry.createTenantContext(tenantName);
-        } catch (IllegalArgumentException e) {
-            throw new HttpServerErrorException(HttpStatus.CONFLICT, e.getMessage());
-        }
+        final TenantContext tenantContext = tenantRegistry.createTenantContext(tenantName);
         final String tenantIdentifier = tenantContext.getTenantIdentifier();
 
         final Map<String, Object> map = new LinkedHashMap<>();
         map.put("type", "tenant");
-        map.put("id", tenantIdentifier);
+        map.put("name", tenantIdentifier);
 
         return map;
     }
@@ -72,42 +89,14 @@ public class TenantController {
         final boolean deleted = tenantRegistry.deleteTenantContext(tenantName);
 
         if (!deleted) {
-            throw new HttpServerErrorException(HttpStatus.NOT_FOUND, "No such tenant: " + tenantName);
+            throw new IllegalArgumentException("No such tenant: " + tenantName);
         }
 
         final Map<String, Object> map = new LinkedHashMap<>();
         map.put("type", "tenant");
-        map.put("id", tenantName);
+        map.put("name", tenantName);
         map.put("deleted", deleted);
 
         return map;
-    }
-
-    @RequestMapping(method = RequestMethod.GET)
-    @ResponseBody
-    public Map<String, Object> getTenant(@PathVariable("tenant") String tenantName) {
-        final TenantContext tenantContext = tenantRegistry.getTenantContext(tenantName);
-        if (tenantContext == null) {
-            throw new HttpServerErrorException(HttpStatus.NOT_FOUND, "No such tenant: " + tenantName);
-        }
-
-        final String tenantIdentifier = tenantContext.getTenantIdentifier();
-
-        final UriBuilder uriBuilder = UriBuilder.fromPath("/{tenant}/{dataContext}");
-
-        final List<String> dataContextIdentifiers = tenantContext.getDataContextRegistry().getDataContextIdentifiers();
-        final List<Link> dataContextLinks = dataContextIdentifiers.stream().map(s -> new Link(s, uriBuilder.build(
-                tenantIdentifier, s))).collect(Collectors.toList());
-
-        final Map<String, Object> map = new LinkedHashMap<>();
-        map.put("type", "tenant");
-        map.put("id", tenantIdentifier);
-        map.put("data-contexts", dataContextLinks);
-        return map;
-    }
-
-    @ExceptionHandler(HttpServerErrorException.class)
-    public void handleException(HttpServerErrorException e, HttpServletResponse resp) throws IOException {
-        resp.sendError(e.getStatusCode().value(), e.getStatusText());
     }
 }

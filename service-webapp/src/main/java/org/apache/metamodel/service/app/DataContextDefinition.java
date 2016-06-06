@@ -18,18 +18,7 @@
  */
 package org.apache.metamodel.service.app;
 
-import java.util.List;
+public interface DataContextDefinition {
 
-import org.apache.metamodel.DataContext;
-
-/**
- * Represents a user's/tenant's registry of {@link DataContext}s.
- */
-public interface DataContextRegistry {
-
-    public List<String> getDataContextIdentifiers();
-
-    public String registerDataContext(String dataContextIdentifier, DataContextDefinition dataContextDef) throws IllegalArgumentException;
-
-    public DataContext openDataContext(String dataContextIdentifier) throws IllegalArgumentException;
+    // TODO
 }
