@@ -21,5 +21,4 @@ RUN rm -rf $CATALINA_HOME/webapps \
  mkdir $CATALINA_HOME/webapps
 COPY target/MetaModel.war $CATALINA_HOME/webapps/ROOT.war
 
-EXPOSE 8080
 CMD ["catalina.sh", "run"]
