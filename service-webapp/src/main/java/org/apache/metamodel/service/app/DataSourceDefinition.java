@@ -16,18 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.service.controllers.model;
+package org.apache.metamodel.service.app;
 
-import javax.validation.constraints.NotNull;
+public interface DataSourceDefinition {
 
-import org.apache.metamodel.service.app.DataContextDefinition;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-public class RestDataContextDefinition implements DataContextDefinition {
-
-    @JsonProperty(value = "type", required = true)
-    @NotNull
-    public String type;
-
+    // TODO
 }

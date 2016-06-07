@@ -18,19 +18,15 @@
  */
 package org.apache.metamodel.service.controllers;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.core.UriBuilder;
 
 import org.apache.metamodel.DataContext;
+import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.service.app.TenantContext;
 import org.apache.metamodel.service.app.TenantRegistry;
-import org.apache.metamodel.service.controllers.model.RestLink;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,37 +36,52 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = {"/{tenant}/{dataContext}/schemas/{schema}", "/{tenant}/{dataContext}/s/{schema}"}, produces = MediaType.APPLICATION_JSON_VALUE)
-public class SchemaController {
+@RequestMapping(value = { "/{tenant}/{dataContext}/schemas/{schema}/tables/{table}/columns/{column}",
+        "/{tenant}/{dataContext}/s/{schema}/t/{table}/c/{column}" }, produces = MediaType.APPLICATION_JSON_VALUE)
+public class ColumnController {
 
     private final TenantRegistry tenantRegistry;
 
     @Autowired
-    public SchemaController(TenantRegistry tenantRegistry) {
+    public ColumnController(TenantRegistry tenantRegistry) {
         this.tenantRegistry = tenantRegistry;
     }
 
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     public Map<String, Object> get(@PathVariable("tenant") String tenantId,
-            @PathVariable("dataContext") String dataSourceName, @PathVariable("schema") String schemaId) {
+            @PathVariable("dataContext") String dataSourceName, @PathVariable("schema") String schemaId,
+            @PathVariable("table") String tableId, @PathVariable("column") String columnId) {
         final TenantContext tenantContext = tenantRegistry.getTenantContext(tenantId);
         final DataContext dataContext = tenantContext.getDataSourceRegistry().openDataContext(dataSourceName);
 
         final Schema schema = dataContext.getSchemaByName(schemaId);
-        final String tenantName = tenantContext.getTenantName();
-        final UriBuilder uriBuilder = UriBuilder.fromPath("/{tenant}/{dataContext}/s/{schema}/t/{table}");
+        final Table table = schema.getTableByName(tableId);
+        final Column column = table.getColumnByName(columnId);
 
+        final String tenantName = tenantContext.getTenantName();
+        final String tableName = table.getName();
         final String schemaName = schema.getName();
-        final List<RestLink> tableLinks = Arrays.stream(schema.getTableNames()).map(t -> new RestLink(String.valueOf(t),
-                uriBuilder.build(tenantName, dataSourceName, schemaName, t))).collect(Collectors.toList());
+
+        final Map<String, Object> metadata = new LinkedHashMap<>();
+        metadata.put("number", column.getColumnNumber());
+        metadata.put("size", column.getColumnSize());
+        metadata.put("nullable", column.isNullable());
+        metadata.put("primary-key", column.isPrimaryKey());
+        metadata.put("indexed", column.isIndexed());
+        metadata.put("column-type", column.getType() == null ? null : column.getType().getName());
+        metadata.put("native-type", column.getNativeType());
+        metadata.put("remarks", column.getRemarks());
 
         final Map<String, Object> map = new LinkedHashMap<>();
-        map.put("type", "schema");
-        map.put("name", schemaName);
+        map.put("type", "column");
+        map.put("name", column.getName());
+        map.put("table", tableName);
+        map.put("schema", schemaName);
         map.put("data-context", dataSourceName);
         map.put("tenant", tenantName);
-        map.put("tables", tableLinks);
+        map.put("metadata", metadata);
+
         return map;
     }
 }

@@ -55,18 +55,18 @@ public class TenantController {
             throw new IllegalArgumentException("No such tenant: " + tenantName);
         }
 
-        final String tenantIdentifier = tenantContext.getTenantIdentifier();
+        final String tenantNameNormalized = tenantContext.getTenantName();
 
-        final UriBuilder uriBuilder = UriBuilder.fromPath("/{tenant}/{dataContext}");
+        final UriBuilder uriBuilder = UriBuilder.fromPath("/{tenant}/{datasource}");
 
-        final List<String> dataContextIdentifiers = tenantContext.getDataContextRegistry().getDataContextIdentifiers();
-        final List<RestLink> dataContextLinks = dataContextIdentifiers.stream().map(s -> new RestLink(s, uriBuilder.build(
-                tenantIdentifier, s))).collect(Collectors.toList());
+        final List<String> dataContextIdentifiers = tenantContext.getDataSourceRegistry().getDataSourceNames();
+        final List<RestLink> dataSourceLinks = dataContextIdentifiers.stream().map(s -> new RestLink(s, uriBuilder
+                .build(tenantNameNormalized, s))).collect(Collectors.toList());
 
         final Map<String, Object> map = new LinkedHashMap<>();
         map.put("type", "tenant");
-        map.put("name", tenantIdentifier);
-        map.put("data-contexts", dataContextLinks);
+        map.put("name", tenantNameNormalized);
+        map.put("datasources", dataSourceLinks);
         return map;
     }
 
@@ -74,7 +74,7 @@ public class TenantController {
     @ResponseBody
     public Map<String, Object> putTenant(@PathVariable("tenant") String tenantName) {
         final TenantContext tenantContext = tenantRegistry.createTenantContext(tenantName);
-        final String tenantIdentifier = tenantContext.getTenantIdentifier();
+        final String tenantIdentifier = tenantContext.getTenantName();
 
         final Map<String, Object> map = new LinkedHashMap<>();
         map.put("type", "tenant");

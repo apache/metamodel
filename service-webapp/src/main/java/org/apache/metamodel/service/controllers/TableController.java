@@ -41,7 +41,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/{tenant}/{dataContext}/schemas/{schema}/tables/{table}", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = { "/{tenant}/{dataContext}/schemas/{schema}/tables/{table}",
+        "/{tenant}/{dataContext}/s/{schema}/t/{table}" }, produces = MediaType.APPLICATION_JSON_VALUE)
 public class TableController {
 
     private final TenantRegistry tenantRegistry;
@@ -54,30 +55,29 @@ public class TableController {
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     public Map<String, Object> get(@PathVariable("tenant") String tenantId,
-            @PathVariable("dataContext") String dataContextId, @PathVariable("schema") String schemaId,
+            @PathVariable("dataContext") String dataSourceName, @PathVariable("schema") String schemaId,
             @PathVariable("table") String tableId) {
         final TenantContext tenantContext = tenantRegistry.getTenantContext(tenantId);
-        final DataContext dataContext = tenantContext.getDataContextRegistry().openDataContext(dataContextId);
+        final DataContext dataContext = tenantContext.getDataSourceRegistry().openDataContext(dataSourceName);
 
         final Schema schema = dataContext.getSchemaByName(schemaId);
         final Table table = schema.getTableByName(tableId);
 
-        final String tenantIdentifier = tenantContext.getTenantIdentifier();
-        final UriBuilder uriBuilder = UriBuilder.fromPath(
-                "/{tenant}/{dataContext}/schemas/{schema}/tables/{table}/columns/{column}");
+        final String tenantName = tenantContext.getTenantName();
+        final UriBuilder uriBuilder = UriBuilder.fromPath("/{tenant}/{dataContext}/s/{schema}/t/{table}/c/{column}");
 
         final String tableName = table.getName();
         final String schemaName = schema.getName();
-        final List<RestLink> columnsLinks = Arrays.stream(table.getColumnNames()).map(c -> new RestLink(String.valueOf(c),
-                uriBuilder.build(tenantIdentifier, dataContextId, schemaName, tableName, c))).collect(Collectors
+        final List<RestLink> columnsLinks = Arrays.stream(table.getColumnNames()).map(c -> new RestLink(String.valueOf(
+                c), uriBuilder.build(tenantName, dataSourceName, schemaName, tableName, c))).collect(Collectors
                         .toList());
 
         final Map<String, Object> map = new LinkedHashMap<>();
         map.put("type", "table");
         map.put("name", tableName);
         map.put("schema", schemaName);
-        map.put("data-context", dataContextId);
-        map.put("tenant", tenantIdentifier);
+        map.put("data-context", dataSourceName);
+        map.put("tenant", tenantName);
         map.put("columns", columnsLinks);
         return map;
     }

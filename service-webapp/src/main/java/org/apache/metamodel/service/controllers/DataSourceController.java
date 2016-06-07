@@ -31,7 +31,7 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.service.app.TenantContext;
 import org.apache.metamodel.service.app.TenantRegistry;
 import org.apache.metamodel.service.controllers.model.RestLink;
-import org.apache.metamodel.service.controllers.model.RestDataContextDefinition;
+import org.apache.metamodel.service.controllers.model.RestDataSourceDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,23 +42,23 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/{tenant}/{dataContext}", produces = MediaType.APPLICATION_JSON_VALUE)
-public class DataContextController {
+@RequestMapping(value = "/{tenant}/{datasource}", produces = MediaType.APPLICATION_JSON_VALUE)
+public class DataSourceController {
 
     private final TenantRegistry tenantRegistry;
 
     @Autowired
-    public DataContextController(TenantRegistry tenantRegistry) {
+    public DataSourceController(TenantRegistry tenantRegistry) {
         this.tenantRegistry = tenantRegistry;
     }
 
     @RequestMapping(method = RequestMethod.PUT)
     @ResponseBody
     public Map<String, Object> put(@PathVariable("tenant") String tenantId,
-            @PathVariable("dataContext") String dataContextId,
-            @Valid @RequestBody RestDataContextDefinition dataContextDefinition) {
-        final String dataContextIdentifier = tenantRegistry.getTenantContext(tenantId).getDataContextRegistry()
-                .registerDataContext(dataContextId, dataContextDefinition);
+            @PathVariable("datasource") String dataSourceId,
+            @Valid @RequestBody RestDataSourceDefinition dataContextDefinition) {
+        final String dataContextIdentifier = tenantRegistry.getTenantContext(tenantId).getDataSourceRegistry()
+                .registerDataSource(dataSourceId, dataContextDefinition);
 
         return get(tenantId, dataContextIdentifier);
     }
@@ -66,21 +66,21 @@ public class DataContextController {
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     public Map<String, Object> get(@PathVariable("tenant") String tenantId,
-            @PathVariable("dataContext") String dataContextId) {
+            @PathVariable("datasource") String dataSourceName) {
         final TenantContext tenantContext = tenantRegistry.getTenantContext(tenantId);
-        final DataContext dataContext = tenantContext.getDataContextRegistry().openDataContext(dataContextId);
+        final DataContext dataContext = tenantContext.getDataSourceRegistry().openDataContext(dataSourceName);
 
-        final String tenantIdentifier = tenantContext.getTenantIdentifier();
-        final UriBuilder uriBuilder = UriBuilder.fromPath("/{tenant}/{dataContext}/schemas/{schema}");
+        final String tenantName = tenantContext.getTenantName();
+        final UriBuilder uriBuilder = UriBuilder.fromPath("/{tenant}/{dataContext}/s/{schema}");
 
         final List<RestLink> schemaLinks = Arrays.stream(dataContext.getSchemaNames()).map(s -> new RestLink(s, uriBuilder
-                .build(tenantIdentifier, dataContextId, s))).collect(Collectors.toList());
+                .build(tenantName, dataSourceName, s))).collect(Collectors.toList());
 
         final Map<String, Object> map = new LinkedHashMap<>();
-        map.put("type", "data-context");
-        map.put("name", dataContextId);
-        map.put("tenant", tenantIdentifier);
-        map.put("query", UriBuilder.fromPath("/{tenant}/{dataContext}/query").build(tenantIdentifier, dataContextId));
+        map.put("type", "datasource");
+        map.put("name", dataSourceName);
+        map.put("tenant", tenantName);
+        map.put("query", UriBuilder.fromPath("/{tenant}/{dataContext}/query").build(tenantName, dataSourceName));
         map.put("schemas", schemaLinks);
         return map;
     }

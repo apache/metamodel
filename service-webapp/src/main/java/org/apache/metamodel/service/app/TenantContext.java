@@ -24,8 +24,8 @@ package org.apache.metamodel.service.app;
  */
 public interface TenantContext {
 
-    public String getTenantIdentifier();
+    public String getTenantName();
 
-    public DataContextRegistry getDataContextRegistry();
+    public DataSourceRegistry getDataSourceRegistry();
 
 }

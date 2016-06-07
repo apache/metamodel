@@ -21,20 +21,20 @@ package org.apache.metamodel.service.app;
 public class InMemoryTenantContext implements TenantContext {
 
     private final String tenantIdentifier;
-    private final DataContextRegistry dataContextRegistry;
+    private final DataSourceRegistry dataContextRegistry;
 
     public InMemoryTenantContext(String tenantIdentifier) {
         this.tenantIdentifier = tenantIdentifier;
-        this.dataContextRegistry = new InMemoryDataContextRegistry();
+        this.dataContextRegistry = new InMemoryDataSourceRegistry();
     }
 
     @Override
-    public String getTenantIdentifier() {
+    public String getTenantName() {
         return tenantIdentifier;
     }
 
     @Override
-    public DataContextRegistry getDataContextRegistry() {
+    public DataSourceRegistry getDataSourceRegistry() {
         return dataContextRegistry;
     }
 
