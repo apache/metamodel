@@ -79,8 +79,7 @@ final class ExcelUpdateCallback extends AbstractUpdateCallback implements Update
     protected void close() {
         if (_workbook != null) {
             ExcelUtils.writeAndCloseWorkbook(_dataContext, _workbook);
-
-            _workbook = null;
+            _workbook = null; 
             _dateCellFormat = null;
             _dateCellStyle = null;
         }

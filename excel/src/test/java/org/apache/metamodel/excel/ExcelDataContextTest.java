@@ -22,8 +22,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.UpdateCallback;
@@ -39,6 +37,8 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.DateUtils;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.Month;
+
+import junit.framework.TestCase;
 
 public class ExcelDataContextTest extends TestCase {
 
