@@ -60,6 +60,12 @@ public class QueryController {
         final DataContext dataContext = tenantContext.getDataSourceRegistry().openDataContext(dataSourceName);
 
         final Query query = dataContext.parseQuery(queryString);
+        
+        return executeQuery(dataContext, query, offset, limit);
+    }
+
+    public static Map<String, Object> executeQuery(DataContext dataContext, Query query, Integer offset, Integer limit) {
+
         if (offset != null) {
             query.setFirstRow(offset);
         }

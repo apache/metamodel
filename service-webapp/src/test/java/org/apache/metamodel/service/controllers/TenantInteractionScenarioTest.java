@@ -49,9 +49,10 @@ public class TenantInteractionScenarioTest {
         TableController tableController = new TableController(tenantRegistry);
         ColumnController columnController = new ColumnController(tenantRegistry);
         QueryController queryController = new QueryController(tenantRegistry);
+        TableDataController tableDataController = new TableDataController(tenantRegistry);
 
         mockMvc = MockMvcBuilders.standaloneSetup(tenantController, dataContextController, schemaController,
-                tableController, columnController, queryController).build();
+                tableController, columnController, queryController, tableDataController).build();
     }
 
     @Test
@@ -71,7 +72,7 @@ public class TenantInteractionScenarioTest {
         // create datasource
         {
             final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.put("/tenant1/mydata").content(
-                    "{'type':'pojo','table-definitions':'hello world (greeting VARCHAR, who VARCHAR); foo (bar INTEGER, baz DATE);'}"
+                    "{'type':'pojo','table-definitions':'hello_world (greeting VARCHAR, who VARCHAR); foo (bar INTEGER, baz DATE);'}"
                             .replace('\'', '"')).contentType(MediaType.APPLICATION_JSON)).andExpect(
                                     MockMvcResultMatchers.status().isOk()).andReturn();
 
@@ -107,7 +108,7 @@ public class TenantInteractionScenarioTest {
             assertEquals("mydata", map.get("name"));
 
             assertEquals(
-                    "[{name=foo, uri=/tenant1/mydata/s/mydata/t/foo}, {name=hello world, uri=/tenant1/mydata/s/mydata/t/hello%20world}]",
+                    "[{name=foo, uri=/tenant1/mydata/s/mydata/t/foo}, {name=hello_world, uri=/tenant1/mydata/s/mydata/t/hello_world}]",
                     map.get("tables").toString());
         }
 
@@ -150,7 +151,44 @@ public class TenantInteractionScenarioTest {
             final Map<?, ?> map = new ObjectMapper().readValue(content, Map.class);
             assertEquals("dataset", map.get("type"));
             assertEquals("[columns.name, columns.table]", map.get("header").toString());
-            assertEquals("[[bar, foo], [baz, foo], [greeting, hello world], [who, hello world]]", map.get("data")
+            assertEquals("[[bar, foo], [baz, foo], [greeting, hello_world], [who, hello_world]]", map.get("data")
+                    .toString());
+        }
+
+        // insert into table (x2)
+        {
+            final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(
+                    "/tenant1/mydata/s/mydata/t/hello_world/d").content("{'greeting':'Howdy','who':'MetaModel'}"
+                            .replace('\'', '"')).contentType(MediaType.APPLICATION_JSON)).andExpect(
+                                    MockMvcResultMatchers.status().isOk()).andReturn();
+
+            final String content = result.getResponse().getContentAsString();
+            final Map<?, ?> map = new ObjectMapper().readValue(content, Map.class);
+            assertEquals("{status=ok}", map.toString());
+        }
+        {
+            final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(
+                    "/tenant1/mydata/s/mydata/t/hello_world/d").content("{'greeting':'Hi','who':'Apache'}"
+                            .replace('\'', '"')).contentType(MediaType.APPLICATION_JSON)).andExpect(
+                                    MockMvcResultMatchers.status().isOk()).andReturn();
+
+            final String content = result.getResponse().getContentAsString();
+            final Map<?, ?> map = new ObjectMapper().readValue(content, Map.class);
+            assertEquals("{status=ok}", map.toString());
+        }
+        
+        // query the actual data
+        // query metadata from information_schema
+        {
+            final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/tenant1/mydata/q?sql={sql}",
+                    "SELECT greeting, who AS who_is_it FROM hello_world")).andExpect(MockMvcResultMatchers.status()
+                            .isOk()).andReturn();
+
+            final String content = result.getResponse().getContentAsString();
+            final Map<?, ?> map = new ObjectMapper().readValue(content, Map.class);
+            assertEquals("dataset", map.get("type"));
+            assertEquals("[hello_world.greeting, hello_world.who AS who_is_it]", map.get("header").toString());
+            assertEquals("[[Howdy, MetaModel], [Hi, Apache]]", map.get("data")
                     .toString());
         }
     }

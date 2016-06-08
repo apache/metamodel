@@ -35,14 +35,23 @@ public class DataContextSupplier implements Supplier<DataContext> {
 
     private final String dataSourceName;
     private final DataSourceDefinition dataSourceDefinition;
+    private final DataContext eagerLoadedDataContext;
 
     public DataContextSupplier(String dataSourceName, DataSourceDefinition dataSourceDefinition) {
         this.dataSourceName = dataSourceName;
         this.dataSourceDefinition = dataSourceDefinition;
+        this.eagerLoadedDataContext = createDataContext(true);
     }
 
     @Override
     public DataContext get() {
+        if (eagerLoadedDataContext != null) {
+            return eagerLoadedDataContext;
+        }
+        return createDataContext(false);
+    }
+
+    private DataContext createDataContext(boolean eager) {
         final String type = dataSourceDefinition.getType();
         switch (type.toLowerCase()) {
         case "pojo":
@@ -64,7 +73,11 @@ public class DataContextSupplier implements Supplier<DataContext> {
                     : dataSourceDefinition.getSchemaName();
 
             return new PojoDataContext(schemaName, tableDataProviders);
-        default:
+        }
+
+        if (eager) {
+            return null;
+        } else {
             throw new UnsupportedOperationException("Unsupported data source type: " + type);
         }
     }
