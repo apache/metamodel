@@ -35,6 +35,7 @@
 			<groupId>com.datastax.cassandra</groupId>
 			<artifactId>cassandra-driver-core</artifactId>
 			<version>${cassandra.driver.latest.version}</version>
+			<!-- Excluded netty dependency -->
 			<exclusions>
 				<exclusion>
 					<groupId>io.netty</groupId>
