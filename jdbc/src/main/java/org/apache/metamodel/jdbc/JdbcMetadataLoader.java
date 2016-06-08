@@ -91,7 +91,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
         }
     }
 
-    private String getSchemaName(Schema schema) {
+    private String getJdbcSchemaName(Schema schema) {
         if(_usesCatalogsAsSchemas) {
             return null;
         } else {
@@ -108,7 +108,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
     }
 
     private void loadTables(JdbcSchema schema, DatabaseMetaData metaData, String[] types) {
-        try (ResultSet rs = metaData.getTables(getCatalogName(schema), getSchemaName(schema), null, types)) {
+        try (ResultSet rs = metaData.getTables(getCatalogName(schema), getJdbcSchemaName(schema), null, types)) {
             logger.debug("Querying for table types {}, in catalog: {}, schema: {}", types,
                     _dataContext.getCatalogName(), schema.getName());
 
@@ -220,7 +220,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
 
     private void loadPrimaryKeys(JdbcTable table, DatabaseMetaData metaData) throws MetaModelException {
         Schema schema = table.getSchema();
-        try (ResultSet rs = metaData.getPrimaryKeys(getCatalogName(schema), getSchemaName(schema), table.getName());){
+        try (ResultSet rs = metaData.getPrimaryKeys(getCatalogName(schema), getJdbcSchemaName(schema), table.getName());){
             while (rs.next()) {
                 String columnName = rs.getString(4);
                 if (columnName != null) {
@@ -242,7 +242,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
 
         // Ticket #170: IndexInfo is nice-to-have, not need-to-have, so
         // we will do a nice failover on SQLExceptions
-        try (ResultSet rs = metaData.getIndexInfo(getCatalogName(schema), getSchemaName(schema), table.getName(), false, true)) {
+        try (ResultSet rs = metaData.getIndexInfo(getCatalogName(schema), getJdbcSchemaName(schema), table.getName(), false, true)) {
             while (rs.next()) {
                 String columnName = rs.getString(9);
                 if (columnName != null) {
@@ -309,7 +309,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
         final boolean convertLobs = isLobConversionEnabled();
         final Schema schema = table.getSchema();
 
-        try (ResultSet rs = metaData.getColumns(getCatalogName(schema), getSchemaName(schema), table.getName(), null)) {
+        try (ResultSet rs = metaData.getColumns(getCatalogName(schema), getJdbcSchemaName(schema), table.getName(), null)) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Querying for columns in table: " + table.getName());
             }
@@ -412,7 +412,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
 
     private void loadRelations(Table table, DatabaseMetaData metaData) {
         Schema schema = table.getSchema();
-        try (ResultSet rs = metaData.getImportedKeys(getCatalogName(schema), getSchemaName(schema), table.getName())) {
+        try (ResultSet rs = metaData.getImportedKeys(getCatalogName(schema), getJdbcSchemaName(schema), table.getName())) {
             loadRelations(rs, schema);
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "retrieve imported keys for " + table.getName());
