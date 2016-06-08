@@ -22,12 +22,35 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.metamodel.service.app.DataSourceDefinition;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RestDataSourceDefinition implements DataSourceDefinition {
 
     @JsonProperty(value = "type", required = true)
     @NotNull
-    public String type;
+    private String type;
 
+    @JsonProperty(value = "table-definitions", required = false)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Object tableDefinitions;
+
+    @JsonProperty(value = "schema-name", required = false)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String schemaName;
+
+    @Override
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public Object getTableDefinitions() {
+        return tableDefinitions;
+    }
+
+    @Override
+    public String getSchemaName() {
+        return schemaName;
+    }
 }

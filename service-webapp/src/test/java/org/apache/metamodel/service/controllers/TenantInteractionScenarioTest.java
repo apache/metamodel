@@ -48,9 +48,10 @@ public class TenantInteractionScenarioTest {
         SchemaController schemaController = new SchemaController(tenantRegistry);
         TableController tableController = new TableController(tenantRegistry);
         ColumnController columnController = new ColumnController(tenantRegistry);
+        QueryController queryController = new QueryController(tenantRegistry);
 
         mockMvc = MockMvcBuilders.standaloneSetup(tenantController, dataContextController, schemaController,
-                tableController, columnController).build();
+                tableController, columnController, queryController).build();
     }
 
     @Test
@@ -70,15 +71,16 @@ public class TenantInteractionScenarioTest {
         // create datasource
         {
             final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.put("/tenant1/mydata").content(
-                    "{'type':'pojo'}".replace('\'', '"')).contentType(MediaType.APPLICATION_JSON)).andExpect(
-                            MockMvcResultMatchers.status().isOk()).andReturn();
+                    "{'type':'pojo','table-definitions':'hello world (greeting VARCHAR, who VARCHAR); foo (bar INTEGER, baz DATE);'}"
+                            .replace('\'', '"')).contentType(MediaType.APPLICATION_JSON)).andExpect(
+                                    MockMvcResultMatchers.status().isOk()).andReturn();
 
             final String content = result.getResponse().getContentAsString();
             final Map<?, ?> map = new ObjectMapper().readValue(content, Map.class);
             assertEquals("datasource", map.get("type"));
             assertEquals("mydata", map.get("name"));
             assertEquals(
-                    "[{name=information_schema, uri=/tenant1/mydata/s/information_schema}, {name=Schema, uri=/tenant1/mydata/s/Schema}]",
+                    "[{name=information_schema, uri=/tenant1/mydata/s/information_schema}, {name=mydata, uri=/tenant1/mydata/s/mydata}]",
                     map.get("schemas").toString());
         }
 
@@ -96,56 +98,60 @@ public class TenantInteractionScenarioTest {
 
         // explore schema
         {
-            final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/tenant1/mydata/s/information_schema"))
-                    .andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
+            final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/tenant1/mydata/s/mydata")).andExpect(
+                    MockMvcResultMatchers.status().isOk()).andReturn();
 
             final String content = result.getResponse().getContentAsString();
             final Map<?, ?> map = new ObjectMapper().readValue(content, Map.class);
             assertEquals("schema", map.get("type"));
-            assertEquals("information_schema", map.get("name"));
+            assertEquals("mydata", map.get("name"));
 
-            assertEquals("[{name=tables, uri=/tenant1/mydata/s/information_schema/t/tables}, "
-                    + "{name=columns, uri=/tenant1/mydata/s/information_schema/t/columns}, "
-                    + "{name=relationships, uri=/tenant1/mydata/s/information_schema/t/relationships}]", map.get(
-                            "tables").toString());
+            assertEquals(
+                    "[{name=foo, uri=/tenant1/mydata/s/mydata/t/foo}, {name=hello world, uri=/tenant1/mydata/s/mydata/t/hello%20world}]",
+                    map.get("tables").toString());
         }
 
         // explore table
         {
-            final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(
-                    "/tenant1/mydata/s/information_schema/t/columns")).andExpect(MockMvcResultMatchers.status().isOk())
-                    .andReturn();
+            final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/tenant1/mydata/s/mydata/t/foo"))
+                    .andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
 
             final String content = result.getResponse().getContentAsString();
             final Map<?, ?> map = new ObjectMapper().readValue(content, Map.class);
             assertEquals("table", map.get("type"));
-            assertEquals("columns", map.get("name"));
+            assertEquals("foo", map.get("name"));
 
-            assertEquals("[{name=name, uri=/tenant1/mydata/s/information_schema/t/columns/c/name}, "
-                    + "{name=type, uri=/tenant1/mydata/s/information_schema/t/columns/c/type}, "
-                    + "{name=native_type, uri=/tenant1/mydata/s/information_schema/t/columns/c/native_type}, "
-                    + "{name=size, uri=/tenant1/mydata/s/information_schema/t/columns/c/size}, "
-                    + "{name=nullable, uri=/tenant1/mydata/s/information_schema/t/columns/c/nullable}, "
-                    + "{name=indexed, uri=/tenant1/mydata/s/information_schema/t/columns/c/indexed}, "
-                    + "{name=table, uri=/tenant1/mydata/s/information_schema/t/columns/c/table}, "
-                    + "{name=remarks, uri=/tenant1/mydata/s/information_schema/t/columns/c/remarks}]", map.get(
-                            "columns").toString());
+            assertEquals("[{name=bar, uri=/tenant1/mydata/s/mydata/t/foo/c/bar}, "
+                    + "{name=baz, uri=/tenant1/mydata/s/mydata/t/foo/c/baz}]", map.get("columns").toString());
         }
 
         // explore column
         {
-            final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get(
-                    "/tenant1/mydata/s/information_schema/t/columns/c/nullable")).andExpect(MockMvcResultMatchers
-                            .status().isOk()).andReturn();
+            final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/tenant1/mydata/s/mydata/t/foo/c/bar"))
+                    .andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
 
             final String content = result.getResponse().getContentAsString();
             final Map<?, ?> map = new ObjectMapper().readValue(content, Map.class);
             assertEquals("column", map.get("type"));
-            assertEquals("nullable", map.get("name"));
+            assertEquals("bar", map.get("name"));
 
             assertEquals(
-                    "{number=4, size=null, nullable=true, primary-key=false, indexed=false, column-type=BOOLEAN, native-type=null, remarks=null}",
+                    "{number=0, size=null, nullable=true, primary-key=false, indexed=false, column-type=INTEGER, native-type=null, remarks=null}",
                     map.get("metadata").toString());
+        }
+
+        // query metadata from information_schema
+        {
+            final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/tenant1/mydata/q?sql={sql}",
+                    "SELECT name, table FROM information_schema.columns")).andExpect(MockMvcResultMatchers.status()
+                            .isOk()).andReturn();
+
+            final String content = result.getResponse().getContentAsString();
+            final Map<?, ?> map = new ObjectMapper().readValue(content, Map.class);
+            assertEquals("dataset", map.get("type"));
+            assertEquals("[columns.name, columns.table]", map.get("header").toString());
+            assertEquals("[[bar, foo], [baz, foo], [greeting, hello world], [who, hello world]]", map.get("data")
+                    .toString());
         }
     }
 }

@@ -20,5 +20,11 @@ package org.apache.metamodel.service.app;
 
 public interface DataSourceDefinition {
 
+    public String getType();
+    
+    public Object getTableDefinitions();
+    
+    public String getSchemaName();
+    
     // TODO
 }

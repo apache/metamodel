@@ -25,7 +25,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.pojo.PojoDataContext;
 
 public class InMemoryDataSourceRegistry implements DataSourceRegistry {
 
@@ -36,19 +35,14 @@ public class InMemoryDataSourceRegistry implements DataSourceRegistry {
     }
 
     @Override
-    public String registerDataSource(final String dataContextIdentifier, final DataSourceDefinition dataContextDef)
+    public String registerDataSource(final String name, final DataSourceDefinition dataSourceDef)
             throws IllegalArgumentException {
-        if (dataSources.containsKey(dataContextIdentifier)) {
-            throw new IllegalArgumentException("DataContext already exist: " + dataContextIdentifier);
+        if (dataSources.containsKey(name)) {
+            throw new IllegalArgumentException("DataContext already exist: " + name);
         }
-        dataSources.put(dataContextIdentifier, new Supplier<DataContext>() {
-            @Override
-            public DataContext get() {
-                // TODO: Do a proper transformation from definition to instance
-                return new PojoDataContext();
-            }
-        });
-        return dataContextIdentifier;
+
+        dataSources.put(name, new DataContextSupplier(name, dataSourceDef));
+        return name;
     }
 
     @Override
@@ -57,10 +51,10 @@ public class InMemoryDataSourceRegistry implements DataSourceRegistry {
     }
 
     @Override
-    public DataContext openDataContext(String dataContextIdentifier) {
-        final Supplier<DataContext> supplier = dataSources.get(dataContextIdentifier);
+    public DataContext openDataContext(String name) {
+        final Supplier<DataContext> supplier = dataSources.get(name);
         if (supplier == null) {
-            throw new IllegalArgumentException("No such DataContext: " + dataContextIdentifier);
+            throw new IllegalArgumentException("No such DataContext: " + name);
         }
         return supplier.get();
     }
