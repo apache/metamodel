@@ -1,7 +1,7 @@
 ### Apache MetaModel 4.5.4 (work in progress)
 
- * [METAMODEL-1088] - Add support for aliases in MongoDB
-
+ * [METAMODEL-1088] - Add support for aliases in MongoDB.
+ * [METAMODEL-1086] - Fixed encoding issue when CsvDataContext is instantiated with InputStream.
 
 ### Apache MetaModel 4.5.3
 
