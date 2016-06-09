@@ -414,6 +414,10 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
     }
 
     public void testCompiledQueries() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
         DataContext dc = new JdbcDataContext(getConnection(), TableType.DEFAULT_TABLE_TYPES, "sakila");
 
         final Query cityQuery = dc.query().from("city").select("city_id", "city").toQuery()
