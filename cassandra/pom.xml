@@ -20,7 +20,8 @@
 	<name>MetaModel module for Apache Cassandra database</name>
 
 	<properties>
-		<cassandra.driver.latest.version>2.1.1</cassandra.driver.latest.version>
+		<cassandra.driver.latest.version>3.0.2</cassandra.driver.latest.version>
+		<cassandraunit.latest.version>2.2.2.1</cassandraunit.latest.version>
 	</properties>
 
 	<dependencies>
@@ -34,6 +35,13 @@
 			<groupId>com.datastax.cassandra</groupId>
 			<artifactId>cassandra-driver-core</artifactId>
 			<version>${cassandra.driver.latest.version}</version>
+			<!-- Excluded netty dependency -->
+			<exclusions>
+				<exclusion>
+					<groupId>io.netty</groupId>
+					<artifactId>netty-handler</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -53,7 +61,7 @@
 		<dependency>
 			<groupId>org.cassandraunit</groupId>
 			<artifactId>cassandra-unit</artifactId>
-			<version>2.1.3.1</version>
+			<version>${cassandraunit.latest.version}</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>

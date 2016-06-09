@@ -2,6 +2,7 @@
 
  * [METAMODEL-1088] - Add support for aliases in MongoDB.
  * [METAMODEL-1086] - Fixed encoding issue when CsvDataContext is instantiated with InputStream.
+ * [METAMODEL-1094] - Added support for Apache Cassandra version 3.x.
 
 ### Apache MetaModel 4.5.3
 
