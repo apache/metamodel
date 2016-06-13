@@ -16,23 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.service.app;
+package org.apache.metamodel.service.app.exceptions;
 
-import java.util.List;
-
-import org.apache.metamodel.service.app.exceptions.NoSuchTenantException;
-import org.apache.metamodel.service.app.exceptions.TenantAlreadyExistException;
+import org.apache.metamodel.MetaModelException;
 
 /**
- * Represents the application's central registry of tenants
+ * Exception super class for any exception that arises because an identifier
+ * (name, ID or such) is invalid for a specific context.
  */
-public interface TenantRegistry {
+public class AbstractIdentifierNamingException extends MetaModelException {
 
-    public List<String> getTenantIdentifiers();
+    private static final long serialVersionUID = 1L;
+    private final String identifier;
 
-    public TenantContext getTenantContext(String tenantIdentifier) throws NoSuchTenantException;
+    public AbstractIdentifierNamingException(String identifier) {
+        super("Illegal value: " + identifier);
+        this.identifier = identifier;
+    }
 
-    public TenantContext createTenantContext(String tenantIdentifier) throws TenantAlreadyExistException;
-
-    public void deleteTenantContext(String tenantIdentifier) throws NoSuchTenantException;
+    public String getIdentifier() {
+        return identifier;
+    }
 }

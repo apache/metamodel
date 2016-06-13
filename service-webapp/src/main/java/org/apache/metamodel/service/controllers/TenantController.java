@@ -51,10 +51,6 @@ public class TenantController {
     @ResponseBody
     public Map<String, Object> getTenant(@PathVariable("tenant") String tenantName) {
         final TenantContext tenantContext = tenantRegistry.getTenantContext(tenantName);
-        if (tenantContext == null) {
-            throw new IllegalArgumentException("No such tenant: " + tenantName);
-        }
-
         final String tenantNameNormalized = tenantContext.getTenantName();
 
         final UriBuilder uriBuilder = UriBuilder.fromPath("/{tenant}/{datasource}");
@@ -86,16 +82,12 @@ public class TenantController {
     @RequestMapping(method = RequestMethod.DELETE)
     @ResponseBody
     public Map<String, Object> deleteTenant(@PathVariable("tenant") String tenantName) {
-        final boolean deleted = tenantRegistry.deleteTenantContext(tenantName);
-
-        if (!deleted) {
-            throw new IllegalArgumentException("No such tenant: " + tenantName);
-        }
+        tenantRegistry.deleteTenantContext(tenantName);
 
         final Map<String, Object> map = new LinkedHashMap<>();
         map.put("type", "tenant");
         map.put("name", tenantName);
-        map.put("deleted", deleted);
+        map.put("deleted", true);
 
         return map;
     }

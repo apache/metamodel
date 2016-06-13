@@ -16,23 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.service.app;
+package org.apache.metamodel.service.app.exceptions;
 
-import java.util.List;
+public class DataSourceAlreadyExistException extends AbstractIdentifierNamingException {
 
-import org.apache.metamodel.service.app.exceptions.NoSuchTenantException;
-import org.apache.metamodel.service.app.exceptions.TenantAlreadyExistException;
+    private static final long serialVersionUID = 1L;
 
-/**
- * Represents the application's central registry of tenants
- */
-public interface TenantRegistry {
-
-    public List<String> getTenantIdentifiers();
-
-    public TenantContext getTenantContext(String tenantIdentifier) throws NoSuchTenantException;
-
-    public TenantContext createTenantContext(String tenantIdentifier) throws TenantAlreadyExistException;
-
-    public void deleteTenantContext(String tenantIdentifier) throws NoSuchTenantException;
+    public DataSourceAlreadyExistException(String name) {
+        super(name);
+    }
 }

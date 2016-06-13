@@ -16,23 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.service.app;
+package org.apache.metamodel.service.app.exceptions;
 
-import java.util.List;
+import org.apache.metamodel.MetaModelException;
 
-import org.apache.metamodel.service.app.exceptions.NoSuchTenantException;
-import org.apache.metamodel.service.app.exceptions.TenantAlreadyExistException;
+public class DataSourceNotUpdateableException extends MetaModelException {
 
-/**
- * Represents the application's central registry of tenants
- */
-public interface TenantRegistry {
+    private static final long serialVersionUID = 1L;
 
-    public List<String> getTenantIdentifiers();
+    private final String dataSourceName;
 
-    public TenantContext getTenantContext(String tenantIdentifier) throws NoSuchTenantException;
+    public DataSourceNotUpdateableException(String dataSourceName) {
+        super(dataSourceName);
+        this.dataSourceName = dataSourceName;
+    }
 
-    public TenantContext createTenantContext(String tenantIdentifier) throws TenantAlreadyExistException;
-
-    public void deleteTenantContext(String tenantIdentifier) throws NoSuchTenantException;
+    public String getDataSourceName() {
+        return dataSourceName;
+    }
 }

@@ -372,7 +372,7 @@ under the License.
 						<excludeSubProjects>false</excludeSubProjects>
 						<excludes>
 							<exclude>KEYS</exclude>
-							<exclude>*.md</exclude>
+							<exclude>**/*.md</exclude>
 							<exclude>example-metamodel-integrationtest-configuration.properties</exclude>
 							<exclude>travis-metamodel-integrationtest-configuration.properties</exclude>
 							<exclude>**/src/assembly/metamodel-packaged-assembly-descriptor.xml</exclude>

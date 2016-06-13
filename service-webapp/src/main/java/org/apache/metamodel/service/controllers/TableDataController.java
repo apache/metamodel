@@ -77,11 +77,7 @@ public class TableDataController {
             @PathVariable("table") String tableId, @RequestBody Map<String, Object> inputMap) {
 
         final TenantContext tenantContext = tenantRegistry.getTenantContext(tenantId);
-        final DataContext dataContext = tenantContext.getDataSourceRegistry().openDataContext(dataSourceName);
-        if (!(dataContext instanceof UpdateableDataContext)) {
-            throw new UnsupportedOperationException("Cannot perform updates on read-only datasource: "
-                    + dataSourceName);
-        }
+        final UpdateableDataContext dataContext = tenantContext.getDataSourceRegistry().openDataContextForUpdate(dataSourceName);
 
         final Schema schema = dataContext.getSchemaByName(schemaId);
         final Table table = schema.getTableByName(tableId);

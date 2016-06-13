@@ -28,10 +28,11 @@ import javax.validation.Valid;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.metamodel.DataContext;
+import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.service.app.TenantContext;
 import org.apache.metamodel.service.app.TenantRegistry;
-import org.apache.metamodel.service.controllers.model.RestLink;
 import org.apache.metamodel.service.controllers.model.RestDataSourceDefinition;
+import org.apache.metamodel.service.controllers.model.RestLink;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -73,13 +74,14 @@ public class DataSourceController {
         final String tenantName = tenantContext.getTenantName();
         final UriBuilder uriBuilder = UriBuilder.fromPath("/{tenant}/{dataContext}/s/{schema}");
 
-        final List<RestLink> schemaLinks = Arrays.stream(dataContext.getSchemaNames()).map(s -> new RestLink(s, uriBuilder
-                .build(tenantName, dataSourceName, s))).collect(Collectors.toList());
+        final List<RestLink> schemaLinks = Arrays.stream(dataContext.getSchemaNames()).map(s -> new RestLink(s,
+                uriBuilder.build(tenantName, dataSourceName, s))).collect(Collectors.toList());
 
         final Map<String, Object> map = new LinkedHashMap<>();
         map.put("type", "datasource");
         map.put("name", dataSourceName);
         map.put("tenant", tenantName);
+        map.put("updateable", dataContext instanceof UpdateableDataContext);
         map.put("query", UriBuilder.fromPath("/{tenant}/{dataContext}/query").build(tenantName, dataSourceName));
         map.put("schemas", schemaLinks);
         return map;

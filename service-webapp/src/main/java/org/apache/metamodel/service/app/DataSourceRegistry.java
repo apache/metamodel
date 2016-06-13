@@ -21,6 +21,10 @@ package org.apache.metamodel.service.app;
 import java.util.List;
 
 import org.apache.metamodel.DataContext;
+import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.service.app.exceptions.DataSourceAlreadyExistException;
+import org.apache.metamodel.service.app.exceptions.DataSourceNotUpdateableException;
+import org.apache.metamodel.service.app.exceptions.NoSuchDataSourceException;
 
 /**
  * Represents a user's/tenant's registry of {@link DataContext}s.
@@ -29,7 +33,15 @@ public interface DataSourceRegistry {
 
     public List<String> getDataSourceNames();
 
-    public String registerDataSource(String dataContextName, DataSourceDefinition dataSourceDef) throws IllegalArgumentException;
+    public String registerDataSource(String dataContextName, DataSourceDefinition dataSourceDef) throws DataSourceAlreadyExistException;
 
-    public DataContext openDataContext(String dataSourceName) throws IllegalArgumentException;
+    public DataContext openDataContext(String dataSourceName) throws NoSuchDataSourceException;
+
+    public default UpdateableDataContext openDataContextForUpdate(String dataSourceName) {
+        final DataContext dataContext = openDataContext(dataSourceName);
+        if (dataContext instanceof UpdateableDataContext) {
+            return (UpdateableDataContext) dataContext;
+        }
+        throw new DataSourceNotUpdateableException(dataSourceName);
+    };
 }

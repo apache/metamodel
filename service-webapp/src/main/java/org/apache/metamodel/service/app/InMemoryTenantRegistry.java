@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.metamodel.service.app.exceptions.NoSuchTenantException;
+import org.apache.metamodel.service.app.exceptions.TenantAlreadyExistException;
+
 /**
  * In-memory {@link TenantRegistry}. This is not particularly
  * production-friendly as it is non-persistent, but it is useful for demo
@@ -43,13 +46,17 @@ public class InMemoryTenantRegistry implements TenantRegistry {
 
     @Override
     public TenantContext getTenantContext(String tenantIdentifier) {
-        return tenants.get(tenantIdentifier);
+        final TenantContext tenant = tenants.get(tenantIdentifier);
+        if (tenant == null) {
+            throw new NoSuchTenantException(tenantIdentifier);
+        }
+        return tenant;
     }
 
     @Override
     public TenantContext createTenantContext(String tenantIdentifier) {
         if (tenants.containsKey(tenantIdentifier)) {
-            throw new IllegalArgumentException("Tenant already exist: " + tenantIdentifier);
+            throw new TenantAlreadyExistException(tenantIdentifier);
         }
         final InMemoryTenantContext tenantContext = new InMemoryTenantContext(tenantIdentifier);
         tenants.put(tenantIdentifier, tenantContext);
@@ -57,8 +64,11 @@ public class InMemoryTenantRegistry implements TenantRegistry {
     }
 
     @Override
-    public boolean deleteTenantContext(String tenantIdentifier) {
-        return tenants.remove(tenantIdentifier) != null;
+    public void deleteTenantContext(String tenantIdentifier) {
+        final TenantContext removedTenant = tenants.remove(tenantIdentifier);
+        if (removedTenant == null) {
+            throw new NoSuchTenantException(tenantIdentifier);
+        }
     }
 
 }
