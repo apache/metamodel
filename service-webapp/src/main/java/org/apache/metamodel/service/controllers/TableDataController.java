@@ -27,8 +27,8 @@ import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.insert.InsertInto;
 import org.apache.metamodel.query.Query;
-import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.service.app.DataContextTraverser;
 import org.apache.metamodel.service.app.TenantContext;
 import org.apache.metamodel.service.app.TenantRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,9 +61,10 @@ public class TableDataController {
             @RequestParam(value = "limit", required = false) Integer limit) {
         final TenantContext tenantContext = tenantRegistry.getTenantContext(tenantId);
         final DataContext dataContext = tenantContext.getDataSourceRegistry().openDataContext(dataSourceName);
+        
+        final DataContextTraverser traverser = new DataContextTraverser(dataContext);
 
-        final Schema schema = dataContext.getSchemaByName(schemaId);
-        final Table table = schema.getTableByName(tableId);
+        final Table table = traverser.getTable(schemaId, tableId);
 
         final Query query = dataContext.query().from(table).selectAll().toQuery();
 
@@ -79,8 +80,9 @@ public class TableDataController {
         final TenantContext tenantContext = tenantRegistry.getTenantContext(tenantId);
         final UpdateableDataContext dataContext = tenantContext.getDataSourceRegistry().openDataContextForUpdate(dataSourceName);
 
-        final Schema schema = dataContext.getSchemaByName(schemaId);
-        final Table table = schema.getTableByName(tableId);
+        final DataContextTraverser traverser = new DataContextTraverser(dataContext);
+
+        final Table table = traverser.getTable(schemaId, tableId);
 
         final InsertInto insert = new InsertInto(table);
         for (Entry<String, Object> entry : inputMap.entrySet()) {

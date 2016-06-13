@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.service.app.DataContextTraverser;
 import org.apache.metamodel.service.app.TenantContext;
 import org.apache.metamodel.service.app.TenantRegistry;
 import org.apache.metamodel.service.controllers.model.RestLink;
@@ -59,15 +59,16 @@ public class TableController {
             @PathVariable("table") String tableId) {
         final TenantContext tenantContext = tenantRegistry.getTenantContext(tenantId);
         final DataContext dataContext = tenantContext.getDataSourceRegistry().openDataContext(dataSourceName);
+        
+        final DataContextTraverser traverser = new DataContextTraverser(dataContext);
 
-        final Schema schema = dataContext.getSchemaByName(schemaId);
-        final Table table = schema.getTableByName(tableId);
+        final Table table = traverser.getTable(schemaId, tableId);
 
         final String tenantName = tenantContext.getTenantName();
         final UriBuilder uriBuilder = UriBuilder.fromPath("/{tenant}/{dataContext}/s/{schema}/t/{table}/c/{column}");
 
         final String tableName = table.getName();
-        final String schemaName = schema.getName();
+        final String schemaName = table.getSchema().getName();
         final List<RestLink> columnsLinks = Arrays.stream(table.getColumnNames()).map(c -> new RestLink(String.valueOf(
                 c), uriBuilder.build(tenantName, dataSourceName, schemaName, tableName, c))).collect(Collectors
                         .toList());

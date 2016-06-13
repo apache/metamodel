@@ -23,8 +23,7 @@ import java.util.Map;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.Schema;
-import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.service.app.DataContextTraverser;
 import org.apache.metamodel.service.app.TenantContext;
 import org.apache.metamodel.service.app.TenantRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,13 +54,13 @@ public class ColumnController {
         final TenantContext tenantContext = tenantRegistry.getTenantContext(tenantId);
         final DataContext dataContext = tenantContext.getDataSourceRegistry().openDataContext(dataSourceName);
 
-        final Schema schema = dataContext.getSchemaByName(schemaId);
-        final Table table = schema.getTableByName(tableId);
-        final Column column = table.getColumnByName(columnId);
+        final DataContextTraverser traverser = new DataContextTraverser(dataContext);
+
+        final Column column = traverser.getColumn(schemaId, tableId, columnId);
 
         final String tenantName = tenantContext.getTenantName();
-        final String tableName = table.getName();
-        final String schemaName = schema.getName();
+        final String tableName = column.getTable().getName();
+        final String schemaName = column.getTable().getSchema().getName();
 
         final Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("number", column.getColumnNumber());

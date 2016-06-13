@@ -28,6 +28,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.service.app.DataContextTraverser;
 import org.apache.metamodel.service.app.TenantContext;
 import org.apache.metamodel.service.app.TenantRegistry;
 import org.apache.metamodel.service.controllers.model.RestLink;
@@ -40,7 +41,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = {"/{tenant}/{dataContext}/schemas/{schema}", "/{tenant}/{dataContext}/s/{schema}"}, produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = { "/{tenant}/{dataContext}/schemas/{schema}",
+        "/{tenant}/{dataContext}/s/{schema}" }, produces = MediaType.APPLICATION_JSON_VALUE)
 public class SchemaController {
 
     private final TenantRegistry tenantRegistry;
@@ -57,7 +59,9 @@ public class SchemaController {
         final TenantContext tenantContext = tenantRegistry.getTenantContext(tenantId);
         final DataContext dataContext = tenantContext.getDataSourceRegistry().openDataContext(dataSourceName);
 
-        final Schema schema = dataContext.getSchemaByName(schemaId);
+        final DataContextTraverser traverser = new DataContextTraverser(dataContext);
+
+        final Schema schema = traverser.getSchema(schemaId);
         final String tenantName = tenantContext.getTenantName();
         final UriBuilder uriBuilder = UriBuilder.fromPath("/{tenant}/{dataContext}/s/{schema}/t/{table}");
 

@@ -27,7 +27,10 @@ import org.apache.metamodel.query.parser.QueryParserException;
 import org.apache.metamodel.service.app.exceptions.AbstractIdentifierNamingException;
 import org.apache.metamodel.service.app.exceptions.DataSourceAlreadyExistException;
 import org.apache.metamodel.service.app.exceptions.DataSourceNotUpdateableException;
+import org.apache.metamodel.service.app.exceptions.NoSuchColumnException;
 import org.apache.metamodel.service.app.exceptions.NoSuchDataSourceException;
+import org.apache.metamodel.service.app.exceptions.NoSuchSchemaException;
+import org.apache.metamodel.service.app.exceptions.NoSuchTableException;
 import org.apache.metamodel.service.app.exceptions.NoSuchTenantException;
 import org.apache.metamodel.service.app.exceptions.TenantAlreadyExistException;
 import org.apache.metamodel.service.controllers.model.RestErrorResponse;
@@ -91,7 +94,8 @@ public class RestErrorHandler {
      * @param ex
      * @return
      */
-    @ExceptionHandler({ NoSuchTenantException.class, NoSuchDataSourceException.class })
+    @ExceptionHandler({ NoSuchTenantException.class, NoSuchDataSourceException.class, NoSuchSchemaException.class,
+            NoSuchTableException.class, NoSuchColumnException.class })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ResponseBody
     public RestErrorResponse processNoSuchEntity(AbstractIdentifierNamingException ex) {
