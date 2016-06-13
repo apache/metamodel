@@ -19,6 +19,7 @@
 package org.apache.metamodel.excel;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.NumberFormat;
@@ -28,6 +29,24 @@ import java.util.Iterator;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelHelper;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetHeader;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.EmptyDataSet;
+import org.apache.metamodel.data.Style;
+import org.apache.metamodel.data.Style.SizeUnit;
+import org.apache.metamodel.data.StyleBuilder;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.Action;
+import org.apache.metamodel.util.DateUtils;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FileResource;
+import org.apache.metamodel.util.FormatHelper;
+import org.apache.metamodel.util.Func;
+import org.apache.metamodel.util.Resource;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -48,25 +67,6 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.MetaModelHelper;
-import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.data.DataSetHeader;
-import org.apache.metamodel.data.DefaultRow;
-import org.apache.metamodel.data.EmptyDataSet;
-import org.apache.metamodel.data.Style;
-import org.apache.metamodel.data.Style.SizeUnit;
-import org.apache.metamodel.data.StyleBuilder;
-import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.util.Action;
-import org.apache.metamodel.util.DateUtils;
-import org.apache.metamodel.util.FileHelper;
-import org.apache.metamodel.util.FileResource;
-import org.apache.metamodel.util.FormatHelper;
-import org.apache.metamodel.util.Func;
-import org.apache.metamodel.util.InMemoryResource;
-import org.apache.metamodel.util.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.XMLReader;
@@ -108,7 +108,9 @@ final class ExcelUtils {
         if (resource instanceof FileResource) {
             final File file = ((FileResource) resource).getFile();
             try {
-                return WorkbookFactory.create(file);
+                final FileInputStream inputStream = new FileInputStream(file);
+                final Workbook workbook = WorkbookFactory.create(inputStream);
+                return workbook;
             } catch (Exception e) {
                 logger.error("Could not open workbook", e);
                 throw new IllegalStateException("Could not open workbook", e);
@@ -153,20 +155,15 @@ final class ExcelUtils {
      * @param wb
      */
     public static void writeAndCloseWorkbook(ExcelDataContext dataContext, final Workbook wb) {
-        // first write to a temp file to avoid that workbook source is the same
-        // as the target (will cause read+write cyclic overflow)
-
-        final Resource realResource = dataContext.getResource();
-        final Resource tempResource = new InMemoryResource(realResource.getQualifiedPath());
-
-        tempResource.write(new Action<OutputStream>() {
+        final Resource resource = dataContext.getResource();
+        resource.write(new Action<OutputStream>() {
             @Override
             public void run(OutputStream outputStream) throws Exception {
                 wb.write(outputStream);
             }
         });
 
-        if (wb instanceof HSSFWorkbook && realResource instanceof FileResource && realResource.isExists()) {
+        if (wb instanceof HSSFWorkbook && resource instanceof FileResource && resource.isExists()) {
             // TODO POI has a problem with closing a file-reference/channel
             // after wb.write() is invoked. See POI issue to be fixed:
             // https://bz.apache.org/bugzilla/show_bug.cgi?id=58480
@@ -179,8 +176,6 @@ final class ExcelUtils {
         }
 
         FileHelper.safeClose(wb);
-
-        FileHelper.copy(tempResource, realResource);
     }
 
     public static String getCellValue(Workbook wb, Cell cell) {

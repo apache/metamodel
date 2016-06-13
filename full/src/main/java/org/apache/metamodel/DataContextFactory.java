@@ -545,6 +545,7 @@ public class DataContextFactory {
      */
     public static UpdateableDataContext createMongoDbDataContext(String hostname, Integer port, String databaseName,
             String username, char[] password, SimpleTableDef[] tableDefs) {
+        MongoClient mongoClient = null;
         try {
             final ServerAddress serverAddress;
             if (port == null) {
@@ -552,7 +553,6 @@ public class DataContextFactory {
             } else {
                 serverAddress = new ServerAddress(hostname, port);
             }
-            MongoClient mongoClient = null;
             final MongoDatabase mongoDb;
             if (Strings.isNullOrEmpty(username)) {
                 mongoClient = new MongoClient(serverAddress);
@@ -571,6 +571,8 @@ public class DataContextFactory {
                 throw (RuntimeException) e;
             }
             throw new IllegalStateException(e);
+        } finally {
+            mongoClient.close();
         }
     }
 
