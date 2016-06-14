@@ -77,7 +77,7 @@ public class ColumnController {
         map.put("name", column.getName());
         map.put("table", tableName);
         map.put("schema", schemaName);
-        map.put("data-context", dataSourceName);
+        map.put("datasource", dataSourceName);
         map.put("tenant", tenantName);
         map.put("metadata", metadata);
 

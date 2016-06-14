@@ -82,7 +82,7 @@ public class DataSourceController {
         map.put("name", dataSourceName);
         map.put("tenant", tenantName);
         map.put("updateable", dataContext instanceof UpdateableDataContext);
-        map.put("query", UriBuilder.fromPath("/{tenant}/{dataContext}/query").build(tenantName, dataSourceName));
+        map.put("query_uri", UriBuilder.fromPath("/{tenant}/{dataContext}/query").build(tenantName, dataSourceName));
         map.put("schemas", schemaLinks);
         return map;
     }

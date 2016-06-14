@@ -77,7 +77,7 @@ public class TableController {
         map.put("type", "table");
         map.put("name", tableName);
         map.put("schema", schemaName);
-        map.put("data-context", dataSourceName);
+        map.put("datasource", dataSourceName);
         map.put("tenant", tenantName);
         map.put("columns", columnsLinks);
         return map;

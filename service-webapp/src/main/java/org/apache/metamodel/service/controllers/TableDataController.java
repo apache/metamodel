@@ -19,13 +19,16 @@
 package org.apache.metamodel.service.controllers;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.metamodel.DataContext;
+import org.apache.metamodel.UpdateCallback;
+import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
-import org.apache.metamodel.insert.InsertInto;
+import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.service.app.DataContextTraverser;
@@ -75,7 +78,7 @@ public class TableDataController {
     @ResponseBody
     public Map<String, Object> post(@PathVariable("tenant") String tenantId,
             @PathVariable("dataContext") String dataSourceName, @PathVariable("schema") String schemaId,
-            @PathVariable("table") String tableId, @RequestBody Map<String, Object> inputMap) {
+            @PathVariable("table") String tableId, @RequestBody final List<Map<String, Object>> inputRecords) {
 
         final TenantContext tenantContext = tenantRegistry.getTenantContext(tenantId);
         final UpdateableDataContext dataContext = tenantContext.getDataSourceRegistry().openDataContextForUpdate(dataSourceName);
@@ -84,13 +87,18 @@ public class TableDataController {
 
         final Table table = traverser.getTable(schemaId, tableId);
 
-        final InsertInto insert = new InsertInto(table);
-        for (Entry<String, Object> entry : inputMap.entrySet()) {
-            insert.value(entry.getKey(), entry.getValue());
-        }
-
-        final UpdateableDataContext updateableDataContext = (UpdateableDataContext) dataContext;
-        final UpdateSummary result = updateableDataContext.executeUpdate(insert);
+        final UpdateSummary result = dataContext.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                for (Map<String, Object> inputMap : inputRecords) {
+                    final RowInsertionBuilder insert = callback.insertInto(table);
+                    for (Entry<String, Object> entry : inputMap.entrySet()) {
+                        insert.value(entry.getKey(), entry.getValue());
+                    }
+                    insert.execute();
+                }
+            }
+        });
 
         final Map<String, Object> response = new LinkedHashMap<>();
         response.put("status", "ok");

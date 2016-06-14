@@ -72,7 +72,7 @@ public class SchemaController {
         final Map<String, Object> map = new LinkedHashMap<>();
         map.put("type", "schema");
         map.put("name", schemaName);
-        map.put("data-context", dataSourceName);
+        map.put("datasource", dataSourceName);
         map.put("tenant", tenantName);
         map.put("tables", tableLinks);
         return map;

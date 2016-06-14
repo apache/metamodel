@@ -158,7 +158,7 @@ public class TenantInteractionScenarioTest {
         // insert into table (x2)
         {
             final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(
-                    "/tenant1/mydata/s/mydata/t/hello_world/d").content("{'greeting':'Howdy','who':'MetaModel'}"
+                    "/tenant1/mydata/s/mydata/t/hello_world/d").content("[{'greeting':'Howdy','who':'MetaModel'}]"
                             .replace('\'', '"')).contentType(MediaType.APPLICATION_JSON)).andExpect(
                                     MockMvcResultMatchers.status().isOk()).andReturn();
 
@@ -168,7 +168,7 @@ public class TenantInteractionScenarioTest {
         }
         {
             final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(
-                    "/tenant1/mydata/s/mydata/t/hello_world/d").content("{'greeting':'Hi','who':'Apache'}"
+                    "/tenant1/mydata/s/mydata/t/hello_world/d").content("[{'greeting':'Hi','who':'Apache'}]"
                             .replace('\'', '"')).contentType(MediaType.APPLICATION_JSON)).andExpect(
                                     MockMvcResultMatchers.status().isOk()).andReturn();
 
