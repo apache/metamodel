@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Reader capable of separating values based on a fixed width setting.
  */
-final class FixedWidthReader implements Closeable {
+final public class FixedWidthReader implements Closeable {
 
 	private final BufferedReader _reader;
 	private final int _fixedValueWidth;
@@ -82,6 +82,7 @@ final class FixedWidthReader implements Closeable {
 		this.expectedLineLength = expectedLineLength;
 	}
 
+	
 	/***
 	 * Reads the next line in the file.
 	 * 
@@ -92,10 +93,20 @@ final class FixedWidthReader implements Closeable {
 	 *             if an exception occurs while reading the file.
 	 */
 	public String[] readLine() throws IllegalStateException {
+        String line;
+        try {
+            line = _reader.readLine();
+            return readLine(line);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+	}
+	
+	public String[] readLine(String line) throws IOException {
 
-		try {
+
 			final List<String> values = new ArrayList<String>();
-			final String line = _reader.readLine();
+		
 			if (line == null) {
 				return null;
 			}
@@ -173,9 +184,6 @@ final class FixedWidthReader implements Closeable {
 			}
 
 			return result;
-		} catch (IOException e) {
-			throw new IllegalStateException(e);
-		}
 	}
 
 	@Override
