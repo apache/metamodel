@@ -24,7 +24,7 @@ import org.apache.metamodel.schema.ColumnType;
 /**
  * Query rewriter for Apache Hive
  */
-public class HiveQueryRewriter extends DefaultQueryRewriter implements IQueryRewriter {
+public class HiveQueryRewriter extends DefaultQueryRewriter {
 
     public HiveQueryRewriter(JdbcDataContext dataContext) {
         super(dataContext);

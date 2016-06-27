@@ -18,6 +18,9 @@
  */
 package org.apache.metamodel.jdbc.dialects;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 
 import org.apache.metamodel.jdbc.JdbcDataContext;
@@ -26,6 +29,7 @@ import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.ScalarFunction;
+import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 
 /**
@@ -44,6 +48,32 @@ public interface IQueryRewriter {
     public String rewriteQuery(Query query);
 
     public String rewriteFilterItem(FilterItem whereItem);
+
+    /**
+     * Method which handles the action of setting a parameterized value on a
+     * statement. Traditionally this is done using the
+     * {@link PreparedStatement#setObject(int, Object)} method but for some
+     * types we use more specific setter methods.
+     * 
+     * @param st
+     * @param valueIndex
+     * @param column
+     * @param value
+     * @throws SQLException
+     */
+    public void setStatementParameter(final PreparedStatement st, final int valueIndex, final Column column,
+            final Object value) throws SQLException;
+
+    /**
+     * Retrieves a value from a JDBC {@link ResultSet} when the anticipated value is mapped to a particular column.
+     * 
+     * @param resultSet
+     * @param columnIndex
+     * @param column
+     * @throws SQLException
+     * @return
+     */
+    public Object getResultSetValue(ResultSet resultSet, int columnIndex, Column column) throws SQLException;
 
     /**
      * Gets whether this query rewriter is able to write the "Max rows" query

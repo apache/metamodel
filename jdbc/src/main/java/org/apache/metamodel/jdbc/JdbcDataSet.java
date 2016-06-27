@@ -18,10 +18,6 @@
  */
 package org.apache.metamodel.jdbc;
 
-import java.io.InputStream;
-import java.io.Reader;
-import java.sql.Blob;
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,7 +30,6 @@ import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,44 +144,12 @@ final class JdbcDataSet extends AbstractDataSet {
         final SelectItem selectItem = getHeader().getSelectItem(i);
         final int columnIndex = i + 1;
         if (selectItem.getAggregateFunction() == null) {
-            Column column = selectItem.getColumn();
+            final Column column = selectItem.getColumn();
             if (column != null) {
-                ColumnType type = column.getType();
-                try {
-                    if (type == ColumnType.TIME) {
-                        return _resultSet.getTime(columnIndex);
-                    } else if (type == ColumnType.DATE) {
-                        return _resultSet.getDate(columnIndex);
-                    } else if (type == ColumnType.TIMESTAMP) {
-                        return _resultSet.getTimestamp(columnIndex);
-                    } else if (type == ColumnType.BLOB) {
-                        final Blob blob = _resultSet.getBlob(columnIndex);
-                        return blob;
-                    } else if (type == JdbcDataContext.COLUMN_TYPE_BLOB_AS_BYTES) {
-                        final Blob blob = _resultSet.getBlob(columnIndex);
-                        final InputStream inputStream = blob.getBinaryStream();
-                        final byte[] bytes = FileHelper.readAsBytes(inputStream);
-                        return bytes;
-                    } else if (type.isBinary()) {
-                        return _resultSet.getBytes(columnIndex);
-                    } else if (type == ColumnType.CLOB || type == ColumnType.NCLOB) {
-                        final Clob clob = _resultSet.getClob(columnIndex);
-                        return clob;
-                    } else if (type == JdbcDataContext.COLUMN_TYPE_CLOB_AS_STRING) {
-                        final Clob clob = _resultSet.getClob(columnIndex);
-                        final Reader reader = clob.getCharacterStream();
-                        final String result = FileHelper.readAsString(reader);
-                        return result;
-                    } else if (type.isBoolean()) {
-                        return _resultSet.getBoolean(columnIndex);
-                    }
-                } catch (Exception e) {
-                    logger.warn("Failed to retrieve " + type
-                            + " value using type-specific getter, retrying with generic getObject(...) method", e);
-                }
+                return _jdbcDataContext.getQueryRewriter().getResultSetValue(resultSet, columnIndex, column);
             }
         }
-        return _resultSet.getObject(columnIndex);
+        return resultSet.getObject(columnIndex);
     }
 
     /**

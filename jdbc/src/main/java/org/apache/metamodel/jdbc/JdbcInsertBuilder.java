@@ -76,7 +76,7 @@ final class JdbcInsertBuilder extends AbstractRowInsertionBuilder<JdbcUpdateCall
 				for (int i = 0; i < columns.length; i++) {
 					boolean explicitNull = explicitNulls[i];
 					if (values[i] != null || explicitNull) {
-						JdbcUtils.setStatementValue(st, valueCounter, columns[i], values[i]);
+					    _queryRewriter.setStatementParameter(st, valueCounter, columns[i], values[i]);
 						valueCounter++;
 					}
 				}
