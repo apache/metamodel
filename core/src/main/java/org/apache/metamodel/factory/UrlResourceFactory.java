@@ -18,30 +18,29 @@
  */
 package org.apache.metamodel.factory;
 
-import org.apache.metamodel.MetaModelException;
+import java.net.MalformedURLException;
 
-/**
- * Exception thrown if a {@link DataContextFactory} or
- * {@link DataContextFactoryRegistry} is being invoked with
- * {@link DataContextProperties} that are not supported by the implementation.
- */
-public class UnsupportedDataContextPropertiesException extends MetaModelException {
+import org.apache.metamodel.util.Resource;
+import org.apache.metamodel.util.UrlResource;
 
-    private static final long serialVersionUID = 1L;
+public class UrlResourceFactory implements ResourceFactory {
 
-    public UnsupportedDataContextPropertiesException() {
-        super();
+    @Override
+    public boolean accepts(ResourceProperties properties) {
+        try {
+            properties.getUri().toURL();
+            return true;
+        } catch (MalformedURLException | IllegalArgumentException e) {
+            return false;
+        }
     }
 
-    public UnsupportedDataContextPropertiesException(Exception cause) {
-        super(cause);
-    }
-
-    public UnsupportedDataContextPropertiesException(String message, Exception cause) {
-        super(message, cause);
-    }
-
-    public UnsupportedDataContextPropertiesException(String message) {
-        super(message);
+    @Override
+    public Resource create(ResourceProperties properties) throws UnsupportedResourcePropertiesException {
+        try {
+            return new UrlResource(properties.getUri().toURL());
+        } catch (MalformedURLException e) {
+            throw new UnsupportedResourcePropertiesException(e);
+        }
     }
 }

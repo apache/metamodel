@@ -18,30 +18,17 @@
  */
 package org.apache.metamodel.factory;
 
-import org.apache.metamodel.MetaModelException;
+import java.util.Collection;
 
-/**
- * Exception thrown if a {@link DataContextFactory} or
- * {@link DataContextFactoryRegistry} is being invoked with
- * {@link DataContextProperties} that are not supported by the implementation.
- */
-public class UnsupportedDataContextPropertiesException extends MetaModelException {
+import org.apache.metamodel.util.Resource;
 
-    private static final long serialVersionUID = 1L;
+public interface ResourceFactoryRegistry {
 
-    public UnsupportedDataContextPropertiesException() {
-        super();
-    }
+    public void addFactory(ResourceFactory factory);
 
-    public UnsupportedDataContextPropertiesException(Exception cause) {
-        super(cause);
-    }
+    public void clearFactories();
 
-    public UnsupportedDataContextPropertiesException(String message, Exception cause) {
-        super(message, cause);
-    }
+    public Collection<ResourceFactory> getFactories();
 
-    public UnsupportedDataContextPropertiesException(String message) {
-        super(message);
-    }
+    public Resource createResource(ResourceProperties properties) throws UnsupportedResourcePropertiesException;
 }

@@ -18,40 +18,61 @@
  */
 package org.apache.metamodel.factory;
 
-import java.net.URI;
+import java.io.Serializable;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.metamodel.DataContext;
 import org.apache.metamodel.schema.TableType;
 import org.apache.metamodel.util.SimpleTableDef;
 
-public interface DataContextProperties {
+/**
+ * Represents the {@link Serializable} properties used to fully describe and
+ * construct a {@link DataContext}.
+ */
+public interface DataContextProperties extends Serializable {
 
+    /**
+     * Gets the type of {@link DataContext}, such as "csv" or "jdbc".
+     * 
+     * @return
+     */
     String getDataContextType();
 
-    URI getUri();
+    /**
+     * Gets all the properties represented as a {@link Map}. Note that any
+     * unstandardized properties may also be exposed via this map.
+     * 
+     * @return
+     */
+    Map<String, Object> toMap();
 
-    int getColumnNameLineNumber();
+    ResourceProperties getResourceProperties();
 
-    boolean isSkipEmptyLines();
+    Integer getColumnNameLineNumber();
 
-    boolean isSkipEmptyColumns();
+    Boolean isSkipEmptyLines();
+
+    Boolean isSkipEmptyColumns();
 
     String getEncoding();
 
-    char getSeparatorChar();
+    Character getSeparatorChar();
 
-    char getQuoteChar();
+    Character getQuoteChar();
 
-    char getEscapeChar();
+    Character getEscapeChar();
 
-    boolean isFailOnInconsistentRowLength();
+    Boolean isFailOnInconsistentRowLength();
 
-    boolean isMultilineValuesEnabled();
+    Boolean isMultilineValuesEnabled();
 
     TableType[] getTableTypes();
 
     String getCatalogName();
+
+    String getUrl();
 
     DataSource getDataSource();
 

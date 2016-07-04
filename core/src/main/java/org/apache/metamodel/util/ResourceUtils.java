@@ -18,10 +18,30 @@
  */
 package org.apache.metamodel.util;
 
+import java.net.URI;
+
+import org.apache.metamodel.factory.ResourceFactoryRegistryImpl;
+import org.apache.metamodel.factory.ResourceProperties;
+import org.apache.metamodel.factory.SimpleResourceProperties;
+import org.apache.metamodel.factory.UnsupportedResourcePropertiesException;
+
 /**
  * Static utility methods for handling {@link Resource}s.
  */
 public class ResourceUtils {
+
+    public static Resource toResource(URI uri) {
+        return toResource(new SimpleResourceProperties(uri));
+    }
+
+    public static Resource toResource(String uri) {
+        return toResource(new SimpleResourceProperties(uri));
+    }
+
+    public static Resource toResource(ResourceProperties resourceProperties)
+            throws UnsupportedResourcePropertiesException {
+        return ResourceFactoryRegistryImpl.getDefaultInstance().createResource(resourceProperties);
+    }
 
     /**
      * Gets the parent name of a resource. For example, if the resource's

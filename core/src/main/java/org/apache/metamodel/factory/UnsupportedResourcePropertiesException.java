@@ -20,28 +20,24 @@ package org.apache.metamodel.factory;
 
 import org.apache.metamodel.MetaModelException;
 
-/**
- * Exception thrown if a {@link DataContextFactory} or
- * {@link DataContextFactoryRegistry} is being invoked with
- * {@link DataContextProperties} that are not supported by the implementation.
- */
-public class UnsupportedDataContextPropertiesException extends MetaModelException {
+public class UnsupportedResourcePropertiesException extends MetaModelException {
 
     private static final long serialVersionUID = 1L;
 
-    public UnsupportedDataContextPropertiesException() {
+    public UnsupportedResourcePropertiesException() {
         super();
     }
 
-    public UnsupportedDataContextPropertiesException(Exception cause) {
+    public UnsupportedResourcePropertiesException(Exception cause) {
         super(cause);
     }
 
-    public UnsupportedDataContextPropertiesException(String message, Exception cause) {
+    public UnsupportedResourcePropertiesException(String message, Exception cause) {
         super(message, cause);
     }
 
-    public UnsupportedDataContextPropertiesException(String message) {
+    public UnsupportedResourcePropertiesException(String message) {
         super(message);
     }
+
 }

@@ -24,30 +24,30 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import org.apache.metamodel.DataContext;
+import org.apache.metamodel.util.Resource;
 
-public class DataContextFactoryRegistryImpl implements DataContextFactoryRegistry {
+public class ResourceFactoryRegistryImpl implements ResourceFactoryRegistry {
 
-    private static final DataContextFactoryRegistry DEFAULT_INSTANCE;
+    private static final ResourceFactoryRegistry DEFAULT_INSTANCE;
 
     static {
-        final DataContextFactoryRegistryImpl registry = new DataContextFactoryRegistryImpl();
+        final ResourceFactoryRegistryImpl registry = new ResourceFactoryRegistryImpl();
         registry.discoverFromClasspath();
         DEFAULT_INSTANCE = registry;
     }
 
-    public static DataContextFactoryRegistry getDefaultInstance() {
+    public static ResourceFactoryRegistry getDefaultInstance() {
         return DEFAULT_INSTANCE;
     }
 
-    private final List<DataContextFactory> factories;
+    private final List<ResourceFactory> factories;
 
-    public DataContextFactoryRegistryImpl() {
+    public ResourceFactoryRegistryImpl() {
         factories = new ArrayList<>();
     }
 
     @Override
-    public void addFactory(DataContextFactory factory) {
+    public void addFactory(ResourceFactory factory) {
         factories.add(factory);
     }
 
@@ -57,23 +57,23 @@ public class DataContextFactoryRegistryImpl implements DataContextFactoryRegistr
     }
 
     @Override
-    public Collection<DataContextFactory> getFactories() {
+    public Collection<ResourceFactory> getFactories() {
         return Collections.unmodifiableList(factories);
     }
 
     @Override
-    public DataContext createDataContext(DataContextProperties properties) throws UnsupportedDataContextPropertiesException {
-        for (DataContextFactory factory : factories) {
+    public Resource createResource(ResourceProperties properties) {
+        for (ResourceFactory factory : factories) {
             if (factory.accepts(properties)) {
                 return factory.create(properties);
             }
         }
-        throw new UnsupportedDataContextPropertiesException();
+        throw new UnsupportedResourcePropertiesException();
     }
-    
+
     public void discoverFromClasspath() {
-        final ServiceLoader<DataContextFactory> serviceLoader = ServiceLoader.load(DataContextFactory.class);
-        for (DataContextFactory factory : serviceLoader) {
+        final ServiceLoader<ResourceFactory> serviceLoader = ServiceLoader.load(ResourceFactory.class);
+        for (ResourceFactory factory : serviceLoader) {
             addFactory(factory);
         }
     }

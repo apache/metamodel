@@ -18,30 +18,43 @@
  */
 package org.apache.metamodel.factory;
 
-import org.apache.metamodel.MetaModelException;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * Exception thrown if a {@link DataContextFactory} or
- * {@link DataContextFactoryRegistry} is being invoked with
- * {@link DataContextProperties} that are not supported by the implementation.
- */
-public class UnsupportedDataContextPropertiesException extends MetaModelException {
+public class SimpleResourceProperties implements ResourceProperties {
 
     private static final long serialVersionUID = 1L;
+    private final URI uri;
 
-    public UnsupportedDataContextPropertiesException() {
-        super();
+    public SimpleResourceProperties(URI uri) {
+        this.uri = uri;
     }
 
-    public UnsupportedDataContextPropertiesException(Exception cause) {
-        super(cause);
+    public SimpleResourceProperties(String uri) {
+        this.uri = URI.create(uri);
     }
 
-    public UnsupportedDataContextPropertiesException(String message, Exception cause) {
-        super(message, cause);
+    @Override
+    public URI getUri() {
+        return uri;
     }
 
-    public UnsupportedDataContextPropertiesException(String message) {
-        super(message);
+    @Override
+    public Map<String, Object> toMap() {
+        final Map<String, Object> map = new HashMap<>();
+        map.put("uri", uri);
+        return map;
     }
+
+    @Override
+    public String getUsername() {
+        return null;
+    }
+
+    @Override
+    public String getPassword() {
+        return null;
+    }
+
 }

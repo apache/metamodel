@@ -18,30 +18,29 @@
  */
 package org.apache.metamodel.factory;
 
-import org.apache.metamodel.MetaModelException;
+import java.io.Serializable;
+import java.net.URI;
+import java.util.Map;
+
+import org.apache.metamodel.util.Resource;
 
 /**
- * Exception thrown if a {@link DataContextFactory} or
- * {@link DataContextFactoryRegistry} is being invoked with
- * {@link DataContextProperties} that are not supported by the implementation.
+ * Represents the {@link Serializable} properties used to fully describe and
+ * construct a {@link Resource}.
  */
-public class UnsupportedDataContextPropertiesException extends MetaModelException {
+public interface ResourceProperties extends Serializable {
 
-    private static final long serialVersionUID = 1L;
+    URI getUri();
 
-    public UnsupportedDataContextPropertiesException() {
-        super();
-    }
+    /**
+     * Gets all the properties represented as a {@link Map}. Note that any
+     * unstandardized properties may also be exposed via this map.
+     * 
+     * @return
+     */
+    Map<String, Object> toMap();
 
-    public UnsupportedDataContextPropertiesException(Exception cause) {
-        super(cause);
-    }
+    String getUsername();
 
-    public UnsupportedDataContextPropertiesException(String message, Exception cause) {
-        super(message, cause);
-    }
-
-    public UnsupportedDataContextPropertiesException(String message) {
-        super(message);
-    }
+    String getPassword();
 }
