@@ -16,33 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.factory;
+package org.apache.metamodel.hadoop;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-
+import org.apache.metamodel.factory.ResourceFactory;
+import org.apache.metamodel.factory.ResourceProperties;
+import org.apache.metamodel.factory.UnsupportedResourcePropertiesException;
+import org.apache.metamodel.util.HdfsResource;
 import org.apache.metamodel.util.Resource;
-import org.apache.metamodel.util.UrlResource;
 
-public class UrlResourceFactory implements ResourceFactory {
+public class HdfsResourceFactory implements ResourceFactory {
+
+    /**
+     * Property that can be used
+     */
+    public static final String PROPERTY_HADOOP_CONF_DIR = "hadoop-conf-dir";
 
     @Override
     public boolean accepts(ResourceProperties properties) {
-        final URI uri = properties.getUri();
-        switch (uri.getScheme()) {
-        case "http":
-        case "https":
-            return true;
-        }
-        return false;
+        return "hdfs".equals(properties.getUri().getScheme());
     }
 
     @Override
     public Resource create(ResourceProperties properties) throws UnsupportedResourcePropertiesException {
-        try {
-            return new UrlResource(properties.getUri().toURL());
-        } catch (MalformedURLException e) {
-            throw new UnsupportedResourcePropertiesException(e);
-        }
+        final Object hadoopConfDirProperty = properties.toMap().get(PROPERTY_HADOOP_CONF_DIR);
+        final String hadoopConfDir = hadoopConfDirProperty == null ? null : hadoopConfDirProperty.toString();
+        return new HdfsResource(properties.getUri().toString(), hadoopConfDir);
     }
+
 }
