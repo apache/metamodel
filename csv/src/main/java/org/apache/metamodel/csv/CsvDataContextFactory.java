@@ -21,23 +21,24 @@ package org.apache.metamodel.csv;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.factory.DataContextFactory;
 import org.apache.metamodel.factory.DataContextProperties;
-import org.apache.metamodel.factory.UnsupportedDataContextPropertiesException;
+import org.apache.metamodel.factory.ResourceFactoryRegistry;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.Resource;
-import org.apache.metamodel.util.ResourceUtils;
 
 public class CsvDataContextFactory implements DataContextFactory {
 
+    public static final String PROPERTY_TYPE = "csv";
+
     @Override
-    public boolean accepts(DataContextProperties properties) {
-        return "csv".equals(properties.getDataContextType());
+    public boolean accepts(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry) {
+        return PROPERTY_TYPE.equals(properties.getDataContextType());
     }
 
     @Override
-    public DataContext create(DataContextProperties properties) throws UnsupportedDataContextPropertiesException {
-        assert accepts(properties);
+    public DataContext create(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry) {
+        assert accepts(properties, resourceFactoryRegistry);
 
-        final Resource resource = ResourceUtils.toResource(properties.getResourceProperties());
+        final Resource resource = resourceFactoryRegistry.createResource(properties.getResourceProperties());
 
         final int columnNameLineNumber = getInt(properties.getColumnNameLineNumber(),
                 CsvConfiguration.DEFAULT_COLUMN_NAME_LINE);

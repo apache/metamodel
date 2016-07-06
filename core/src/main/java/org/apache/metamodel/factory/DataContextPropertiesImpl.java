@@ -27,11 +27,37 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.metamodel.schema.TableType;
+import org.apache.metamodel.util.BooleanComparator;
+import org.apache.metamodel.util.NumberComparator;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.apache.metamodel.util.SimpleTableDefParser;
 
 public class DataContextPropertiesImpl implements DataContextProperties {
 
     private static final long serialVersionUID = 1L;
+
+    public static final String PROPERTY_USERNAME = "username";
+    public static final String PROPERTY_PASSWORD = "password";
+    public static final String PROPERTY_DRIVER_CLASS = "driver-class";
+    public static final String PROPERTY_HOSTNAME = "hostname";
+    public static final String PROPERTY_PORT = "port";
+    public static final String PROPERTY_DATABASE = "database";
+    public static final String PROPERTY_URL = "url";
+    public static final String PROPERTY_CATALOG_NAME = "catalog";
+    public static final String PROPERTY_RESOURCE_PROPERTIES = "resource";
+    public static final String PROPERTY_IS_MULTILINE_VALUES_ENABLED = "multiline-values";
+    public static final String PROPERTY_IS_FAIL_ON_INCONSISTENT_ROW_LENGTH = "fail-on-inconsistent-row-length";
+    public static final String PROPERTY_ESCAPE_CHAR = "escape-char";
+    public static final String PROPERTY_QUOTE_CHAR = "quote-char";
+    public static final String PROPERTY_SEPARATOR_CHAR = "separator-char";
+    public static final String PROPERTY_ENCODING = "encoding";
+    public static final String PROPERTY_SKIP_EMPTY_COLUMNS = "skip-empty-columns";
+    public static final String PROPERTY_SKIP_EMPTY_LINES = "skip-empty-lines";
+    public static final String PROPERTY_COLUMN_NAME_LINE_NUMBER = "column-name-line-number";
+    public static final String PROPERTY_DATA_CONTEXT_TYPE = "type";
+    public static final String PROPERTY_TABLE_TYPES = "table-types";
+    public static final String PROPERTY_DATA_SOURCE = "data-source";
+    public static final String PROPERTY_TABLE_DEFS = "table-defs";
 
     private final Map<String, Object> map;
 
@@ -76,21 +102,44 @@ public class DataContextPropertiesImpl implements DataContextProperties {
     }
 
     public Integer getInt(String key) {
-        return (Integer) get(key);
+        final Object obj = get(key);
+        if (obj == null) {
+            return null;
+        }
+        return NumberComparator.toNumber(obj).intValue();
     }
 
     private Boolean getBoolean(String key) {
-        return (Boolean) get(key);
+        final Object obj = get(key);
+        if (obj == null) {
+            return null;
+        }
+        return BooleanComparator.toBoolean(obj);
     }
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> getMap(String key) {
-        return (Map<String, Object>) get(key);
+        final Object obj = get(key);
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof Map) {
+            return (Map<String, Object>) obj;
+        }
+        if (obj instanceof String) {
+            // TODO: Try parse as JSON
+        }
+        throw new IllegalStateException("Expected Map value for property '" + key + "'. Found " + obj.getClass()
+                .getName());
     }
 
     @Override
     public String getDataContextType() {
-        return getString("type");
+        return getString(PROPERTY_DATA_CONTEXT_TYPE);
+    }
+
+    public void setDataContextType(String type) {
+        put(PROPERTY_DATA_CONTEXT_TYPE, type);
     }
 
     @Override
@@ -100,7 +149,7 @@ public class DataContextPropertiesImpl implements DataContextProperties {
 
     @Override
     public ResourceProperties getResourceProperties() {
-        final Object resourceValue = get("resource");
+        final Object resourceValue = get(PROPERTY_RESOURCE_PROPERTIES);
         if (resourceValue == null) {
             return null;
         }
@@ -115,110 +164,141 @@ public class DataContextPropertiesImpl implements DataContextProperties {
             final Map<String, Object> resourceMap = (Map<String, Object>) resourceValue;
             return new ResourcePropertiesImpl(resourceMap);
         }
-        throw new IllegalStateException("Unsupported 'resource' definition: " + resourceValue);
+        throw new IllegalStateException("Expected String, URI or Map value for property 'resource'. Found: "
+                + resourceValue);
     }
 
     @Override
     public Integer getColumnNameLineNumber() {
-        return getInt("column-name-line-number");
+        return getInt(PROPERTY_COLUMN_NAME_LINE_NUMBER);
     }
 
     @Override
     public Boolean isSkipEmptyLines() {
-        return getBoolean("skip-empty-lines");
+        return getBoolean(PROPERTY_SKIP_EMPTY_LINES);
     }
 
     @Override
     public Boolean isSkipEmptyColumns() {
-        return getBoolean("skip-empty-columns");
+        return getBoolean(PROPERTY_SKIP_EMPTY_COLUMNS);
     }
 
     @Override
     public String getEncoding() {
-        return getString("encoding");
+        return getString(PROPERTY_ENCODING);
     }
 
     @Override
     public Character getSeparatorChar() {
-        return getChar("separator-char");
+        return getChar(PROPERTY_SEPARATOR_CHAR);
     }
 
     @Override
     public Character getQuoteChar() {
-        return getChar("quote-char");
+        return getChar(PROPERTY_QUOTE_CHAR);
     }
 
     @Override
     public Character getEscapeChar() {
-        return getChar("escape-char");
+        return getChar(PROPERTY_ESCAPE_CHAR);
     }
 
     @Override
     public Boolean isFailOnInconsistentRowLength() {
-        return getBoolean("fail-on-inconsistent-row-length");
+        return getBoolean(PROPERTY_IS_FAIL_ON_INCONSISTENT_ROW_LENGTH);
     }
 
     @Override
     public Boolean isMultilineValuesEnabled() {
-        return getBoolean("multiline-values");
+        return getBoolean(PROPERTY_IS_MULTILINE_VALUES_ENABLED);
     }
 
     @Override
     public TableType[] getTableTypes() {
-        // TODO Auto-generated method stub
-        return null;
+        final Object obj = get(PROPERTY_TABLE_TYPES);
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof TableType[]) {
+            return (TableType[]) obj;
+        }
+        if (obj instanceof TableType) {
+            return new TableType[] { (TableType) obj };
+        }
+        if (obj instanceof String) {
+            String str = (String) obj;
+            if (str.startsWith("[") && str.endsWith("]")) {
+                str = str.substring(1, str.length() - 2);
+            }
+            final String[] tokens = str.split(",");
+            final TableType[] tableTypes = new TableType[tokens.length];
+            for (int i = 0; i < tableTypes.length; i++) {
+                tableTypes[i] = TableType.getTableType(tokens[i]);
+            }
+        }
+        throw new IllegalStateException("Expected TableType[] value for property '" + PROPERTY_TABLE_TYPES + "'. Found "
+                + obj.getClass().getName());
     }
 
     @Override
     public String getCatalogName() {
-        return getString("catalog");
+        return getString(PROPERTY_CATALOG_NAME);
     }
 
     @Override
     public String getUrl() {
-        return getString("url");
+        return getString(PROPERTY_URL);
     }
 
     @Override
     public DataSource getDataSource() {
-        // TODO Auto-generated method stub
-        return null;
+        return (DataSource) get(PROPERTY_DATA_SOURCE);
     }
 
     @Override
     public String getUsername() {
-        return getString("username");
+        return getString(PROPERTY_USERNAME);
     }
 
     @Override
     public String getPassword() {
-        return getString("password");
+        return getString(PROPERTY_PASSWORD);
     }
 
     @Override
     public String getDriverClassName() {
-        return getString("driver-class");
+        return getString(PROPERTY_DRIVER_CLASS);
     }
 
     @Override
     public String getHostname() {
-        return getString("hostname");
+        return getString(PROPERTY_HOSTNAME);
     }
 
     @Override
     public Integer getPort() {
-        return getInt("port");
+        return getInt(PROPERTY_PORT);
     }
 
     @Override
     public String getDatabaseName() {
-        return getString("database");
+        return getString(PROPERTY_DATABASE);
     }
 
     @Override
     public SimpleTableDef[] getTableDefs() {
-        // TODO Auto-generated method stub
-        return null;
+        final Object obj = get(PROPERTY_TABLE_DEFS);
+        if (obj instanceof SimpleTableDef[]) {
+            return (SimpleTableDef[]) obj;
+        }
+        if (obj instanceof SimpleTableDef) {
+            return new SimpleTableDef[] { (SimpleTableDef) obj };
+        }
+        if (obj instanceof String) {
+            return SimpleTableDefParser.parseTableDefs((String) obj);
+        }
+        throw new IllegalStateException("Expected SimpleTableDef[] value for property '" + PROPERTY_TABLE_DEFS
+                + "'. Found " + obj.getClass().getName());
     }
 
 }

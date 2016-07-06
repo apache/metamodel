@@ -31,7 +31,8 @@ public class DataContextFactoryRegistryImpl implements DataContextFactoryRegistr
     private static final DataContextFactoryRegistry DEFAULT_INSTANCE;
 
     static {
-        final DataContextFactoryRegistryImpl registry = new DataContextFactoryRegistryImpl();
+        final ResourceFactoryRegistry resourceFactoryRegistry = ResourceFactoryRegistryImpl.getDefaultInstance();
+        final DataContextFactoryRegistryImpl registry = new DataContextFactoryRegistryImpl(resourceFactoryRegistry);
         registry.discoverFromClasspath();
         DEFAULT_INSTANCE = registry;
     }
@@ -41,9 +42,11 @@ public class DataContextFactoryRegistryImpl implements DataContextFactoryRegistr
     }
 
     private final List<DataContextFactory> factories;
+    private final ResourceFactoryRegistry resourceFactoryRegistry;
 
-    public DataContextFactoryRegistryImpl() {
-        factories = new ArrayList<>();
+    public DataContextFactoryRegistryImpl(ResourceFactoryRegistry resourceFactoryRegistry) {
+        this.factories = new ArrayList<>();
+        this.resourceFactoryRegistry = resourceFactoryRegistry;
     }
 
     @Override
@@ -62,15 +65,16 @@ public class DataContextFactoryRegistryImpl implements DataContextFactoryRegistr
     }
 
     @Override
-    public DataContext createDataContext(DataContextProperties properties) throws UnsupportedDataContextPropertiesException {
+    public DataContext createDataContext(DataContextProperties properties)
+            throws UnsupportedDataContextPropertiesException {
         for (DataContextFactory factory : factories) {
-            if (factory.accepts(properties)) {
-                return factory.create(properties);
+            if (factory.accepts(properties, resourceFactoryRegistry)) {
+                return factory.create(properties, resourceFactoryRegistry);
             }
         }
         throw new UnsupportedDataContextPropertiesException();
     }
-    
+
     public void discoverFromClasspath() {
         final ServiceLoader<DataContextFactory> serviceLoader = ServiceLoader.load(DataContextFactory.class);
         for (DataContextFactory factory : serviceLoader) {

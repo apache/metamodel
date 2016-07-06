@@ -18,11 +18,13 @@
  */
 package org.apache.metamodel.factory;
 
+import org.apache.metamodel.ConnectionException;
 import org.apache.metamodel.DataContext;
 
 public interface DataContextFactory {
 
-    public boolean accepts(DataContextProperties properties);
+    public boolean accepts(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry);
 
-    public DataContext create(DataContextProperties properties) throws UnsupportedDataContextPropertiesException;
+    public DataContext create(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry)
+            throws UnsupportedDataContextPropertiesException, ConnectionException;
 }

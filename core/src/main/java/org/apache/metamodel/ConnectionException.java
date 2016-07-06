@@ -16,26 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.factory;
-
-import java.util.Collection;
-
-import org.apache.metamodel.ConnectionException;
-import org.apache.metamodel.DataContext;
+package org.apache.metamodel;
 
 /**
- * Represents a registry of {@link DataContextFactory} objects. This registry
- * can be used to create {@link DataContext}s of varying types using the
- * underlying factories.
+ * Specialized {@link MetaModelException} thrown to indicate that establishing
+ * the connection to the underlying data store of an {@link DataContext} failed.
  */
-public interface DataContextFactoryRegistry {
+public class ConnectionException extends MetaModelException {
 
-    public void addFactory(DataContextFactory factory);
+    private static final long serialVersionUID = 1L;
 
-    public void clearFactories();
+    public ConnectionException() {
+        super();
+    }
 
-    public Collection<DataContextFactory> getFactories();
+    public ConnectionException(Exception cause) {
+        super(cause);
+    }
 
-    public DataContext createDataContext(DataContextProperties properties)
-            throws UnsupportedDataContextPropertiesException, ConnectionException;
+    public ConnectionException(String message, Exception cause) {
+        super(message, cause);
+    }
+
+    public ConnectionException(String message) {
+        super(message);
+    }
 }
