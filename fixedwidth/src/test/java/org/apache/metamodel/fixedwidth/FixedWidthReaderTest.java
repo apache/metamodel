@@ -46,12 +46,12 @@ public class FixedWidthReaderTest {
     }
 
     @Test
-    public void testNoBufferReader() throws IOException {
+    public void testParser() throws IOException {
         int[] widths = new int[] { 8, 9 };
         final String lineToBeRead = "greeting  greeter  ";
         @SuppressWarnings("resource")
-        final FixedWidthReader fixedWidthReader = new FixedWidthReader(null, widths, false);
-        final String[] line = fixedWidthReader.readLine(lineToBeRead);
+        FixedWidthLineParser parser = new FixedWidthLineParser(-1, widths, false, 17, 0, false); 
+        final String[] line = parser.parseLine(lineToBeRead);
         assertEquals("[greeting, greeter]", Arrays.asList(line).toString());
     }
 }
