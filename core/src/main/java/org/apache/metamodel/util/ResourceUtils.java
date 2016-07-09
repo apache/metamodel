@@ -30,14 +30,39 @@ import org.apache.metamodel.factory.UnsupportedResourcePropertiesException;
  */
 public class ResourceUtils {
 
-    public static Resource toResource(URI uri) {
+    /**
+     * Creates a Resource based on a URI
+     * 
+     * @param uri
+     * @return
+     * @throws UnsupportedResourcePropertiesException
+     *             if the scheme or other part of the URI is unsupported.
+     */
+    public static Resource toResource(URI uri) throws UnsupportedResourcePropertiesException {
         return toResource(new SimpleResourceProperties(uri));
     }
 
-    public static Resource toResource(String uri) {
+    /**
+     * Creates a Resource based on a path or URI (represented by a String)
+     * 
+     * @param uri
+     * @return
+     * @throws UnsupportedResourcePropertiesException
+     *             if the scheme or other part of the string is unsupported.
+     */
+    public static Resource toResource(String uri) throws UnsupportedResourcePropertiesException {
         return toResource(new SimpleResourceProperties(uri));
     }
 
+    /**
+     * Creates a Resource based on the {@link ResourceProperties} definition.
+     * 
+     * @param resourceProperties
+     * @return
+     * @throws UnsupportedResourcePropertiesException
+     *             if the provided properties cannot be handled in creation of a
+     *             resource.
+     */
     public static Resource toResource(ResourceProperties resourceProperties)
             throws UnsupportedResourcePropertiesException {
         return ResourceFactoryRegistryImpl.getDefaultInstance().createResource(resourceProperties);
