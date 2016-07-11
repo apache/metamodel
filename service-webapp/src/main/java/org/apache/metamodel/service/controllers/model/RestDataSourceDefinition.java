@@ -18,39 +18,38 @@
  */
 package org.apache.metamodel.service.controllers.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.validation.constraints.NotNull;
 
 import org.apache.metamodel.service.app.DataSourceDefinition;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RestDataSourceDefinition implements DataSourceDefinition {
 
+    private final Map<String, Object> properties = new HashMap<>();
+
     @JsonProperty(value = "type", required = true)
     @NotNull
     private String type;
-
-    @JsonProperty(value = "table-definitions", required = false)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Object tableDefinitions;
-
-    @JsonProperty(value = "schema-name", required = false)
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String schemaName;
 
     @Override
     public String getType() {
         return type;
     }
 
+    @JsonAnyGetter
     @Override
-    public Object getTableDefinitions() {
-        return tableDefinitions;
+    public Map<String, Object> getProperties() {
+        return properties;
     }
 
-    @Override
-    public String getSchemaName() {
-        return schemaName;
+    @JsonAnySetter
+    public void set(String name, Object value) {
+        properties.put(name, value);
     }
 }
