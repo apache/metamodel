@@ -20,30 +20,29 @@ package org.apache.metamodel.fixedwidth;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 
 import org.junit.Test;
 
-public class FixedWidthReaderTest {
+public class FixedWidthLineParserTest {
 
     @Test
-    public void testBufferedReader() throws IOException {
-        final File file = new File("src/test/resources/example_simple1.txt");
-        final BufferedReader reader = new BufferedReader(new FileReader(file));
+    public void testParser() throws IOException {
         int[] widths = new int[] { 8, 9 };
-        try (final FixedWidthReader fixedWidthReader = new FixedWidthReader(reader, widths, false)) {
-            final String[] line1 = fixedWidthReader.readLine();
-            assertEquals("[greeting, greeter]", Arrays.asList(line1).toString());
-            final String[] line2 = fixedWidthReader.readLine();
-            assertEquals("[hello, world]", Arrays.asList(line2).toString());
-            final String[] line3 = fixedWidthReader.readLine();
-            assertEquals("[hi, there]", Arrays.asList(line3).toString());
-        }
-    }
+        final FixedWidthLineParser parser = new FixedWidthLineParser(-1, widths, false, 17, 0, false); 
 
-   
+        final String lineToParse1 = "greeting  greeter  ";
+        final String[] line = parser.parseLine(lineToParse1);
+        assertEquals("[greeting, greeter]", Arrays.asList(line).toString());
+        
+        final String lineToParse2="howdy     partner"; 
+        String[] line2 = parser.parseLine(lineToParse2);
+        assertEquals("[howdy, partner]", Arrays.asList(line2).toString()); 
+        
+        final String lineToParse3 ="hi        there "; 
+        String[] line3 = parser.parseLine(lineToParse3);
+        assertEquals("[hi, there]", Arrays.asList(line3).toString()); 
+        
+    }
 }
