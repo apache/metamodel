@@ -27,6 +27,8 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
+import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
@@ -126,8 +128,8 @@ final class JdbcDataSet extends AbstractDataSet {
                             values[i] = null;
                         }
                     } catch (Exception e) {
-                        logger.debug("Could not invoke wasNull() method on resultset, error message: {}",
-                                e.getMessage());
+                        logger.debug("Could not invoke wasNull() method on resultset, error message: {}", e
+                                .getMessage());
                     }
                 }
                 _row = new DefaultRow(getHeader(), values);
@@ -146,7 +148,13 @@ final class JdbcDataSet extends AbstractDataSet {
         if (selectItem.getAggregateFunction() == null) {
             final Column column = selectItem.getColumn();
             if (column != null) {
-                return _jdbcDataContext.getQueryRewriter().getResultSetValue(resultSet, columnIndex, column);
+                final IQueryRewriter queryRewriter;
+                if (_jdbcDataContext == null) {
+                    queryRewriter = new DefaultQueryRewriter(null);
+                } else {
+                    queryRewriter = _jdbcDataContext.getQueryRewriter();
+                }
+                return queryRewriter.getResultSetValue(resultSet, columnIndex, column);
             }
         }
         return resultSet.getObject(columnIndex);
