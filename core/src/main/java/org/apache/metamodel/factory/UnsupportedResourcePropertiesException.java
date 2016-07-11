@@ -16,17 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.util;
+package org.apache.metamodel.factory;
 
-import junit.framework.TestCase;
+import org.apache.metamodel.MetaModelException;
 
-public class UrlResourceTest extends TestCase {
+public class UnsupportedResourcePropertiesException extends MetaModelException {
 
-    public void testGetName() throws Exception {
-        UrlResource resource = new UrlResource("http://metamodel.apache.org/robots.txt");
-        assertEquals("robots.txt", resource.getName());
-        
-        resource = new UrlResource("http://metamodel.apache.org/");
-        assertEquals("http://metamodel.apache.org/", resource.getName());
+    private static final long serialVersionUID = 1L;
+
+    public UnsupportedResourcePropertiesException() {
+        super();
     }
+
+    public UnsupportedResourcePropertiesException(Exception cause) {
+        super(cause);
+    }
+
+    public UnsupportedResourcePropertiesException(String message, Exception cause) {
+        super(message, cause);
+    }
+
+    public UnsupportedResourcePropertiesException(String message) {
+        super(message);
+    }
+
 }

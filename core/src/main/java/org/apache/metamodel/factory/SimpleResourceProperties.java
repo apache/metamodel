@@ -16,17 +16,45 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.util;
+package org.apache.metamodel.factory;
 
-import junit.framework.TestCase;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
-public class UrlResourceTest extends TestCase {
+public class SimpleResourceProperties implements ResourceProperties {
 
-    public void testGetName() throws Exception {
-        UrlResource resource = new UrlResource("http://metamodel.apache.org/robots.txt");
-        assertEquals("robots.txt", resource.getName());
-        
-        resource = new UrlResource("http://metamodel.apache.org/");
-        assertEquals("http://metamodel.apache.org/", resource.getName());
+    private static final long serialVersionUID = 1L;
+    private final URI uri;
+
+    public SimpleResourceProperties(URI uri) {
+        this.uri = uri;
     }
+
+    public SimpleResourceProperties(String uri) {
+        this.uri = URI.create(uri);
+    }
+
+    @Override
+    public URI getUri() {
+        return uri;
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        final Map<String, Object> map = new HashMap<>();
+        map.put("uri", uri);
+        return map;
+    }
+
+    @Override
+    public String getUsername() {
+        return null;
+    }
+
+    @Override
+    public String getPassword() {
+        return null;
+    }
+
 }

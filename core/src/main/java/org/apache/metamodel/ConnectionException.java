@@ -16,17 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.util;
+package org.apache.metamodel;
 
-import junit.framework.TestCase;
+/**
+ * Specialized {@link MetaModelException} thrown to indicate that establishing
+ * the connection to the underlying data store of an {@link DataContext} failed.
+ */
+public class ConnectionException extends MetaModelException {
 
-public class UrlResourceTest extends TestCase {
+    private static final long serialVersionUID = 1L;
 
-    public void testGetName() throws Exception {
-        UrlResource resource = new UrlResource("http://metamodel.apache.org/robots.txt");
-        assertEquals("robots.txt", resource.getName());
-        
-        resource = new UrlResource("http://metamodel.apache.org/");
-        assertEquals("http://metamodel.apache.org/", resource.getName());
+    public ConnectionException() {
+        super();
+    }
+
+    public ConnectionException(Exception cause) {
+        super(cause);
+    }
+
+    public ConnectionException(String message, Exception cause) {
+        super(message, cause);
+    }
+
+    public ConnectionException(String message) {
+        super(message);
     }
 }

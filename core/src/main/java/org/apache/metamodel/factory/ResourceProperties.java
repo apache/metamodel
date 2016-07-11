@@ -16,17 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.util;
+package org.apache.metamodel.factory;
 
-import junit.framework.TestCase;
+import java.io.Serializable;
+import java.net.URI;
+import java.util.Map;
 
-public class UrlResourceTest extends TestCase {
+import org.apache.metamodel.util.Resource;
 
-    public void testGetName() throws Exception {
-        UrlResource resource = new UrlResource("http://metamodel.apache.org/robots.txt");
-        assertEquals("robots.txt", resource.getName());
-        
-        resource = new UrlResource("http://metamodel.apache.org/");
-        assertEquals("http://metamodel.apache.org/", resource.getName());
-    }
+/**
+ * Represents the {@link Serializable} properties used to fully describe and
+ * construct a {@link Resource}.
+ */
+public interface ResourceProperties extends Serializable {
+
+    URI getUri();
+
+    /**
+     * Gets all the properties represented as a {@link Map}. Note that any
+     * unstandardized properties may also be exposed via this map.
+     * 
+     * @return
+     */
+    Map<String, Object> toMap();
+
+    String getUsername();
+
+    String getPassword();
 }

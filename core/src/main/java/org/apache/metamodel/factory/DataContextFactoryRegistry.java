@@ -16,17 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.util;
+package org.apache.metamodel.factory;
 
-import junit.framework.TestCase;
+import java.util.Collection;
 
-public class UrlResourceTest extends TestCase {
+import org.apache.metamodel.ConnectionException;
+import org.apache.metamodel.DataContext;
 
-    public void testGetName() throws Exception {
-        UrlResource resource = new UrlResource("http://metamodel.apache.org/robots.txt");
-        assertEquals("robots.txt", resource.getName());
-        
-        resource = new UrlResource("http://metamodel.apache.org/");
-        assertEquals("http://metamodel.apache.org/", resource.getName());
-    }
+/**
+ * Represents a registry of {@link DataContextFactory} objects. This registry
+ * can be used to create {@link DataContext}s of varying types using the
+ * underlying factories.
+ */
+public interface DataContextFactoryRegistry {
+
+    public void addFactory(DataContextFactory factory);
+
+    public void clearFactories();
+
+    public Collection<DataContextFactory> getFactories();
+
+    public DataContext createDataContext(DataContextProperties properties)
+            throws UnsupportedDataContextPropertiesException, ConnectionException;
 }
