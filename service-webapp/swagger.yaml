@@ -180,6 +180,17 @@ paths:
           description: Datasource not found
           schema:
             $ref: "#/definitions/error"
+    put:
+      parameters:
+        - name: inputData
+          in: body
+          description: The definition of the datasource using properties. The same properties as normally applied in MetaModel factories (e.g. 'type', 'resource', 'url', 'driver-class' ,'hostname', 'port', 'catalog', 'database', 'username', 'port', 'table-defs') are used here.
+          required: true
+          schema:
+            type: object
+      responses:
+        200:
+          description: Datasource created
   /{tenant}/{datasource}/q:
     parameters:
       - name: tenant
