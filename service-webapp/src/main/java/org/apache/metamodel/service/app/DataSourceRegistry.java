@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.factory.DataContextProperties;
 import org.apache.metamodel.service.app.exceptions.DataSourceAlreadyExistException;
 import org.apache.metamodel.service.app.exceptions.DataSourceNotUpdateableException;
 import org.apache.metamodel.service.app.exceptions.NoSuchDataSourceException;
@@ -33,7 +34,7 @@ public interface DataSourceRegistry {
 
     public List<String> getDataSourceNames();
 
-    public String registerDataSource(String dataContextName, DataSourceDefinition dataSourceDef) throws DataSourceAlreadyExistException;
+    public String registerDataSource(String dataContextName, DataContextProperties dataContextProperties) throws DataSourceAlreadyExistException;
 
     public DataContext openDataContext(String dataSourceName) throws NoSuchDataSourceException;
 

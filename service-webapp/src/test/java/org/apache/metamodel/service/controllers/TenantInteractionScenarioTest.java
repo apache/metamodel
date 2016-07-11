@@ -72,7 +72,7 @@ public class TenantInteractionScenarioTest {
         // create datasource
         {
             final MvcResult result = mockMvc.perform(MockMvcRequestBuilders.put("/tenant1/mydata").content(
-                    "{'type':'pojo','table-definitions':'hello_world (greeting VARCHAR, who VARCHAR); foo (bar INTEGER, baz DATE);'}"
+                    "{'type':'pojo','table-defs':'hello_world (greeting VARCHAR, who VARCHAR); foo (bar INTEGER, baz DATE);'}"
                             .replace('\'', '"')).contentType(MediaType.APPLICATION_JSON)).andExpect(
                                     MockMvcResultMatchers.status().isOk()).andReturn();
 

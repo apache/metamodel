@@ -84,7 +84,7 @@ public class CassandraUtils {
         case TEXT:
             return row.getString(columnName);
         case TIMESTAMP:
-            return row.getDate(columnName);
+            return row.getTimestamp(columnName);
         case UUID:
             return row.getUUID(columnName);
         case VARCHAR:

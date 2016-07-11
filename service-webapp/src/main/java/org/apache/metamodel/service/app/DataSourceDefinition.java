@@ -18,13 +18,11 @@
  */
 package org.apache.metamodel.service.app;
 
+import java.util.Map;
+
 public interface DataSourceDefinition {
 
     public String getType();
     
-    public Object getTableDefinitions();
-    
-    public String getSchemaName();
-    
-    // TODO
+    public Map<String, Object> getProperties();
 }

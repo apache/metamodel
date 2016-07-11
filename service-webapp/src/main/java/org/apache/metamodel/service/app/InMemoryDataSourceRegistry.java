@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.metamodel.DataContext;
+import org.apache.metamodel.factory.DataContextProperties;
 import org.apache.metamodel.service.app.exceptions.DataSourceAlreadyExistException;
 import org.apache.metamodel.service.app.exceptions.NoSuchDataSourceException;
 
@@ -37,13 +38,13 @@ public class InMemoryDataSourceRegistry implements DataSourceRegistry {
     }
 
     @Override
-    public String registerDataSource(final String name, final DataSourceDefinition dataSourceDef)
+    public String registerDataSource(final String name, final DataContextProperties dataContextProperties)
             throws DataSourceAlreadyExistException {
         if (dataSources.containsKey(name)) {
             throw new DataSourceAlreadyExistException(name);
         }
 
-        dataSources.put(name, new DataContextSupplier(name, dataSourceDef));
+        dataSources.put(name, new DataContextSupplier(name, dataContextProperties));
         return name;
     }
 

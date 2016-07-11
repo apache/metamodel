@@ -19,6 +19,7 @@
 package org.apache.metamodel.service.controllers;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,8 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.factory.DataContextProperties;
+import org.apache.metamodel.factory.DataContextPropertiesImpl;
 import org.apache.metamodel.service.app.TenantContext;
 import org.apache.metamodel.service.app.TenantRegistry;
 import org.apache.metamodel.service.controllers.model.RestDataSourceDefinition;
@@ -58,8 +61,20 @@ public class DataSourceController {
     public Map<String, Object> put(@PathVariable("tenant") String tenantId,
             @PathVariable("datasource") String dataSourceId,
             @Valid @RequestBody RestDataSourceDefinition dataContextDefinition) {
+
+        final Map<String, Object> map = new HashMap<>();
+        map.putAll(dataContextDefinition.getProperties());
+        map.put(DataContextPropertiesImpl.PROPERTY_DATA_CONTEXT_TYPE, dataContextDefinition.getType());
+
+        if (!map.containsKey(DataContextPropertiesImpl.PROPERTY_DATABASE)) {
+            // add the data source ID as database name if it is not already set.
+            map.put(DataContextPropertiesImpl.PROPERTY_DATABASE, dataSourceId);
+        }
+
+        final DataContextProperties properties = new DataContextPropertiesImpl(map);
+
         final String dataContextIdentifier = tenantRegistry.getTenantContext(tenantId).getDataSourceRegistry()
-                .registerDataSource(dataSourceId, dataContextDefinition);
+                .registerDataSource(dataSourceId, properties);
 
         return get(tenantId, dataContextIdentifier);
     }

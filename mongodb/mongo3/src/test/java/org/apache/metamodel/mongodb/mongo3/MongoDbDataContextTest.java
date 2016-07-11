@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
 import com.mongodb.WriteConcern;
 
 import org.apache.metamodel.DataContext;
@@ -608,6 +610,38 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             ds2.close();
             ds3.close();
             ds4.close();
+        }
+    }
+
+    public void testSelectWithAlias() throws Exception {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        mongoDb.createCollection(getCollectionName());
+        MongoCollection<Document> col = mongoDb.getCollection(getCollectionName());
+
+        final Document dbRow = new Document();
+        dbRow.append("name", new Document().append("first", "John").append("last", "Doe"));
+        dbRow.append("gender", "MALE");
+        col.insertOne(dbRow);
+
+        final MongoDbDataContext dc = new MongoDbDataContext(mongoDb,
+                new SimpleTableDef(getCollectionName(), new String[] {
+                        "name.first", "name.last", "gender", "addresses", "addresses[0].city", "addresses[0].country",
+                        "addresses[5].foobar" }));
+
+        final DataSet ds1 = dc.executeQuery("select gender as my_gender, name.first as my_name from my_collection where gender LIKE '%MALE%'");
+        final SelectItem[] selectItems = ds1.getSelectItems();
+        SelectItem firstSelectItem = selectItems[0];
+        SelectItem secondSelectItem = selectItems[1];
+        try {
+            assertNotNull(firstSelectItem.getAlias());
+            assertNotNull(secondSelectItem.getAlias());
+
+        } finally {
+            ds1.close();
         }
     }
 }

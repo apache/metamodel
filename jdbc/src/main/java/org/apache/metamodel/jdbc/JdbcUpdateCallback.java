@@ -126,7 +126,7 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
                         }
                     }
                 } finally {
-                    getDataContext().close(_connection, null, null);
+                    getDataContext().close(_connection);
                 }
             }
         }
