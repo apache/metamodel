@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 
@@ -251,6 +252,31 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
      * @return
      */
     private boolean isEnumExpected(ObjectStreamClass objectStreamClass) {
+        try {
+            final Field initializedField = ObjectStreamClass.class.getDeclaredField("initialized");
+            initializedField.setAccessible(true);
+            final Boolean initialized = (Boolean) initializedField.get(objectStreamClass);
+            if (!initialized) {
+                /*
+                 * Snippet from the JDK source:
+                 * 
+                 * void initNonProxy(ObjectStreamClass model,
+                 * Class<?> cl,
+                 * ClassNotFoundException resolveEx,
+                 * ObjectStreamClass superDesc)
+                 **/
+                final Method initMethod = ObjectStreamClass.class.getDeclaredMethod("initNonProxy", ObjectStreamClass.class,
+                        Class.class, ClassNotFoundException.class, ObjectStreamClass.class);
+                initMethod.setAccessible(true);
+                initMethod.invoke(objectStreamClass, objectStreamClass, null, null, null);
+            }
+        } catch (NoSuchFieldError e) {
+            logger.debug("Failed to access boolean field 'initialized' in {}", objectStreamClass.getName(), e);
+        } catch (Exception e) {
+            logger.debug("Failed to access invoke ObjectStreamClass.initialize() to prepare {}", objectStreamClass
+                    .getName(), e);
+        }
+        
         try {
             final Method isEnumMethod = ObjectStreamClass.class.getDeclaredMethod("isEnum");
             isEnumMethod.setAccessible(true);

@@ -197,8 +197,12 @@ final class JdbcDataSet extends AbstractDataSet {
         if (_closed) {
             return;
         }
+
+        FileHelper.safeClose(_resultSet);
+
         if (_jdbcDataContext != null) {
-            _jdbcDataContext.close(_connection, _resultSet, _statement);
+            FileHelper.safeClose(_statement);
+            _jdbcDataContext.close(_connection);
         }
         if (_compiledQuery != null) {
             _compiledQuery.returnLease(_lease);

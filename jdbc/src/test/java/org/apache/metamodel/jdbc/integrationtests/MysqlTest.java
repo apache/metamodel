@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -33,14 +34,17 @@ import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
+import org.apache.metamodel.data.Row;
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.jdbc.JdbcTestTemplates;
 import org.apache.metamodel.jdbc.QuerySplitter;
 import org.apache.metamodel.jdbc.dialects.MysqlQueryRewriter;
+import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.QueryParameter;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
@@ -50,8 +54,8 @@ import org.apache.metamodel.schema.TableType;
 /**
  * Test case that tests mysql interaction. The test requires the "sakila" sample
  * database that can be found at dev.mysql.com.
- * 
- * @see http://dev.mysql.com/doc/sakila/en/sakila-installation.html
+ *
+ * @see <a href="http://dev.mysql.com/doc/sakila/en/sakila-installation.html">Sakila installation</a>
  */
 public class MysqlTest extends AbstractJdbIntegrationTest {
 
@@ -75,12 +79,12 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
 
         JdbcTestTemplates.compositeKeyCreation(getDataContext(), "metamodel_test_composite_keys");
     }
-    
+
     public void testTimestampValueInsertSelect() throws Exception {
         if (!isConfigured()) {
             return;
         }
-        
+
         final Connection connection = getConnection();
         JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.MICROSECONDS, "TIMESTAMP(6)");
     }
@@ -180,11 +184,10 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         }
 
         DataContext dc = new JdbcDataContext(getConnection(), TableType.DEFAULT_TABLE_TYPES, "sakila");
-        Schema[] schemas = dc.getSchemas();
-        assertEquals("[Schema[name=mysql], Schema[name=performance_schema], Schema[name=portal], "
-                + "Schema[name=sakila], Schema[name=world]]", Arrays.toString(schemas));
+        final Schema sakila = dc.getSchemaByName("sakila");
+        assertNotNull(sakila);
 
-        Table table = dc.getSchemaByName("sakila").getTableByName("film");
+        Table table = sakila.getTableByName("film");
         Query q = new Query().from(table).select(table.getColumns());
         DataSet data = dc.executeQuery(q);
         TableModel tableModel = new DataSetTableModel(data);
@@ -199,9 +202,9 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
 
         JdbcDataContext dataContext = new JdbcDataContext(getConnection());
         assertTrue(dataContext.getQueryRewriter() instanceof MysqlQueryRewriter);
-        String[] catalogNames = dataContext.getCatalogNames();
-        assertEquals("[information_schema, mysql, performance_schema, portal, sakila, world]",
-                Arrays.toString(catalogNames));
+        assertNotNull(dataContext.getSchemaByName("mysql"));
+        assertNotNull(dataContext.getSchemaByName("performance_schema"));
+        assertNotNull(dataContext.getSchemaByName("sakila"));
     }
 
     public void testGetDefaultSchema() throws Exception {
@@ -296,8 +299,6 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         }
 
         DataContext dc = new JdbcDataContext(getConnection());
-        Schema[] schemas = dc.getSchemas();
-        assertEquals(5, schemas.length);
         Schema schema = dc.getDefaultSchema();
 
         assertEquals("[Table[name=actor,type=TABLE,remarks=], " + "Table[name=address,type=TABLE,remarks=], "
@@ -335,9 +336,6 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
                 "[Relationship[primaryTable=language,primaryColumns=[language_id],foreignTable=film,foreignColumns=[language_id]], Relationship[primaryTable=language,primaryColumns=[language_id],foreignTable=film,foreignColumns=[original_language_id]], Relationship[primaryTable=film,primaryColumns=[film_id],foreignTable=film_actor,foreignColumns=[film_id]], Relationship[primaryTable=film,primaryColumns=[film_id],foreignTable=film_category,foreignColumns=[film_id]], Relationship[primaryTable=film,primaryColumns=[film_id],foreignTable=inventory,foreignColumns=[film_id]]]",
                 Arrays.toString(filmTable.getRelationships()));
 
-        dc = new JdbcDataContext(getConnection(), TableType.DEFAULT_TABLE_TYPES, "sakila");
-        schemas = dc.getSchemas();
-        assertEquals(6, schemas.length);
         assertEquals("[Table[name=actor,type=TABLE,remarks=], " + "Table[name=address,type=TABLE,remarks=], "
                 + "Table[name=category,type=TABLE,remarks=], " + "Table[name=city,type=TABLE,remarks=], "
                 + "Table[name=country,type=TABLE,remarks=], " + "Table[name=customer,type=TABLE,remarks=], "
@@ -413,6 +411,37 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         assertTrue(ds.next());
         assertEquals(0, ((Number) ds.getRow().getValue(0)).intValue());
         assertFalse(ds.next());
+    }
+
+    public void testCompiledQueries() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        DataContext dc = new JdbcDataContext(getConnection(), TableType.DEFAULT_TABLE_TYPES, "sakila");
+
+        final Query cityQuery = dc.query().from("city").select("city_id", "city").toQuery()
+                .where(dc.getColumnByQualifiedLabel("city.city_id"), OperatorType.EQUALS_TO, new QueryParameter());
+        final CompiledQuery userCompiledQuery = dc.compileQuery(cityQuery);
+
+        for (int i = 1; i <= 100; i++) {
+            System.out.println("Running test " + i);
+            List<Integer> cityIds = new ArrayList<>(1000);
+            try (final DataSet addresses = dc.query().from("address").select("city_id").execute()) {
+                while (addresses.next()) {
+                    final Row addressRow = addresses.getRow();
+                    cityIds.add((int) addressRow.getValue(0));
+                }
+            }
+
+            for(int value : cityIds) {
+                try (final DataSet users = dc.executeQuery(userCompiledQuery, value)) {
+                    while (users.next()) {
+                        assertEquals(value, users.getRow().getValue(0));
+                    }
+                }
+            }
+        }
     }
 
     public void testWhiteSpaceColumns() throws Exception {

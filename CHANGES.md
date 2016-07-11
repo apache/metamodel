@@ -4,7 +4,15 @@
  * [METAMODEL-222] - Added support for Java 8 lambdas, removed support for Java 7.
  * [METAMODEL-1087] - Removed deprecated APIs from MetaModel's codebase.
 
-### Apache MetaModel 4.5.3 (work in progress)
+### Apache MetaModel 4.5.4 (work in progress)
+
+ * [METAMODEL-1099] - Created a new DataContextFactory SPI and a extensible registry of implementations based on ServiceLoader.
+ * [METAMODEL-1088] - Add support for aliases in MongoDB.
+ * [METAMODEL-1086] - Fixed encoding issue when CsvDataContext is instantiated with InputStream.
+ * [METAMODEL-1094] - Added support for Apache Cassandra version 3.x.
+ * [METAMODEL-1093] - Close compiled ResultSets.
+
+### Apache MetaModel 4.5.3
 
  * [METAMODEL-235] - Fixed a bug related to handling of null or missing values in ElasticSearch using REST client.
  * [METAMODEL-225] - Fixed support for nested objects and arrays in ElasticSearch using REST client.
@@ -14,6 +22,7 @@
  * [METAMODEL-159] - DataContextFactory misses methods to create HBase and POJO data contexts.
  * [METAMODEL-252] - Fixed a bug that caused JDBC updates to unnecessarily refresh schema objects.
  * [METAMODEL-1082] - Improved performance of batch ElasticSearch operations by using bulk API.
+ * [METAMODEL-241] - Fixed deserialization of legacy enum types on OpenJDK after rev. 7c1d34773aa6.
 
 ### Apache MetaModel 4.5.2
 
