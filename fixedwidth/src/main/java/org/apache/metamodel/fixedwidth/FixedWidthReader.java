@@ -29,13 +29,7 @@ import java.io.Reader;
 final public class FixedWidthReader implements Closeable {
 
 	private final BufferedReader _reader;
-	private final int _fixedValueWidth;
-	private final int[] _valueWidths;
-	private final boolean _failOnInconsistentLineWidth;
-	private final int _expectedLineLength;
-	private final boolean _constantWidth;
-	private volatile int _rowNumber;
-	private final transient FixedWidthLineParser _parser; 
+    private final FixedWidthLineParser _parser; 
 
 	public FixedWidthReader(Reader reader, int fixedValueWidth,
 			boolean failOnInconsistentLineWidth) {
@@ -46,14 +40,7 @@ final public class FixedWidthReader implements Closeable {
 	public FixedWidthReader(BufferedReader reader, int fixedValueWidth,
 			boolean failOnInconsistentLineWidth) {
 		_reader = reader;
-		_fixedValueWidth = fixedValueWidth;
-		_failOnInconsistentLineWidth = failOnInconsistentLineWidth;
-		_rowNumber = 0;
-		_valueWidths = null;
-
-		_constantWidth = true;
-		_expectedLineLength = -1;
-        _parser = new FixedWidthLineParser(_fixedValueWidth, _valueWidths, _failOnInconsistentLineWidth, _expectedLineLength, _rowNumber, _constantWidth);
+        _parser = new FixedWidthLineParser(fixedValueWidth, null, failOnInconsistentLineWidth, -1, 0, true);
 	}
 
 	public FixedWidthReader(Reader reader, int[] valueWidths,
@@ -65,20 +52,14 @@ final public class FixedWidthReader implements Closeable {
 	public FixedWidthReader(BufferedReader reader, int[] valueWidths,
 			boolean failOnInconsistentLineWidth) {
 		_reader = reader;
-		_fixedValueWidth = -1;
-		_valueWidths = valueWidths;
-		_failOnInconsistentLineWidth = failOnInconsistentLineWidth;
-		_rowNumber = 0;
-
-		_constantWidth = false;
+		int fixedValueWidth = -1;
 		int expectedLineLength = 0;
-		if (_fixedValueWidth == -1) {
-			for (int i = 0; i < _valueWidths.length; i++) {
-				expectedLineLength += _valueWidths[i];
+		if (fixedValueWidth == -1) {
+			for (int i = 0; i < valueWidths.length; i++) {
+				expectedLineLength += valueWidths[i];
 			}
 		}
-		_expectedLineLength = expectedLineLength;
-		_parser = new FixedWidthLineParser(_fixedValueWidth, _valueWidths, _failOnInconsistentLineWidth, _expectedLineLength, _rowNumber, _constantWidth);
+        _parser = new FixedWidthLineParser(fixedValueWidth, valueWidths, failOnInconsistentLineWidth, expectedLineLength, 0, false);
 	}
 
 	
