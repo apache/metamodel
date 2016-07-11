@@ -29,7 +29,7 @@ import java.io.Reader;
 final public class FixedWidthReader implements Closeable {
 
 	private final BufferedReader _reader;
-    private final FixedWidthLineParser _parser; 
+	private final FixedWidthLineParser _parser; 
 
 	public FixedWidthReader(Reader reader, int fixedValueWidth,
 			boolean failOnInconsistentLineWidth) {
