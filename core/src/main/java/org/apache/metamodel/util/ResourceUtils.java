@@ -18,10 +18,55 @@
  */
 package org.apache.metamodel.util;
 
+import java.net.URI;
+
+import org.apache.metamodel.factory.ResourceFactoryRegistryImpl;
+import org.apache.metamodel.factory.ResourceProperties;
+import org.apache.metamodel.factory.SimpleResourceProperties;
+import org.apache.metamodel.factory.UnsupportedResourcePropertiesException;
+
 /**
  * Static utility methods for handling {@link Resource}s.
  */
 public class ResourceUtils {
+
+    /**
+     * Creates a Resource based on a URI
+     * 
+     * @param uri
+     * @return
+     * @throws UnsupportedResourcePropertiesException
+     *             if the scheme or other part of the URI is unsupported.
+     */
+    public static Resource toResource(URI uri) throws UnsupportedResourcePropertiesException {
+        return toResource(new SimpleResourceProperties(uri));
+    }
+
+    /**
+     * Creates a Resource based on a path or URI (represented by a String)
+     * 
+     * @param uri
+     * @return
+     * @throws UnsupportedResourcePropertiesException
+     *             if the scheme or other part of the string is unsupported.
+     */
+    public static Resource toResource(String uri) throws UnsupportedResourcePropertiesException {
+        return toResource(new SimpleResourceProperties(uri));
+    }
+
+    /**
+     * Creates a Resource based on the {@link ResourceProperties} definition.
+     * 
+     * @param resourceProperties
+     * @return
+     * @throws UnsupportedResourcePropertiesException
+     *             if the provided properties cannot be handled in creation of a
+     *             resource.
+     */
+    public static Resource toResource(ResourceProperties resourceProperties)
+            throws UnsupportedResourcePropertiesException {
+        return ResourceFactoryRegistryImpl.getDefaultInstance().createResource(resourceProperties);
+    }
 
     /**
      * Gets the parent name of a resource. For example, if the resource's

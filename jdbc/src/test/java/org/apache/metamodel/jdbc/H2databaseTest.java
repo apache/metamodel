@@ -26,8 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.TestCase;
-
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.create.CreateTable;
@@ -48,10 +46,15 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.Update;
 import org.apache.metamodel.util.MutableRef;
 
+import junit.framework.TestCase;
+
 /**
  * Test case that tests interaction with the H2 embedded database
  */
 public class H2databaseTest extends TestCase {
+    
+    public static final String DRIVER_CLASS = "org.h2.Driver";
+    public static final String URL_MEMORY_DATABASE = "jdbc:h2:mem:";
 
     private final String[] FIRST_NAMES = { "Suzy", "Barbara", "John", "Ken", "Billy", "Larry", "Joe", "Margareth", "Bobby",
             "Elizabeth" };
@@ -62,8 +65,8 @@ public class H2databaseTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Class.forName("org.h2.Driver");
-        conn = DriverManager.getConnection("jdbc:h2:mem:");
+        Class.forName(DRIVER_CLASS);
+        conn = DriverManager.getConnection(URL_MEMORY_DATABASE);
     }
 
     @Override

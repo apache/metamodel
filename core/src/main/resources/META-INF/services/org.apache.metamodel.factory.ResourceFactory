@@ -1,0 +1,4 @@
+org.apache.metamodel.factory.FileResourceFactory
+org.apache.metamodel.factory.ClasspathResourceFactory
+org.apache.metamodel.factory.UrlResourceFactory
+org.apache.metamodel.factory.InMemoryResourceFactory
