@@ -40,7 +40,8 @@ final public class FixedWidthReader implements Closeable {
 	public FixedWidthReader(BufferedReader reader, int fixedValueWidth,
 			boolean failOnInconsistentLineWidth) {
 		_reader = reader;
-		 final FixedWidthConfiguration fixedWidthConfiguration = new FixedWidthConfiguration(FixedWidthConfiguration.NO_COLUMN_NAME_LINE,null, fixedValueWidth, failOnInconsistentLineWidth);
+        final FixedWidthConfiguration fixedWidthConfiguration = new FixedWidthConfiguration(
+                FixedWidthConfiguration.NO_COLUMN_NAME_LINE, null, fixedValueWidth, failOnInconsistentLineWidth);
         _parser = new FixedWidthLineParser(fixedWidthConfiguration, -1, 0);
 	}
 
@@ -60,7 +61,8 @@ final public class FixedWidthReader implements Closeable {
 				expectedLineLength += valueWidths[i];
 			}
 		}
-        final FixedWidthConfiguration fixedWidthConfiguration = new FixedWidthConfiguration(FixedWidthConfiguration.NO_COLUMN_NAME_LINE, null, valueWidths, failOnInconsistentLineWidth);
+        final FixedWidthConfiguration fixedWidthConfiguration = new FixedWidthConfiguration(
+                FixedWidthConfiguration.NO_COLUMN_NAME_LINE, null, valueWidths, failOnInconsistentLineWidth);
         _parser = new FixedWidthLineParser(fixedWidthConfiguration, expectedLineLength, 0);
 	}
 
