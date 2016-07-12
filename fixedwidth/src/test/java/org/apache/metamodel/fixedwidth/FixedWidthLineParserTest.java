@@ -23,14 +23,20 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class FixedWidthLineParserTest {
+    
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testParser() throws IOException {
         int[] widths = new int[] { 8, 9 };
-        final FixedWidthLineParser parser = new FixedWidthLineParser(-1, widths, false, 17, 0, false); 
+        FixedWidthConfiguration fixedWidthConfiguration = new FixedWidthConfiguration(FixedWidthConfiguration.NO_COLUMN_NAME_LINE, null, widths, false); 
+        final FixedWidthLineParser parser = new FixedWidthLineParser(fixedWidthConfiguration, 17, 0); 
 
         final String lineToParse1 = "greeting  greeter  ";
         final String[] line = parser.parseLine(lineToParse1);
@@ -44,5 +50,17 @@ public class FixedWidthLineParserTest {
         String[] line3 = parser.parseLine(lineToParse3);
         assertEquals("[hi, there]", Arrays.asList(line3).toString()); 
         
+    }
+    
+    @Test
+    public void testParserFailInconsistentRowException() throws IOException {
+        int[] widths = new int[] { 8, 5 };
+        FixedWidthConfiguration fixedWidthConfiguration = new FixedWidthConfiguration(FixedWidthConfiguration.NO_COLUMN_NAME_LINE, null, widths, true); 
+        final FixedWidthLineParser parser = new FixedWidthLineParser(fixedWidthConfiguration, 17, 0); 
+
+        final String lineToParse1 = "greeting  greeter  ";
+        exception.expect(InconsistentValueWidthException.class);
+        @SuppressWarnings("unused")
+        final String[] line = parser.parseLine(lineToParse1);
     }
 }

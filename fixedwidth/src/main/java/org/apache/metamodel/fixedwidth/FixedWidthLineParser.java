@@ -26,27 +26,19 @@ import java.util.List;
 
 public class FixedWidthLineParser {
  
-    private final int _fixedValueWidth;
-    private final int[] _valueWidths;
-    private final boolean _failOnInconsistentLineWidth;
     private final int _expectedLineLength;
-    private final boolean _constantWidth;
     private volatile int _rowNumber;
+    private final FixedWidthConfiguration _configuration; 
     
-    
-    public FixedWidthLineParser(int fixedValueWidth, int[] valueWidths, boolean failOnInconsistentLineWidth, int expectedLineLength, int rowNumber, boolean constantWidth) {
-        _fixedValueWidth = fixedValueWidth; 
-        _valueWidths = valueWidths; 
-        _failOnInconsistentLineWidth = failOnInconsistentLineWidth; 
-        _expectedLineLength = expectedLineLength; 
-        _rowNumber = rowNumber;         _constantWidth = constantWidth; 
+    public FixedWidthLineParser(FixedWidthConfiguration configuration, int expectedLineLength, int rowNumber) {
+        _configuration = configuration; 
+        _expectedLineLength = expectedLineLength;         _rowNumber = rowNumber; 
     }
     
     
     public String[] parseLine(String line) throws IOException {
-
-
         final List<String> values = new ArrayList<String>();
+        int[] valueWidths = _configuration.getValueWidths();
     
         if (line == null) {
             return null;
@@ -62,11 +54,11 @@ public class FixedWidthLineParser {
             nextValue.append(c);
 
             final int valueWidth;
-            if (_constantWidth) {
-                valueWidth = _fixedValueWidth;
+            if (_configuration.isConstantValueWidth()) {
+                valueWidth = _configuration.getFixedValueWidth();
             } else {
-                if (valueIndex >= _valueWidths.length) {
-                    if (_failOnInconsistentLineWidth) {
+                if (valueIndex >= valueWidths.length) {
+                    if (_configuration.isFailOnInconsistentLineWidth()) {
                         String[] result = values.toArray(new String[values
                                 .size()]);
                         throw new InconsistentValueWidthException(result,
@@ -76,7 +68,7 @@ public class FixedWidthLineParser {
                         break;
                     }
                 }
-                valueWidth = _valueWidths[valueIndex];
+                valueWidth = _configuration.getValueWidth(valueIndex); 
             }
 
             if (nextValue.length() == valueWidth) {
@@ -93,21 +85,21 @@ public class FixedWidthLineParser {
 
         String[] result = values.toArray(new String[values.size()]);
 
-        if (!_failOnInconsistentLineWidth && !_constantWidth) {
-            if (result.length != _valueWidths.length) {
-                String[] correctedResult = new String[_valueWidths.length];
+        if (!_configuration.isFailOnInconsistentLineWidth() && ! _configuration.isConstantValueWidth()) {
+            if (result.length != valueWidths.length) {
+                String[] correctedResult = new String[valueWidths.length];
                 for (int i = 0; i < result.length
-                        && i < _valueWidths.length; i++) {
+                        && i < valueWidths.length; i++) {
                     correctedResult[i] = result[i];
                 }
                 result = correctedResult;
             }
         }
 
-        if (_failOnInconsistentLineWidth) {
+        if (_configuration.isFailOnInconsistentLineWidth()) {
             _rowNumber++;
-            if (_constantWidth) {
-                if (line.length() % _fixedValueWidth != 0) {
+            if (_configuration.isConstantValueWidth()) {
+                if (line.length() % _configuration.getFixedValueWidth() != 0) {
                     throw new InconsistentValueWidthException(result, line,
                             _rowNumber);
                 }
