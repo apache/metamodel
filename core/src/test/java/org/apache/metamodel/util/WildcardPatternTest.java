@@ -48,5 +48,9 @@ public class WildcardPatternTest extends TestCase {
 		pattern = new WildcardPattern("bar", '%');
 		assertTrue(pattern.matches("bar"));
 		assertFalse(pattern.matches("foobar"));
+
+		pattern = new WildcardPattern("", '%');
+		assertTrue(pattern.matches(""));
+		assertFalse(pattern.matches("foo"));
 	}
 }

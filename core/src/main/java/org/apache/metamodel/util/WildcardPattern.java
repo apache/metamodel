@@ -40,8 +40,12 @@ public final class WildcardPattern implements Serializable {
 	public WildcardPattern(String pattern, char wildcard) {
 		_pattern = pattern;
 		_wildcard = wildcard;
-		_startsWithDelim = (_pattern.charAt(0) == _wildcard);
-		_endsWithDelim = (_pattern.charAt(pattern.length() - 1) == _wildcard);
+		if(_pattern.isEmpty()){
+			_startsWithDelim = _endsWithDelim = false;
+		} else {
+			_startsWithDelim = _pattern.charAt(0) == _wildcard;
+			_endsWithDelim = _pattern.charAt(pattern.length() - 1) == _wildcard;
+		}
 	}
 
 	public boolean matches(String value) {
