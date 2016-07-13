@@ -5,7 +5,8 @@
  * [METAMODEL-1086] - Fixed encoding issue when CsvDataContext is instantiated with InputStream.
  * [METAMODEL-1094] - Added support for Apache Cassandra version 3.x.
  * [METAMODEL-1093] - Close compiled ResultSets.
-
+ * [METAMODEL-1102] - Separated FixedWidthLineParser.
+ 
 ### Apache MetaModel 4.5.3
 
  * [METAMODEL-235] - Fixed a bug related to handling of null or missing values in ElasticSearch using REST client.

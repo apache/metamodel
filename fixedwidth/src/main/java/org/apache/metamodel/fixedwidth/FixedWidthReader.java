@@ -22,10 +22,6 @@ import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Reader;
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Reader capable of separating values based on a fixed width setting.
@@ -33,12 +29,7 @@ import java.util.List;
 final public class FixedWidthReader implements Closeable {
 
 	private final BufferedReader _reader;
-	private final int _fixedValueWidth;
-	private final int[] _valueWidths;
-	private final boolean _failOnInconsistentLineWidth;
-	private final int expectedLineLength;
-	private final boolean constantWidth;
-	private volatile int _rowNumber;
+	private final FixedWidthLineParser _parser; 
 
 	public FixedWidthReader(Reader reader, int fixedValueWidth,
 			boolean failOnInconsistentLineWidth) {
@@ -49,13 +40,9 @@ final public class FixedWidthReader implements Closeable {
 	public FixedWidthReader(BufferedReader reader, int fixedValueWidth,
 			boolean failOnInconsistentLineWidth) {
 		_reader = reader;
-		_fixedValueWidth = fixedValueWidth;
-		_failOnInconsistentLineWidth = failOnInconsistentLineWidth;
-		_rowNumber = 0;
-		_valueWidths = null;
-
-		constantWidth = true;
-		expectedLineLength = -1;
+        final FixedWidthConfiguration fixedWidthConfiguration = new FixedWidthConfiguration(
+                FixedWidthConfiguration.NO_COLUMN_NAME_LINE, null, fixedValueWidth, failOnInconsistentLineWidth);
+        _parser = new FixedWidthLineParser(fixedWidthConfiguration, -1, 0);
 	}
 
 	public FixedWidthReader(Reader reader, int[] valueWidths,
@@ -67,19 +54,16 @@ final public class FixedWidthReader implements Closeable {
 	public FixedWidthReader(BufferedReader reader, int[] valueWidths,
 			boolean failOnInconsistentLineWidth) {
 		_reader = reader;
-		_fixedValueWidth = -1;
-		_valueWidths = valueWidths;
-		_failOnInconsistentLineWidth = failOnInconsistentLineWidth;
-		_rowNumber = 0;
-
-		constantWidth = false;
+		int fixedValueWidth = -1;
 		int expectedLineLength = 0;
-		if (_fixedValueWidth == -1) {
-			for (int i = 0; i < _valueWidths.length; i++) {
-				expectedLineLength += _valueWidths[i];
+		if (fixedValueWidth == -1) {
+			for (int i = 0; i < valueWidths.length; i++) {
+				expectedLineLength += valueWidths[i];
 			}
 		}
-		this.expectedLineLength = expectedLineLength;
+        final FixedWidthConfiguration fixedWidthConfiguration = new FixedWidthConfiguration(
+                FixedWidthConfiguration.NO_COLUMN_NAME_LINE, null, valueWidths, failOnInconsistentLineWidth);
+        _parser = new FixedWidthLineParser(fixedWidthConfiguration, expectedLineLength, 0);
 	}
 
 	
@@ -96,95 +80,12 @@ final public class FixedWidthReader implements Closeable {
         String line;
         try {
             line = _reader.readLine();
-            return readLine(line);
+            return _parser.parseLine(line);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
 	}
 	
-	public String[] readLine(String line) throws IOException {
-
-
-			final List<String> values = new ArrayList<String>();
-		
-			if (line == null) {
-				return null;
-			}
-
-			StringBuilder nextValue = new StringBuilder();
-
-			int valueIndex = 0;
-
-			final CharacterIterator it = new StringCharacterIterator(line);
-			for (char c = it.first(); c != CharacterIterator.DONE; c = it
-					.next()) {
-				nextValue.append(c);
-
-				final int valueWidth;
-				if (constantWidth) {
-					valueWidth = _fixedValueWidth;
-				} else {
-					if (valueIndex >= _valueWidths.length) {
-						if (_failOnInconsistentLineWidth) {
-							String[] result = values.toArray(new String[values
-									.size()]);
-							throw new InconsistentValueWidthException(result,
-									line, _rowNumber + 1);
-						} else {
-							// silently ignore the inconsistency
-							break;
-						}
-					}
-					valueWidth = _valueWidths[valueIndex];
-				}
-
-				if (nextValue.length() == valueWidth) {
-					// write the value
-					values.add(nextValue.toString().trim());
-					nextValue = new StringBuilder();
-					valueIndex++;
-				}
-			}
-
-			if (nextValue.length() > 0) {
-				values.add(nextValue.toString().trim());
-			}
-
-			String[] result = values.toArray(new String[values.size()]);
-
-			if (!_failOnInconsistentLineWidth && !constantWidth) {
-				if (result.length != _valueWidths.length) {
-					String[] correctedResult = new String[_valueWidths.length];
-					for (int i = 0; i < result.length
-							&& i < _valueWidths.length; i++) {
-						correctedResult[i] = result[i];
-					}
-					result = correctedResult;
-				}
-			}
-
-			if (_failOnInconsistentLineWidth) {
-				_rowNumber++;
-				if (constantWidth) {
-					if (line.length() % _fixedValueWidth != 0) {
-						throw new InconsistentValueWidthException(result, line,
-								_rowNumber);
-					}
-				} else {
-					if (result.length != values.size()) {
-						throw new InconsistentValueWidthException(result, line,
-								_rowNumber);
-					}
-
-					if (line.length() != expectedLineLength) {
-						throw new InconsistentValueWidthException(result, line,
-								_rowNumber);
-					}
-				}
-			}
-
-			return result;
-	}
 
 	@Override
 	public void close() throws IOException {
