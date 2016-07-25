@@ -34,7 +34,7 @@ import org.apache.metamodel.util.TimeComparator;
 /**
  * Query rewriter for IBM DB2
  */
-public class DB2QueryRewriter extends DefaultQueryRewriter implements IQueryRewriter {
+public class DB2QueryRewriter extends DefaultQueryRewriter {
 
     public DB2QueryRewriter(JdbcDataContext dataContext) {
         super(dataContext);

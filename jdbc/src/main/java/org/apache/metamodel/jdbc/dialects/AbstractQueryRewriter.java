@@ -18,6 +18,18 @@
  */
 package org.apache.metamodel.jdbc.dialects;
 
+import java.io.InputStream;
+import java.io.Reader;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.NClob;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.metamodel.jdbc.JdbcDataContext;
@@ -35,8 +47,11 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.query.SelectClause;
 import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.ColumnTypeImpl;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FormatHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -286,5 +301,163 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
             item = item.replaceFunctionApproximationAllowed(false);
         }
         return item.toSql(isSchemaIncludedInColumnPaths());
+    }
+    
+    @Override
+    public void setStatementParameter(PreparedStatement st, int valueIndex, Column column, Object value)
+            throws SQLException {
+
+        final ColumnType type = (column == null ? null : column.getType());
+
+        if (type == null || type == ColumnType.OTHER) {
+            // type is not known - nothing more we can do to narrow the type
+            st.setObject(valueIndex, value);
+            return;
+        }
+
+        if (value == null && type != null) {
+            try {
+                final int jdbcType = type.getJdbcType();
+                st.setNull(valueIndex, jdbcType);
+                return;
+            } catch (Exception e) {
+                logger.warn("Exception occurred while calling setNull(...) for value index " + valueIndex
+                        + ". Attempting value-based setter method instead.", e);
+            }
+        }
+
+        if (type == ColumnType.VARCHAR && value instanceof Date) {
+            // some drivers (SQLite and JTDS for MS SQL server) treat dates as
+            // VARCHARS. In that case we need to convert the dates to the
+            // correct format
+            String nativeType = column.getNativeType();
+            Date date = (Date) value;
+            if ("DATE".equalsIgnoreCase(nativeType)) {
+                value = FormatHelper.formatSqlTime(ColumnType.DATE, date, false);
+            } else if ("TIME".equalsIgnoreCase(nativeType)) {
+                value = FormatHelper.formatSqlTime(ColumnType.TIME, date, false);
+            } else if ("TIMESTAMP".equalsIgnoreCase(nativeType) || "DATETIME".equalsIgnoreCase(nativeType)) {
+                value = FormatHelper.formatSqlTime(ColumnType.TIMESTAMP, date, false);
+            }
+        }
+
+        if (type != null && type.isTimeBased() && value instanceof String) {
+            value = FormatHelper.parseSqlTime(type, (String) value);
+        }
+
+        try {
+            if (type == ColumnType.DATE && value instanceof Date) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime((Date) value);
+                st.setDate(valueIndex, new java.sql.Date(cal.getTimeInMillis()), cal);
+            } else if (type == ColumnType.TIME && value instanceof Date) {
+                final Time time = toTime((Date) value);
+                st.setTime(valueIndex, time);
+            } else if (type == ColumnType.TIMESTAMP && value instanceof Date) {
+                final Timestamp ts = toTimestamp((Date) value);
+                st.setTimestamp(valueIndex, ts);
+            } else if (type == ColumnType.CLOB || type == ColumnType.NCLOB) {
+                if (value instanceof InputStream) {
+                    InputStream inputStream = (InputStream) value;
+                    st.setAsciiStream(valueIndex, inputStream);
+                } else if (value instanceof Reader) {
+                    Reader reader = (Reader) value;
+                    st.setCharacterStream(valueIndex, reader);
+                } else if (value instanceof NClob) {
+                    NClob nclob = (NClob) value;
+                    st.setNClob(valueIndex, nclob);
+                } else if (value instanceof Clob) {
+                    Clob clob = (Clob) value;
+                    st.setClob(valueIndex, clob);
+                } else if (value instanceof String) {
+                    st.setString(valueIndex, (String) value);
+                } else {
+                    st.setObject(valueIndex, value);
+                }
+            } else if (type == ColumnType.BLOB || type == ColumnType.BINARY) {
+                if (value instanceof byte[]) {
+                    byte[] bytes = (byte[]) value;
+                    st.setBytes(valueIndex, bytes);
+                } else if (value instanceof InputStream) {
+                    InputStream inputStream = (InputStream) value;
+                    st.setBinaryStream(valueIndex, inputStream);
+                } else if (value instanceof Blob) {
+                    Blob blob = (Blob) value;
+                    st.setBlob(valueIndex, blob);
+                } else {
+                    st.setObject(valueIndex, value);
+                }
+            } else if (type.isLiteral()) {
+                final String str;
+                if (value instanceof Reader) {
+                    Reader reader = (Reader) value;
+                    str = FileHelper.readAsString(reader);
+                } else {
+                    str = value.toString();
+                }
+                st.setString(valueIndex, str);
+            } else {
+                st.setObject(valueIndex, value);
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to set parameter {} to value: {}", valueIndex, value);
+            throw e;
+        }
+    }
+    
+    protected Time toTime(Date value) {
+        if (value instanceof Time) {
+            return (Time) value;
+        }
+        final Calendar cal = Calendar.getInstance();
+        cal.setTime((Date) value);
+        return new java.sql.Time(cal.getTimeInMillis());
+    }
+
+    protected Timestamp toTimestamp(Date value) {
+        if (value instanceof Timestamp) {
+            return (Timestamp) value;
+        }
+        final Calendar cal = Calendar.getInstance();
+        cal.setTime((Date) value);
+        return new Timestamp(cal.getTimeInMillis());
+    }
+    
+    @Override
+    public Object getResultSetValue(ResultSet resultSet, int columnIndex, Column column) throws SQLException {
+        final ColumnType type = column.getType();
+        try {
+            if (type == ColumnType.TIME) {
+                return resultSet.getTime(columnIndex);
+            } else if (type == ColumnType.DATE) {
+                return resultSet.getDate(columnIndex);
+            } else if (type == ColumnType.TIMESTAMP) {
+                return resultSet.getTimestamp(columnIndex);
+            } else if (type == ColumnType.BLOB) {
+                final Blob blob = resultSet.getBlob(columnIndex);
+                return blob;
+            } else if (type == JdbcDataContext.COLUMN_TYPE_BLOB_AS_BYTES) {
+                final Blob blob = resultSet.getBlob(columnIndex);
+                final InputStream inputStream = blob.getBinaryStream();
+                final byte[] bytes = FileHelper.readAsBytes(inputStream);
+                return bytes;
+            } else if (type.isBinary()) {
+                return resultSet.getBytes(columnIndex);
+            } else if (type == ColumnType.CLOB || type == ColumnType.NCLOB) {
+                final Clob clob = resultSet.getClob(columnIndex);
+                return clob;
+            } else if (type == JdbcDataContext.COLUMN_TYPE_CLOB_AS_STRING) {
+                final Clob clob = resultSet.getClob(columnIndex);
+                final Reader reader = clob.getCharacterStream();
+                final String result = FileHelper.readAsString(reader);
+                return result;
+            } else if (type.isBoolean()) {
+                return resultSet.getBoolean(columnIndex);
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to retrieve " + type
+                    + " value using type-specific getter, retrying with generic getObject(...) method", e);
+        }
+        return resultSet.getObject(columnIndex);
     }
 }

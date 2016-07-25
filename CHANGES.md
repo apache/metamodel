@@ -7,6 +7,7 @@
  * [METAMODEL-1094] - Added support for Apache Cassandra version 3.x.
  * [METAMODEL-1093] - Close compiled ResultSets.
  * [METAMODEL-1102] - Separated FixedWidthLineParser.
+ * [METAMODEL-1107] - Added support for PostgreSQL's "json" and "jsonb" data types.
  
 ### Apache MetaModel 4.5.3
 
@@ -57,8 +58,8 @@
 
 ### Apache MetaModel 4.4.0
 
- * [METAMODEL-192] - Added support for Scalar functions. We have a basic set of datatype conversion functions as well as support for UDF via implementing the ScalarFunction interface.
- * [METAMODEL-194] - Added support for setting the "Max rows" flag of a query to 0. This will always return an empty dataset.
+ * [METAMODEL-192] - Added support for Scalar functions. We have a basic set of data type conversion functions as well as support for UDF via implementing the ScalarFunction interface.
+ * [METAMODEL-194] - Added support for setting the "Max rows" flag of a query to 0. This will always return an empty data set.
  * [METAMODEL-173] - Improved CSV writing to non-file destinations. Added .write() and .append() methods to Resource interface.
  * [METAMODEL-170] - Dropped support for Java 6.
  * [METAMODEL-176] - Trimmed the transient dependencies of the JDBC module.
