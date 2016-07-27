@@ -59,12 +59,20 @@ public class RootInformationController {
         } catch (Exception e) {
             logger.info("Failed to get canonical-hostname", e);
         }
+        map.put("open-api", getOpenApi());
+        return map;
+    }
+
+    private Map<String, Object> getOpenApi() {
+        final Map<String, Object> map = new LinkedHashMap<>();
+        map.put("spec", servletContext.getContextPath() + "/swagger.json");
+        map.put("swagger-ui", servletContext.getContextPath() + "/swagger-ui");
         return map;
     }
 
     private Map<String, Object> getServerTime() {
         final ZonedDateTime now = ZonedDateTime.now();
-        final String dateFormatted = now.format( DateTimeFormatter.ISO_INSTANT);
+        final String dateFormatted = now.format(DateTimeFormatter.ISO_INSTANT);
 
         final Map<String, Object> map = new LinkedHashMap<>();
         map.put("timestamp", new Date().getTime());

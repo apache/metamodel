@@ -19,6 +19,8 @@ info:
   title: Apache MetaModel RESTful API
   description: Delivers 'MetaModel-as-a-Service' for unified data federation.
   version: "5.0.0"
+consumes:
+  - application/json
 produces:
   - application/json
 paths:
