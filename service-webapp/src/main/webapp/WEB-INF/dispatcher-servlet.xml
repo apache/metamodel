@@ -28,13 +28,16 @@ under the License.
 				http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<context:component-scan base-package="org.apache.metamodel.service.controllers" />
-	
+
 	<mvc:annotation-driven>
 		<mvc:message-converters>
 			<ref bean="jsonMessageConverter" />
 		</mvc:message-converters>
 	</mvc:annotation-driven>
 
+	<mvc:resources location="/swagger.yaml" mapping="/swagger.yaml" order="-1001" />
+	<mvc:resources location="/swagger-ui/" mapping="/swagger-ui/**" order="-1000" />
+	
 	<!-- Message converters -->
 	<bean id="jsonMessageConverter"
 		class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
