@@ -19,6 +19,12 @@ info:
   title: Apache MetaModel RESTful API
   description: Delivers 'MetaModel-as-a-Service' for unified data federation.
   version: "5.0.0"
+  contact:
+    name: Apache MetaModel
+    url: http://metamodel.apache.org
+  license:
+    name: Apache License, version 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
 consumes:
   - application/json
 produces:

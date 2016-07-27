@@ -35,8 +35,7 @@ under the License.
 		</mvc:message-converters>
 	</mvc:annotation-driven>
 
-	<mvc:resources location="/swagger.yaml" mapping="/swagger.yaml" order="-1001" />
-	<mvc:resources location="/swagger-ui/" mapping="/swagger-ui/**" order="-1000" />
+	<mvc:resources location="/swagger-ui/" mapping="/swagger-ui/**" order="-1001" />
 	
 	<!-- Message converters -->
 	<bean id="jsonMessageConverter"
