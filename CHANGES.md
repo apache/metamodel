@@ -7,6 +7,7 @@
  * [METAMODEL-1086] - Fixed encoding issue when CsvDataContext is instantiated with InputStream.
  * [METAMODEL-1094] - Added support for Apache Cassandra version 3.x.
  * [METAMODEL-1093] - Close compiled ResultSets.
+ * [METAMODEL-1106] - Fixed bug in JDBC adaptor caused by not quoting columns named as a keyword, e.g. 'index'. 
  * [METAMODEL-1102] - Separated FixedWidthLineParser.
  * [METAMODEL-1107] - Added support for PostgreSQL's "json" and "jsonb" data types.
  
