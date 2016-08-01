@@ -50,7 +50,7 @@ class FixedWidthReader implements Closeable {
         this(new BufferedInputStream(stream), charsetName, fixedValueWidth, failOnInconsistentLineWidth);
     }
 
-    public FixedWidthReader(BufferedInputStream stream, String charsetName, int fixedValueWidth,
+    private FixedWidthReader(BufferedInputStream stream, String charsetName, int fixedValueWidth,
             boolean failOnInconsistentLineWidth) {
         _stream = stream;
         _charsetName = charsetName;
@@ -67,7 +67,7 @@ class FixedWidthReader implements Closeable {
         this(new BufferedInputStream(stream), charsetName, valueWidths, failOnInconsistentLineWidth);
     }
 
-    public FixedWidthReader(BufferedInputStream stream, String charsetName, int[] valueWidths,
+    FixedWidthReader(BufferedInputStream stream, String charsetName, int[] valueWidths,
             boolean failOnInconsistentLineWidth) {
         _stream = stream;
         _charsetName = charsetName;
@@ -78,8 +78,8 @@ class FixedWidthReader implements Closeable {
         _constantWidth = false;
         int expectedLineLength = 0;
 
-        for (int i = 0; i < _valueWidths.length; i++) {
-            expectedLineLength += _valueWidths[i];
+        for (final int _valueWidth : _valueWidths) {
+            expectedLineLength += _valueWidth;
         }
 
         _expectedLineLength = expectedLineLength;
@@ -163,7 +163,7 @@ class FixedWidthReader implements Closeable {
         }
     }
 
-    protected String readSingleRecordData() throws IOException {
+    String readSingleRecordData() throws IOException {
         StringBuilder line = new StringBuilder();
         int ch;
 

@@ -60,10 +60,9 @@ public class FixedWidthConfigurationReader {
      * "http://support.sas.com/documentation/cdl/en/etlug/67323/HTML/default/viewer.htm#p0h03yig7fp1qan1arghp3lwjqi6.htm">
      * described here</a>.
      * 
-     * @param encoding
-     * @param resource
-     *            the format file resource
-     * @param failOnInconsistentLineWidth
+     * @param encoding the format file encoding
+     * @param resource the format file resource 
+     * @param failOnInconsistentLineWidth flag specifying whether inconsistent line should stop processing or not
      * @return a {@link FixedWidthConfiguration} object to use
      */
     public FixedWidthConfiguration readFromSasFormatFile(String encoding, Resource resource,
@@ -88,13 +87,11 @@ public class FixedWidthConfigurationReader {
 
     /**
      * Reads a {@link FixedWidthConfiguration} based on a SAS INPUT declaration.
-     * The reader method also optionally will look for a LABEL defintion for
-     * column naming.
+     * The reader method also optionally will look for a LABEL definition for column naming.
      * 
-     * @param encoding
-     * @param resource
-     *            the format file resource
-     * @param failOnInconsistentLineWidth
+     * @param encoding the format file encoding
+     * @param resource the format file resource
+     * @param failOnInconsistentLineWidth flag specifying whether inconsistent line should stop processing or not
      * @return a {@link FixedWidthConfiguration} object to use
      */
     public FixedWidthConfiguration readFromSasInputDefinition(String encoding, Resource resource,

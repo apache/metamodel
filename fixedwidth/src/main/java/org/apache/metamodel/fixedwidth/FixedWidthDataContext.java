@@ -106,7 +106,7 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
     /**
      * Gets the resource being read
      * 
-     * @return
+     * @return a {@link Resource} object
      */
     public Resource getResource() {
         return _resource;

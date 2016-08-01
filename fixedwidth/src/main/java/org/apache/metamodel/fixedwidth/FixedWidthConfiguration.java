@@ -31,9 +31,9 @@ import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.HasNameMapper;
 
 /**
- * Configuration of metadata about a fixed width values datacontext.
+ * Configuration of metadata about a fixed width values data context.
  */
-public class FixedWidthConfiguration extends BaseObject implements Serializable {
+class FixedWidthConfiguration extends BaseObject implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
