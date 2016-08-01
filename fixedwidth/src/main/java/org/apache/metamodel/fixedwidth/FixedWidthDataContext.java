@@ -18,9 +18,9 @@
  */
 package org.apache.metamodel.fixedwidth;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.io.Reader;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
@@ -185,15 +185,20 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
     private FixedWidthReader createReader() {
         final InputStream inputStream = _resource.read();
         final FixedWidthReader reader;
-
-        if (_configuration.isConstantValueWidth()) {
-            reader = new FixedWidthReader(inputStream, _configuration.getEncoding(),
-                    _configuration.getFixedValueWidth(), _configuration.isFailOnInconsistentLineWidth(),
-                    _configuration.isHeaderPresent(), _configuration.isEolPresent());
+        
+        if (_configuration instanceof EbcdicConfiguration) {
+            reader = new EbcdicReader((BufferedInputStream) inputStream, _configuration.getEncoding(),
+                    _configuration.getValueWidths(), _configuration.isFailOnInconsistentLineWidth(), 
+                    ((EbcdicConfiguration) _configuration).isSkipEbcdicHeader(), 
+                    ((EbcdicConfiguration) _configuration).isEolPresent());
         } else {
-            reader = new FixedWidthReader(inputStream, _configuration.getEncoding(), _configuration.getValueWidths(),
-                    _configuration.isFailOnInconsistentLineWidth(), _configuration.isHeaderPresent(),
-                    _configuration.isEolPresent());
+            if (_configuration.isConstantValueWidth()) {
+                reader = new FixedWidthReader(inputStream, _configuration.getEncoding(),
+                        _configuration.getFixedValueWidth(), _configuration.isFailOnInconsistentLineWidth());
+            } else {
+                reader = new FixedWidthReader(inputStream, _configuration.getEncoding(), 
+                        _configuration.getValueWidths(), _configuration.isFailOnInconsistentLineWidth());
+            }
         }
 
         return reader;

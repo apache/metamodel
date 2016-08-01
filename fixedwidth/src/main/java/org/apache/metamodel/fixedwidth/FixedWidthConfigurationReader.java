@@ -83,7 +83,7 @@ public class FixedWidthConfigurationReader {
             }
         }
 
-        return new FixedWidthConfiguration(encoding, columnSpecs, failOnInconsistentLineWidth, false, true);
+        return new FixedWidthConfiguration(encoding, columnSpecs, failOnInconsistentLineWidth);
     }
 
     /**
@@ -174,7 +174,6 @@ public class FixedWidthConfigurationReader {
             columnSpecs.add(new FixedWidthColumnSpec(columnName, columnWidth));
         }
 
-        return new FixedWidthConfiguration(encoding, columnSpecs, failOnInconsistentLineWidth, false, true);
+        return new FixedWidthConfiguration(encoding, columnSpecs, failOnInconsistentLineWidth);
     }
-
 }

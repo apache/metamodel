@@ -41,7 +41,7 @@ public class EBCDICTest {
 
     public EBCDICTest() {
         String fileName = "fixed-width-2-7-10-10.ebc";
-        FixedWidthConfiguration configuration = new FixedWidthConfiguration(FixedWidthConfiguration.NO_COLUMN_NAME_LINE,
+        FixedWidthConfiguration configuration = new EbcdicConfiguration(FixedWidthConfiguration.NO_COLUMN_NAME_LINE,
                 ENCODING, COLUMN_WIDTHS, false, true, false);
         _context = new FixedWidthDataContext(new File("src/test/resources/" + fileName), configuration);
         Schema schema = _context.getDefaultSchema();

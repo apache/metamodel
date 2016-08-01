@@ -25,7 +25,7 @@ public class FixedWidthConfigurationTest extends TestCase {
 	public void testToString() throws Exception {
 		assertEquals(
 				"FixedWidthConfiguration[encoding=UTF8, fixedValueWidth=10, valueWidths=[], columnNameLineNumber=1, failOnInconsistentLineWidth=true]",
-				new FixedWidthConfiguration(1, "UTF8", 10, true, false, true).toString());
+				new FixedWidthConfiguration(1, "UTF8", 10, true).toString());
 	}
 
 	public void testEquals() throws Exception {

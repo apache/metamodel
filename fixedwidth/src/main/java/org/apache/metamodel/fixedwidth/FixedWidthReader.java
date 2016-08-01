@@ -30,37 +30,32 @@ import java.util.List;
 /**
  * Reader capable of separating values based on a fixed width setting.
  */
-final class FixedWidthReader implements Closeable {
+class FixedWidthReader implements Closeable {
     private static final int END_OF_STREAM = -1;
     private static final int LINE_FEED = '\n';
     private static final int CARRIAGE_RETURN = '\r';
-    private final BufferedInputStream _stream;
-    private final String _charsetName;
+    
+    protected final String _charsetName;
     private final int _fixedValueWidth;
     private final int[] _valueWidths;
     private int _valueIndex = 0;
-    private final boolean _headerPresent;
-    private final boolean _eolPresent;
     private final boolean _failOnInconsistentLineWidth;
-    private final int _expectedLineLength;
     private final boolean _constantWidth;
     private volatile int _rowNumber;
-    private boolean _headerSkipped;
+    protected final BufferedInputStream _stream;
+    protected final int _expectedLineLength;
 
     public FixedWidthReader(InputStream stream, String charsetName, int fixedValueWidth,
-            boolean failOnInconsistentLineWidth, boolean headerPresent, boolean eolPresent) {
-        this(new BufferedInputStream(stream), charsetName, fixedValueWidth, failOnInconsistentLineWidth, headerPresent,
-                eolPresent);
+            boolean failOnInconsistentLineWidth) {
+        this(new BufferedInputStream(stream), charsetName, fixedValueWidth, failOnInconsistentLineWidth);
     }
 
     public FixedWidthReader(BufferedInputStream stream, String charsetName, int fixedValueWidth,
-            boolean failOnInconsistentLineWidth, boolean headerPresent, boolean eolPresent) {
+            boolean failOnInconsistentLineWidth) {
         _stream = stream;
         _charsetName = charsetName;
         _fixedValueWidth = fixedValueWidth;
         _failOnInconsistentLineWidth = failOnInconsistentLineWidth;
-        _headerPresent = headerPresent;
-        _eolPresent = eolPresent;
         _rowNumber = 0;
         _valueWidths = null;
         _constantWidth = true;
@@ -68,20 +63,17 @@ final class FixedWidthReader implements Closeable {
     }
 
     public FixedWidthReader(InputStream stream, String charsetName, int[] valueWidths,
-            boolean failOnInconsistentLineWidth, boolean headerPresent, boolean eolPresent) {
-        this(new BufferedInputStream(stream), charsetName, valueWidths, failOnInconsistentLineWidth, headerPresent,
-                eolPresent);
+            boolean failOnInconsistentLineWidth) {
+        this(new BufferedInputStream(stream), charsetName, valueWidths, failOnInconsistentLineWidth);
     }
 
     public FixedWidthReader(BufferedInputStream stream, String charsetName, int[] valueWidths,
-            boolean failOnInconsistentLineWidth, boolean headerPresent, boolean eolPresent) {
+            boolean failOnInconsistentLineWidth) {
         _stream = stream;
         _charsetName = charsetName;
         _fixedValueWidth = -1;
         _valueWidths = valueWidths;
         _failOnInconsistentLineWidth = failOnInconsistentLineWidth;
-        _headerPresent = headerPresent;
-        _eolPresent = eolPresent;
         _rowNumber = 0;
         _constantWidth = false;
         int expectedLineLength = 0;
@@ -102,10 +94,7 @@ final class FixedWidthReader implements Closeable {
      */
     public String[] readLine() throws IllegalStateException {
         try {
-            if (shouldSkipHeader()) {
-                skipHeader();
-            }
-
+            beforeReadLine();
             _rowNumber++;
             return getValues();
         } catch (IOException e) {
@@ -113,8 +102,11 @@ final class FixedWidthReader implements Closeable {
         }
     }
 
-    private boolean shouldSkipHeader() {
-        return (_headerPresent && !_headerSkipped);
+    /**
+     * Empty hook that enables special behavior in sub-classed readers (by overriding this method). 
+     */
+    protected void beforeReadLine() {
+        return;
     }
 
     private String[] getValues() throws IOException {
@@ -171,32 +163,21 @@ final class FixedWidthReader implements Closeable {
         }
     }
 
-    private String readSingleRecordData() throws IOException {
-        if (isEOLAvailable()) {
-            StringBuilder line = new StringBuilder();
-            int ch;
+    protected String readSingleRecordData() throws IOException {
+        StringBuilder line = new StringBuilder();
+        int ch;
 
-            for (ch = _stream.read(); !isEndingCharacter(ch); ch = _stream.read()) {
-                line.append((char) ch);
-            }
-
-            if (ch == CARRIAGE_RETURN) {
-                readLineFeedIfFollows();
-            }
-
-            return (line.length()) > 0 ? line.toString() : null;
-        } else {
-            byte[] buffer = new byte[_expectedLineLength];
-            int bytesRead = _stream.read(buffer, 0, _expectedLineLength);
-
-            if (bytesRead < 0) {
-                return null;
-            }
-
-            return new String(buffer, _charsetName);
+        for (ch = _stream.read(); !isEndingCharacter(ch); ch = _stream.read()) {
+            line.append((char) ch);
         }
-    }
 
+        if (ch == CARRIAGE_RETURN) {
+            readLineFeedIfFollows();
+        }
+
+        return (line.length()) > 0 ? line.toString() : null;
+    }
+    
     private void readLineFeedIfFollows() throws IOException {
         _stream.mark(1);
 
@@ -208,11 +189,7 @@ final class FixedWidthReader implements Closeable {
     private boolean isEndingCharacter(int ch) {
         return (ch == CARRIAGE_RETURN || ch == LINE_FEED || ch == END_OF_STREAM);
     }
-
-    private boolean isEOLAvailable() {
-        return _eolPresent;
-    }
-
+    
     private void processCharacter(char c, StringBuilder nextValue, List<String> values, String recordData) {
         nextValue.append(c);
         final int valueWidth = getValueWidth(values, recordData);
@@ -266,11 +243,6 @@ final class FixedWidthReader implements Closeable {
         }
 
         return result;
-    }
-
-    private void skipHeader() throws IOException {
-        _headerSkipped = true;
-        _stream.skip(_expectedLineLength);
     }
 
     @Override

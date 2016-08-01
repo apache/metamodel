@@ -33,7 +33,7 @@ import org.apache.metamodel.util.HasNameMapper;
 /**
  * Configuration of metadata about a fixed width values datacontext.
  */
-public final class FixedWidthConfiguration extends BaseObject implements Serializable {
+public class FixedWidthConfiguration extends BaseObject implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -45,8 +45,6 @@ public final class FixedWidthConfiguration extends BaseObject implements Seriali
     private final int[] valueWidths;
     private final int columnNameLineNumber;
     private final boolean failOnInconsistentLineWidth;
-    private final boolean headerPresent;
-    private final boolean eolPresent;
     private final ColumnNamingStrategy columnNamingStrategy;
 
     public FixedWidthConfiguration(int fixedValueWidth) {
@@ -54,53 +52,44 @@ public final class FixedWidthConfiguration extends BaseObject implements Seriali
     }
 
     public FixedWidthConfiguration(int[] valueWidth) {
-        this(DEFAULT_COLUMN_NAME_LINE, FileHelper.DEFAULT_ENCODING, valueWidth, false, false, true);
+        this(DEFAULT_COLUMN_NAME_LINE, FileHelper.DEFAULT_ENCODING, valueWidth, false);
     }
 
     public FixedWidthConfiguration(int columnNameLineNumber, String encoding, int fixedValueWidth) {
-        this(columnNameLineNumber, encoding, fixedValueWidth, false, false, true);
+        this(columnNameLineNumber, encoding, fixedValueWidth, false);
     }
 
     public FixedWidthConfiguration(int columnNameLineNumber, String encoding, int fixedValueWidth,
             boolean failOnInconsistentLineWidth) {
-        this(columnNameLineNumber, encoding, fixedValueWidth, failOnInconsistentLineWidth, false, true);
-    }
-
-    public FixedWidthConfiguration(int columnNameLineNumber, String encoding, int fixedValueWidth,
-            boolean failOnInconsistentLineWidth, boolean headerPresent, boolean eolPresent) {
         this.encoding = encoding;
         this.fixedValueWidth = fixedValueWidth;
         this.columnNameLineNumber = columnNameLineNumber;
         this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
-        this.headerPresent = headerPresent;
-        this.eolPresent = eolPresent;
         this.columnNamingStrategy = null;
         this.valueWidths = new int[0];
     }
 
-    public FixedWidthConfiguration(int columnNameLineNumber, String encoding,
-            int[] valueWidths, boolean failOnInconsistentLineWidth, boolean headerPresent, boolean eolPresent) {
-        this(columnNameLineNumber, null, encoding, valueWidths, failOnInconsistentLineWidth, headerPresent, eolPresent);
+    public FixedWidthConfiguration(int columnNameLineNumber, String encoding, int[] valueWidths, 
+            boolean failOnInconsistentLineWidth) {
+        this(columnNameLineNumber, null, encoding, valueWidths, failOnInconsistentLineWidth);
     }
 
     public FixedWidthConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy, String encoding,
-            int[] valueWidths, boolean failOnInconsistentLineWidth, boolean headerPresent, boolean eolPresent) {
+            int[] valueWidths, boolean failOnInconsistentLineWidth) {
         this.encoding = encoding;
         this.fixedValueWidth = -1;
         this.columnNameLineNumber = columnNameLineNumber;
         this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
-        this.headerPresent = headerPresent;
-        this.eolPresent = eolPresent;
         this.columnNamingStrategy = columnNamingStrategy;
         this.valueWidths = valueWidths;
     }
 
     public FixedWidthConfiguration(String encoding, List<FixedWidthColumnSpec> columnSpecs) {
-        this(encoding, columnSpecs, false, false, true);
+        this(encoding, columnSpecs, false);
     }
 
     public FixedWidthConfiguration(String encoding, List<FixedWidthColumnSpec> columnSpecs,
-            boolean failOnInconsistentLineWidth, boolean headerPresent, boolean eolPresent) {
+            boolean failOnInconsistentLineWidth) {
         this.encoding = encoding;
         this.fixedValueWidth = -1;
         this.columnNameLineNumber = NO_COLUMN_NAME_LINE;
@@ -111,8 +100,6 @@ public final class FixedWidthConfiguration extends BaseObject implements Seriali
             valueWidths[i] = columnSpecs.get(i).getWidth();
         }
         this.failOnInconsistentLineWidth = failOnInconsistentLineWidth;
-        this.headerPresent = headerPresent;
-        this.eolPresent = eolPresent;
     }
 
     /**
@@ -166,24 +153,6 @@ public final class FixedWidthConfiguration extends BaseObject implements Seriali
      */
     public boolean isFailOnInconsistentLineWidth() {
         return failOnInconsistentLineWidth;
-    }
-
-    /**
-     * Determines if the input file contains a header that should be skipped before reading records data.
-     *
-     * @return a boolean indicating whether or not the input contains a header.
-     */
-    public boolean isHeaderPresent() {
-        return headerPresent;
-    }
-
-    /**
-     * Determines if the input file contains new line characters.
-     *
-     * @return a boolean indicating whether or not the input contains new line characters.
-     */
-    public boolean isEolPresent() {
-        return eolPresent;
     }
 
     @Override
