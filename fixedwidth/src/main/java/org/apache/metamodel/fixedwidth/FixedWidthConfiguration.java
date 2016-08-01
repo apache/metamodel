@@ -33,7 +33,7 @@ import org.apache.metamodel.util.HasNameMapper;
 /**
  * Configuration of metadata about a fixed width values data context.
  */
-class FixedWidthConfiguration extends BaseObject implements Serializable {
+public class FixedWidthConfiguration extends BaseObject implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

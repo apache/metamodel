@@ -18,11 +18,9 @@
  */
 package org.apache.metamodel.fixedwidth;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -30,7 +28,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import static org.junit.Assert.assertEquals;
+
 public class FixedWidthReaderTest {
+    private static final String CHARSET = "UTF-8";
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -38,9 +39,9 @@ public class FixedWidthReaderTest {
     @Test
     public void testBufferedReader1() throws IOException {
         final File file = new File("src/test/resources/example_simple1.txt");
-        final BufferedReader reader = new BufferedReader(new FileReader(file));
+        final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
         int[] widths = new int[] { 8, 9 };
-        try (final FixedWidthReader fixedWidthReader = new FixedWidthReader(reader, widths, false)) {
+        try (final FixedWidthReader fixedWidthReader = new FixedWidthReader(stream, CHARSET, widths, false)) {
             final String[] line1 = fixedWidthReader.readLine();
             assertEquals("[greeting, greeter]", Arrays.asList(line1).toString());
             final String[] line2 = fixedWidthReader.readLine();
@@ -53,9 +54,9 @@ public class FixedWidthReaderTest {
     @Test
     public void testBufferedReader2() throws IOException {
         final File file = new File("src/test/resources/example_simple2.txt");
-        final BufferedReader reader = new BufferedReader(new FileReader(file));
+        final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
         int[] widths = new int[] {1, 8, 9 };
-        try (final FixedWidthReader fixedWidthReader = new FixedWidthReader(reader, widths, false)) {
+        try (final FixedWidthReader fixedWidthReader = new FixedWidthReader(stream, CHARSET, widths, false)) {
             final String[] line1 = fixedWidthReader.readLine();
             assertEquals("[i, greeting, greeter]", Arrays.asList(line1).toString());
             final String[] line2 = fixedWidthReader.readLine();
@@ -68,8 +69,8 @@ public class FixedWidthReaderTest {
     @Test
     public void testBufferedReader3() throws IOException {
         final File file = new File("src/test/resources/example_simple3.txt");
-        final BufferedReader reader = new BufferedReader(new FileReader(file));
-        try (final FixedWidthReader fixedWidthReader = new FixedWidthReader(reader, 5, false)) {
+        final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
+        try (final FixedWidthReader fixedWidthReader = new FixedWidthReader(stream, CHARSET, 5, false)) {
             final String[] line1 = fixedWidthReader.readLine();
             assertEquals("[hello]", Arrays.asList(line1).toString());
             final String[] line2 = fixedWidthReader.readLine();
@@ -84,8 +85,8 @@ public class FixedWidthReaderTest {
     @Test
     public void testBufferedReaderFailOnInconsistentRows() throws IOException {
         final File file = new File("src/test/resources/example_simple3.txt");
-        final BufferedReader reader = new BufferedReader(new FileReader(file));
-        try (final FixedWidthReader fixedWidthReader = new FixedWidthReader(reader, 5, true)) {
+        final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
+        try (final FixedWidthReader fixedWidthReader = new FixedWidthReader(stream, CHARSET, 5, true)) {
             final String[] line1 = fixedWidthReader.readLine();
             assertEquals("[hello]", Arrays.asList(line1).toString());
             final String[] line2 = fixedWidthReader.readLine();
@@ -98,6 +99,4 @@ public class FixedWidthReaderTest {
             final String[] line4 = fixedWidthReader.readLine();
         }
     }
-
-   
 }
