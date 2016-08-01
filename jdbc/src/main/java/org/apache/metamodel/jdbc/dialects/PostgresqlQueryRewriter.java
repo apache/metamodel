@@ -18,17 +18,28 @@
  */
 package org.apache.metamodel.jdbc.dialects;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Map;
+
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.postgresql.util.PGobject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Query rewriter for PostgreSQL
  */
-public class PostgresqlQueryRewriter extends LimitOffsetQueryRewriter implements IQueryRewriter {
+public class PostgresqlQueryRewriter extends LimitOffsetQueryRewriter {
+
+    private final ObjectMapper jsonObjectMapper = new ObjectMapper();
 
     public PostgresqlQueryRewriter(JdbcDataContext dataContext) {
         super(dataContext);
@@ -36,10 +47,14 @@ public class PostgresqlQueryRewriter extends LimitOffsetQueryRewriter implements
 
     @Override
     public ColumnType getColumnType(int jdbcType, String nativeType, Integer columnSize) {
-        if ("bool".equals(nativeType)) {
+        switch (nativeType) {
+        case "bool":
             // override the normal behaviour of postgresql which maps "bool" to
             // a BIT.
             return ColumnType.BOOLEAN;
+        case "json":
+        case "jsonb":
+            return ColumnType.MAP;
         }
         return super.getColumnType(jdbcType, nativeType, columnSize);
     }
@@ -55,7 +70,55 @@ public class PostgresqlQueryRewriter extends LimitOffsetQueryRewriter implements
         if (columnType == ColumnType.DOUBLE) {
             return "double precision";
         }
+        if (columnType == ColumnType.MAP) {
+            return "jsonb";
+        }
         return super.rewriteColumnType(columnType, columnSize);
+    }
+
+    @Override
+    public void setStatementParameter(PreparedStatement st, int valueIndex, Column column, Object value)
+            throws SQLException {
+        switch (column.getNativeType()) {
+        case "json":
+        case "jsonb":
+            assert column.getType() == ColumnType.MAP;
+            if (value != null) {
+                final PGobject pgo = new PGobject();
+                pgo.setType(column.getNativeType());
+                if (value instanceof Map) {
+                    try {
+                        pgo.setValue(jsonObjectMapper.writeValueAsString(value));
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException("Unable to write value as JSON string: " + value);
+                    }
+                } else {
+                    pgo.setValue(value.toString());
+                }
+                st.setObject(valueIndex, pgo);
+                return;
+            }
+        }
+        super.setStatementParameter(st, valueIndex, column, value);
+    }
+
+    @Override
+    public Object getResultSetValue(ResultSet resultSet, int columnIndex, Column column) throws SQLException {
+        switch (column.getNativeType()) {
+        case "json":
+        case "jsonb":
+            assert column.getType() == ColumnType.MAP;
+            final String stringValue = resultSet.getString(columnIndex);
+            if (stringValue == null) {
+                return null;
+            }
+            try {
+                return jsonObjectMapper.readValue(stringValue, Map.class);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Unable to read string as JSON: " + stringValue);
+            }
+        }
+        return super.getResultSetValue(resultSet, columnIndex, column);
     }
 
     @Override

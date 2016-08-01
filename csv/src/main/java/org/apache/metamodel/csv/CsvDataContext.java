@@ -244,7 +244,7 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
         file = fileCandidate;
 
         final BufferedWriter writer = FileHelper.getBufferedWriter(file, encoding);
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        final BufferedReader reader = FileHelper.getBufferedReader(inputStream, encoding);
 
         try {
             file.createNewFile();

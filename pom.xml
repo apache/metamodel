@@ -376,6 +376,7 @@ under the License.
 							<exclude>**/src/assembly/metamodel-packaged-assembly-descriptor.xml</exclude>
 							<exclude>**/.gitignore/**</exclude>
 							<exclude>.git/**</exclude>
+							<exclude>**/src/main/resources/META-INF/services/**</exclude>
 							<exclude>**/src/test/resources/**</exclude>
 							<exclude>**/src/site/**</exclude>
 							<exclude>**/.project</exclude>

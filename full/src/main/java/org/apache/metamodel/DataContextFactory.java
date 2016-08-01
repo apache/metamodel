@@ -50,6 +50,7 @@ import org.apache.metamodel.salesforce.SalesforceDataContext;
 import org.apache.metamodel.schema.TableType;
 import org.apache.metamodel.sugarcrm.SugarCrmDataContext;
 import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.Resource;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.apache.metamodel.xml.XmlDomDataContext;
 import org.ektorp.http.StdHttpClient.Builder;
@@ -291,6 +292,20 @@ public class DataContextFactory {
         FixedWidthDataContext dc = new FixedWidthDataContext(file, configuration);
         return dc;
     }
+    /**
+    * Creates a DataContext based on a fixed width file.
+    * 
+    * @param file
+    *            the file to read from.
+    * @param configuration
+    *            the fixed width configuration to use
+    * @return a DataContext object that matches the request
+    */
+   public static DataContext createFixedWidthDataContext(Resource resource, FixedWidthConfiguration configuration) {
+       final FixedWidthDataContext dc = new FixedWidthDataContext(resource, configuration);
+       return dc;
+   }
+
 
     /**
      * Creates a DataContext based on a fixed width file.

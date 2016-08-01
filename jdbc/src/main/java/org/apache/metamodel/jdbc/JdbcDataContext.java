@@ -216,7 +216,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } catch (SQLException e) {
             logger.debug("Unexpected exception during JdbcDataContext initialization", e);
         } finally {
-            closeIfNescesary(con);
+            closeIfNecessary(con);
         }
         _databaseProductName = databaseProductName;
         logger.debug("Database product name: {}", _databaseProductName);
@@ -296,7 +296,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "retrieve schema and catalog metadata");
         } finally {
-            close(null, rs, null);
+            close(null);
         }
         return result;
     }
@@ -507,12 +507,12 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } catch (SQLException e) {
             // only close in case of an error - the JdbcDataSet will close
             // otherwise
-            close(connection, null, statement);
+            close(connection);
             throw JdbcUtils.wrapException(e, "execute query");
         } catch (RuntimeException e) {
             // only close in case of an error - the JdbcDataSet will close
             // otherwise
-            close(connection, null, statement);
+            close(connection);
             throw e;
         }
 
@@ -533,17 +533,23 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     }
 
     /**
-     * Quietly closes any of the parameterized JDBC objects
-     * 
-     * @param connection
-     * 
-     * @param rs
-     * @param st
+     * Quietly closes the connection
+     *  @param connection The connection to close (if it makes sense, @see closeIfNecessary)
+
      */
+    public void close(Connection connection) {
+        closeIfNecessary(connection);
+    }
+
+    /**
+     * @deprecated Manually close {@link ResultSet} and {@link Statement} instead.
+     */
+    @Deprecated
     public void close(Connection connection, ResultSet rs, Statement st) {
-        closeIfNescesary(connection);
+        close(connection);
         FileHelper.safeClose(rs, st);
     }
+
 
     /**
      * Convenience method to get the available catalogNames using this
@@ -576,7 +582,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } catch (SQLException e) {
             logger.error("Error retrieving catalog metadata", e);
         } finally {
-            close(connection, rs, null);
+            close(connection);
             logger.debug("Retrieved {} catalogs", catalogs.size());
         }
         return catalogs.toArray(new String[catalogs.size()]);
@@ -600,7 +606,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
      * Gets an appropriate connection object to use - either a dedicated
      * connection or a new connection from the datasource object.
      * 
-     * Hint: Use the {@link #close(Connection, ResultSet, Statement)} method to
+     * Hint: Use the {@link #close(Connection)} method to
      * close the connection (and any ResultSet or Statements involved).
      */
     public Connection getConnection() {
@@ -614,7 +620,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         }
     }
 
-    private void closeIfNescesary(Connection con) {
+    private void closeIfNecessary(Connection con) {
         if (con != null) {
             if (_dataSource != null) {
                 // closing connections after individual usage is only nescesary
@@ -687,7 +693,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             } catch (SQLException e) {
                 throw JdbcUtils.wrapException(e, "determine default schema name");
             } finally {
-                closeIfNescesary(connection);
+                closeIfNecessary(connection);
             }
 
             // Fourth strategy: Find default schema name by vendor-specific
@@ -798,7 +804,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "get schema names");
         } finally {
-            closeIfNescesary(connection);
+            closeIfNecessary(connection);
         }
     }
 
@@ -809,7 +815,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         try {
             _metadataLoader.loadTables(schema, connection);
         } finally {
-            close(connection, null, null);
+            close(connection);
         }
         return schema;
     }
