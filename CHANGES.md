@@ -1,4 +1,4 @@
-### Apache MetaModel 4.5.4 (work in progress)
+### Apache MetaModel 4.5.4
 
  * [METAMODEL-1099] - Created a new DataContextFactory SPI and a extensible registry of implementations based on ServiceLoader.
  * [METAMODEL-1099] - Implemented DataContextFactory SPI for connectors: JDBC, CSV, ElasticSearch
