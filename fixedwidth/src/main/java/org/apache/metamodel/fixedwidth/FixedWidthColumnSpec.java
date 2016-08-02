@@ -24,7 +24,7 @@ import org.apache.metamodel.util.HasName;
  * Represents the specification of a single column for a
  * {@link FixedWidthDataContext}.
  */
-public final class FixedWidthColumnSpec implements HasName {
+final class FixedWidthColumnSpec implements HasName {
 
     private final String name;
     private final int width;

@@ -25,9 +25,6 @@ import junit.framework.TestCase;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.fixedwidth.FixedWidthConfiguration;
-import org.apache.metamodel.fixedwidth.FixedWidthDataContext;
-import org.apache.metamodel.fixedwidth.InconsistentValueWidthException;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;

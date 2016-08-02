@@ -2,6 +2,7 @@
 
  * [METAMODEL-1099] - Created a new DataContextFactory SPI and a extensible registry of implementations based on ServiceLoader.
  * [METAMODEL-1099] - Implemented DataContextFactory SPI for connectors: JDBC, CSV, ElasticSearch
+ * [METAMODEL-250] - Added support for EBCDIC files (part of 'fixedwidth' module).
  * [METAMODEL-1103] - Fixed a bug pertaining to anchoring of wildcards in LIKE operands.
  * [METAMODEL-1088] - Add support for aliases in MongoDB.
  * [METAMODEL-1086] - Fixed encoding issue when CsvDataContext is instantiated with InputStream.

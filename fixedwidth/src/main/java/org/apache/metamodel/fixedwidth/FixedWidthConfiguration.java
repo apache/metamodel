@@ -31,32 +31,29 @@ import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.HasNameMapper;
 
 /**
- * Configuration of metadata about a fixed width values datacontext.
+ * Configuration of metadata about a fixed width values data context.
  */
-public final class FixedWidthConfiguration extends BaseObject implements
-		Serializable {
+public class FixedWidthConfiguration extends BaseObject implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public static final int NO_COLUMN_NAME_LINE = 0;
-	public static final int DEFAULT_COLUMN_NAME_LINE = 1;
+    public static final int NO_COLUMN_NAME_LINE = 0;
+    public static final int DEFAULT_COLUMN_NAME_LINE = 1;
 
-	private final String encoding;
-	private final int fixedValueWidth;
-	private final int[] valueWidths;
-	private final int columnNameLineNumber;
-	private final boolean failOnInconsistentLineWidth;
-	private final ColumnNamingStrategy columnNamingStrategy;
+    private final String encoding;
+    private final int fixedValueWidth;
+    private final int[] valueWidths;
+    private final int columnNameLineNumber;
+    private final boolean failOnInconsistentLineWidth;
+    private final ColumnNamingStrategy columnNamingStrategy;
 
-	public FixedWidthConfiguration(int fixedValueWidth) {
-		this(DEFAULT_COLUMN_NAME_LINE, FileHelper.DEFAULT_ENCODING,
-				fixedValueWidth);
-	}
+    public FixedWidthConfiguration(int fixedValueWidth) {
+        this(DEFAULT_COLUMN_NAME_LINE, FileHelper.DEFAULT_ENCODING, fixedValueWidth);
+    }
 
-	public FixedWidthConfiguration(int[] valueWidth) {
-		this(DEFAULT_COLUMN_NAME_LINE, FileHelper.DEFAULT_ENCODING, valueWidth,
-				false);
-	}
+    public FixedWidthConfiguration(int[] valueWidth) {
+        this(DEFAULT_COLUMN_NAME_LINE, FileHelper.DEFAULT_ENCODING, valueWidth, false);
+    }
 
     public FixedWidthConfiguration(int columnNameLineNumber, String encoding, int fixedValueWidth) {
         this(columnNameLineNumber, encoding, fixedValueWidth, false);
@@ -72,11 +69,11 @@ public final class FixedWidthConfiguration extends BaseObject implements
         this.valueWidths = new int[0];
     }
 
-    public FixedWidthConfiguration(int columnNameLineNumber, String encoding,
-            int[] valueWidths, boolean failOnInconsistentLineWidth) {
+    public FixedWidthConfiguration(int columnNameLineNumber, String encoding, int[] valueWidths, 
+            boolean failOnInconsistentLineWidth) {
         this(columnNameLineNumber, null, encoding, valueWidths, failOnInconsistentLineWidth);
     }
-    
+
     public FixedWidthConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy, String encoding,
             int[] valueWidths, boolean failOnInconsistentLineWidth) {
         this.encoding = encoding;
@@ -86,7 +83,7 @@ public final class FixedWidthConfiguration extends BaseObject implements
         this.columnNamingStrategy = columnNamingStrategy;
         this.valueWidths = valueWidths;
     }
-    
+
     public FixedWidthConfiguration(String encoding, List<FixedWidthColumnSpec> columnSpecs) {
         this(encoding, columnSpecs, false);
     }
@@ -106,84 +103,84 @@ public final class FixedWidthConfiguration extends BaseObject implements
     }
 
     /**
-	 * The line number (1 based) from which to get the names of the columns.
-	 * 
-	 * @return an int representing the line number of the column headers/names.
-	 */
-	public int getColumnNameLineNumber() {
-		return columnNameLineNumber;
-	}
-	
-	/**
-	 * Gets a {@link ColumnNamingStrategy} to use if needed.
-	 * @return
-	 */
-	public ColumnNamingStrategy getColumnNamingStrategy() {
-	    if (columnNamingStrategy == null) {
-	        return ColumnNamingStrategies.defaultStrategy();
-	    }
+     * The line number (1 based) from which to get the names of the columns.
+     *
+     * @return an int representing the line number of the column headers/names.
+     */
+    public int getColumnNameLineNumber() {
+        return columnNameLineNumber;
+    }
+
+    /**
+     * Gets a {@link ColumnNamingStrategy} to use if needed.
+     * @return column naming strategy
+     */
+    public ColumnNamingStrategy getColumnNamingStrategy() {
+        if (columnNamingStrategy == null) {
+            return ColumnNamingStrategies.defaultStrategy();
+        }
         return columnNamingStrategy;
     }
 
-	/**
-	 * Gets the file encoding to use for reading the file.
-	 * 
-	 * @return the text encoding to use for reading the file.
-	 */
-	public String getEncoding() {
-		return encoding;
-	}
+    /**
+     * Gets the file encoding to use for reading the file.
+     *
+     * @return the text encoding to use for reading the file.
+     */
+    public String getEncoding() {
+        return encoding;
+    }
 
-	/**
-	 * Gets the width of each value within the fixed width value file.
-	 * 
-	 * @return the fixed width to use when parsing the file.
-	 */
-	public int getFixedValueWidth() {
-		return fixedValueWidth;
-	}
+    /**
+     * Gets the width of each value within the fixed width value file.
+     *
+     * @return the fixed width to use when parsing the file.
+     */
+    public int getFixedValueWidth() {
+        return fixedValueWidth;
+    }
 
-	public int[] getValueWidths() {
-		return valueWidths;
-	}
+    public int[] getValueWidths() {
+        return valueWidths;
+    }
 
-	/**
-	 * Determines if the {@link DataSet#next()} should throw an exception in
-	 * case of inconsistent line width in the fixed width value file.
-	 * 
-	 * @return a boolean indicating whether or not to fail on inconsistent line
-	 *         widths.
-	 */
-	public boolean isFailOnInconsistentLineWidth() {
-		return failOnInconsistentLineWidth;
-	}
+    /**
+     * Determines if the {@link DataSet#next()} should throw an exception in
+     * case of inconsistent line width in the fixed width value file.
+     *
+     * @return a boolean indicating whether or not to fail on inconsistent line
+     *         widths.
+     */
+    public boolean isFailOnInconsistentLineWidth() {
+        return failOnInconsistentLineWidth;
+    }
 
-	@Override
-	protected void decorateIdentity(List<Object> identifiers) {
-		identifiers.add(columnNameLineNumber);
-		identifiers.add(encoding);
-		identifiers.add(fixedValueWidth);
-		identifiers.add(valueWidths);
-		identifiers.add(failOnInconsistentLineWidth);
-	}
+    @Override
+    protected void decorateIdentity(List<Object> identifiers) {
+        identifiers.add(columnNameLineNumber);
+        identifiers.add(encoding);
+        identifiers.add(fixedValueWidth);
+        identifiers.add(valueWidths);
+        identifiers.add(failOnInconsistentLineWidth);
+    }
 
-	@Override
-	public String toString() {
-		return "FixedWidthConfiguration[encoding=" + encoding
-				+ ", fixedValueWidth=" + fixedValueWidth + ", valueWidths="
-				+ Arrays.toString(valueWidths) + ", columnNameLineNumber="
-				+ columnNameLineNumber + ", failOnInconsistentLineWidth="
-				+ failOnInconsistentLineWidth + "]";
-	}
+    @Override
+    public String toString() {
+        return "FixedWidthConfiguration[encoding=" + encoding
+                + ", fixedValueWidth=" + fixedValueWidth + ", valueWidths="
+                + Arrays.toString(valueWidths) + ", columnNameLineNumber="
+                + columnNameLineNumber + ", failOnInconsistentLineWidth="
+                + failOnInconsistentLineWidth + "]";
+    }
 
-	public boolean isConstantValueWidth() {
-		return fixedValueWidth != -1;
-	}
+    public boolean isConstantValueWidth() {
+        return fixedValueWidth != -1;
+    }
 
-	public int getValueWidth(int columnIndex) {
-		if (isConstantValueWidth()) {
-			return fixedValueWidth;
-		}
-		return valueWidths[columnIndex];
-	}
+    public int getValueWidth(int columnIndex) {
+        if (isConstantValueWidth()) {
+            return fixedValueWidth;
+        }
+        return valueWidths[columnIndex];
+    }
 }
