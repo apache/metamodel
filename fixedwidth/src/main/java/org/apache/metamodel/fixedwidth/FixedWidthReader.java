@@ -19,9 +19,13 @@
 package org.apache.metamodel.fixedwidth;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.ArrayList;
@@ -43,6 +47,7 @@ class FixedWidthReader implements Closeable {
     private final boolean _constantWidth;
     private volatile int _rowNumber;
     protected final BufferedInputStream _stream;
+    protected Reader _reader;
     protected final int _expectedLineLength;
 
     public FixedWidthReader(InputStream stream, String charsetName, int fixedValueWidth,
@@ -54,6 +59,7 @@ class FixedWidthReader implements Closeable {
             boolean failOnInconsistentLineWidth) {
         _stream = stream;
         _charsetName = charsetName;
+        initReader();
         _fixedValueWidth = fixedValueWidth;
         _failOnInconsistentLineWidth = failOnInconsistentLineWidth;
         _rowNumber = 0;
@@ -71,6 +77,7 @@ class FixedWidthReader implements Closeable {
             boolean failOnInconsistentLineWidth) {
         _stream = stream;
         _charsetName = charsetName;
+        initReader();
         _fixedValueWidth = -1;
         _valueWidths = valueWidths;
         _failOnInconsistentLineWidth = failOnInconsistentLineWidth;
@@ -85,6 +92,15 @@ class FixedWidthReader implements Closeable {
         _expectedLineLength = expectedLineLength;
     }
 
+    private void initReader() {
+        try {
+            InputStreamReader inputStreamReader = new InputStreamReader(_stream, _charsetName);
+            _reader = new BufferedReader(inputStreamReader);
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(String.format("Encoding '%s' was not recognized. ", _charsetName));
+        }
+    }
+    
     /**
      * This reads and returns the next record from the file. Usually, it is a line but in case the new line characters
      * are not present, the length of the content depends on the column-widths setting.
@@ -165,24 +181,28 @@ class FixedWidthReader implements Closeable {
 
     String readSingleRecordData() throws IOException {
         StringBuilder line = new StringBuilder();
+
         int ch;
 
-        for (ch = _stream.read(); !isEndingCharacter(ch); ch = _stream.read()) {
-            line.append((char) ch);
+        for (ch = _reader.read(); !isEndingCharacter(ch); ch = _reader.read()) {
+            System.out.println("appending: " + ch);
+            line.append((char)ch);
         }
 
         if (ch == CARRIAGE_RETURN) {
             readLineFeedIfFollows();
         }
 
+        System.out.println("fixed-width: " + line.toString());
+
         return (line.length()) > 0 ? line.toString() : null;
     }
     
     private void readLineFeedIfFollows() throws IOException {
-        _stream.mark(1);
-
-        if (_stream.read() != LINE_FEED) {
-            _stream.reset();
+        _reader.mark(1);
+        
+        if (_reader.read() != LINE_FEED) {
+            _reader.reset();
         }
     }
 
