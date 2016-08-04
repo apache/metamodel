@@ -181,19 +181,15 @@ class FixedWidthReader implements Closeable {
 
     String readSingleRecordData() throws IOException {
         StringBuilder line = new StringBuilder();
-
         int ch;
 
         for (ch = _reader.read(); !isEndingCharacter(ch); ch = _reader.read()) {
-            System.out.println("appending: " + ch);
             line.append((char)ch);
         }
 
         if (ch == CARRIAGE_RETURN) {
             readLineFeedIfFollows();
         }
-
-        System.out.println("fixed-width: " + line.toString());
 
         return (line.length()) > 0 ? line.toString() : null;
     }
