@@ -37,6 +37,34 @@ public class FixedWidthReaderTest {
     public final ExpectedException exception = ExpectedException.none();
     
     @Test
+    public void testDiacritics() throws IOException {
+        assertExpectedDiacritics(CHARSET);
+    }
+
+    @Test(expected=AssertionError.class)
+    public void testDiacriticsFails() throws IOException {
+        assertExpectedDiacritics("Windows-1250");
+    }
+
+    private void assertExpectedDiacritics(String charset) throws IOException {
+        final File file = new File("src/test/resources/example_diacritics_utf8.txt");
+        final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
+        int[] widths = new int[] { 10, 10 };
+        final String[] expectedValues = {
+                "[name, surname]",
+                "[Štěpán, Knížek]",
+                "[Lukáš, Žáček]",
+                "[Přemysl, Hývl]",
+        };
+        try (final FixedWidthReader fixedWidthReader = new FixedWidthReader(stream, charset, widths, false)) {
+            for (String expectedLine : expectedValues) {
+                final String[] line = fixedWidthReader.readLine();
+                assertEquals(expectedLine, Arrays.asList(line).toString());
+            }
+        }
+    }
+
+    @Test
     public void testBufferedReader1() throws IOException {
         final File file = new File("src/test/resources/example_simple1.txt");
         final BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file));
