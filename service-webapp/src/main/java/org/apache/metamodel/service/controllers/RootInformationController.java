@@ -66,7 +66,6 @@ public class RootInformationController {
     private Map<String, Object> getOpenApi() {
         final Map<String, Object> map = new LinkedHashMap<>();
         map.put("spec", servletContext.getContextPath() + "/swagger.json");
-        map.put("swagger-ui", servletContext.getContextPath() + "/swagger-ui/index.html");
         return map;
     }
 
