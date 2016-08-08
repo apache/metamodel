@@ -81,8 +81,8 @@ public class OracleQueryRewriter extends DefaultQueryRewriter {
 
     @Override
     public String rewriteFilterItem(final FilterItem item) {
-        // What I actually want is "rewriteOperatorType: if '' then null, because in Oracle '' is null
         if (item.getOperand() instanceof String && item.getOperand().equals("")) {
+            // In Oracle empty strings are treated as null. Typical SQL constructs with an empty string do not work.
             return super.rewriteFilterItem(new FilterItem(item.getSelectItem(), item.getOperator(), null));
         } else {
             return super.rewriteFilterItem(item);
