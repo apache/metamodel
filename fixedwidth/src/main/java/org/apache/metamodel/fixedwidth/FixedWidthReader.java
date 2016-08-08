@@ -39,15 +39,13 @@ class FixedWidthReader implements Closeable {
     private static final int LINE_FEED = '\n';
     private static final int CARRIAGE_RETURN = '\r';
     
-    protected final String _charsetName;
     private final int _fixedValueWidth;
     private final int[] _valueWidths;
     private int _valueIndex = 0;
     private final boolean _failOnInconsistentLineWidth;
     private final boolean _constantWidth;
     private volatile int _rowNumber;
-    protected final BufferedInputStream _stream;
-    protected Reader _reader;
+    protected final Reader _reader;
     protected final int _expectedLineLength;
 
     public FixedWidthReader(InputStream stream, String charsetName, int fixedValueWidth,
@@ -57,9 +55,7 @@ class FixedWidthReader implements Closeable {
 
     private FixedWidthReader(BufferedInputStream stream, String charsetName, int fixedValueWidth,
             boolean failOnInconsistentLineWidth) {
-        _stream = stream;
-        _charsetName = charsetName;
-        initReader();
+        _reader = initReader(stream, charsetName);
         _fixedValueWidth = fixedValueWidth;
         _failOnInconsistentLineWidth = failOnInconsistentLineWidth;
         _rowNumber = 0;
@@ -75,9 +71,7 @@ class FixedWidthReader implements Closeable {
 
     FixedWidthReader(BufferedInputStream stream, String charsetName, int[] valueWidths,
             boolean failOnInconsistentLineWidth) {
-        _stream = stream;
-        _charsetName = charsetName;
-        initReader();
+        _reader = initReader(stream, charsetName);
         _fixedValueWidth = -1;
         _valueWidths = valueWidths;
         _failOnInconsistentLineWidth = failOnInconsistentLineWidth;
@@ -92,12 +86,12 @@ class FixedWidthReader implements Closeable {
         _expectedLineLength = expectedLineLength;
     }
 
-    private void initReader() {
+    private Reader initReader(BufferedInputStream stream, String charsetName) {
         try {
-            InputStreamReader inputStreamReader = new InputStreamReader(_stream, _charsetName);
-            _reader = new BufferedReader(inputStreamReader);
+            InputStreamReader inputStreamReader = new InputStreamReader(stream, charsetName);
+            return new BufferedReader(inputStreamReader);
         } catch (UnsupportedEncodingException e) {
-            throw new IllegalArgumentException(String.format("Encoding '%s' was not recognized. ", _charsetName));
+            throw new IllegalArgumentException(String.format("Encoding '%s' was not recognized. ", charsetName));
         }
     }
     
@@ -262,6 +256,6 @@ class FixedWidthReader implements Closeable {
 
     @Override
     public void close() throws IOException {
-        _stream.close();
+        _reader.close();
     }
 }
