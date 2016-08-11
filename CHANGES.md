@@ -1,6 +1,7 @@
 ### Apache MetaModel 4.5.5
 
  * [METAMODEL-1111] - Added WHERE rewrite for Oracle when empty strings are considered as NULL.
+ * [METAMODEL-1109] - Fixed diacritics/encoding issue with Fixed Width reader.
 
 ### Apache MetaModel 4.5.4
 
