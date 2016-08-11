@@ -26,6 +26,8 @@ import java.io.IOException;
  */
 class EbcdicReader extends FixedWidthReader {
 
+    private final BufferedInputStream _stream;
+    private final String _charsetName;
     private final boolean _skipEbcdicHeader;
     private final boolean _eolPresent;
     private boolean _headerSkipped;
@@ -33,6 +35,8 @@ class EbcdicReader extends FixedWidthReader {
     public EbcdicReader(BufferedInputStream stream, String charsetName, int[] valueWidths,
             boolean failOnInconsistentLineWidth, boolean skipEbcdicHeader, boolean eolPresent) {
         super(stream, charsetName, valueWidths, failOnInconsistentLineWidth);
+        _stream = stream;
+        _charsetName = charsetName;
         _skipEbcdicHeader = skipEbcdicHeader;
         _eolPresent = eolPresent;
     }

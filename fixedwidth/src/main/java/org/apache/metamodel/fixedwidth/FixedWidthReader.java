@@ -19,9 +19,13 @@
 package org.apache.metamodel.fixedwidth;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.ArrayList;
@@ -35,14 +39,13 @@ class FixedWidthReader implements Closeable {
     private static final int LINE_FEED = '\n';
     private static final int CARRIAGE_RETURN = '\r';
     
-    protected final String _charsetName;
     private final int _fixedValueWidth;
     private final int[] _valueWidths;
     private int _valueIndex = 0;
     private final boolean _failOnInconsistentLineWidth;
     private final boolean _constantWidth;
     private volatile int _rowNumber;
-    protected final BufferedInputStream _stream;
+    protected final Reader _reader;
     protected final int _expectedLineLength;
 
     public FixedWidthReader(InputStream stream, String charsetName, int fixedValueWidth,
@@ -52,8 +55,7 @@ class FixedWidthReader implements Closeable {
 
     private FixedWidthReader(BufferedInputStream stream, String charsetName, int fixedValueWidth,
             boolean failOnInconsistentLineWidth) {
-        _stream = stream;
-        _charsetName = charsetName;
+        _reader = initReader(stream, charsetName);
         _fixedValueWidth = fixedValueWidth;
         _failOnInconsistentLineWidth = failOnInconsistentLineWidth;
         _rowNumber = 0;
@@ -69,8 +71,7 @@ class FixedWidthReader implements Closeable {
 
     FixedWidthReader(BufferedInputStream stream, String charsetName, int[] valueWidths,
             boolean failOnInconsistentLineWidth) {
-        _stream = stream;
-        _charsetName = charsetName;
+        _reader = initReader(stream, charsetName);
         _fixedValueWidth = -1;
         _valueWidths = valueWidths;
         _failOnInconsistentLineWidth = failOnInconsistentLineWidth;
@@ -85,6 +86,15 @@ class FixedWidthReader implements Closeable {
         _expectedLineLength = expectedLineLength;
     }
 
+    private Reader initReader(BufferedInputStream stream, String charsetName) {
+        try {
+            InputStreamReader inputStreamReader = new InputStreamReader(stream, charsetName);
+            return new BufferedReader(inputStreamReader);
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(String.format("Encoding '%s' was not recognized. ", charsetName));
+        }
+    }
+    
     /**
      * This reads and returns the next record from the file. Usually, it is a line but in case the new line characters
      * are not present, the length of the content depends on the column-widths setting.
@@ -106,7 +116,6 @@ class FixedWidthReader implements Closeable {
      * Empty hook that enables special behavior in sub-classed readers (by overriding this method). 
      */
     protected void beforeReadLine() {
-        return;
     }
 
     private String[] getValues() throws IOException {
@@ -167,8 +176,8 @@ class FixedWidthReader implements Closeable {
         StringBuilder line = new StringBuilder();
         int ch;
 
-        for (ch = _stream.read(); !isEndingCharacter(ch); ch = _stream.read()) {
-            line.append((char) ch);
+        for (ch = _reader.read(); !isEndingCharacter(ch); ch = _reader.read()) {
+            line.append((char)ch);
         }
 
         if (ch == CARRIAGE_RETURN) {
@@ -179,10 +188,10 @@ class FixedWidthReader implements Closeable {
     }
     
     private void readLineFeedIfFollows() throws IOException {
-        _stream.mark(1);
-
-        if (_stream.read() != LINE_FEED) {
-            _stream.reset();
+        _reader.mark(1);
+        
+        if (_reader.read() != LINE_FEED) {
+            _reader.reset();
         }
     }
 
@@ -247,6 +256,6 @@ class FixedWidthReader implements Closeable {
 
     @Override
     public void close() throws IOException {
-        _stream.close();
+        _reader.close();
     }
 }
