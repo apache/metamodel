@@ -1,3 +1,7 @@
+### Apache MetaModel 4.5.5
+
+ * [METAMODEL-1111] - Added WHERE rewrite for Oracle when empty strings are considered as NULL.
+
 ### Apache MetaModel 4.5.4
 
  * [METAMODEL-1099] - Created a new DataContextFactory SPI and a extensible registry of implementations based on ServiceLoader.

@@ -19,6 +19,7 @@
 package org.apache.metamodel.jdbc.dialects;
 
 import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.schema.ColumnType;
 
 /**
@@ -76,5 +77,15 @@ public class OracleQueryRewriter extends DefaultQueryRewriter {
             super.rewriteColumnType(ColumnType.DATE, columnSize);
         }
         return super.rewriteColumnType(columnType, columnSize);
+    }
+
+    @Override
+    public String rewriteFilterItem(final FilterItem item) {
+        if (item.getOperand() instanceof String && item.getOperand().equals("")) {
+            // In Oracle empty strings are treated as null. Typical SQL constructs with an empty string do not work.
+            return super.rewriteFilterItem(new FilterItem(item.getSelectItem(), item.getOperator(), null));
+        } else {
+            return super.rewriteFilterItem(item);
+        }
     }
 }
