@@ -28,6 +28,7 @@ import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
 
 public class FixedWidthDataContextTest extends TestCase {
 
@@ -220,5 +221,21 @@ public class FixedWidthDataContextTest extends TestCase {
         assertTrue(ds.next());
         assertEquals("[3, howdy, partner]", Arrays.toString(ds.getRow().getValues()));
         assertFalse(ds.next());
+    }
+
+    public void testCustomColumnNames() throws Exception {
+        final String firstColumnName = "first";
+        final String secondColumnName = "second";
+
+        final FixedWidthConfiguration configuration = new FixedWidthConfiguration(
+                FixedWidthConfiguration.DEFAULT_COLUMN_NAME_LINE, new CustomColumnNamingStrategy(firstColumnName,
+                        secondColumnName), "UTF8", new int[] { 10, 10 }, true);
+
+        final DataContext dataContext = new FixedWidthDataContext(new File("src/test/resources/example_simple1.txt"),
+                configuration);
+        final Table table = dataContext.getDefaultSchema().getTable(0);
+
+        assertNotNull(table.getColumnByName(firstColumnName));
+        assertNotNull(table.getColumnByName(secondColumnName));
     }
 }
