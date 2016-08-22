@@ -94,6 +94,30 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
         }
     }
 
+    /**
+     * Creates a {@code SalesforceDataContext} instance , configured with given
+     * salesforce connection.
+     * 
+     * @param connection
+     *            salesforce connection (cannot be {@code null}).
+     * 
+     */
+    public SalesforceDataContext(PartnerConnection connection) {
+        if (connection == null) {
+            throw new IllegalArgumentException("connection cannot be null");
+        }
+        _connection = connection;
+    }
+
+    /**
+     * Returns the Salesforce connection being used by this datacontext.
+     * 
+     * @return the Salesforce connection
+     */
+    public PartnerConnection getConnection() {
+        return _connection;
+    }
+
     @Override
     protected Schema getMainSchema() throws MetaModelException {
         final SalesforceSchema schema = new SalesforceSchema(getMainSchemaName(), _connection);
