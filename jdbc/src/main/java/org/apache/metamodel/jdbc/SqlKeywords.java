@@ -58,6 +58,13 @@ class SqlKeywords {
         KEYWORDS.add("DELETE");
         KEYWORDS.add("AND");
         KEYWORDS.add("OR");
+        KEYWORDS.add("BEGIN");
+        KEYWORDS.add("END");
+        KEYWORDS.add("COLUMN");
+        KEYWORDS.add("TABLE");
+        KEYWORDS.add("SCHEMA");
+        KEYWORDS.add("DATABASE");
+        KEYWORDS.add("CAST");
     }
 
     public static boolean isKeyword(String str) {
