@@ -300,9 +300,14 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
             // are specialized dialects for it.
             item = item.replaceFunctionApproximationAllowed(false);
         }
-        return item.toSql(isSchemaIncludedInColumnPaths());
+        final String sql = item.toSql(isSchemaIncludedInColumnPaths());
+        if (sql.startsWith("AVG(")) {
+            // always perform a 'cast' to decimal by multiplying it to a double
+            return "AVG(1.0*" + sql.substring(4);
+        }
+        return sql;
     }
-    
+
     @Override
     public void setStatementParameter(PreparedStatement st, int valueIndex, Column column, Object value)
             throws SQLException {
@@ -404,7 +409,7 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
             throw e;
         }
     }
-    
+
     protected Time toTime(Date value) {
         if (value instanceof Time) {
             return (Time) value;
@@ -422,10 +427,10 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
         cal.setTime((Date) value);
         return new Timestamp(cal.getTimeInMillis());
     }
-    
+
     @Override
-    public Object getResultSetValue(ResultSet resultSet, int columnIndex, Column column) throws SQLException {
-        final ColumnType type = column.getType();
+    public Object getResultSetValue(ResultSet resultSet, int columnIndex, SelectItem selectItem) throws SQLException {
+        final ColumnType type = selectItem.getExpectedColumnType();
         try {
             if (type == ColumnType.TIME) {
                 return resultSet.getTime(columnIndex);

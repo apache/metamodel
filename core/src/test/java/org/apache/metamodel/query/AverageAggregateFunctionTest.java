@@ -18,28 +18,20 @@
  */
 package org.apache.metamodel.query;
 
-import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.util.AggregateBuilder;
+import static org.junit.Assert.assertEquals;
 
-public class SumAggregateFunction extends DefaultAggregateFunction<Double> {
-    
-    private static final long serialVersionUID = 1L;
+import org.apache.metamodel.MockDataContext;
+import org.apache.metamodel.data.DataSet;
+import org.junit.Test;
 
-    @Override
-    public String getFunctionName() {
-        return "SUM";
-    }
+public class AverageAggregateFunctionTest {
 
-    @Override
-    public AggregateBuilder<Double> createAggregateBuilder() {
-        return new SumAggregateBuilder();
-    }
-
-    @Override
-    public ColumnType getExpectedColumnType(ColumnType type) {
-        if (type == ColumnType.BIT || type == ColumnType.INTEGER || type == ColumnType.BIGINT) {
-            return ColumnType.BIGINT;
+    @Test
+    public void testEvaluateAvgOfIntegersWithQueryPostprocessor() throws Exception {
+        final MockDataContext dc = new MockDataContext("sch", "tbl", "foo");
+        try (final DataSet ds = dc.query().from("tbl").select("AVG(foo)", "SUM(foo)", "COUNT(*)").execute()) {
+            ds.next();
+            assertEquals("Row[values=[2.5, 10.0, 4]]", ds.getRow().toString());
         }
-        return ColumnType.DOUBLE;
     }
 }

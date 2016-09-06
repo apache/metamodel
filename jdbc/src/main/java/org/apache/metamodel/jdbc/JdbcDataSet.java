@@ -31,7 +31,6 @@ import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.util.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,19 +144,14 @@ final class JdbcDataSet extends AbstractDataSet {
     private Object getValue(ResultSet resultSet, int i) throws SQLException {
         final SelectItem selectItem = getHeader().getSelectItem(i);
         final int columnIndex = i + 1;
-        if (selectItem.getAggregateFunction() == null) {
-            final Column column = selectItem.getColumn();
-            if (column != null) {
-                final IQueryRewriter queryRewriter;
-                if (_jdbcDataContext == null) {
-                    queryRewriter = new DefaultQueryRewriter(null);
-                } else {
-                    queryRewriter = _jdbcDataContext.getQueryRewriter();
-                }
-                return queryRewriter.getResultSetValue(resultSet, columnIndex, column);
-            }
+        selectItem.getExpectedColumnType();
+        final IQueryRewriter queryRewriter;
+        if (_jdbcDataContext == null) {
+            queryRewriter = new DefaultQueryRewriter(null);
+        } else {
+            queryRewriter = _jdbcDataContext.getQueryRewriter();
         }
-        return resultSet.getObject(columnIndex);
+        return queryRewriter.getResultSetValue(resultSet, columnIndex, selectItem);
     }
 
     /**

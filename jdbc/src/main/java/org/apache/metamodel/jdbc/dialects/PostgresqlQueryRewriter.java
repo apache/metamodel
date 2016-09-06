@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
@@ -103,22 +104,25 @@ public class PostgresqlQueryRewriter extends LimitOffsetQueryRewriter {
     }
 
     @Override
-    public Object getResultSetValue(ResultSet resultSet, int columnIndex, Column column) throws SQLException {
-        switch (column.getNativeType()) {
-        case "json":
-        case "jsonb":
-            assert column.getType() == ColumnType.MAP;
-            final String stringValue = resultSet.getString(columnIndex);
-            if (stringValue == null) {
-                return null;
-            }
-            try {
-                return jsonObjectMapper.readValue(stringValue, Map.class);
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Unable to read string as JSON: " + stringValue);
+    public Object getResultSetValue(ResultSet resultSet, int columnIndex, SelectItem selectItem) throws SQLException {
+        if (selectItem.getAggregateFunction() == null && selectItem.getScalarFunction() == null && selectItem
+                .getColumn() != null) {
+            switch (selectItem.getColumn().getNativeType()) {
+            case "json":
+            case "jsonb":
+                assert selectItem.getColumn().getType() == ColumnType.MAP;
+                final String stringValue = resultSet.getString(columnIndex);
+                if (stringValue == null) {
+                    return null;
+                }
+                try {
+                    return jsonObjectMapper.readValue(stringValue, Map.class);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Unable to read string as JSON: " + stringValue);
+                }
             }
         }
-        return super.getResultSetValue(resultSet, columnIndex, column);
+        return super.getResultSetValue(resultSet, columnIndex, selectItem);
     }
 
     @Override

@@ -29,6 +29,7 @@ import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.ScalarFunction;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 
@@ -65,15 +66,17 @@ public interface IQueryRewriter {
             final Object value) throws SQLException;
 
     /**
-     * Retrieves a value from a JDBC {@link ResultSet} when the anticipated value is mapped to a particular column.
+     * Retrieves a value from a JDBC {@link ResultSet} when the anticipated
+     * value is mapped to a particular column.
      * 
      * @param resultSet
      * @param columnIndex
-     * @param column
+     * @param selectItem
      * @throws SQLException
      * @return
      */
-    public Object getResultSetValue(ResultSet resultSet, int columnIndex, Column column) throws SQLException;
+    public Object getResultSetValue(ResultSet resultSet, int columnIndex, SelectItem selectItem)
+            throws SQLException;
 
     /**
      * Gets whether this query rewriter is able to write the "Max rows" query

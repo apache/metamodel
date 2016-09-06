@@ -332,6 +332,13 @@ public class JdbcTestTemplates {
         assertEquals("Row[values=[2]]", ds.getRow().toString());
         assertFalse(ds.next());
         ds.close();
+        
+        ds = dc.query().from("test_table").select("AVG(id)", "SUM(id)", "COUNT(*)").execute();
+        assertTrue(ds.next());
+        assertEquals("Row[values=[1.5, 3, 2]]", ds.getRow().toString());
+        assertTrue(ds.getRow().getValue(0) instanceof Number);
+        assertFalse(ds.next());
+        ds.close();
 
         dc.executeUpdate(new UpdateScript() {
             @Override

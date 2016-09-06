@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.query;
 
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.AggregateBuilder;
 
 public class AverageAggregateFunction extends DefaultAggregateFunction<Double> {
@@ -34,4 +35,8 @@ public class AverageAggregateFunction extends DefaultAggregateFunction<Double> {
         return new AverageAggregateBuilder();
     }
 
+    @Override
+    public ColumnType getExpectedColumnType(ColumnType type) {
+        return ColumnType.DOUBLE;
+    }
 }
