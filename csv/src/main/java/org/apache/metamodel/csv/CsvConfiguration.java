@@ -94,7 +94,7 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
         this.escapeChar = escapeChar;
         this.failOnInconsistentRowLength = failOnInconsistentRowLength;
         this.multilineValues = multilineValues;
-        this.columnNamingStrategy = null;
+        this.columnNamingStrategy = columnNamingStrategy;
     }
     
     /**
