@@ -20,12 +20,15 @@ package org.apache.metamodel.fixedwidth;
 
 import java.io.File;
 
+import org.apache.metamodel.DataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class EBCDICTest {
     private static final int[] COLUMN_WIDTHS = new int[] { 2, 7, 10, 10 };
@@ -72,6 +75,21 @@ public class EBCDICTest {
                 assertEquals(EXPECTED_ROWS[i], dataSet.getRow().toString());
                 i++;
             }
+        }
+    }
+
+    @Test
+    public void testCustomColumnNames() throws Exception {
+        final String[] columnNames = {"first", "second", "third", "fourth"};
+        final FixedWidthConfiguration configuration = new EbcdicConfiguration(
+                FixedWidthConfiguration.NO_COLUMN_NAME_LINE, new CustomColumnNamingStrategy(columnNames), ENCODING,
+                COLUMN_WIDTHS, false, true, false);
+        final DataContext dataContext = new FixedWidthDataContext(new File(
+                "src/test/resources/fixed-width-2-7-10-10.ebc"), configuration);
+        final Table table = dataContext.getDefaultSchema().getTable(0);
+
+        for (int i = 0; i < columnNames.length; i++) {
+            assertNotNull(table.getColumnByName(columnNames[i]));
         }
     }
 }

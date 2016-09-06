@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.fixedwidth;
 
+import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
+
 /**
  * Special fixed-width configuration for EBCDIC files. 
  */
@@ -35,7 +37,12 @@ public final class EbcdicConfiguration extends FixedWidthConfiguration {
 
     public EbcdicConfiguration(int columnNameLineNumber, String encoding, int[] valueWidths,
             boolean failOnInconsistentLineWidth, boolean skipEbcdicHeader, boolean eolPresent) {
-        super(columnNameLineNumber, null, encoding, valueWidths, failOnInconsistentLineWidth);
+        this(columnNameLineNumber, null, encoding, valueWidths, failOnInconsistentLineWidth, skipEbcdicHeader, eolPresent);
+    }
+
+    public EbcdicConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy, String encoding,
+            int[] valueWidths, boolean failOnInconsistentLineWidth, boolean skipEbcdicHeader, boolean eolPresent) {
+        super(columnNameLineNumber, columnNamingStrategy, encoding, valueWidths, failOnInconsistentLineWidth);
         _skipEbcdicHeader = skipEbcdicHeader;
         _eolPresent = eolPresent;
     }

@@ -4,6 +4,7 @@
  * [METAMODEL-1109] - Fixed diacritics/encoding issue with Fixed Width reader.
  * [METAMODEL-1115] - Added support for passing your own PartnerConnection object to the Salesforce.com connector.
  * [METAMODEL-1113] - Fixed support for ColumnNamingStrategy in CSV connector.
+ * [METAMODEL-1114] - Added support for ColumnNamingStrategy in EBCDIC connector.
 
 ### Apache MetaModel 4.5.4
 
