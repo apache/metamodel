@@ -15,18 +15,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM tomcat:8.0-jre8
+FROM openjdk:8-jre-alpine
 
-RUN rm -rf $CATALINA_HOME/webapps \
- mkdir $CATALINA_HOME/webapps
-COPY target/MetaModel.war $CATALINA_HOME/webapps/ROOT.war
+COPY target/metamodel-undertow-server.jar metamodel-undertow-server.jar
 
 EXPOSE 8080
-
-ENV SWAGGER_UI_VERSION 2.1.5
-RUN  wget -q -O - https://github.com/swagger-api/swagger-ui/archive/v$SWAGGER_UI_VERSION.tar.gz | tar -xzf - -C /tmp \
-    && mv /tmp/swagger-ui-$SWAGGER_UI_VERSION/dist $CATALINA_HOME/webapps/swagger-ui \
-    && rm -r /tmp/swagger-ui-$SWAGGER_UI_VERSION
-ADD src/main/docker/swagger-ui/index.html $CATALINA_HOME/webapps/swagger-ui
-
-CMD ["catalina.sh", "run"]
+CMD java -jar metamodel-undertow-server.jar

@@ -41,7 +41,7 @@ public class SwaggerSpecController {
 
     @Autowired
     ServletContext servletContext;
-
+    
     @RequestMapping(method = RequestMethod.GET, value = "/swagger.json", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Map<String, Object> getSwaggerJson(HttpServletRequest req) throws Exception {
