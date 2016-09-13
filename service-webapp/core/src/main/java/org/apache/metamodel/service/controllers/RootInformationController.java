@@ -87,10 +87,10 @@ public class RootInformationController {
      */
     private String getVersion() {
         final String groupId = "org.apache.metamodel";
-        final String artifactId = "MetaModel-service-webapp";
+        final String artifactId = "MetaModel-service-webapp-core";
         final String resourcePath = "/META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties";
         final Properties properties = new Properties();
-        try (final InputStream inputStream = servletContext.getResourceAsStream(resourcePath)) {
+        try (final InputStream inputStream = RootInformationController.class.getResourceAsStream(resourcePath)) {
             properties.load(inputStream);
         } catch (Exception e) {
             logger.error("Failed to load version from manifest: " + e.getMessage());

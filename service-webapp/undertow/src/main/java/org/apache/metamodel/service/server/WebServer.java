@@ -63,7 +63,7 @@ public class WebServer {
         deployment.addListener(Servlets.listener(ContextLoaderListener.class));
         deployment.addListener(Servlets.listener(RequestContextListener.class));
         deployment.addServlet(Servlets.servlet("dispatcher", DispatcherServlet.class).addMapping("/*").addInitParam(
-                "contextConfigLocation", "classpath:context/difdsfsdfsspatcher-servlet.xml"));
+                "contextConfigLocation", "classpath:context/dispatcher-servlet.xml"));
         deployment.addFilter(Servlets.filter(CharacterEncodingFilter.class).addInitParam("forceEncoding", "true")
                 .addInitParam("encoding", "UTF-8"));
 
