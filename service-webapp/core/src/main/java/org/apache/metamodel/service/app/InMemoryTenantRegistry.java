@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 
 import org.apache.metamodel.service.app.exceptions.NoSuchTenantException;
 import org.apache.metamodel.service.app.exceptions.TenantAlreadyExistException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * In-memory {@link TenantRegistry}. This is not particularly
@@ -33,10 +35,12 @@ import org.apache.metamodel.service.app.exceptions.TenantAlreadyExistException;
  */
 public class InMemoryTenantRegistry implements TenantRegistry {
 
+    private static final Logger logger = LoggerFactory.getLogger(InMemoryTenantRegistry.class);
     private final Map<String, TenantContext> tenants;
 
     public InMemoryTenantRegistry() {
         tenants = new LinkedHashMap<>();
+        logger.info("Initialized!");
     }
 
     @Override
@@ -60,6 +64,7 @@ public class InMemoryTenantRegistry implements TenantRegistry {
         }
         final InMemoryTenantContext tenantContext = new InMemoryTenantContext(tenantIdentifier);
         tenants.put(tenantIdentifier, tenantContext);
+        logger.info("Created new tenant: {}", tenantContext);
         return tenantContext;
     }
 

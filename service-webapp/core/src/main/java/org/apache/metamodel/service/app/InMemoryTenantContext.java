@@ -38,4 +38,8 @@ public class InMemoryTenantContext implements TenantContext {
         return dataContextRegistry;
     }
 
+    @Override
+    public String toString() {
+        return "InMemoryTenantContext[" + tenantIdentifier + "]";
+    }
 }

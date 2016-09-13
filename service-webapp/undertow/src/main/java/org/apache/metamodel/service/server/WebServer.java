@@ -22,6 +22,8 @@ import java.io.File;
 
 import javax.servlet.ServletException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.filter.CharacterEncodingFilter;
@@ -40,14 +42,16 @@ import io.undertow.servlet.api.DeploymentManager;
  */
 public class WebServer {
 
+    private static final Logger logger = LoggerFactory.getLogger(WebServer.class);
+    
     private static final int DEFAULT_PORT = 8080;
 
     public static void main(final String[] args) throws Exception {
-        System.out.println("Apache MetaModel server initiating");
+        logger.info("Apache MetaModel server initiating");
 
         startServer();
 
-        System.out.println("Apache MetaModel server started");
+        logger.info("Apache MetaModel server started");
     }
 
     public static void startServer() throws Exception {
