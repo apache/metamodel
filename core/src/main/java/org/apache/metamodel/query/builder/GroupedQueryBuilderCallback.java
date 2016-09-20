@@ -26,6 +26,7 @@ import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.ScalarFunction;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.util.BaseObject;
 
@@ -139,6 +140,21 @@ abstract class GroupedQueryBuilderCallback extends BaseObject implements Grouped
     @Override
     public HavingBuilder having(FunctionType functionType, Column column) {
         return getQueryBuilder().having(functionType, column);
+    }
+
+    @Override
+    public HavingBuilder having(String columnExpression) {
+        return getQueryBuilder().having(columnExpression);
+    }
+    
+    @Override
+    public HavingBuilder having(SelectItem selectItem) {
+        return getQueryBuilder().having(selectItem);
+    }
+
+    @Override
+    public GroupedQueryBuilder groupBy(String... columnNames) {
+        return getQueryBuilder().groupBy(columnNames);
     }
 
     @Override
