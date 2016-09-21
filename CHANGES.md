@@ -1,5 +1,6 @@
 ### Apache MetaModel 4.5.5
 
+ * [METAMODEL-1118] - Fixed bug pertaining to cloning of FilterItem.LogicalOperator in compiled queries.
  * [METAMODEL-1111] - Added WHERE rewrite for Oracle when empty strings are considered as NULL.
  * [METAMODEL-1109] - Fixed diacritics/encoding issue with Fixed Width reader.
  * [METAMODEL-1115] - Added support for passing your own PartnerConnection object to the Salesforce.com connector.
