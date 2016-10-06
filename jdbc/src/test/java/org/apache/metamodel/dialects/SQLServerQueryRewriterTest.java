@@ -87,7 +87,7 @@ public class SQLServerQueryRewriterTest extends TestCase {
                         .toDate("2014-06-28 14:06:00")));
 
         assertEquals(
-                "SELECT MY_SCHEMA.\"foo\".\"bar\", timestamp FROM MY_SCHEMA.\"foo\" WHERE timestamp < CAST('2014-06-28 14:06:00' AS DATETIME)",
+                "SELECT MY_SCHEMA.\"foo\".\"bar\", timestamp FROM MY_SCHEMA.\"foo\" WHERE timestamp < CAST('20140628 14:06:00' AS DATETIME)",
                 qr.rewriteQuery(q));
     }
 
