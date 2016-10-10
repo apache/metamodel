@@ -654,7 +654,14 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
                 // Second strategy: Find default schema name by examining the
                 // URL
                 if (!found) {
-                    String url = metaData.getURL();
+                    String url = null;
+                    try {
+                        url = metaData.getURL();
+                    } catch (SQLException e) {
+                        if (!DATABASE_PRODUCT_HIVE.equals(_databaseProductName)) {
+                            throw e;
+                        }
+                    }
                     if (url != null && url.length() > 0) {
                         if (schemaNames.length > 0) {
                             StringTokenizer st = new StringTokenizer(url, "/\\:");
@@ -679,7 +686,14 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
 
                 // Third strategy: Check for schema equal to username
                 if (!found) {
-                    String username = metaData.getUserName();
+                    String username = null;
+                    try {
+                        username = metaData.getUserName();
+                    } catch (SQLException e) {
+                        if (!DATABASE_PRODUCT_HIVE.equals(_databaseProductName)) {
+                            throw e;
+                        }
+                    }
                     if (username != null) {
                         for (int i = 0; i < schemaNames.length && !found; i++) {
                             if (username.equalsIgnoreCase(schemaNames[i])) {
@@ -708,28 +722,26 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
                     found = true;
                 }
                 if (DATABASE_PRODUCT_HSQLDB.equalsIgnoreCase(_databaseProductName)) {
-                    for (int i = 0; i < schemaNames.length && !found; i++) {
-                        String schemaName = schemaNames[i];
-                        if ("PUBLIC".equals(schemaName)) {
-                            result = schemaName;
-                            found = true;
-                            break;
-                        }
-                    }
+                    result = findDefaultSchema("PUBLIC", schemaNames);
                 }
                 if (DATABASE_PRODUCT_SQLSERVER.equals(_databaseProductName)) {
-                    for (int i = 0; i < schemaNames.length && !found; i++) {
-                        String schemaName = schemaNames[i];
-                        if ("dbo".equals(schemaName)) {
-                            result = schemaName;
-                            found = true;
-                            break;
-                        }
-                    }
+                    result = findDefaultSchema("dbo", schemaNames);
+                }
+                if (DATABASE_PRODUCT_HIVE.equals(_databaseProductName)) {
+                    result = findDefaultSchema("default", schemaNames);
                 }
             }
         }
         return result;
+    }
+
+    private String findDefaultSchema(final String defaultName, final String[] schemaNames) {
+        for (String schemaName : schemaNames) {
+            if (defaultName.equals(schemaName)) {
+                return schemaName;
+            }
+        }
+        return null;
     }
 
     /**

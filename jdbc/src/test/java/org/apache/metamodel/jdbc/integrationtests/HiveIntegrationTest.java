@@ -18,6 +18,10 @@
  */
 package org.apache.metamodel.jdbc.integrationtests;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.create.CreateTable;
@@ -28,12 +32,59 @@ import org.apache.metamodel.jdbc.dialects.HiveQueryRewriter;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HiveIntegrationTest extends AbstractJdbIntegrationTest {
+    private static final Logger logger = LoggerFactory.getLogger(HiveIntegrationTest.class);
 
     @Override
     protected String getPropertyPrefix() {
         return "hive";
+    }
+
+    private void createSchemas() throws SQLException {
+        Connection connection = getConnection();
+        final Statement st = connection.createStatement();
+        final String createFirstSql = "CREATE SCHEMA IF NOT EXISTS a_metamodel_test";
+        logger.info("SQL updated fired (return {}): {}", st.executeUpdate(createFirstSql), createFirstSql);
+        final String createLastSql = "CREATE SCHEMA IF NOT EXISTS z_metamodel_test";
+        logger.info("SQL updated fired (return {}): {}", st.executeUpdate(createLastSql), createLastSql);
+    }
+
+    private void deleteSchemas() throws SQLException {
+        Connection connection = getConnection();
+        final Statement st = connection.createStatement();
+        final String deleteFirstSql = "DROP SCHEMA IF EXISTS a_metamodel_test";
+        logger.info("SQL updated fired (return {}): {}", st.executeUpdate(deleteFirstSql), deleteFirstSql);
+        final String deleteLastSql = "DROP SCHEMA IF EXISTS z_metamodel_test";
+        logger.info("SQL updated fired (return {}): {}", st.executeUpdate(deleteLastSql), deleteLastSql);
+    }
+
+    public void testDefaultGetSchema() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        try {
+            try {
+                createSchemas();
+            } catch (SQLException e) {
+                fail("Schema creation failed");
+            }
+
+            final JdbcDataContext dataContext = getDataContext();
+            final Schema schema = dataContext.getDefaultSchema();
+
+            assertEquals("Schema[name=default]", schema.toString());
+
+        } finally {
+            try {
+                deleteSchemas();
+            } catch (SQLException e) {
+                logger.warn("Weird, couldn't delete test schemas");
+            }
+        }
     }
 
     public void testGetSchema() throws Exception {
@@ -45,7 +96,7 @@ public class HiveIntegrationTest extends AbstractJdbIntegrationTest {
         final Schema schema = dataContext.getSchemaByName("default");
         assertEquals("Schema[name=default]", schema.toString());
     }
-    
+
     public void testUseCorrectRewriter() throws Exception {
         if (!isConfigured()) {
             return;
