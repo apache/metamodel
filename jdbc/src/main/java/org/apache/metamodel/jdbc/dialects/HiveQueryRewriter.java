@@ -35,8 +35,14 @@ public class HiveQueryRewriter extends DefaultQueryRewriter {
         if (columnType == ColumnType.INTEGER) {
             return "INT";
         }
+
+        if(columnType == ColumnType.STRING) {
+            return "STRING";
+        }
+
         // Hive does not support VARCHAR without a width, nor VARCHAR(MAX).
-        if (columnType == ColumnType.STRING && columnSize == null) {
+        // Returning max allowable column size instead.
+        if (columnType == ColumnType.VARCHAR && columnSize == null) {
             return super.rewriteColumnType(columnType, 65535);
         }
         return super.rewriteColumnType(columnType, columnSize);

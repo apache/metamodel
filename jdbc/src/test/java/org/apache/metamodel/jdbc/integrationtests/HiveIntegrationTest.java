@@ -116,19 +116,19 @@ public class HiveIntegrationTest extends AbstractJdbIntegrationTest {
         final Schema schema = dataContext.getDefaultSchema();
 
         dataContext.executeUpdate(new CreateTable(schema, tableName).withColumn("foo").ofType(ColumnType.STRING)
-                .withColumn("bar").ofType(ColumnType.INTEGER));
+                .withColumn("bar").ofType(ColumnType.INTEGER).withColumn("baz").ofType(ColumnType.VARCHAR));
         try {
             final Table table = dataContext.getTableByQualifiedLabel(tableName);
             assertNotNull(table);
             
             dataContext.executeUpdate(new UpdateScript() {
-                
+
                 @Override
                 public void run(UpdateCallback callback) {
-                    callback.insertInto(table).value("foo", "Hello world").value("bar", 42).execute();
-                    callback.insertInto(table).value("foo", "Lorem ipsum").value("bar", 42).execute();
-                    callback.insertInto(table).value("foo", "Apache").value("bar", 43).execute();
-                    callback.insertInto(table).value("foo", "MetaModel").value("bar", 44).execute();
+                    callback.insertInto(table).value("foo", "Hello world").value("bar", 42).value("baz", "Hive").execute();
+                    callback.insertInto(table).value("foo", "Lorem ipsum").value("bar", 42).value("baz", "Five").execute();
+                    callback.insertInto(table).value("foo", "Apache").value("bar", 43).value("baz", "Live").execute();
+                    callback.insertInto(table).value("foo", "MetaModel").value("bar", 44).value("baz", "Jive").execute();
                 }
             });
             
@@ -140,9 +140,9 @@ public class HiveIntegrationTest extends AbstractJdbIntegrationTest {
             
             final DataSet ds2 = dataContext.query().from(table).selectAll().where("bar").eq(42).execute();
             assertTrue(ds2.next());
-            assertEquals("Row[values=[Hello world, 42]]", ds2.getRow().toString());
+            assertEquals("Row[values=[Hello world, 42, Hive]]", ds2.getRow().toString());
             assertTrue(ds2.next());
-            assertEquals("Row[values=[Lorem ipsum, 42]]", ds2.getRow().toString());
+            assertEquals("Row[values=[Lorem ipsum, 42, Five]]", ds2.getRow().toString());
             assertFalse(ds2.next());
             ds2.close();
         } finally {
