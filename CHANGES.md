@@ -7,6 +7,7 @@
  * [METAMODEL-1115] - Added support for passing your own PartnerConnection object to the Salesforce.com connector.
  * [METAMODEL-1113] - Fixed support for ColumnNamingStrategy in CSV connector.
  * [METAMODEL-1114] - Added support for ColumnNamingStrategy in EBCDIC connector.
+ * [METAMODEL-1119] - Worked around Hive JDBC driver issues, avoiding non-compliant metadata calls.
 
 ### Apache MetaModel 4.5.4
 
