@@ -8,6 +8,8 @@
  * [METAMODEL-1113] - Fixed support for ColumnNamingStrategy in CSV connector.
  * [METAMODEL-1114] - Added support for ColumnNamingStrategy in EBCDIC connector.
  * [METAMODEL-1119] - Worked around Hive JDBC driver issues, avoiding non-compliant metadata calls.
+ * [METAMODEL-1123] - Fixed the treatment of a Salesforce.com 'currency' value as a number, not a string.
+ * [METAMODEL-1124] - Fixed the date formatting of date values in MS SQL server.
 
 ### Apache MetaModel 4.5.4
 
