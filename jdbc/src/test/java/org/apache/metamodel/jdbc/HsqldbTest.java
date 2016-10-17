@@ -23,6 +23,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.table.TableModel;
@@ -416,5 +417,93 @@ public class HsqldbTest extends TestCase {
     public void testInterpretationOfNull() throws Exception {
         Connection conn = DriverManager.getConnection("jdbc:hsqldb:mem:interpretation_of_null", USERNAME, PASSWORD);
         JdbcTestTemplates.interpretationOfNulls(conn);
+    }
+    
+    public void testCapitalization() throws Exception{
+      try(Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:different_types_insert", USERNAME,PASSWORD);){
+        
+
+        
+        final JdbcDataContext dcon = new JdbcDataContext(connection);
+        
+        final String mixedcap = "MixedCapitalization";
+        final String idCol = "Id";
+        final String nameCol =  "name";
+        final String emailCol = "EMAIL";
+        final String createTable = "CREATE TABLE \"" + mixedcap + "\" (\""+idCol+"\" INTEGER, \""+nameCol+"\" LONGVARCHAR,  \""+emailCol+"\" LONGVARCHAR)";
+        
+        try(Statement stmt = connection.createStatement();){
+          
+          stmt.execute(createTable);
+          
+        }
+        dcon.refreshSchemas();
+        assertEquals(mixedcap, dcon.getDefaultSchema().getTable(0).getName()); 
+        assertEquals(idCol, dcon.getDefaultSchema().getTable(0).getColumn(0).getName());
+        
+        dcon.query().from(mixedcap).select(idCol,nameCol,emailCol).execute();
+        
+        
+        try(Statement stmt = connection.createStatement();){
+          
+          stmt.execute("DROP TABLE \"" + mixedcap + "\"" );
+          
+          
+        }
+        dcon.refreshSchemas();
+        dcon.executeUpdate(new UpdateScript() {
+          
+          @Override
+          public void run(UpdateCallback callback) {
+            callback.createTable(dcon.getDefaultSchemaName(), mixedcap)
+              .withColumn(idCol).asPrimaryKey().ofType(ColumnType.INTEGER)
+              .withColumn(nameCol).ofType(ColumnType.STRING)
+              .withColumn(emailCol).ofType(ColumnType.STRING)
+              .execute();
+            
+          }
+        });
+        
+        
+        dcon.executeUpdate(new UpdateScript() {
+          
+          @Override
+          public void run(UpdateCallback callback) {
+            callback.insertInto(mixedcap)
+              .value(idCol, 1)
+              .value(nameCol, "Sarah")
+              .value(emailCol, "sarah@example.com")
+              .execute();
+          }
+        });
+        
+        for(Table table: dcon.getDefaultSchema().getTables()){
+          assertEquals(mixedcap, table.getName());
+          assertEquals(idCol, table.getColumn(0).getName());
+          assertEquals(nameCol, table.getColumn(1).getName());
+          assertEquals(emailCol, table.getColumn(2).getName());
+        }
+        String queryNoQuotes = "SELECT "+nameCol+", "+idCol + ", " + emailCol + 
+            " FROM " + mixedcap + " WHERE " +idCol+ "= 1" ;
+        DataSet dsStringQueryNQ =  dcon.executeQuery(queryNoQuotes);
+        List<Row> rowsQueryNoQuotes = dsStringQueryNQ.toRows();
+        assertEquals(1,  rowsQueryNoQuotes.size());
+        List<Row> rowsQueryObject = dcon.query().from(mixedcap)
+            .select(nameCol).select(idCol).select(emailCol)
+            .where(idCol).eq(1).execute().toRows();
+        assertEquals(1,  rowsQueryObject.size());
+        
+        
+        assertEquals(rowsQueryObject.get(0).getValue(0), 
+            rowsQueryNoQuotes.get(0).getValue(0));
+        assertEquals(rowsQueryObject.get(0).getValue(1), 
+            rowsQueryNoQuotes.get(0).getValue(1));
+        assertEquals(rowsQueryObject.get(0).getValue(2), 
+            rowsQueryNoQuotes.get(0).getValue(2));
+
+      }
+      
+      
+      
     }
 }
