@@ -83,7 +83,9 @@ public class PostgresqlQueryRewriter extends LimitOffsetQueryRewriter {
         case "json":
         case "jsonb":
             assert column.getType() == ColumnType.MAP;
-            if (value != null) {
+            if (value == null) {
+                st.setObject(valueIndex, null);
+            } else {
                 final PGobject pgo = new PGobject();
                 pgo.setType(column.getNativeType());
                 if (value instanceof Map) {
@@ -96,8 +98,8 @@ public class PostgresqlQueryRewriter extends LimitOffsetQueryRewriter {
                     pgo.setValue(value.toString());
                 }
                 st.setObject(valueIndex, pgo);
-                return;
             }
+            return;
         }
         super.setStatementParameter(st, valueIndex, column, value);
     }
