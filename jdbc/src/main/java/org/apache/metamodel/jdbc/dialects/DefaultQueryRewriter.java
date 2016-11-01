@@ -41,12 +41,16 @@ import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.query.SumAggregateFunction;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Generic query rewriter that adds syntax enhancements that are only possible
  * to resolve just before execution time.
  */
 public class DefaultQueryRewriter extends AbstractQueryRewriter {
+    
+    private static final Logger logger = LoggerFactory.getLogger(DefaultQueryRewriter.class);
 
     private static final String SPECIAL_ALIAS_CHARACTERS = "- ,.|*%()!#¤/\\=?;:~";
     private static final Set<Class<? extends FunctionType>> SUPPORTED_FUNCTION_CLASSES = new HashSet<>(

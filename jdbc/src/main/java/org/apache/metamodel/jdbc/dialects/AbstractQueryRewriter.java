@@ -63,7 +63,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractQueryRewriter implements IQueryRewriter {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(AbstractQueryRewriter.class);
 
     private final JdbcDataContext _dataContext;
 

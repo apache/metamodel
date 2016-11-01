@@ -10,7 +10,8 @@
  * [METAMODEL-1119] - Worked around Hive JDBC driver issues, avoiding non-compliant metadata calls.
  * [METAMODEL-1123] - Fixed the treatment of a Salesforce.com 'currency' value as a number, not a string.
  * [METAMODEL-1124] - Fixed the date formatting of date values in MS SQL server.
-
+ * [METAMODEL-1127] - Fixed setting of null Map on postgres
+ 
 ### Apache MetaModel 4.5.4
 
  * [METAMODEL-1099] - Created a new DataContextFactory SPI and a extensible registry of implementations based on ServiceLoader.
