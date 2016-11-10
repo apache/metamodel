@@ -95,6 +95,9 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
     // 1 minute timeout
     public static final String TIMEOUT_SCROLL = "1m";
 
+    // we scroll when more than 400 rows are expected
+    private static final int SCROLL_THRESHOLD = 400;
+
     private final JestClient elasticSearchClient;
 
     private final String indexName;
@@ -265,11 +268,16 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
         if (queryBuilder != null) {
             // where clause can be pushed down to an ElasticSearch query
             SearchSourceBuilder searchSourceBuilder = createSearchRequest(firstRow, maxRows, queryBuilder);
-            SearchResult result = executeSearch(table, searchSourceBuilder, false);
+            SearchResult result = executeSearch(table, searchSourceBuilder, scrollNeeded(maxRows));
 
             return new JestElasticSearchDataSet(elasticSearchClient, result, selectItems);
         }
         return super.materializeMainSchemaTable(table, selectItems, whereItems, firstRow, maxRows);
+    }
+
+    private boolean scrollNeeded(int maxRows) {
+        // if either we don't know about max rows or max rows is set higher than threshold
+        return !limitMaxRowsIsSet(maxRows) || maxRows > SCROLL_THRESHOLD;
     }
 
     private SearchResult executeSearch(Table table, SearchSourceBuilder searchSourceBuilder, boolean scroll) {
@@ -292,7 +300,7 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
 
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-        SearchResult searchResult = executeSearch(table, createSearchRequest(1, maxRows, null), limitMaxRowsIsSet(
+        SearchResult searchResult = executeSearch(table, createSearchRequest(1, maxRows, null), scrollNeeded(
                 maxRows));
 
         return new JestElasticSearchDataSet(elasticSearchClient, searchResult, columns);
@@ -306,6 +314,8 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
         }
         if (limitMaxRowsIsSet(maxRows)) {
             searchRequest.size(maxRows);
+        } else {
+            searchRequest.size(Integer.MAX_VALUE);
         }
 
         if (queryBuilder != null) {
