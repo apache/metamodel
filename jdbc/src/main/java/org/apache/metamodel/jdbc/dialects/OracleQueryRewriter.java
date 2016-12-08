@@ -25,7 +25,7 @@ import org.apache.metamodel.schema.ColumnType;
 /**
  * Query rewriter for Oracle
  */
-public class OracleQueryRewriter extends DefaultQueryRewriter {
+public class OracleQueryRewriter extends OffsetFetchQueryRewriter {
 
     public OracleQueryRewriter(JdbcDataContext dataContext) {
         super(dataContext);

@@ -31,15 +31,10 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.DateUtils;
 
-public class SQLServerQueryRewriter extends DefaultQueryRewriter {
+public class SQLServerQueryRewriter extends OffsetFetchQueryRewriter {
 
     public SQLServerQueryRewriter(JdbcDataContext dataContext) {
         super(dataContext);
-    }
-
-    @Override
-    public boolean isMaxRowsSupported() {
-        return true;
     }
 
     /**
@@ -56,7 +51,7 @@ public class SQLServerQueryRewriter extends DefaultQueryRewriter {
         String result = super.rewriteSelectClause(query, selectClause);
 
         Integer maxRows = query.getMaxRows();
-        if (maxRows != null) {
+        if (maxRows != null && !result.contains("FETCH")) {
             if (query.getSelectClause().isDistinct()) {
                 result = "SELECT DISTINCT TOP " + maxRows + " " + result.substring("SELECT DISTINCT ".length());
             } else {
