@@ -56,17 +56,11 @@ public class SQLServerQueryRewriterTest extends TestCase {
         column.setTable(table);
 
         final JdbcDataContext mockContext = EasyMock.createMock(JdbcDataContext.class);
-        final Connection mockConnection = EasyMock.createMock(Connection.class);
-        final DatabaseMetaData mockMetaData = EasyMock.createMock(DatabaseMetaData.class);
-
-        EasyMock.expect(mockMetaData.getDatabaseProductName()).andReturn(DATABASE_PRODUCT_SQLSERVER).anyTimes();
-        EasyMock.expect(mockMetaData.getDatabaseProductVersion()).andReturn("12.1.1.1").anyTimes();
-
-        EasyMock.expect(mockConnection.getMetaData()).andReturn(mockMetaData).anyTimes();
-        EasyMock.expect(mockContext.getConnection()).andReturn(mockConnection).anyTimes();
+        EasyMock.expect(mockContext.getDatabaseProductName()).andReturn(DATABASE_PRODUCT_SQLSERVER).anyTimes();
+        EasyMock.expect(mockContext.getDatabaseVersion()).andReturn("12.1.1.1").anyTimes();
         EasyMock.expect(mockContext.getIdentifierQuoteString()).andReturn("quoteString").anyTimes();
 
-        EasyMock.replay(mockMetaData, mockConnection, mockContext);
+        EasyMock.replay(mockContext);
         qr = new SQLServerQueryRewriter(mockContext);
     }
 

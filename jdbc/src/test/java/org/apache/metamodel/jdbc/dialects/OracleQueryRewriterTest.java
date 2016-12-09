@@ -38,8 +38,6 @@ import org.junit.Test;
 public class OracleQueryRewriterTest {
 
     private static final JdbcDataContext mockContext = EasyMock.createMock(JdbcDataContext.class);
-    private static final Connection mockConnection = EasyMock.createMock(Connection.class);
-    private static final DatabaseMetaData mockMetaData = EasyMock.createMock(DatabaseMetaData.class);
 
     @BeforeClass
     public static void initMocks() throws SQLException {
@@ -125,15 +123,12 @@ public class OracleQueryRewriterTest {
     }
 
     private static void setMetaData(String productName, String version) throws SQLException {
-        EasyMock.reset(mockMetaData, mockConnection, mockContext);
+        EasyMock.reset(mockContext);
 
-        EasyMock.expect(mockMetaData.getDatabaseProductName()).andReturn(productName).anyTimes();
-        EasyMock.expect(mockMetaData.getDatabaseProductVersion()).andReturn(version).anyTimes();
-
-        EasyMock.expect(mockConnection.getMetaData()).andReturn(mockMetaData).anyTimes();
-        EasyMock.expect(mockContext.getConnection()).andReturn(mockConnection).anyTimes();
+        EasyMock.expect(mockContext.getDatabaseProductName()).andReturn(productName).anyTimes();
+        EasyMock.expect(mockContext.getDatabaseVersion()).andReturn(version).anyTimes();
         EasyMock.expect(mockContext.getIdentifierQuoteString()).andReturn("quoteString").anyTimes();
 
-        EasyMock.replay(mockMetaData, mockConnection, mockContext);
+        EasyMock.replay(mockContext);
     }
 }

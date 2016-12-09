@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.jdbc.dialects;
 
+import static org.apache.metamodel.jdbc.JdbcDataContext.DATABASE_PRODUCT_SQLSERVER;
+
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -34,7 +36,7 @@ import org.apache.metamodel.util.DateUtils;
 public class SQLServerQueryRewriter extends OffsetFetchQueryRewriter {
 
     public SQLServerQueryRewriter(JdbcDataContext dataContext) {
-        super(dataContext);
+        super(dataContext, 11);
     }
 
     /**

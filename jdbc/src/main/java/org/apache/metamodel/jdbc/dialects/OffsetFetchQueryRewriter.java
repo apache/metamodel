@@ -18,16 +18,8 @@
  */
 package org.apache.metamodel.jdbc.dialects;
 
-import static org.apache.metamodel.jdbc.JdbcDataContext.DATABASE_PRODUCT_ORACLE;
-import static org.apache.metamodel.jdbc.JdbcDataContext.DATABASE_PRODUCT_SQLSERVER;
-
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.query.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Query rewriter for databases that support OFFSET and FETCH keywords for max
@@ -35,32 +27,13 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class OffsetFetchQueryRewriter extends DefaultQueryRewriter {
 
-    private static final Logger logger = LoggerFactory.getLogger(OffsetFetchQueryRewriter.class);
-    private String databaseName;
-    private int databaseVersion;
+    private final String databaseProductName;
+    private final int databaseSupportedVersion;
 
-    public OffsetFetchQueryRewriter(JdbcDataContext dataContext) {
+    public OffsetFetchQueryRewriter(JdbcDataContext dataContext, int minSupportedVersion) {
         super(dataContext);
-        DatabaseMetaData metaData;
-        try {
-            metaData = dataContext.getConnection().getMetaData();
-            String version = "";
-            if(metaData != null) {
-                databaseName = metaData.getDatabaseProductName();
-                version = metaData.getDatabaseProductVersion();
-            }
-            int firstDot = -1;
-            if(version != null) {
-                firstDot = version.indexOf('.');
-            }
-            if(firstDot >= 0 && version != null) {
-                databaseVersion = Integer.valueOf(version.substring(0, firstDot));
-            } else {
-                databaseVersion = 0;
-            }
-        } catch (SQLException e) {
-            logger.error("Problem to get a metadatada of DB connection.", e);
-        }
+        databaseProductName = dataContext.getDatabaseProductName();
+        databaseSupportedVersion = minSupportedVersion;
     }
 
     @Override
@@ -82,27 +55,14 @@ public abstract class OffsetFetchQueryRewriter extends DefaultQueryRewriter {
     @Override
     public String rewriteQuery(Query query) {
         String queryString = super.rewriteQuery(query);
-        if(isSupportedDatabase()) {
+        if(isSupportedDatabase(databaseProductName, databaseSupportedVersion)) {
             Integer maxRows = query.getMaxRows();
             Integer firstRow = query.getFirstRow();
             if (maxRows != null && firstRow != null) {
                 queryString = queryString + " OFFSET " + (firstRow-1) + " ROWS FETCH NEXT " + maxRows + " ROWS ONLY";
             }
         }
-
         return queryString;
     }
 
-    private boolean isSupportedDatabase() {
-
-        if(databaseName.equals(DATABASE_PRODUCT_SQLSERVER) && databaseVersion >= 11) {
-            return true;
-        }
-
-        if(databaseName.equals(DATABASE_PRODUCT_ORACLE) && databaseVersion >= 12) {
-            return true;
-        }
-
-        return false;
-    }
 }

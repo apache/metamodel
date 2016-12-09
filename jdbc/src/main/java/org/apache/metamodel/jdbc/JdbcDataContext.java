@@ -112,6 +112,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
      */
     private IQueryRewriter _queryRewriter;
     private final String _databaseProductName;
+    private final String _databaseVersion;
 
     /**
      * There are some confusion as to the definition of catalogs and schemas.
@@ -183,6 +184,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         boolean supportsBatchUpdates = false;
         String identifierQuoteString = null;
         String databaseProductName = null;
+        String databaseVersion = null;
         boolean usesCatalogsAsSchemas = false;
 
         final Connection con = getConnection();
@@ -210,8 +212,9 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             usesCatalogsAsSchemas = usesCatalogsAsSchemas(metaData);
             try {
                 databaseProductName = metaData.getDatabaseProductName();
+                databaseVersion = metaData.getDatabaseProductVersion();
             } catch (SQLException e) {
-                logger.warn("Could not retrieve database product name: " + e.getMessage());
+                logger.warn("Could not retrieve metadata: " + e.getMessage());
             }
         } catch (SQLException e) {
             logger.debug("Unexpected exception during JdbcDataContext initialization", e);
@@ -219,6 +222,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             closeIfNecessary(con);
         }
         _databaseProductName = databaseProductName;
+        _databaseVersion = databaseVersion;
         logger.debug("Database product name: {}", _databaseProductName);
         if (DATABASE_PRODUCT_MYSQL.equals(_databaseProductName)) {
             setQueryRewriter(new MysqlQueryRewriter(this));
@@ -571,7 +575,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
 
         // Retrieve catalogs
         logger.debug("Retrieving catalogs");
-        List<String> catalogs = new ArrayList<String>();
+        List<String> catalogs = new ArrayList<>();
         try {
             rs = metaData.getCatalogs();
             while (rs.next()) {
@@ -754,7 +758,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     private Set<String> getSchemaSQLServerNames(DatabaseMetaData metaData) throws SQLException {
         // Distinct schema names. metaData.getTables() is a denormalized
         // resultset
-        Set<String> schemas = new HashSet<String>();
+        Set<String> schemas = new HashSet<>();
         ResultSet rs = metaData.getTables(_catalogName, null, null, JdbcUtils.getTableTypesAsStrings(_tableTypes));
         while (rs.next()) {
             schemas.add(rs.getString("TABLE_SCHEM"));
@@ -783,7 +787,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         Connection connection = getConnection();
         try {
             DatabaseMetaData metaData = connection.getMetaData();
-            Collection<String> result = new ArrayList<String>();
+            Collection<String> result = new ArrayList<>();
 
             if (DATABASE_PRODUCT_SQLSERVER.equals(_databaseProductName)) {
                 result = getSchemaSQLServerNames(metaData);
@@ -886,5 +890,13 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
 
     public String getCatalogName() {
         return _catalogName;
+    }
+
+    public String getDatabaseProductName() {
+        return _databaseProductName;
+    }
+
+    public String getDatabaseVersion() {
+        return _databaseVersion;
     }
 }
