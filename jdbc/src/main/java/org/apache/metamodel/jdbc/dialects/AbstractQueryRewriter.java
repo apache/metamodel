@@ -461,7 +461,7 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
         return resultSet.getObject(columnIndex);
     }
 
-    protected boolean isSupportedDatabase(String databaseProductName, int databaseVersion) {
+    protected boolean isSupportedVersion(String databaseProductName, int databaseVersion) {
 
         if(databaseProductName.equals(_dataContext.getDatabaseProductName())
                 && databaseVersion <= databaseVersionToInt(_dataContext.getDatabaseVersion())) {

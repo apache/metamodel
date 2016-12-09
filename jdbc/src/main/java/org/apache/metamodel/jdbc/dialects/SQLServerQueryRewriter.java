@@ -35,8 +35,10 @@ import org.apache.metamodel.util.DateUtils;
 
 public class SQLServerQueryRewriter extends OffsetFetchQueryRewriter {
 
+    public static final int FIRST_FETCH_SUPPORTING_VERSION = 11;
+
     public SQLServerQueryRewriter(JdbcDataContext dataContext) {
-        super(dataContext, 11);
+        super(dataContext, FIRST_FETCH_SUPPORTING_VERSION);
     }
 
     /**

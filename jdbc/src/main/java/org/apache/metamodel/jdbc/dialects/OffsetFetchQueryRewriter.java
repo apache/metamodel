@@ -55,7 +55,7 @@ public abstract class OffsetFetchQueryRewriter extends DefaultQueryRewriter {
     @Override
     public String rewriteQuery(Query query) {
         String queryString = super.rewriteQuery(query);
-        if(isSupportedDatabase(databaseProductName, databaseSupportedVersion)) {
+        if(isSupportedVersion(databaseProductName, databaseSupportedVersion)) {
             Integer maxRows = query.getMaxRows();
             Integer firstRow = query.getFirstRow();
             if (maxRows != null && firstRow != null) {

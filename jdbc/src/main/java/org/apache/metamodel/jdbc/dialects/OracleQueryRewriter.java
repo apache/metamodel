@@ -29,8 +29,10 @@ import org.apache.metamodel.schema.ColumnType;
  */
 public class OracleQueryRewriter extends OffsetFetchQueryRewriter {
 
+    public static final int FIRST_FETCH_SUPPORTING_VERSION = 12;
+
     public OracleQueryRewriter(JdbcDataContext dataContext) {
-        super(dataContext, 11);
+        super(dataContext, FIRST_FETCH_SUPPORTING_VERSION);
     }
 
     @Override
