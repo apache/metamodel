@@ -464,15 +464,16 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
     protected boolean isSupportedVersion(String databaseProductName, int databaseVersion) {
 
         if(databaseProductName.equals(_dataContext.getDatabaseProductName())
-                && databaseVersion <= databaseVersionToInt(_dataContext.getDatabaseVersion())) {
+                && databaseVersion <= getDatabaseMajorVersion(_dataContext.getDatabaseVersion())) {
             return true;
         }
         return false;
     }
 
-    private int databaseVersionToInt(String version) {
+    private int getDatabaseMajorVersion(String version) {
         int firstDot = -1;
         if(version != null) {
+            version = version.replaceAll("[^0-9.]+", "");
             firstDot = version.indexOf('.');
         }
         if(firstDot >= 0) {

@@ -41,7 +41,7 @@ public class OracleQueryRewriterTest {
 
     @BeforeClass
     public static void initMocks() throws SQLException {
-        setMetaData(DATABASE_PRODUCT_ORACLE, "12.1.1.1");
+        setMetaData(DATABASE_PRODUCT_ORACLE, "R12.1.1.1");
     }
 
     @Test
