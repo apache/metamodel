@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.jdbc.dialects;
 
-import static org.apache.metamodel.jdbc.JdbcDataContext.DATABASE_PRODUCT_SQLSERVER;
-
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -55,7 +53,7 @@ public class SQLServerQueryRewriter extends OffsetFetchQueryRewriter {
         String result = super.rewriteSelectClause(query, selectClause);
 
         Integer maxRows = query.getMaxRows();
-        if (maxRows != null && !result.contains("FETCH")) {
+        if (maxRows != null) {
             if (query.getSelectClause().isDistinct()) {
                 result = "SELECT DISTINCT TOP " + maxRows + " " + result.substring("SELECT DISTINCT ".length());
             } else {

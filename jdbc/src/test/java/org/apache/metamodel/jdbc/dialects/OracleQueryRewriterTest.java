@@ -65,21 +65,21 @@ public class OracleQueryRewriterTest {
         final String where = "x > 1";
 
         Query query = new Query();
-        query.from(table);
+        query.from(table).orderBy("id");
         final String queryWithoutBoth = query.toSql();
-        Assert.assertEquals("Original SQL is not correctly generated.", " FROM table", queryWithoutBoth);
+        Assert.assertEquals("Original SQL is not correctly generated.", " FROM table ORDER BY id ASC", queryWithoutBoth);
         final String queryWithoutBothRewritten = rewriter.rewriteQuery(query);
         Assert.assertEquals("There shouldn't be OFFSET-FETCH clause.", queryWithoutBoth, queryWithoutBothRewritten);
 
         query.setFirstRow(offset);
         final String queryWithoutMax = query.toSql();
-        Assert.assertEquals("Original SQL is not correctly generated.", " FROM table", queryWithoutMax);
+        Assert.assertEquals("Original SQL is not correctly generated.", " FROM table ORDER BY id ASC", queryWithoutMax);
         final String queryWithoutMaxRewritten = rewriter.rewriteQuery(query);
         Assert.assertEquals("There shouldn't be OFFSET-FETCH clause.", queryWithoutMax, queryWithoutMaxRewritten);
 
         query.setMaxRows(rows).where(where);
         final String originalQuery = query.toSql();
-        Assert.assertEquals("Original SQL is not correctly generated.", " FROM table WHERE x > 1", originalQuery);
+        Assert.assertEquals("Original SQL is not correctly generated.", " FROM table WHERE x > 1 ORDER BY id ASC", originalQuery);
 
         String rewrittenQuery = rewriter.rewriteQuery(query);
         final String offsetFetchClause = " OFFSET " + (offset-1) + " ROWS FETCH NEXT " + rows + " ROWS ONLY";

@@ -58,7 +58,8 @@ public abstract class OffsetFetchQueryRewriter extends DefaultQueryRewriter {
         if(isSupportedVersion(databaseProductName, databaseSupportedVersion)) {
             Integer maxRows = query.getMaxRows();
             Integer firstRow = query.getFirstRow();
-            if (maxRows != null && firstRow != null) {
+            if (maxRows != null && firstRow != null && queryString.indexOf("ORDER BY") >= 0 ) {
+                queryString = queryString.replaceAll("TOP [0-9]+", "");
                 queryString = queryString + " OFFSET " + (firstRow-1) + " ROWS FETCH NEXT " + maxRows + " ROWS ONLY";
             }
         }
