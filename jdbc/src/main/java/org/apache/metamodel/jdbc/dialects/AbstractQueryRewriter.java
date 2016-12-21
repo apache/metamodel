@@ -460,4 +460,26 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
         }
         return resultSet.getObject(columnIndex);
     }
+
+    protected boolean isSupportedVersion(String databaseProductName, int databaseVersion) {
+
+        if(databaseProductName.equals(_dataContext.getDatabaseProductName())
+                && databaseVersion <= getDatabaseMajorVersion(_dataContext.getDatabaseVersion())) {
+            return true;
+        }
+        return false;
+    }
+
+    private int getDatabaseMajorVersion(String version) {
+        int firstDot = -1;
+        if(version != null) {
+            version = version.replaceAll("[^0-9.]+", "");
+            firstDot = version.indexOf('.');
+        }
+        if(firstDot >= 0) {
+            return Integer.valueOf(version.substring(0, firstDot));
+        } else {
+            return 0;
+        }
+    }
 }

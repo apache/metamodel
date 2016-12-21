@@ -18,8 +18,14 @@
  */
 package org.apache.metamodel.dialects;
 
+import static org.apache.metamodel.jdbc.JdbcDataContext.DATABASE_PRODUCT_SQLSERVER;
+
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+
 import junit.framework.TestCase;
 
+import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.jdbc.dialects.SQLServerQueryRewriter;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
@@ -31,12 +37,13 @@ import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.util.TimeComparator;
+import org.easymock.EasyMock;
 
 public class SQLServerQueryRewriterTest extends TestCase {
 
     private MutableTable table;
     private MutableColumn column;
-    private SQLServerQueryRewriter qr = new SQLServerQueryRewriter(null);
+    private SQLServerQueryRewriter qr;
 
     @Override
     protected void setUp() throws Exception {
@@ -47,6 +54,14 @@ public class SQLServerQueryRewriterTest extends TestCase {
         column = new MutableColumn("bar");
         column.setQuote("\"");
         column.setTable(table);
+
+        final JdbcDataContext mockContext = EasyMock.createMock(JdbcDataContext.class);
+        EasyMock.expect(mockContext.getDatabaseProductName()).andReturn(DATABASE_PRODUCT_SQLSERVER).anyTimes();
+        EasyMock.expect(mockContext.getDatabaseVersion()).andReturn("12.1.1.1").anyTimes();
+        EasyMock.expect(mockContext.getIdentifierQuoteString()).andReturn("quoteString").anyTimes();
+
+        EasyMock.replay(mockContext);
+        qr = new SQLServerQueryRewriter(mockContext);
     }
 
     public void testRewriteColumnTypeDouble() throws Exception {

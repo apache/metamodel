@@ -31,15 +31,12 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.DateUtils;
 
-public class SQLServerQueryRewriter extends DefaultQueryRewriter {
+public class SQLServerQueryRewriter extends OffsetFetchQueryRewriter {
+
+    public static final int FIRST_FETCH_SUPPORTING_VERSION = 11;
 
     public SQLServerQueryRewriter(JdbcDataContext dataContext) {
-        super(dataContext);
-    }
-
-    @Override
-    public boolean isMaxRowsSupported() {
-        return true;
+        super(dataContext, FIRST_FETCH_SUPPORTING_VERSION);
     }
 
     /**

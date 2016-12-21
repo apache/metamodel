@@ -1,5 +1,6 @@
 ### Apache MetaModel 4.5.5
 
+ * [METAMODEL-1132] - Support native paging on SQL Server and Oracle database.
  * [METAMODEL-1128] - Fixed bug pertaining to ElasticSearch REST data set scrolling.
  * [METAMODEL-1118] - Fixed bug pertaining to cloning of FilterItem.LogicalOperator in compiled queries.
  * [METAMODEL-1111] - Added WHERE rewrite for Oracle when empty strings are considered as NULL.
