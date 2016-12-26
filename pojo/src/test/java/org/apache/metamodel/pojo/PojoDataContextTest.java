@@ -18,27 +18,37 @@
  */
 package org.apache.metamodel.pojo;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import junit.framework.TestCase;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.create.CreateTable;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.insert.InsertInto;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class PojoDataContextTest extends TestCase {
+public class PojoDataContextTest {
 
+    @Test
     public void testExampleScenario() throws Exception {
         Collection<Person> persons = new ArrayList<Person>();
         persons.add(new Person("Bono", 42));
@@ -64,13 +74,14 @@ public class PojoDataContextTest extends TestCase {
 
         DataSet dataSet = dc.query().from("persons").innerJoin("titles").on("name", "name").selectAll().execute();
 
-        assertEquals("[persons.age, persons.name, titles.name, titles.title]",
-                Arrays.toString(dataSet.getSelectItems()));
+        assertEquals("[persons.age, persons.name, titles.name, titles.title]", Arrays.toString(dataSet
+                .getSelectItems()));
         assertTrue(dataSet.next());
         assertEquals("Row[values=[42, Elvis Presley, Elvis Presley, The King]]", dataSet.getRow().toString());
         assertFalse(dataSet.next());
     }
 
+    @Test
     public void testScenarioWithMap() throws Exception {
         final SimpleTableDef tableDef = new SimpleTableDef("bar", new String[] { "col1", "col2", "col3" },
                 new ColumnType[] { ColumnType.VARCHAR, ColumnType.INTEGER, ColumnType.BOOLEAN });
@@ -84,6 +95,7 @@ public class PojoDataContextTest extends TestCase {
         runScenario(tableDataProvider);
     }
 
+    @Test
     public void testScenarioWithArrays() throws Exception {
         final SimpleTableDef tableDef = new SimpleTableDef("bar", new String[] { "col1", "col2", "col3" },
                 new ColumnType[] { ColumnType.VARCHAR, ColumnType.INTEGER, ColumnType.BOOLEAN });
@@ -97,6 +109,7 @@ public class PojoDataContextTest extends TestCase {
         runScenario(tableDataProvider);
     }
 
+    @Test
     public void testScenarioWithObjects() throws Exception {
         final Collection<FoobarBean> collection = new ArrayList<FoobarBean>();
         collection.add(new FoobarBean("2", 1000, true));
@@ -107,6 +120,60 @@ public class PojoDataContextTest extends TestCase {
         final TableDataProvider<?> tableDataProvider = new ObjectTableDataProvider<FoobarBean>("bar", FoobarBean.class,
                 collection);
         runScenario(tableDataProvider);
+    }
+
+    @Test
+    public void testThreadSafety() throws Exception {
+        final PojoDataContext dataContext = new PojoDataContext();
+        dataContext.executeUpdate(new CreateTable(dataContext.getDefaultSchema(), "tbl").withColumn("foo").ofType(
+                ColumnType.STRING));
+
+        final Table table = dataContext.getTableByQualifiedLabel("tbl");
+
+        final AtomicReference<Exception> exception = new AtomicReference<Exception>();
+
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final Random random = new Random();
+                    for (int i = 0; i < 50; i++) {
+                        dataContext.executeUpdate(new InsertInto(table).value("foo", "test" + random.nextInt(1000)));
+                        try (final DataSet dataSet = dataContext.query().from(table).selectAll().execute()) {
+                            while (dataSet.next()) {
+                                final Object value = dataSet.getRow().getValue(0);
+                                Assert.assertNotNull(value);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    exception.set(e);
+                }
+            }
+        };
+
+        // start four threads, doing the same write+read stuff
+        final Thread t1 = new Thread(runnable);
+        final Thread t2 = new Thread(runnable);
+        final Thread t3 = new Thread(runnable);
+        final Thread t4 = new Thread(runnable);
+        t1.start();
+        t2.start();
+        t3.start();
+        t4.start();
+
+        t1.join();
+        t2.join();
+        t3.join();
+        t4.join();
+
+        assertNull(exception.get());
+
+        final DataSet dataSet = dataContext.query().from(table).selectCount().execute();
+        assertTrue(dataSet.next());
+        final Object count = dataSet.getRow().getValue(0);
+        assertEquals("200", count.toString());
+        dataSet.close();
     }
 
     private void runScenario(TableDataProvider<?> tableDataProvider) {
@@ -171,12 +238,12 @@ public class PojoDataContextTest extends TestCase {
         Query qUnordered = dc.query().from("bar").select("col1").toQuery().selectDistinct();
         ds = dc.executeQuery(qUnordered);
         assertTrue(ds.next());
-        //Check both possibilities for the order, because not for certain
-        if(ds.getRow().toString().equals("Row[values=[2]]")){
+        // Check both possibilities for the order, because not for certain
+        if (ds.getRow().toString().equals("Row[values=[2]]")) {
             assertEquals("Row[values=[2]]", ds.getRow().toString());
             assertTrue(ds.next());
             assertEquals("Row[values=[3]]", ds.getRow().toString());
-        }else{
+        } else {
             assertEquals("Row[values=[3]]", ds.getRow().toString());
             assertTrue(ds.next());
             assertEquals("Row[values=[2]]", ds.getRow().toString());

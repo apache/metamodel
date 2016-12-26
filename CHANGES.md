@@ -1,11 +1,15 @@
+### Apache MetaModel 4.5.6
+
+ * [METAMODEL-1133] - Made PojoDataContext thread-safe.
+ * [METAMODEL-1132] - Support native paging on SQL Server and Oracle database.
+
 ### Apache MetaModel 4.5.5
 
- * [METAMODEL-1132] - Support native paging on SQL Server and Oracle database.
  * [METAMODEL-1128] - Fixed bug pertaining to ElasticSearch REST data set scrolling.
  * [METAMODEL-1118] - Fixed bug pertaining to cloning of FilterItem.LogicalOperator in compiled queries.
  * [METAMODEL-1111] - Added WHERE rewrite for Oracle when empty strings are considered as NULL.
- * [METAMODEL-1122] - Optimized the way the Cassandra module executes primary key lookup queries.
- * [METAMODEL-1109] - Fixed diacritics/encoding issue with Fixed Width reader.
+ * [METAMODEL-1122] - Optimized the way the Cassandra module executes primary key lookup queries.
+ * [METAMODEL-1109] - Fixed diacritics/encoding issue with Fixed Width reader.
  * [METAMODEL-1115] - Added support for passing your own PartnerConnection object to the Salesforce.com connector.
  * [METAMODEL-1113] - Fixed support for ColumnNamingStrategy in CSV connector.
  * [METAMODEL-1114] - Added support for ColumnNamingStrategy in EBCDIC connector.

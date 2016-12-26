@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -43,7 +44,7 @@ public final class ObjectTableDataProvider<E> implements TableDataProvider<E> {
     private static final long serialVersionUID = 1L;
 
     private final String _tableName;
-    private final Collection<E> _collection;
+    private final CopyOnWriteArrayList<E> _collection;
     private final Class<E> _class;
     private final SimpleTableDef _tableDef;
     private final Map<String, Class<?>> _fieldTypes;
@@ -58,7 +59,7 @@ public final class ObjectTableDataProvider<E> implements TableDataProvider<E> {
 
     public ObjectTableDataProvider(String tableName, Class<E> cls, Collection<E> collection) {
         _tableName = tableName;
-        _collection = collection;
+        _collection = new CopyOnWriteArrayList<>(collection);
         _class = cls;
         _fieldTypes = new HashMap<String, Class<?>>();
         _tableDef = createTableDef();
@@ -72,6 +73,11 @@ public final class ObjectTableDataProvider<E> implements TableDataProvider<E> {
     @Override
     public Iterator<E> iterator() {
         return _collection.iterator();
+    }
+    
+    @Override
+    public void remove(E next) {
+        _collection.remove(next);
     }
 
     @Override

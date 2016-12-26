@@ -41,7 +41,6 @@ final class PojoDataSet<E> extends AbstractDataSet {
     public PojoDataSet(TableDataProvider<E> pojoTable, SelectItem[] selectItems) {
         super(selectItems);
         _pojoTable = pojoTable;
-
         _iterator = _pojoTable.iterator();
     }
 
@@ -55,7 +54,7 @@ final class PojoDataSet<E> extends AbstractDataSet {
             return false;
         }
     }
-
+    
     @Override
     public Row getRow() {
         final int size = getHeader().size();
@@ -74,6 +73,6 @@ final class PojoDataSet<E> extends AbstractDataSet {
      * Used by DELETE statements to delete a record.
      */
     protected void remove() {
-        _iterator.remove();
+        _pojoTable.remove(_next);
     }
 }

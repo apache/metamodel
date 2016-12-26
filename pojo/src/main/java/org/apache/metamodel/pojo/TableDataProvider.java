@@ -35,4 +35,6 @@ public interface TableDataProvider<E> extends HasName, Iterable<E>, Serializable
     public Object getValue(String column, E record);
 
     public void insert(Map<String, Object> recordData);
+
+    public void remove(E next);
 }

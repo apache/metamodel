@@ -147,7 +147,6 @@ public final class FileHelper {
                 int unread;
 
                 // auto-detect byte-order-mark
-                @SuppressWarnings("resource")
                 final PushbackInputStream pushbackInputStream = new PushbackInputStream(inputStream, bom.length);
                 final int n = pushbackInputStream.read(bom, 0, bom.length);
 

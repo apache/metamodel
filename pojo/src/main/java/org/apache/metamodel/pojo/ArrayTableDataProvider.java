@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.metamodel.util.SimpleTableDef;
 
@@ -33,11 +34,11 @@ public class ArrayTableDataProvider implements TableDataProvider<Object[]> {
 
     private static final long serialVersionUID = 1L;
     private final SimpleTableDef _tableDef;
-    private final Collection<Object[]> _arrays;
+    private final CopyOnWriteArrayList<Object[]> _arrays;
 
     public ArrayTableDataProvider(SimpleTableDef tableDef, Collection<Object[]> arrays) {
         _tableDef = tableDef;
-        _arrays = arrays;
+        _arrays = new CopyOnWriteArrayList<>(arrays);
     }
 
     @Override
@@ -71,4 +72,8 @@ public class ArrayTableDataProvider implements TableDataProvider<Object[]> {
         _arrays.add(record);
     }
 
+    @Override
+    public void remove(Object[] next) {
+        _arrays.remove(next);
+    }
 }

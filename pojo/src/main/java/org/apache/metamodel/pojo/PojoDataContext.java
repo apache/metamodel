@@ -142,9 +142,7 @@ public class PojoDataContext extends QueryPostprocessDataContext implements Upda
     @Override
     public void executeUpdate(UpdateScript update) {
         PojoUpdateCallback updateCallback = new PojoUpdateCallback(this);
-        synchronized (this) {
-            update.run(updateCallback);
-        }
+        update.run(updateCallback);
     }
 
     protected void addTableDataProvider(TableDataProvider<?> tableDataProvider) {

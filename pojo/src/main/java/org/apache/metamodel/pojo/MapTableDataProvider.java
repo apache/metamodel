@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.metamodel.util.SimpleTableDef;
 
@@ -34,11 +35,11 @@ public class MapTableDataProvider implements TableDataProvider<Map<String, ? ext
 
     private static final long serialVersionUID = 1L;
     private final SimpleTableDef _tableDef;
-    private final Collection<Map<String, ?>> _maps;
+    private final CopyOnWriteArrayList<Map<String, ?>> _maps;
 
     public MapTableDataProvider(SimpleTableDef tableDef, Collection<Map<String, ?>> maps) {
         _tableDef = tableDef;
-        _maps = maps;
+        _maps = new CopyOnWriteArrayList<>(maps);
     }
 
     @Override
@@ -64,5 +65,10 @@ public class MapTableDataProvider implements TableDataProvider<Map<String, ? ext
     @Override
     public void insert(Map<String, Object> recordData) {
         _maps.add(recordData);
+    }
+
+    @Override
+    public void remove(Map<String, ? extends Object> next) {
+        _maps.remove(next);
     }
 }
