@@ -21,32 +21,17 @@ package org.apache.metamodel.query;
 import java.io.Serializable;
 
 /**
- * Defines the types of operators that can be used in filters.
+ * Defines the negation of conditions in filters.
  *
  * @see FilterItem
  */
-public interface OperatorType extends Serializable {
+public interface NegationOperator extends Serializable {
 
-    public static final OperatorType EQUALS_TO = new OperatorTypeImpl("=", false);
+    public static final NegationOperator NONE = new NegationOperatorImpl("", false);
 
-    public static final OperatorType DIFFERENT_FROM = new OperatorTypeImpl("<>", false);
+    public static final NegationOperator NOT = new NegationOperatorImpl("NOT", true);
 
-    public static final OperatorType LIKE = new OperatorTypeImpl("LIKE", true);
-
-    public static final OperatorType GREATER_THAN = new OperatorTypeImpl(">", false);
-
-    public static final OperatorType GREATER_THAN_OR_EQUAL = new OperatorTypeImpl(">=", false);
-
-    public static final OperatorType LESS_THAN = new OperatorTypeImpl("<", false);
-
-    public static final OperatorType LESS_THAN_OR_EQUAL = new OperatorTypeImpl("<=", false);
-
-    public static final OperatorType IN = new OperatorTypeImpl("IN", true);
-
-    public static final OperatorType NOT_IN = new OperatorTypeImpl("NOT IN", true);
-
-    public static final OperatorType[] BUILT_IN_OPERATORS = new OperatorType[] { EQUALS_TO, DIFFERENT_FROM, LIKE,
-            GREATER_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN, LESS_THAN_OR_EQUAL, IN, NOT_IN };
+    public static final NegationOperator[] BUILT_IN_OPERATORS = new NegationOperator[] { NONE, NOT };
 
 /**
      * Determines if this operator requires a space delimitor. Operators that are written using letters usually require

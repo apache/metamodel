@@ -428,6 +428,22 @@ public class FilterItemTest extends TestCase {
         assertEquals("foo IN ()", new FilterItem(selectItem, OperatorType.IN, operand).toSql());
     }
 
+    public void testNegatedCondition() {
+        SelectItem selectItem = new SelectItem("column", "c");
+
+        FilterItem positiveFilter = new FilterItem(selectItem, NegationOperator.NONE, OperatorType.EQUALS_TO, "a");
+        FilterItem positiveFilter2 = new FilterItem(selectItem, OperatorType.EQUALS_TO, "a");
+        FilterItem negativeFilter = new FilterItem(selectItem, NegationOperator.NOT, OperatorType.EQUALS_TO, "a");
+        FilterItem composedFilter = new FilterItem(LogicalOperator.AND, NegationOperator.NOT, positiveFilter, negativeFilter);
+        FilterItem composedFilter2 = new FilterItem(LogicalOperator.AND, positiveFilter, negativeFilter);
+
+        assertEquals("c = 'a'", positiveFilter.toSql());
+        assertEquals("NOT c = 'a'", negativeFilter.toSql());
+        assertEquals("NOT (c = 'a' AND NOT c = 'a')", composedFilter.toSql());
+        assertEquals("c = 'a'", positiveFilter2.toSql());
+        assertEquals("(c = 'a' AND NOT c = 'a')", composedFilter2.toSql());
+    }
+
     public void testInOperandEvaluate() throws Exception {
         SelectItem selectItem = new SelectItem(new MutableColumn("foo", ColumnType.VARCHAR, null, 1, null, null, true,
                 null, false, null));
