@@ -428,7 +428,22 @@ public class FilterItemTest extends TestCase {
         assertEquals("foo IN ()", new FilterItem(selectItem, OperatorType.IN, operand).toSql());
     }
 
-    public void testNegatedCondition() {
+    public void testNotInOperandSql() throws Exception {
+        SelectItem selectItem = new SelectItem("foo", "foo");
+        Object operand = new String[] { "foo", "bar" };
+        assertEquals("foo NOT IN ('foo' , 'bar')", new FilterItem(selectItem, OperatorType.NOT_IN, operand).toSql());
+
+        operand = Arrays.asList("foo", "bar", "baz");
+        assertEquals("foo NOT IN ('foo' , 'bar' , 'baz')", new FilterItem(selectItem, OperatorType.NOT_IN, operand).toSql());
+
+        operand = "foo";
+        assertEquals("foo NOT IN ('foo')", new FilterItem(selectItem, OperatorType.NOT_IN, operand).toSql());
+
+        operand = new ArrayList<Object>();
+        assertEquals("foo NOT IN ()", new FilterItem(selectItem, OperatorType.NOT_IN, operand).toSql());
+    }
+
+    public void testNegatedCondition() throws Exception {
         SelectItem selectItem = new SelectItem("column", "c");
 
         FilterItem positiveFilter = new FilterItem(selectItem, NegationOperator.NONE, OperatorType.EQUALS_TO, "a");
