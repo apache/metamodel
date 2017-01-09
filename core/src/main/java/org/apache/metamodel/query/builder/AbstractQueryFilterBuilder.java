@@ -57,6 +57,22 @@ abstract class AbstractQueryFilterBuilder<B> extends GroupedQueryBuilderCallback
     }
 
     @Override
+    public B not_in(Collection<?> values) {
+        return _filterBuilder.not_in(values);
+    }
+
+    @Override
+    public B not_in(Number... numbers) {
+        return _filterBuilder.not_in(numbers);
+    }
+
+    @Override
+    public B not_in(String... strings) {
+        return _filterBuilder.not_in(strings);
+    }
+
+
+    @Override
     public B isNull() {
         return _filterBuilder.isNull();
     }
@@ -302,6 +318,11 @@ abstract class AbstractQueryFilterBuilder<B> extends GroupedQueryBuilderCallback
     @Override
     public B like(String string) {
         return _filterBuilder.like(string);
+    }
+
+    @Override
+    public B not_like(String string) {
+        return _filterBuilder.not_like(string);
     }
 
     @Override
