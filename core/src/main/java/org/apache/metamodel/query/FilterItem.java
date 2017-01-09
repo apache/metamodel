@@ -103,7 +103,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
             require("Can only use EQUALS or DIFFERENT_FROM operator with null-operand",
                     _operator == OperatorType.DIFFERENT_FROM || _operator == OperatorType.EQUALS_TO);
         }
-        if (_operator == OperatorType.LIKE) {
+        if (_operator == OperatorType.LIKE || _operator == OperatorType.NOT_LIKE) {
             ColumnType type = _selectItem.getColumn().getType();
             if (type != null) {
                 require("Can only use LIKE operator with strings", type.isLiteral()
@@ -253,7 +253,6 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
         }
 
         StringBuilder sb = new StringBuilder();
-
         if (_childItems == null) {
             sb.append(_selectItem.getSameQueryAlias(includeSchemaInColumnPaths));
 
@@ -376,6 +375,9 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
         } else if (_operator == OperatorType.LIKE) {
             WildcardPattern matcher = new WildcardPattern((String) operandValue, '%');
             return matcher.matches((String) selectItemValue);
+        } else if (_operator == OperatorType.NOT_LIKE) {
+            WildcardPattern matcher = new WildcardPattern((String) operandValue, '%');
+            return !matcher.matches((String) selectItemValue);
         } else if (_operator == OperatorType.IN) {
             Set<?> inValues = getInValues();
             return inValues.contains(selectItemValue);
