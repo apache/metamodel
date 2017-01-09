@@ -42,7 +42,6 @@ import org.apache.metamodel.util.WildcardPattern;
  * @see FilterClause
  * @see OperatorType
  * @see LogicalOperator
- * @see NegationOperator
  */
 public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRowFilter {
 
@@ -50,7 +49,6 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
 
     private Query _query;
     private final SelectItem _selectItem;
-    private final NegationOperator _negation;
     private final OperatorType _operator;
     private final Object _operand;
     private final List<FilterItem> _childItems;
@@ -61,10 +59,9 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
     /**
      * Private constructor, used for cloning
      */
-    private FilterItem(SelectItem selectItem, NegationOperator negation, OperatorType operator, Object operand,
-            List<FilterItem> orItems, String expression, LogicalOperator logicalOperator) {
+    private FilterItem(SelectItem selectItem, OperatorType operator, Object operand, List<FilterItem> orItems,
+                       String expression, LogicalOperator logicalOperator) {
         _selectItem = selectItem;
-        _negation = negation;
         _operator = operator;
         _operand = validateOperand(operand);
         _childItems = orItems;
@@ -81,22 +78,17 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
     }
 
     /**
-     * Creates a single filter item based on a SelectItem, a negation, an operator and an
+     * Creates a single filter item based on a SelectItem, an operator and an
      * operand.
      *
      * @param selectItem
      *            the selectItem to put constraints on, cannot be null
-     * @param negation
-     *            Negation of condition. If it's true
-     *            than NOT keyword is added to negate the whole expression.
      * @param operator
      *            The operator to use. Can be OperatorType.EQUALS_TO,
      *            OperatorType.DIFFERENT_FROM,
      *            OperatorType.GREATER_THAN,OperatorType.LESS_THAN
      *            OperatorType.GREATER_THAN_OR_EQUAL,
-     *            OperatorType.LESS_THAN_OR_EQUAL,
-     *            OperatorType.IN,
-     *            OperatorType.NOT_IN
+     *            OperatorType.LESS_THAN_OR_EQUAL
      * @param operand
      *            The operand. Can be a constant like null or a String, a
      *            Number, a Boolean, a Date, a Time, a DateTime. Or another
@@ -105,8 +97,8 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
      *             if the SelectItem is null or if the combination of operator
      *             and operand does not make sense.
      */
-    public FilterItem(SelectItem selectItem, NegationOperator negation, OperatorType operator, Object operand) throws IllegalArgumentException {
-        this(selectItem, negation, operator, operand, null, null, null);
+    public FilterItem(SelectItem selectItem, OperatorType operator, Object operand) throws IllegalArgumentException {
+        this(selectItem, operator, operand, null, null, null);
         if (_operand == null) {
             require("Can only use EQUALS or DIFFERENT_FROM operator with null-operand",
                     _operator == OperatorType.DIFFERENT_FROM || _operator == OperatorType.EQUALS_TO);
@@ -122,32 +114,6 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
     }
 
     /**
-     * Creates a single filter item based on a SelectItem, an operator and an
-     * operand.
-     *
-     * @param selectItem
-     *            the selectItem to put constraints on, cannot be null
-     * @param operator
-     *            The operator to use. Can be OperatorType.EQUALS_TO,
-     *            OperatorType.DIFFERENT_FROM,
-     *            OperatorType.GREATER_THAN,OperatorType.LESS_THAN
-     *            OperatorType.GREATER_THAN_OR_EQUAL,
-     *            OperatorType.LESS_THAN_OR_EQUAL,
-     *            OperatorType.IN,
-     *            OperatorType.NOT_IN
-     * @param operand
-     *            The operand. Can be a constant like null or a String, a
-     *            Number, a Boolean, a Date, a Time, a DateTime. Or another
-     *            SelectItem
-     * @throws IllegalArgumentException
-     *             if the SelectItem is null or if the combination of operator
-     *             and operand does not make sense.
-     */
-    public FilterItem(SelectItem selectItem, OperatorType operator, Object operand) throws IllegalArgumentException {
-        this(selectItem, null, operator, operand);
-    }
-
-    /**
      * Creates a single unvalidated filter item based on a expression.
      * Expression based filters are typically NOT datastore-neutral but are
      * available for special "hacking" needs.
@@ -160,7 +126,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
      *            "YEAR(my_date) = 2008".
      */
     public FilterItem(String expression) {
-        this(null, null, null, null, null, expression, null);
+        this(null, null, null, null, expression, null);
 
         require("Expression cannot be null", _expression != null);
     }
@@ -179,26 +145,6 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
 
     /**
      * Creates a compound filter item based on other filter items. Each provided
-     * filter item will be combined according to the {@link LogicalOperator} and
-     * the {@link NegationOperator}.
-     *
-     * @param logicalOperator
-     *            the logical operator to apply
-     * @param negation
-     *            Negation of condition. If it's true
-     *            than NOT keyword is added to negate the whole expression.
-     * @param items
-     *            a list of items to include in the composite
-     */
-    public FilterItem(LogicalOperator logicalOperator, NegationOperator negation, List<FilterItem> items) {
-        this(null, negation, null, null, items, null, logicalOperator);
-
-        require("Child items cannot be null", _childItems != null);
-        require("Child items cannot be empty", !_childItems.isEmpty());
-    }
-
-    /**
-     * Creates a compound filter item based on other filter items. Each provided
      * filter item will be combined according to the {@link LogicalOperator}.
      *
      * @param logicalOperator
@@ -207,24 +153,10 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
      *            a list of items to include in the composite
      */
     public FilterItem(LogicalOperator logicalOperator, List<FilterItem> items) {
-        this(logicalOperator, null, items);
-    }
+        this(null, null, null, items, null, logicalOperator);
 
-    /**
-     * Creates a compound filter item based on other filter items. Each provided
-     * filter item will be combined according to the {@link LogicalOperator} and
-     * the {@link NegationOperator}.
-     *
-     * @param logicalOperator
-     *            the logical operator to apply
-     * @param negation
-     *            Negation of condition. If it's true
-     *            than NOT keyword is added to negate the whole expression.
-     * @param items
-     *            an array of items to include in the composite
-     */
-    public FilterItem(LogicalOperator logicalOperator, NegationOperator negation, FilterItem... items) {
-        this(logicalOperator, negation, Arrays.asList(items));
+        require("Child items cannot be null", _childItems != null);
+        require("Child items cannot be empty", !_childItems.isEmpty());
     }
 
     /**
@@ -260,10 +192,6 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
 
     public SelectItem getSelectItem() {
         return _selectItem;
-    }
-
-    public NegationOperator getNegation() {
-        return _negation;
     }
 
     public OperatorType getOperator() {
@@ -325,10 +253,6 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
         }
 
         StringBuilder sb = new StringBuilder();
-
-        if(NegationOperator.NOT.equals(_negation)) {
-            sb.append("NOT ");
-        }
 
         if (_childItems == null) {
             sb.append(_selectItem.getSameQueryAlias(includeSchemaInColumnPaths));
@@ -503,7 +427,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
             selectItem = _selectItem.clone();
         }
 
-        return new FilterItem(selectItem, _negation, _operator, operand, orItems, _expression, _logicalOperator);
+        return new FilterItem(selectItem, _operator, operand, orItems, _expression, _logicalOperator);
     }
 
     public boolean isReferenced(Column column) {
