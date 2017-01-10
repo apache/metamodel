@@ -50,7 +50,7 @@ public class WhereBuilderImplTest extends TestCase {
 	}
 
 	public void testNotLike() throws Exception {
-		whereBuilder.eq(true).or(col2).not_like("%test%case%");
+		whereBuilder.eq(true).or(col2).notLike("%test%case%");
 
 		assertEquals(" WHERE (col1 = TRUE OR col2 NOT LIKE '%test%case%')",
 				query.toSql());
@@ -73,7 +73,7 @@ public class WhereBuilderImplTest extends TestCase {
 	}
 
 	public void testNotInStringArray() throws Exception {
-		whereBuilder.eq(true).or(col2).not_in("foo", "bar");
+		whereBuilder.eq(true).or(col2).notIn("foo", "bar");
 
 		assertEquals(" WHERE (col1 = TRUE OR col2 NOT IN ('foo' , 'bar'))",
 				query.toSql());
@@ -86,7 +86,7 @@ public class WhereBuilderImplTest extends TestCase {
 	}
 
 	public void testNotInNumberArray() throws Exception {
-		whereBuilder.eq(true).or(col2).not_in(3, 1);
+		whereBuilder.eq(true).or(col2).notIn(3, 1);
 
 		assertEquals(" WHERE (col1 = TRUE OR col2 NOT IN (3 , 1))", query.toSql());
 	}
@@ -101,7 +101,7 @@ public class WhereBuilderImplTest extends TestCase {
 
 	public void testNotInCollection() throws Exception {
 		Collection<?> col = Arrays.asList("foo", "bar");
-		whereBuilder.eq(true).or(col2).not_in(col);
+		whereBuilder.eq(true).or(col2).notIn(col);
 
 		assertEquals(" WHERE (col1 = TRUE OR col2 NOT IN ('foo' , 'bar'))",
 				query.toSql());

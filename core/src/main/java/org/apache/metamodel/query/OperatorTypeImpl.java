@@ -111,7 +111,7 @@ public class OperatorTypeImpl implements OperatorType {
                     return OperatorType.LESS_THAN_OR_EQUAL;
                 case "LIKE":
                     return OperatorType.LIKE;
-                case "NOT_LIKE":
+                case "NOT LIKE":
                     return OperatorType.NOT_LIKE;
             }
         }
