@@ -97,6 +97,7 @@ public class OperatorTypeImpl implements OperatorType {
                 case "=>":
                 case "GREATER_THAN_OR_EQUAL":
                     return OperatorType.GREATER_THAN_OR_EQUAL;
+                case "NOT_IN":
                 case "NOT IN":
                     return OperatorType.NOT_IN;
                 case "IN":
@@ -111,6 +112,7 @@ public class OperatorTypeImpl implements OperatorType {
                     return OperatorType.LESS_THAN_OR_EQUAL;
                 case "LIKE":
                     return OperatorType.LIKE;
+                case "NOT_LIKE":
                 case "NOT LIKE":
                     return OperatorType.NOT_LIKE;
             }
