@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.metamodel.dynamodb;
 
 import java.util.Iterator;
@@ -12,7 +30,7 @@ import org.apache.metamodel.schema.Column;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
 
-public class DynamoDbDataSet extends AbstractDataSet {
+class DynamoDbDataSet extends AbstractDataSet {
 
     private final Iterator<Map<String, AttributeValue>> _iterator;
     private Map<String, AttributeValue> _currentItem;
@@ -49,7 +67,7 @@ public class DynamoDbDataSet extends AbstractDataSet {
     }
 
     private Object toValue(AttributeValue a) {
-        if (a == null || a.isNULL()) {
+        if (a == null || Boolean.TRUE == a.isNULL()) {
             return null;
         }
         // dynamo is a bit funky this way ... it has a getter for each possible
