@@ -31,6 +31,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
+import com.amazonaws.services.dynamodbv2.model.CreateTableResult;
 import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 import com.amazonaws.services.dynamodbv2.model.KeyType;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
@@ -84,12 +85,17 @@ public class DynamoDbDataContextIntegrationTest {
         createTableRequest.setAttributeDefinitions(attributes);
         createTableRequest.setKeySchema(keySchema);
         createTableRequest.setProvisionedThroughput(new ProvisionedThroughput(5l, 5l));
+        final CreateTableResult createTableResult = client.createTable(createTableRequest);
 
-        client.createTable(createTableRequest);
-        
-        // TODO: Figure out how to properly wait for table to be ready
-        System.out.println("Waiting for table to be ready to use");
-        Thread.sleep(5000);
+        // await the table creation to be "done".
+        {
+            String tableStatus = createTableResult.getTableDescription().getTableStatus();
+            while (!"ACTIVE".equals(tableStatus)) {
+                System.out.println("Waiting for table status to be ACTIVE. Currently: " + tableStatus);
+                Thread.sleep(300);
+                tableStatus = client.describeTable(tableName).getTable().getTableStatus();
+            }
+        }
 
         client.putItem(tableName, createItem("id", "foo", "foundation", "Apache"));
         client.putItem(tableName, createItem("id", "bar", "project", "MetaModel"));
