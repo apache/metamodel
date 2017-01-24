@@ -30,7 +30,7 @@ import org.apache.metamodel.schema.Column;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
 
-class DynamoDbDataSet extends AbstractDataSet {
+final class DynamoDbDataSet extends AbstractDataSet {
 
     private final Iterator<Map<String, AttributeValue>> _iterator;
     private Map<String, AttributeValue> _currentItem;

@@ -26,6 +26,8 @@ import java.util.Map;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.schema.Column;
@@ -54,13 +56,28 @@ import com.amazonaws.services.dynamodbv2.model.TableDescription;
 /**
  * DataContext implementation for Amazon DynamoDB.
  */
-public class DynamoDbDataContext extends QueryPostprocessDataContext implements Closeable {
+public class DynamoDbDataContext extends QueryPostprocessDataContext implements UpdateableDataContext, Closeable {
+
+    /**
+     * System property key used for getting the read throughput capacity when
+     * creating new tables. Defaults to 5.
+     */
+    public static final String SYSTEM_PROPERTY_THROUGHPUT_READ_CAPACITY = "metamodel.dynamodb.throughput.capacity.read";
+
+    /**
+     * System property key used for getting the write throughput capacity when
+     * creating new tables. Defaults to 5.
+     */
+    public static final String SYSTEM_PROPERTY_THROUGHPUT_WRITE_CAPACITY = "metamodel.dynamodb.throughput.capacity.write";
 
     private static final Logger logger = LoggerFactory.getLogger(DynamoDbDataContext.class);
 
-    private static final String SCHEMA_NAME = "public";
+    /**
+     * The artificial schema name used by this DataContext.
+     */
+    public static final String SCHEMA_NAME = "public";
 
-    private final AmazonDynamoDB _client;
+    private final AmazonDynamoDB _dynamoDb;
     private final boolean _shutdownOnClose;
     private final SimpleTableDef[] _tableDefs;
 
@@ -81,15 +98,19 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
     }
 
     private DynamoDbDataContext(AmazonDynamoDB client, SimpleTableDef[] tableDefs, boolean shutdownOnClose) {
-        _client = client;
+        _dynamoDb = client;
         _tableDefs = (tableDefs == null ? new SimpleTableDef[0] : tableDefs);
         _shutdownOnClose = shutdownOnClose;
+    }
+
+    public AmazonDynamoDB getDynamoDb() {
+        return _dynamoDb;
     }
 
     @Override
     public void close() {
         if (_shutdownOnClose) {
-            _client.shutdown();
+            _dynamoDb.shutdown();
         }
     }
 
@@ -101,13 +122,13 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
         }
 
         final MutableSchema schema = new MutableSchema(getMainSchemaName());
-        final ListTablesResult tables = _client.listTables();
+        final ListTablesResult tables = _dynamoDb.listTables();
         final List<String> tableNames = tables.getTableNames();
         for (String tableName : tableNames) {
             final MutableTable table = new MutableTable(tableName, schema);
             schema.addTable(table);
 
-            final DescribeTableResult descripeTableResult = _client.describeTable(tableName);
+            final DescribeTableResult descripeTableResult = _dynamoDb.describeTable(tableName);
             final TableDescription tableDescription = descripeTableResult.getTable();
 
             // add primary keys
@@ -243,7 +264,7 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
         if (!whereItems.isEmpty()) {
             return null;
         }
-        return _client.describeTable(table.getName()).getTable().getItemCount();
+        return _dynamoDb.describeTable(table.getName()).getTable().getItemCount();
     }
 
     @Override
@@ -257,7 +278,12 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
         if (maxRows > 0) {
             scanRequest.setLimit(maxRows);
         }
-        final ScanResult result = _client.scan(scanRequest);
+        final ScanResult result = _dynamoDb.scan(scanRequest);
         return new DynamoDbDataSet(columns, result);
+    }
+
+    @Override
+    public void executeUpdate(UpdateScript update) {
+        update.run(new DynamoDbUpdateCallback(this));
     }
 }
