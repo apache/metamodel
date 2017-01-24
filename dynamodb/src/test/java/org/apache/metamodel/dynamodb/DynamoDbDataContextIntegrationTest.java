@@ -15,7 +15,10 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.SimpleTableDef;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
@@ -32,8 +35,11 @@ import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.CreateTableResult;
+import com.amazonaws.services.dynamodbv2.model.GlobalSecondaryIndex;
 import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 import com.amazonaws.services.dynamodbv2.model.KeyType;
+import com.amazonaws.services.dynamodbv2.model.Projection;
+import com.amazonaws.services.dynamodbv2.model.ProjectionType;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 
@@ -74,17 +80,27 @@ public class DynamoDbDataContextIntegrationTest {
     public void testScenario1() throws Exception {
         final String tableName = "MetaModel-" + UUID.randomUUID().toString();
 
+        final ProvisionedThroughput provisionedThroughput = new ProvisionedThroughput(5l, 5l);
+
         final Collection<AttributeDefinition> attributes = new ArrayList<>();
         attributes.add(new AttributeDefinition("id", ScalarAttributeType.S));
+        attributes.add(new AttributeDefinition("counter", ScalarAttributeType.N));
 
         final Collection<KeySchemaElement> keySchema = new ArrayList<>();
         keySchema.add(new KeySchemaElement("id", KeyType.HASH));
 
+        // CreateDateIndex
+        final GlobalSecondaryIndex globalSecondaryIndex = new GlobalSecondaryIndex().withIndexName("counter_index")
+                .withProvisionedThroughput(provisionedThroughput).withKeySchema(new KeySchemaElement()
+                        .withAttributeName("counter").withKeyType(KeyType.HASH)).withProjection(new Projection()
+                                .withProjectionType(ProjectionType.INCLUDE).withNonKeyAttributes("foundation"));
+
         final CreateTableRequest createTableRequest = new CreateTableRequest();
         createTableRequest.setTableName(tableName);
         createTableRequest.setAttributeDefinitions(attributes);
+        createTableRequest.setGlobalSecondaryIndexes(Arrays.asList(globalSecondaryIndex));
         createTableRequest.setKeySchema(keySchema);
-        createTableRequest.setProvisionedThroughput(new ProvisionedThroughput(5l, 5l));
+        createTableRequest.setProvisionedThroughput(provisionedThroughput);
         final CreateTableResult createTableResult = client.createTable(createTableRequest);
 
         // await the table creation to be "done".
@@ -97,26 +113,54 @@ public class DynamoDbDataContextIntegrationTest {
             }
         }
 
-        client.putItem(tableName, createItem("id", "foo", "foundation", "Apache"));
-        client.putItem(tableName, createItem("id", "bar", "project", "MetaModel"));
-        client.putItem(tableName, createItem("id", "baz", "url", "http://metamodel.apache.org"));
+        client.putItem(tableName, createItem("id", "foo", "counter", 1, "foundation", "Apache"));
+        client.putItem(tableName, createItem("id", "bar", "counter", 2, "project", "MetaModel"));
+        client.putItem(tableName, createItem("id", "baz", "counter", 3, "url", "http://metamodel.apache.org"));
+
+        final SimpleTableDef[] tableDefs = new SimpleTableDef[] { new SimpleTableDef(tableName, new String[] {
+                "counter", "project" }, new ColumnType[] { ColumnType.INTEGER, ColumnType.STRING }) };
 
         try {
-            try (final DynamoDbDataContext dc = new DynamoDbDataContext(client)) {
+            try (final DynamoDbDataContext dc = new DynamoDbDataContext(client, tableDefs)) {
 
                 final Table table = dc.getTableByQualifiedLabel(tableName);
                 assertEquals(tableName, table.getName());
 
                 // Right now we can only discover indexed columns
-                assertEquals("[id]", Arrays.toString(table.getColumnNames()));
+                assertEquals("[id, counter, project, foundation]", Arrays.toString(table.getColumnNames()));
 
-                try (final DataSet dataSet = dc.query().from(table).selectAll().orderBy("id").execute()) {
+                final Column idColumn = table.getColumnByName("id");
+                assertEquals(true, idColumn.isPrimaryKey());
+                assertEquals(true, idColumn.isIndexed());
+                assertEquals(ColumnType.STRING, idColumn.getType());
+                assertEquals("Primary index member ('HASH' type)", idColumn.getRemarks());
+
+                final Column counterColumn = table.getColumnByName("counter");
+                assertEquals(ColumnType.NUMBER, counterColumn.getType());
+                assertEquals(true, counterColumn.isIndexed());
+                assertEquals(false, counterColumn.isPrimaryKey());
+                assertEquals("counter_index member ('HASH' type)", counterColumn.getRemarks());
+
+                final Column projectColumn = table.getColumnByName("project");
+                assertEquals(ColumnType.STRING, projectColumn.getType());
+                assertEquals(false, projectColumn.isIndexed());
+                assertEquals(false, projectColumn.isPrimaryKey());
+                assertEquals(null, projectColumn.getRemarks());
+
+                final Column foundationColumn = table.getColumnByName("foundation");
+                assertEquals(null, foundationColumn.getType());
+                assertEquals(false, foundationColumn.isIndexed());
+                assertEquals(false, foundationColumn.isPrimaryKey());
+                assertEquals("counter_index non-key attribute", foundationColumn.getRemarks());
+
+                try (final DataSet dataSet = dc.query().from(table).select("id", "counter", "project").orderBy("id")
+                        .execute()) {
                     assertTrue(dataSet.next());
-                    assertEquals("Row[values=[bar]]", dataSet.getRow().toString());
+                    assertEquals("Row[values=[bar, 2, MetaModel]]", dataSet.getRow().toString());
                     assertTrue(dataSet.next());
-                    assertEquals("Row[values=[baz]]", dataSet.getRow().toString());
+                    assertEquals("Row[values=[baz, 3, null]]", dataSet.getRow().toString());
                     assertTrue(dataSet.next());
-                    assertEquals("Row[values=[foo]]", dataSet.getRow().toString());
+                    assertEquals("Row[values=[foo, 1, null]]", dataSet.getRow().toString());
                     assertFalse(dataSet.next());
                 }
             }
@@ -125,13 +169,22 @@ public class DynamoDbDataContextIntegrationTest {
         }
     }
 
-    private Map<String, AttributeValue> createItem(String... keyAndValues) {
+    // convenience method
+    private Map<String, AttributeValue> createItem(Object... keyAndValues) {
         final Map<String, AttributeValue> map = new HashMap<>();
-        for (int i = 0; i + 1 < keyAndValues.length; i++) {
-            final String key = keyAndValues[i];
-            final String value = keyAndValues[i + 1];
+        for (int i = 0; i < keyAndValues.length; i = i + 2) {
+            final String key = (String) keyAndValues[i];
+            final Object value = keyAndValues[i + 1];
             final AttributeValue attributeValue = new AttributeValue();
-            attributeValue.setS(value);
+            if (value == null) {
+                attributeValue.setNULL(true);
+            } else if (value instanceof Number) {
+                attributeValue.setN(value.toString());
+            } else if (value instanceof Boolean) {
+                attributeValue.setBOOL((Boolean) value);
+            } else {
+                attributeValue.setS(value.toString());
+            }
             map.put(key, attributeValue);
         }
         return map;
