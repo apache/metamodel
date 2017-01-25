@@ -82,8 +82,7 @@ public class DynamoDbDataContextIntegrationTest {
 
         Assume.assumeNotNull(accessKey, secretKey);
 
-        final Regions region = Regions.fromName(props.getProperty("dynamodb.region", Regions.getCurrentRegion()
-                .getName()));
+        final Regions region = Regions.fromName(props.getProperty("dynamodb.region", Regions.DEFAULT_REGION.getName()));
 
         final AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
         final AWSCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(credentials);
@@ -185,8 +184,8 @@ public class DynamoDbDataContextIntegrationTest {
                     assertFalse(dataSet.next());
                 }
 
-                try (final DataSet dataSet = dc.query().from(tableName).select("counter", "project").where("id").eq("baz")
-                        .execute()) {
+                try (final DataSet dataSet = dc.query().from(tableName).select("counter", "project").where("id").eq(
+                        "baz").execute()) {
                     assertTrue(dataSet instanceof InMemoryDataSet);
 
                     assertTrue(dataSet.next());
