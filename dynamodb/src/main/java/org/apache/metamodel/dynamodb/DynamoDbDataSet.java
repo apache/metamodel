@@ -60,29 +60,9 @@ final class DynamoDbDataSet extends AbstractDataSet {
         final Object[] values = new Object[header.size()];
         for (int i = 0; i < values.length; i++) {
             final AttributeValue attributeValue = _currentItem.get(header.getSelectItem(i).getColumn().getName());
-            values[i] = toValue(attributeValue);
+            values[i] = DynamoDbUtils.toValue(attributeValue);
         }
         final Row row = new DefaultRow(header, values);
         return row;
     }
-
-    private Object toValue(AttributeValue a) {
-        if (a == null || Boolean.TRUE == a.isNULL()) {
-            return null;
-        }
-        // dynamo is a bit funky this way ... it has a getter for each possible
-        // data type.
-        return firstNonNull(a.getB(), a.getBOOL(), a.getBS(), a.getL(), a.getM(), a.getN(), a.getNS(), a.getS(), a
-                .getSS());
-    }
-
-    private Object firstNonNull(Object... objects) {
-        for (Object object : objects) {
-            if (object != null) {
-                return object;
-            }
-        }
-        return null;
-    }
-
 }

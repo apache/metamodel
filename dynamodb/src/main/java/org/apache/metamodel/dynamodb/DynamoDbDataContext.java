@@ -20,6 +20,7 @@ package org.apache.metamodel.dynamodb;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,11 @@ import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
@@ -42,7 +47,10 @@ import org.apache.metamodel.util.SimpleTableDef;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.model.AttributeDefinition;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.DescribeTableResult;
+import com.amazonaws.services.dynamodbv2.model.GetItemRequest;
+import com.amazonaws.services.dynamodbv2.model.GetItemResult;
 import com.amazonaws.services.dynamodbv2.model.GlobalSecondaryIndexDescription;
 import com.amazonaws.services.dynamodbv2.model.KeySchemaElement;
 import com.amazonaws.services.dynamodbv2.model.ListTablesResult;
@@ -260,6 +268,28 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
         }
         final ScanResult result = _dynamoDb.scan(scanRequest);
         return new DynamoDbDataSet(columns, result);
+    }
+
+    @Override
+    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn,
+            Object keyValue) {
+        final List<String> attributeNames = new ArrayList<>();
+        for (SelectItem selectItem : selectItems) {
+            attributeNames.add(selectItem.getColumn().getName());
+        }
+
+        final GetItemRequest getItemRequest = new GetItemRequest(table.getName(), Collections.singletonMap(
+                primaryKeyColumn.getName(), DynamoDbUtils.toAttributeValue(keyValue))).withAttributesToGet(
+                        attributeNames);
+        final GetItemResult item = _dynamoDb.getItem(getItemRequest);
+
+        final Object[] values = new Object[selectItems.size()];
+        for (int i = 0; i < values.length; i++) {
+            final AttributeValue attributeValue = item.getItem().get(attributeNames.get(i));
+            values[i] = DynamoDbUtils.toValue(attributeValue);
+        }
+
+        return new DefaultRow(new SimpleDataSetHeader(selectItems), values);
     }
 
     @Override

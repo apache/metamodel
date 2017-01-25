@@ -84,4 +84,22 @@ final class DynamoDbUtils {
         return null;
     }
 
+    public static Object toValue(AttributeValue a) {
+        if (a == null || Boolean.TRUE == a.isNULL()) {
+            return null;
+        }
+        // dynamo is a bit funky this way ... it has a getter for each possible
+        // data type.
+        return firstNonNull(a.getB(), a.getBOOL(), a.getBS(), a.getL(), a.getM(), a.getN(), a.getNS(), a.getS(), a
+                .getSS());
+    }
+
+    private static Object firstNonNull(Object... objects) {
+        for (Object object : objects) {
+            if (object != null) {
+                return object;
+            }
+        }
+        return null;
+    }
 }

@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
@@ -181,6 +182,15 @@ public class DynamoDbDataContextIntegrationTest {
                     assertEquals("Row[values=[baz, 3, null]]", dataSet.getRow().toString());
                     assertTrue(dataSet.next());
                     assertEquals("Row[values=[foo, 1, null]]", dataSet.getRow().toString());
+                    assertFalse(dataSet.next());
+                }
+
+                try (final DataSet dataSet = dc.query().from(tableName).select("counter", "project").where("id").eq("baz")
+                        .execute()) {
+                    assertTrue(dataSet instanceof InMemoryDataSet);
+
+                    assertTrue(dataSet.next());
+                    assertEquals("Row[values=[3, null]]", dataSet.getRow().toString());
                     assertFalse(dataSet.next());
                 }
             }
