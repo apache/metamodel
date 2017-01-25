@@ -81,10 +81,12 @@ public class DynamoDbDataContextIntegrationTest {
 
         Assume.assumeNotNull(accessKey, secretKey);
 
+        final Regions region = Regions.fromName(props.getProperty("dynamodb.region", Regions.getCurrentRegion()
+                .getName()));
+
         final AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
         final AWSCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(credentials);
-        client = AmazonDynamoDBClientBuilder.standard().withRegion(Regions.US_WEST_2).withCredentials(
-                credentialsProvider).build();
+        client = AmazonDynamoDBClientBuilder.standard().withRegion(region).withCredentials(credentialsProvider).build();
     }
 
     @After
