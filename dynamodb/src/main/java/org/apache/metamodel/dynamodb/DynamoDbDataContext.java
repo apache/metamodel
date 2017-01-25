@@ -38,8 +38,6 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
@@ -69,8 +67,6 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
      * creating new tables. Defaults to 5.
      */
     public static final String SYSTEM_PROPERTY_THROUGHPUT_WRITE_CAPACITY = "metamodel.dynamodb.throughput.capacity.write";
-
-    private static final Logger logger = LoggerFactory.getLogger(DynamoDbDataContext.class);
 
     /**
      * The artificial schema name used by this DataContext.
@@ -117,14 +113,14 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
     @Override
     protected Schema getMainSchema() throws MetaModelException {
         final Map<String, SimpleTableDef> tableDefs = new HashMap<>();
-        for (SimpleTableDef tableDef : _tableDefs) {
+        for (final SimpleTableDef tableDef : _tableDefs) {
             tableDefs.put(tableDef.getName(), tableDef);
         }
 
         final MutableSchema schema = new MutableSchema(getMainSchemaName());
         final ListTablesResult tables = _dynamoDb.listTables();
         final List<String> tableNames = tables.getTableNames();
-        for (String tableName : tableNames) {
+        for (final String tableName : tableNames) {
             final MutableTable table = new MutableTable(tableName, schema);
             schema.addTable(table);
 
@@ -138,7 +134,7 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
             final List<GlobalSecondaryIndexDescription> globalSecondaryIndexes = tableDescription
                     .getGlobalSecondaryIndexes();
             if (globalSecondaryIndexes != null) {
-                for (GlobalSecondaryIndexDescription globalSecondaryIndex : globalSecondaryIndexes) {
+                for (final GlobalSecondaryIndexDescription globalSecondaryIndex : globalSecondaryIndexes) {
                     addColumnFromKeySchema(globalSecondaryIndex.getIndexName(), globalSecondaryIndex.getKeySchema(),
                             table, false);
                 }
@@ -146,7 +142,7 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
             final List<LocalSecondaryIndexDescription> localSecondaryIndexes = tableDescription
                     .getLocalSecondaryIndexes();
             if (localSecondaryIndexes != null) {
-                for (LocalSecondaryIndexDescription localSecondaryIndex : localSecondaryIndexes) {
+                for (final LocalSecondaryIndexDescription localSecondaryIndex : localSecondaryIndexes) {
                     addColumnFromKeySchema(localSecondaryIndex.getIndexName(), localSecondaryIndex.getKeySchema(),
                             table, false);
                 }
@@ -154,7 +150,7 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
 
             // add top-level attribute definitions
             final List<AttributeDefinition> attributeDefinitions = tableDescription.getAttributeDefinitions();
-            for (AttributeDefinition attributeDefinition : attributeDefinitions) {
+            for (final AttributeDefinition attributeDefinition : attributeDefinitions) {
                 final String attributeName = attributeDefinition.getAttributeName();
                 MutableColumn column = (MutableColumn) table.getColumnByName(attributeName);
                 if (column == null) {
@@ -162,7 +158,7 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
                     table.addColumn(column);
                 }
                 final String attributeType = attributeDefinition.getAttributeType();
-                column.setType(toColumnType(attributeName, attributeType));
+                column.setType(DynamoDbUtils.toColumnType(attributeName, attributeType));
                 column.setIndexed(true);
                 column.setNativeType(attributeType);
             }
@@ -188,17 +184,17 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
 
             // add additional attributes based on global and local indices
             if (globalSecondaryIndexes != null) {
-                for (GlobalSecondaryIndexDescription globalSecondaryIndex : globalSecondaryIndexes) {
+                for (final GlobalSecondaryIndexDescription globalSecondaryIndex : globalSecondaryIndexes) {
                     final List<String> nonKeyAttributes = globalSecondaryIndex.getProjection().getNonKeyAttributes();
-                    for (String attributeName : nonKeyAttributes) {
+                    for (final String attributeName : nonKeyAttributes) {
                         addColumnFromNonKeyAttribute(globalSecondaryIndex.getIndexName(), table, attributeName);
                     }
                 }
             }
             if (localSecondaryIndexes != null) {
-                for (LocalSecondaryIndexDescription localSecondaryIndex : localSecondaryIndexes) {
+                for (final LocalSecondaryIndexDescription localSecondaryIndex : localSecondaryIndexes) {
                     final List<String> nonKeyAttributes = localSecondaryIndex.getProjection().getNonKeyAttributes();
-                    for (String attributeName : nonKeyAttributes) {
+                    for (final String attributeName : nonKeyAttributes) {
                         addColumnFromNonKeyAttribute(localSecondaryIndex.getIndexName(), table, attributeName);
                     }
                 }
@@ -218,7 +214,7 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
 
     private void addColumnFromKeySchema(String indexName, List<KeySchemaElement> keySchema, MutableTable table,
             boolean primaryKey) {
-        for (KeySchemaElement keySchemaElement : keySchema) {
+        for (final KeySchemaElement keySchemaElement : keySchema) {
             final String attributeName = keySchemaElement.getAttributeName();
             if (table.getColumnByName(attributeName) == null) {
                 final String keyType = keySchemaElement.getKeyType();
@@ -229,29 +225,13 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
         }
     }
 
-    private void appendRemarks(MutableColumn column, String remarks) {
+    private static void appendRemarks(MutableColumn column, String remarks) {
         final String existingRemarks = column.getRemarks();
         if (existingRemarks == null) {
             column.setRemarks(remarks);
         } else {
             column.setRemarks(existingRemarks + ", " + remarks);
         }
-    }
-
-    private ColumnType toColumnType(String attributeName, String attributeType) {
-        if (attributeType == null) {
-            return null;
-        }
-        switch (attributeType) {
-        case "S":
-            return ColumnType.STRING;
-        case "N":
-            return ColumnType.NUMBER;
-        case "B":
-            return ColumnType.BINARY;
-        }
-        logger.warn("Unexpected attribute type '{}' for attribute: {}", attributeType, attributeName);
-        return null;
     }
 
     @Override
@@ -269,11 +249,11 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
 
     @Override
     protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-        List<String> attributeNames = new ArrayList<>(columns.length);
-        for (Column column : columns) {
+        final List<String> attributeNames = new ArrayList<>(columns.length);
+        for (final Column column : columns) {
             attributeNames.add(column.getName());
         }
-        ScanRequest scanRequest = new ScanRequest(table.getName());
+        final ScanRequest scanRequest = new ScanRequest(table.getName());
         scanRequest.setAttributesToGet(attributeNames);
         if (maxRows > 0) {
             scanRequest.setLimit(maxRows);

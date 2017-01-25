@@ -19,11 +19,15 @@
 package org.apache.metamodel.dynamodb;
 
 import org.apache.metamodel.schema.ColumnType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType;
 
 final class DynamoDbUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(DynamoDbUtils.class);
 
     // prevent instantiation
     private DynamoDbUtils() {
@@ -63,4 +67,21 @@ final class DynamoDbUtils {
         // default to string
         return ScalarAttributeType.S;
     }
+
+    public static ColumnType toColumnType(String attributeName, String attributeType) {
+        if (attributeType == null) {
+            return null;
+        }
+        switch (attributeType) {
+        case "S":
+            return ColumnType.STRING;
+        case "N":
+            return ColumnType.NUMBER;
+        case "B":
+            return ColumnType.BINARY;
+        }
+        logger.warn("Unexpected attribute type '{}' for attribute: {}", attributeType, attributeName);
+        return null;
+    }
+
 }
