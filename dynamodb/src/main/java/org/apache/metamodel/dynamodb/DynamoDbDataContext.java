@@ -294,6 +294,13 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
 
     @Override
     public void executeUpdate(UpdateScript update) {
-        update.run(new DynamoDbUpdateCallback(this));
+        final DynamoDbUpdateCallback callback = new DynamoDbUpdateCallback(this);
+        try {
+            update.run(callback);
+        } finally {
+            if (callback.isInterrupted()) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 }

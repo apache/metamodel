@@ -92,6 +92,7 @@ class DynamoDbTableCreationBuilder extends AbstractTableCreationBuilder<DynamoDb
                 try {
                     Thread.sleep(300);
                 } catch (InterruptedException e) {
+                    getUpdateCallback().setInterrupted(true);
                 }
                 tableStatus = client.describeTable(tableName).getTable().getTableStatus();
             }

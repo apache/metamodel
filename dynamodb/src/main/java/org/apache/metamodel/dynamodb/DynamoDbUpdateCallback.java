@@ -27,9 +27,19 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
 final class DynamoDbUpdateCallback extends AbstractUpdateCallback {
+    
+    private boolean interrupted = false;
 
     public DynamoDbUpdateCallback(DynamoDbDataContext dataContext) {
         super(dataContext);
+    }
+    
+    public boolean isInterrupted() {
+        return interrupted;
+    }
+    
+    public void setInterrupted(boolean interrupted) {
+        this.interrupted = interrupted;
     }
 
     @Override
