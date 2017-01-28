@@ -60,6 +60,7 @@ under the License.
 		<module>core</module>
 		<module>pojo</module>
 		<module>fixedwidth</module>
+		<module>dynamodb</module>
 		<module>excel</module>
 		<module>csv</module>
 		<module>json</module>
