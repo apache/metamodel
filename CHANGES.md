@@ -2,6 +2,7 @@
 
  * [METAMODEL-1136] - New connector for Amazon DynamoDB.
  * [METAMODEL-1134] - Added NOT IN and NOT LIKE operators to WHERE filters.
+ * [METAMODEL-1133] - Made PojoDataContext thread-safe.
 
 ### Apache MetaModel 4.5.5
 
