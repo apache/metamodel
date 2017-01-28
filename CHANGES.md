@@ -1,3 +1,7 @@
+### Apache MetaModel [wip]
+
+ * [METAMODEL-1134] - Added NOT IN and NOT LIKE operators to WHERE filters.
+
 ### Apache MetaModel 4.5.5
 
  * [METAMODEL-1132] - Support native paging on SQL Server and Oracle database.

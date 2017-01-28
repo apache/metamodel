@@ -57,11 +57,33 @@ public interface FilterBuilder<B> {
     public B in(String... strings);
 
     /**
+     * Not in ...
+     */
+    public B notIn(Collection<?> values);
+
+    /**
+     * Not in ...
+     */
+    public B notIn(Number... numbers);
+
+    /**
+     * Not in ...
+     */
+    public B notIn(String... strings);
+
+    /**
      * Like ...
      *
      * (use '%' as wildcard).
      */
     public B like(String string);
+
+    /**
+     * Not like ...
+     *
+     * (use '%' as wildcard).
+     */
+    public B notLike(String string);
 
     /**
      * Equal to ...

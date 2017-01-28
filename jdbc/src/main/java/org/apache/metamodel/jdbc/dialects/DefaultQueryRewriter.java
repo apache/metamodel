@@ -137,9 +137,10 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
                 return rewriteFilterItemWithOperandLiteral(item, timestampLiteral);
             } else if (operand instanceof Iterable || operand.getClass().isArray()) {
                 // operand is a set of values (typically in combination with an
-                // IN operator). Each individual element must be escaped.
+                // IN or NOT IN operator). Each individual element must be escaped.
 
-                assert OperatorType.IN.equals(item.getOperator());
+                assert OperatorType.IN.equals(item.getOperator()) ||
+                        OperatorType.NOT_IN.equals(item.getOperator());
 
                 @SuppressWarnings("unchecked")
                 final List<Object> elements = (List<Object>) CollectionUtils.toList(operand);
