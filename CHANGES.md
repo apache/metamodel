@@ -1,4 +1,4 @@
-### Apache MetaModel [wip]
+### Apache MetaModel 4.5.6
 
  * [METAMODEL-1136] - New connector for Amazon DynamoDB.
  * [METAMODEL-1134] - Added NOT IN and NOT LIKE operators to WHERE filters.
