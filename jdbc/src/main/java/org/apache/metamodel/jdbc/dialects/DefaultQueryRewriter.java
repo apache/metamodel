@@ -101,7 +101,7 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
         return super.rewriteColumnType(columnType, columnSize);
     }
 
-    private boolean needsQuoting(String alias, String identifierQuoteString) {
+    public boolean needsQuoting(String alias, String identifierQuoteString) {
         boolean result = false;
         if (alias != null && identifierQuoteString != null) {
             if (alias.indexOf(identifierQuoteString) == -1) {
