@@ -23,8 +23,10 @@ import java.util.Date;
 
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.query.SelectClause;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
@@ -37,6 +39,27 @@ public class SQLServerQueryRewriter extends OffsetFetchQueryRewriter {
 
     public SQLServerQueryRewriter(JdbcDataContext dataContext) {
         super(dataContext, FIRST_FETCH_SUPPORTING_VERSION);
+    }
+
+    @Override
+    public boolean isScalarFunctionSupported(ScalarFunction function) {
+        if (function == FunctionType.TO_STRING) {
+            return true;
+        }
+        return super.isScalarFunctionSupported(function);
+    }
+
+    @Override
+    protected String rewriteSelectItem(Query query, SelectItem item) {
+        if (item.getScalarFunction() == FunctionType.TO_STRING) {
+            final SelectItem itemWithoutFunction = item.replaceFunction(null);
+            final StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("CAST(");
+            stringBuilder.append(rewriteSelectItem(query, itemWithoutFunction));
+            stringBuilder.append(" as varchar(8000))");
+            return stringBuilder.toString();
+        }
+        return super.rewriteSelectItem(query, item);
     }
 
     /**

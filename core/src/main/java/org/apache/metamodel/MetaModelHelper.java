@@ -289,9 +289,9 @@ public final class MetaModelHelper {
             return new SubSelectionDataSet(selectItems, dataSet);
         }
 
-        final ScalarFunctionDataSet scalaFunctionDataSet = new ScalarFunctionDataSet(
+        final ScalarFunctionDataSet scalarFunctionDataSet = new ScalarFunctionDataSet(
                 scalarFunctionSelectItemsToEvaluate, dataSet);
-        return new SubSelectionDataSet(selectItems, scalaFunctionDataSet);
+        return new SubSelectionDataSet(selectItems, scalarFunctionDataSet);
     }
 
     public static DataSet getSelection(SelectItem[] selectItems, DataSet dataSet) {

@@ -20,15 +20,11 @@ package org.apache.metamodel.dialects;
 
 import static org.apache.metamodel.jdbc.JdbcDataContext.DATABASE_PRODUCT_SQLSERVER;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-
-import junit.framework.TestCase;
-
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.jdbc.dialects.SQLServerQueryRewriter;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
@@ -38,6 +34,8 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.util.TimeComparator;
 import org.easymock.EasyMock;
+
+import junit.framework.TestCase;
 
 public class SQLServerQueryRewriterTest extends TestCase {
 
@@ -73,6 +71,14 @@ public class SQLServerQueryRewriterTest extends TestCase {
         assertEquals("VARCHAR(MAX)", qr.rewriteColumnType(ColumnType.VARCHAR, null));
     }
 
+    public void testRewriteSelectItemToString() throws Exception {
+        final Query q = new Query();
+        q.from(table);
+        q.select(FunctionType.TO_STRING, column);
+
+        assertEquals("SELECT CAST(MY_SCHEMA.\"foo\".\"bar\" as varchar(8000)) FROM MY_SCHEMA.\"foo\"", qr.rewriteQuery(q));
+    }
+
     public void testRewriteFromItem() throws Exception {
         assertEquals("foo", qr.rewriteFromItem(new FromItem(new MutableTable("foo"))));
     }
@@ -94,12 +100,8 @@ public class SQLServerQueryRewriterTest extends TestCase {
         MutableColumn timestampColumn = new MutableColumn("timestamp");
         timestampColumn.setType(ColumnType.TIMESTAMP);
         timestampColumn.setNativeType("DATETIME");
-        Query q = new Query()
-                .from(table)
-                .select(column)
-                .select(timestampColumn)
-                .where(new FilterItem(new SelectItem(timestampColumn), OperatorType.LESS_THAN, TimeComparator
-                        .toDate("2014-06-28 14:06:00")));
+        Query q = new Query().from(table).select(column).select(timestampColumn).where(new FilterItem(new SelectItem(
+                timestampColumn), OperatorType.LESS_THAN, TimeComparator.toDate("2014-06-28 14:06:00")));
 
         assertEquals(
                 "SELECT MY_SCHEMA.\"foo\".\"bar\", timestamp FROM MY_SCHEMA.\"foo\" WHERE timestamp < CAST('20140628 14:06:00' AS DATETIME)",
