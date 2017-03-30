@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.metamodel.create.AbstractTableCreationBuilder;
 import org.apache.metamodel.create.TableCreationBuilder;
 import org.apache.metamodel.data.CachingDataSetHeader;
 import org.apache.metamodel.data.DataSet;
@@ -151,7 +152,14 @@ public class MockUpdateableDataContext extends QueryPostprocessDataContext imple
             @Override
             public TableCreationBuilder createTable(Schema schema, String name) throws IllegalArgumentException,
                     IllegalStateException {
-                throw new UnsupportedOperationException();
+                return new AbstractTableCreationBuilder<UpdateCallback>(this,schema,name) {
+                             
+                    @Override
+                    public Table execute() throws MetaModelException {
+                        throw new UnsupportedOperationException();
+                    }
+                            		
+                };
             }
         });
     }
