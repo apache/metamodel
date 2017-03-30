@@ -200,6 +200,20 @@ public class CassandraDataContextTest {
         }
         assertTrue(thrown);
     }
+    
+    public void testNonExistentKeystore() {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+        
+        try {
+            new CassandraDataContext(cluster, "nonExistentKeyspace");
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertNotNull(e);
+        }
+    }
 
     @Test
     public void testNonExistentKeystore() {
