@@ -20,8 +20,10 @@ package org.apache.metamodel.data;
 
 import java.util.List;
 
+import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
 
 /**
  * A {@link Row} implementation that applies {@link ScalarFunction}s when

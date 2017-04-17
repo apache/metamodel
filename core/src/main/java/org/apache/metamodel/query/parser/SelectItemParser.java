@@ -22,6 +22,8 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.query.*;
 import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
 
 public final class SelectItemParser implements QueryPartProcessor {
 
@@ -87,10 +89,10 @@ public final class SelectItemParser implements QueryPartProcessor {
      * Finds/creates a SelectItem based on the given expression. Unlike the
      * {@link #parse(String, String)} method, this method will not actually add
      * the selectitem to the query.
-     * 
+     *
      * @param expression
      * @return
-     * 
+     *
      * @throws MultipleSelectItemsParsedException
      *             if an expression yielding multiple select-items (such as "*")
      *             was passed in the expression
@@ -109,10 +111,12 @@ public final class SelectItemParser implements QueryPartProcessor {
         final boolean functionApproximation;
         final FunctionType function;
         final int startParenthesis = expression.indexOf('(');
-        if (startParenthesis > 0 && expression.endsWith(")")) {
+        final boolean selectItemHasParenthesis = selectItemHasParenthesis(expression);
+        String functionName = null;
+
+        if (selectItemHasParenthesis) {
             functionApproximation = (expression.startsWith(SelectItem.FUNCTION_APPROXIMATION_PREFIX));
-            final String functionName = expression.substring(
-                    (functionApproximation ? SelectItem.FUNCTION_APPROXIMATION_PREFIX.length() : 0), startParenthesis);
+            functionName = getFunctionName(expression, startParenthesis, functionApproximation);
             function = FunctionTypeFactory.get(functionName.toUpperCase());
             if (function != null) {
                 expression = expression.substring(startParenthesis + 1, expression.length() - 1).trim();
@@ -157,6 +161,36 @@ public final class SelectItemParser implements QueryPartProcessor {
             if ("*".equals(columnName)) {
                 throw new MultipleSelectItemsParsedException(fromItem);
             } else if (fromItem.getTable() != null) {
+                if (selectItemHasParenthesis) {
+                        String[] columnAndParametersAsString = expression.split(",");
+                        Object[] columnAndParameters = new Object[columnAndParametersAsString.length];
+                        int columnAndParamsIndex = 0;
+                        for (String parameter : columnAndParametersAsString) {
+                            Column column = fromItem.getTable().getColumnByName(parameter);
+                            if (column != null) {
+                                columnAndParameters[columnAndParamsIndex] = column;
+                            }
+                            else if (parameter.length() > 1) {
+                               columnAndParameters[columnAndParamsIndex] = parameter.substring(1, parameter.length() - 1);
+                            }
+                            columnAndParamsIndex++;
+                        }
+                        boolean hasAColumn = false;
+                        boolean hasAParam = false;
+                        int i = 0;
+                        while (i < columnAndParameters.length) {
+                            if (columnAndParameters[i] instanceof Column) {
+                                hasAColumn = true;
+                            } else if (columnAndParameters[i] instanceof String) {
+                                hasAParam = true;
+                            }
+                            i++;
+                        }
+                        if (hasAColumn && hasAParam) {
+                            MutableColumn concatColumn = new MutableColumn(expression, ColumnType.STRING);
+                            return new SelectItem(concatColumn, new ConcatFunction(), columnAndParameters);
+                        }
+                }
                 Column column = fromItem.getTable().getColumnByName(columnName);
                 int offset = -1;
                 while (function == null && column == null) {
@@ -203,5 +237,15 @@ public final class SelectItemParser implements QueryPartProcessor {
             return selectItem;
         }
         return null;
+    }
+
+    private boolean selectItemHasParenthesis(String expression) {
+        final int startParenthesis = expression.indexOf('(');
+        return (startParenthesis > 0 && expression.endsWith(")"));
+    }
+
+    private String getFunctionName(String expression, int startParenthesis, boolean functionApproximation) {
+        return expression.substring(
+                (functionApproximation ? SelectItem.FUNCTION_APPROXIMATION_PREFIX.length() : 0), startParenthesis);
     }
 }

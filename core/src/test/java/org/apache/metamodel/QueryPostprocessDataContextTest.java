@@ -294,6 +294,29 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         ds.close();
     }
 
+    public void testScalarFunctionConcat() throws Exception {
+        MockDataContext dc = new MockDataContext("sch", "tab", "1");
+        Table table = dc.getDefaultSchema().getTables()[0];
+        MutableColumn col = new MutableColumn("foo").setTable(table);
+        MutableColumn col2 = new MutableColumn("bar").setTable(table);
+        Object[] functionParams = new Object[3];
+        functionParams[0] = col;
+        functionParams[1] = "$";
+        functionParams[2] = col2;
+        Query query = dc.query()
+                .from(table)
+                .select(FunctionType.CONCAT, col, functionParams)
+                .where("bar")
+                .eq("hello")
+                .toQuery();
+        assertEquals("SELECT CONCAT(tab.foo,'$',tab.bar) FROM sch.tab WHERE tab.bar = 'hello'", query.toSql());
+
+        DataSet ds = dc.executeQuery(query);
+        assertTrue(ds.next());
+        assertEquals("Row[values=[1$hello]]", ds.getRow().toString());
+        assertFalse(ds.next());
+    }
+
     public void testSelectItemReferencesToFromItems() throws Exception {
         MockDataContext dc = new MockDataContext("sch", "tab", "1");
 
