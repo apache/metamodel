@@ -190,6 +190,18 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     /**
+     * Creates a SelectItem that uses a function with multiple parameters
+     * from a particular {@link FromItem}, for example
+     * CONCAT('string1', col1, 'string2')
+     *
+     * @param function
+     * @param functionParameters
+     */
+    public SelectItem(FunctionType function, Object[] functionParameters) {
+        this(null, null, function, functionParameters, null, null, null, false);
+    }
+
+    /**
      * Creates a SelectItem based on an expression. All expression-based
      * SelectItems must have aliases.
      * 
@@ -484,10 +496,16 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             final Object[] functionParameters = getFunctionParameters();
             if (functionParameters != null && functionParameters.length != 0) {
                 for (int i = 0; i < functionParameters.length; i++) {
-                    functionBeginning.append('\'');
+                    if (!_function.getFunctionName().equals(FunctionType.CONCAT.getFunctionName())) {
+                        functionBeginning.append('\'');
+                    }
                     functionBeginning.append(functionParameters[i]);
-                    functionBeginning.append('\'');
-                    functionBeginning.append(',');
+                    if (!_function.getFunctionName().equals(FunctionType.CONCAT.getFunctionName())) {
+                        functionBeginning.append('\'');
+                    }
+                    if (i != functionParameters.length - 1) {
+                        functionBeginning.append(',');
+                    }
                 }
             }
             sb.insert(0, functionBeginning.toString());

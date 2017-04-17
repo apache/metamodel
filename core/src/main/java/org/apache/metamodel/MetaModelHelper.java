@@ -277,7 +277,7 @@ public final class MetaModelHelper {
         final List<SelectItem> scalarFunctionSelectItemsToEvaluate = new ArrayList<>();
 
         for (SelectItem selectItem : selectItems) {
-            if (selectItem.getScalarFunction() != null) {
+            if (selectItem !=null && selectItem.getScalarFunction() != null) {
                 if (!dataSetSelectItems.contains(selectItem)
                         && dataSetSelectItems.contains(selectItem.replaceFunction(null))) {
                     scalarFunctionSelectItemsToEvaluate.add(selectItem);
@@ -768,7 +768,9 @@ public final class MetaModelHelper {
     public static SelectItem[] createSelectItems(Column... columns) {
         SelectItem[] items = new SelectItem[columns.length];
         for (int i = 0; i < items.length; i++) {
-            items[i] = new SelectItem(columns[i]);
+            if (columns[i] != null) {
+                items[i] = new SelectItem(columns[i]);
+            }
         }
         return items;
     }

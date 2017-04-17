@@ -92,6 +92,19 @@ abstract class SatisfiedFromBuilderCallback extends BaseObject implements Satisf
     }
 
     @Override
+    public FunctionSelectBuilder<?> select(FunctionType function, Object[] functionParameters) {
+        if (function == null) {
+            throw new IllegalArgumentException("functionType cannot be null");
+        }
+        if (functionParameters == null) {
+            throw new IllegalArgumentException("functionParameters cannot be null");
+        }
+
+        final GroupedQueryBuilder queryBuilder = new GroupedQueryBuilderImpl(dataContext, query);
+        return new ConcatSelectBuilderImpl(function, functionParameters, query, queryBuilder);
+    }
+
+    @Override
     public FunctionSelectBuilder<?> select(FunctionType function, Column column, Object[] functionParameters) {
         if (function == null) {
             throw new IllegalArgumentException("functionType cannot be null");
