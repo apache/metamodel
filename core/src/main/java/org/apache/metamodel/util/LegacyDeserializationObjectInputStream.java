@@ -285,6 +285,7 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
         } catch (Exception e) {
             logger.warn("Failed to access and invoke ObjectStreamClass.isEnum to determine if {} is an enum",
                     objectStreamClass.getName(), e);
+            //TODO: This may cause issues on some JREs.
         }
         return false;
     }
