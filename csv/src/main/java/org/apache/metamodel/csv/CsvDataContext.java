@@ -18,38 +18,20 @@
  */
 package org.apache.metamodel.csv;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
+import au.com.bytecode.opencsv.CSVParser;
+import au.com.bytecode.opencsv.CSVReader;
+import java.io.*;
 import java.net.URL;
 import java.util.List;
-
-import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.QueryPostprocessDataContext;
-import org.apache.metamodel.UpdateScript;
-import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.*;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.util.FileHelper;
-import org.apache.metamodel.util.FileResource;
-import org.apache.metamodel.util.Func;
-import org.apache.metamodel.util.Resource;
-import org.apache.metamodel.util.ResourceUtils;
-import org.apache.metamodel.util.UrlResource;
+import org.apache.metamodel.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import au.com.bytecode.opencsv.CSVParser;
-import au.com.bytecode.opencsv.CSVReader;
 
 /**
  * DataContext implementation for reading CSV files.
