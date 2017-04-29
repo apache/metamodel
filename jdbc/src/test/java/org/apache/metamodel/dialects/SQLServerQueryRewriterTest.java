@@ -20,11 +20,6 @@ package org.apache.metamodel.dialects;
 
 import static org.apache.metamodel.jdbc.JdbcDataContext.DATABASE_PRODUCT_SQLSERVER;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-
-import junit.framework.TestCase;
-
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.jdbc.dialects.SQLServerQueryRewriter;
 import org.apache.metamodel.query.FilterItem;
@@ -38,6 +33,8 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.util.TimeComparator;
 import org.easymock.EasyMock;
+
+import junit.framework.TestCase;
 
 public class SQLServerQueryRewriterTest extends TestCase {
 

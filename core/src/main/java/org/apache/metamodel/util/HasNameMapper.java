@@ -19,18 +19,19 @@
 package org.apache.metamodel.util;
 
 import java.io.Serializable;
+import java.util.function.Function;
 
 /**
  * {@link Func} useful for mapping {@link HasName} instances to names, using
  * {@link CollectionUtils#map(Object[], Func)} and
  * {@link CollectionUtils#map(Iterable, Func)}.
  */
-public final class HasNameMapper implements Func<HasName, String>, Serializable {
+public final class HasNameMapper implements Function<HasName, String>, Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Override
-	public String eval(HasName arg) {
+	public String apply(HasName arg) {
 		return arg.getName();
 	}
 

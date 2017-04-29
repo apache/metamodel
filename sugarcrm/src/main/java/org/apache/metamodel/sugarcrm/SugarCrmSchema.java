@@ -20,10 +20,10 @@ package org.apache.metamodel.sugarcrm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.apache.metamodel.schema.AbstractSchema;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.util.Ref;
 
 import com.sugarcrm.ws.soap.SugarsoapPortType;
 
@@ -34,7 +34,7 @@ final class SugarCrmSchema extends AbstractSchema {
     private final List<Table> _tables;
     private final String _name;
 
-    public SugarCrmSchema(String name, SugarsoapPortType service, Ref<String> sessionId) {
+    public SugarCrmSchema(String name, SugarsoapPortType service, Supplier<String> sessionId) {
         _name = name;
         _tables = new ArrayList<Table>();
         _tables.add(new SugarCrmTable("Accounts", this, service, sessionId));

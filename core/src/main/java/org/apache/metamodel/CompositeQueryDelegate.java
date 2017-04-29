@@ -18,18 +18,19 @@
  */
 package org.apache.metamodel;
 
+import java.util.function.Function;
+
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.util.Func;
 
 final class CompositeQueryDelegate extends QueryPostprocessDelegate {
 
-	private final Func<Table, DataContext> _dataContextRetrievalFunction;
+	private final Function<Table, DataContext> _dataContextRetrievalFunction;
 
 	public CompositeQueryDelegate(
-			Func<Table, DataContext> dataContextRetrievalFunction) {
+			Function<Table, DataContext> dataContextRetrievalFunction) {
 		_dataContextRetrievalFunction = dataContextRetrievalFunction;
 	}
 
@@ -38,8 +39,8 @@ final class CompositeQueryDelegate extends QueryPostprocessDelegate {
 			int maxRows) {
 		// find the appropriate datacontext to execute a simple
 		// table materialization query
-		DataContext dc = _dataContextRetrievalFunction.eval(table);
-		Query q = new Query().select(columns).from(table);
+		final DataContext dc = _dataContextRetrievalFunction.apply(table);
+		final Query q = new Query().select(columns).from(table);
 		if (maxRows >= 0) {
 			q.setMaxRows(maxRows);
 		}

@@ -57,13 +57,13 @@ public abstract class AbstractQueryClause<E extends QueryItem> extends BaseObjec
     }
 
     @Override
-    public QueryClause<E> setItems(E... items) {
+    public QueryClause<E> setItems(@SuppressWarnings("unchecked") E... items) {
         _items.clear();
         return addItems(items);
     }
 
     @Override
-    public QueryClause<E> addItems(E... items) {
+    public QueryClause<E> addItems(@SuppressWarnings("unchecked") E... items) {
         for (E item : items) {
             addItem(item);
         }
@@ -95,7 +95,7 @@ public abstract class AbstractQueryClause<E extends QueryItem> extends BaseObjec
     public int getItemCount() {
         return _items.size();
     }
-    
+
     @Override
     public int indexOf(E item) {
         return _items.indexOf(item);

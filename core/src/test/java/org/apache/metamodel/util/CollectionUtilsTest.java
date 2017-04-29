@@ -73,7 +73,7 @@ public class CollectionUtilsTest extends TestCase {
         assertEquals("Stockholm", CollectionUtils.find(map, "Person.Addresses[0].city").toString());
         assertEquals("{city=Copenhagen, country=Denmark}", CollectionUtils.find(map, "Person.Addresses[1]").toString());
         assertEquals(null, CollectionUtils.find(map, "Person.Addresses[4].country"));
-        
+
         assertEquals(null, CollectionUtils.find(map, "Foo.bar"));
         assertEquals(null, CollectionUtils.find(map, "Person.Addresses.Foo"));
     }
@@ -111,12 +111,7 @@ public class CollectionUtilsTest extends TestCase {
         strings.add("hi");
         strings.add("world");
 
-        List<Integer> ints = CollectionUtils.map(strings, new Func<String, Integer>() {
-            @Override
-            public Integer eval(String arg) {
-                return arg.length();
-            }
-        });
+        List<Integer> ints = CollectionUtils.map(strings, String::length);
         assertEquals("[2, 5]", ints.toString());
     }
 
@@ -127,12 +122,7 @@ public class CollectionUtilsTest extends TestCase {
         list.add("3");
         list.add("2");
 
-        list = CollectionUtils.filter(list, new Predicate<String>() {
-            @Override
-            public Boolean eval(String arg) {
-                return arg.length() > 1;
-            }
-        });
+        list = CollectionUtils.filter(list, arg -> arg.length() > 1);
 
         assertEquals(2, list.size());
         assertEquals("[foo, bar]", list.toString());

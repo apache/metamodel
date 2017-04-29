@@ -18,15 +18,32 @@
  */
 package org.apache.metamodel.util;
 
+import java.util.function.Consumer;
+
 /**
  * Represents an abstract action, which is an executable piece of functionality
- * that takes an argument. An {@link Action} has no return type, unlike a
- * {@link Func}.
+ * that takes an argument. An action is very similar to a {@link Consumer},
+ * except that it allows for throwing exceptions, making it more appropriate for
+ * encapsulating code blocks that may fail.
  * 
  * @param <E>
  *            the argument type of the action
  */
-public interface Action<E> {
+@FunctionalInterface
+public interface Action<E> extends Consumer<E> {
 
-	public void run(E arg) throws Exception;
+    @Override
+    default void accept(E t) {
+        // delegate to run method and propagate exceptions if needed
+        try {
+            run(t);
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            }
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void run(E arg) throws Exception;
 }

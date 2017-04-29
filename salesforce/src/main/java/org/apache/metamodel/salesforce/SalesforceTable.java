@@ -20,6 +20,7 @@ package org.apache.metamodel.salesforce;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.apache.metamodel.schema.AbstractTable;
 import org.apache.metamodel.schema.Column;
@@ -29,7 +30,6 @@ import org.apache.metamodel.schema.Relationship;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.TableType;
 import org.apache.metamodel.util.LazyRef;
-import org.apache.metamodel.util.Ref;
 
 import com.sforce.soap.partner.DescribeSObjectResult;
 import com.sforce.soap.partner.Field;
@@ -45,7 +45,7 @@ final class SalesforceTable extends AbstractTable {
 
     private static final long serialVersionUID = 1L;
 
-    private final transient Ref<List<Column>> _columnRef;
+    private final transient Supplier<List<Column>> _columnRef;
     private final transient PartnerConnection _connection;
     private final String _name;
     private final String _remarks;

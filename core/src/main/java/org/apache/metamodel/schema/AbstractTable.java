@@ -23,12 +23,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.apache.metamodel.MetaModelHelper;
-import org.apache.metamodel.util.Action;
 import org.apache.metamodel.util.CollectionUtils;
 import org.apache.metamodel.util.HasNameMapper;
-import org.apache.metamodel.util.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +100,7 @@ public abstract class AbstractTable implements Table {
     public final Column[] getNumberColumns() {
         return CollectionUtils.filter(getColumns(), new Predicate<Column>() {
             @Override
-            public Boolean eval(Column col) {
+            public boolean test(Column col) {
                 ColumnType type = col.getType();
                 return type != null && type.isNumber();
             }
@@ -112,7 +111,7 @@ public abstract class AbstractTable implements Table {
     public final Column[] getLiteralColumns() {
         return CollectionUtils.filter(getColumns(), new Predicate<Column>() {
             @Override
-            public Boolean eval(Column col) {
+            public boolean test(Column col) {
                 ColumnType type = col.getType();
                 return type != null && type.isLiteral();
             }
@@ -121,53 +120,36 @@ public abstract class AbstractTable implements Table {
 
     @Override
     public final Column[] getTimeBasedColumns() {
-        return CollectionUtils.filter(getColumns(), new Predicate<Column>() {
-            @Override
-            public Boolean eval(Column col) {
-                ColumnType type = col.getType();
-                return type != null && type.isTimeBased();
-            }
+        return CollectionUtils.filter(getColumns(), col -> {
+            final ColumnType type = col.getType();
+            return type != null && type.isTimeBased();
         }).toArray(new Column[0]);
     }
 
     @Override
     public final Column[] getBooleanColumns() {
-        return CollectionUtils.filter(getColumns(), new Predicate<Column>() {
-            @Override
-            public Boolean eval(Column col) {
-                ColumnType type = col.getType();
-                return type != null && type.isBoolean();
-            }
+        return CollectionUtils.filter(getColumns(), col -> {
+            final ColumnType type = col.getType();
+            return type != null && type.isBoolean();
         }).toArray(new Column[0]);
     }
 
     @Override
     public final Column[] getIndexedColumns() {
-        return CollectionUtils.filter(getColumns(), new Predicate<Column>() {
-            @Override
-            public Boolean eval(Column col) {
-                return col.isIndexed();
-            }
-        }).toArray(new Column[0]);
+        return CollectionUtils.filter(getColumns(), Column::isIndexed).toArray(new Column[0]);
     }
 
     @Override
     public final Relationship[] getForeignKeyRelationships() {
-        return CollectionUtils.filter(getRelationships(), new Predicate<Relationship>() {
-            @Override
-            public Boolean eval(Relationship arg) {
-                return AbstractTable.this.equals(arg.getForeignTable());
-            }
+        return CollectionUtils.filter(getRelationships(), rel -> {
+            return AbstractTable.this.equals(rel.getForeignTable());
         }).toArray(new Relationship[0]);
     }
 
     @Override
     public final Relationship[] getPrimaryKeyRelationships() {
-        return CollectionUtils.filter(getRelationships(), new Predicate<Relationship>() {
-            @Override
-            public Boolean eval(Relationship arg) {
-                return AbstractTable.this.equals(arg.getPrimaryTable());
-            }
+        return CollectionUtils.filter(getRelationships(), rel -> {
+            return AbstractTable.this.equals(rel.getPrimaryTable());
         }).toArray(new Relationship[0]);
     }
 
@@ -175,13 +157,10 @@ public abstract class AbstractTable implements Table {
     public final Column[] getForeignKeys() {
         final Set<Column> columns = new HashSet<Column>();
         final Relationship[] relationships = getForeignKeyRelationships();
-        CollectionUtils.forEach(relationships, new Action<Relationship>() {
-            @Override
-            public void run(Relationship arg) {
-                Column[] foreignColumns = arg.getForeignColumns();
-                for (Column column : foreignColumns) {
-                    columns.add(column);
-                }
+        CollectionUtils.forEach(relationships, rel -> {
+            Column[] foreignColumns = rel.getForeignColumns();
+            for (Column column : foreignColumns) {
+                columns.add(column);
             }
         });
         return columns.toArray(new Column[columns.size()]);
@@ -221,16 +200,13 @@ public abstract class AbstractTable implements Table {
     public final Relationship[] getRelationships(final Table otherTable) {
         Relationship[] relationships = getRelationships();
 
-        return CollectionUtils.filter(relationships, new Predicate<Relationship>() {
-            @Override
-            public Boolean eval(Relationship relation) {
-                if (relation.getForeignTable() == otherTable && relation.getPrimaryTable() == AbstractTable.this) {
-                    return true;
-                } else if (relation.getForeignTable() == AbstractTable.this && relation.getPrimaryTable() == otherTable) {
-                    return true;
-                }
-                return false;
+        return CollectionUtils.filter(relationships, relation -> {
+            if (relation.getForeignTable() == otherTable && relation.getPrimaryTable() == AbstractTable.this) {
+                return true;
+            } else if (relation.getForeignTable() == AbstractTable.this && relation.getPrimaryTable() == otherTable) {
+                return true;
             }
+            return false;
         }).toArray(new Relationship[0]);
     }
 

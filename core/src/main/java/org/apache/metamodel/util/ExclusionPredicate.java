@@ -27,7 +27,7 @@ import java.util.Collections;
  * 
  * @param <E>
  */
-public class ExclusionPredicate<E> implements Predicate<E> {
+public class ExclusionPredicate<E> implements java.util.function.Predicate<E> {
 
     private final Collection<E> _exclusionList;
 
@@ -36,7 +36,7 @@ public class ExclusionPredicate<E> implements Predicate<E> {
     }
 
     @Override
-    public Boolean eval(E arg) {
+    public boolean test(E arg) {
         if (_exclusionList.contains(arg)) {
             return false;
         }

@@ -343,6 +343,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         return dataSet;
     }
 
+    @SuppressWarnings("resource")
     private DataSet execute(Connection connection, Query query, Statement statement, JdbcCompiledQuery compiledQuery,
             JdbcCompiledQueryLease lease, Object[] values) throws SQLException, MetaModelException {
         Integer maxRows = query.getMaxRows();

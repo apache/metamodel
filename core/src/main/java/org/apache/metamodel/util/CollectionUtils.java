@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Various utility methods for handling of collections and arrays.
@@ -260,41 +262,41 @@ public final class CollectionUtils {
         return (E[]) result;
     }
 
-    public static <E> List<E> filter(E[] items, Predicate<? super E> predicate) {
+    public static <E> List<E> filter(E[] items, java.util.function.Predicate<? super E> predicate) {
         return filter(Arrays.asList(items), predicate);
     }
 
-    public static <E> List<E> filter(Iterable<E> items, Predicate<? super E> predicate) {
+    public static <E> List<E> filter(Iterable<E> items, java.util.function.Predicate<? super E> predicate) {
         List<E> result = new ArrayList<E>();
         for (E e : items) {
-            if (predicate.eval(e).booleanValue()) {
+            if (predicate.test(e)) {
                 result.add(e);
             }
         }
         return result;
     }
 
-    public static <I, O> List<O> map(I[] items, Func<? super I, O> func) {
+    public static <I, O> List<O> map(I[] items, Function<? super I, O> func) {
         return map(Arrays.asList(items), func);
     }
 
-    public static <I, O> List<O> map(Iterable<I> items, Func<? super I, O> func) {
+    public static <I, O> List<O> map(Iterable<I> items, Function<? super I, O> func) {
         List<O> result = new ArrayList<O>();
         for (I item : items) {
-            O output = func.eval(item);
+            O output = func.apply(item);
             result.add(output);
         }
         return result;
     }
 
-    public static <E> void forEach(E[] items, Action<? super E> action) {
+    public static <E> void forEach(E[] items, Consumer<? super E> action) {
         forEach(Arrays.asList(items), action);
     }
 
-    public static <E> void forEach(Iterable<E> items, Action<? super E> action) {
+    public static <E> void forEach(Iterable<E> items, Consumer<? super E> action) {
         for (E item : items) {
             try {
-                action.run(item);
+                action.accept(item);
             } catch (Exception e) {
                 if (e instanceof RuntimeException) {
                     throw (RuntimeException) e;

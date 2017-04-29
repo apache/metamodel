@@ -98,8 +98,8 @@ public class HdfsResourceIntegrationTest {
         int i = contents.length;
         Collections.reverse(Arrays.asList(contents));
         for (final String contentPart : contents) {
-            final HdfsResource partResource = new HdfsResource(_hostname, _port,
-                    _filePath + "/part-" + String.format("%02d", i--));
+            final HdfsResource partResource = new HdfsResource(_hostname, _port, _filePath + "/part-" + String.format(
+                    "%02d", i--));
             partResource.write(new Action<OutputStream>() {
                 @Override
                 public void run(OutputStream out) throws Exception {
@@ -113,21 +113,15 @@ public class HdfsResourceIntegrationTest {
         try {
             logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - start");
 
-            final String str1 = res1.read(new Func<InputStream, String>() {
-                @Override
-                public String eval(InputStream in) {
-                    return FileHelper.readInputStreamAsString(in, "UTF8");
-                }
+            final String str1 = res1.read(in -> {
+                return FileHelper.readInputStreamAsString(in, "UTF8");
             });
 
             Assert.assertEquals(contentString, str1);
             logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read1");
 
-            final String str2 = res1.read(new Func<InputStream, String>() {
-                @Override
-                public String eval(InputStream in) {
-                    return FileHelper.readInputStreamAsString(in, "UTF8");
-                }
+            final String str2 = res1.read(in -> {
+                return FileHelper.readInputStreamAsString(in, "UTF8");
             });
             Assert.assertEquals(str1, str2);
             logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read2");
@@ -173,20 +167,14 @@ public class HdfsResourceIntegrationTest {
 
         Assert.assertTrue(res1.isExists());
 
-        final String str1 = res1.read(new Func<InputStream, String>() {
-            @Override
-            public String eval(InputStream in) {
-                return FileHelper.readInputStreamAsString(in, "UTF8");
-            }
+        final String str1 = res1.read(in -> {
+            return FileHelper.readInputStreamAsString(in, "UTF8");
         });
         Assert.assertEquals(contentString, str1);
         logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read1");
 
-        final String str2 = res1.read(new Func<InputStream, String>() {
-            @Override
-            public String eval(InputStream in) {
-                return FileHelper.readInputStreamAsString(in, "UTF8");
-            }
+        final String str2 = res1.read(in -> {
+            return FileHelper.readInputStreamAsString(in, "UTF8");
         });
         Assert.assertEquals(str1, str2);
         logger.info(stopwatch.elapsed(TimeUnit.MILLISECONDS) + " - read2");
@@ -243,7 +231,7 @@ public class HdfsResourceIntegrationTest {
 
                     }
                 });
-                
+
                 thread.setUncaughtExceptionHandler(exceptionHandler);
                 thread.start();
                 threads[i] = thread;
@@ -252,12 +240,12 @@ public class HdfsResourceIntegrationTest {
             for (int i = 0; i < threads.length; i++) {
                 threads[i].join();
             }
-            
+
             Throwable error = throwableRef.get();
             if (error != null) {
                 throw error;
             }
-            
+
         } finally {
             if (resourceToRead != null) {
                 final FileSystem fileSystem = resourceToRead.getHadoopFileSystem();

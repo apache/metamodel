@@ -41,7 +41,6 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
-import org.apache.metamodel.util.Func;
 import org.apache.metamodel.util.Resource;
 import org.apache.metamodel.util.ResourceUtils;
 import org.apache.metamodel.util.UrlResource;
@@ -67,9 +66,9 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
     /**
      * Constructs a CSV DataContext based on a file
      *
-     * The file provided can be either existing or non-existing. In the
-     * case of non-existing files, a file will be automatically created
-     * when a CREATE TABLE update is executed on the DataContext.
+     * The file provided can be either existing or non-existing. In the case of
+     * non-existing files, a file will be automatically created when a CREATE
+     * TABLE update is executed on the DataContext.
      * 
      * @param file
      * @param configuration
@@ -274,62 +273,59 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
         if (!functionApproximationAllowed) {
             return null;
         }
-        
+
         if (whereItems != null && !whereItems.isEmpty()) {
             return null;
         }
-        
+
         final long length = _resource.getSize();
         if (length < 0) {
             // METAMODEL-30: Sometimes the size of the resource is not known
             return null;
         }
 
-        return _resource.read(new Func<InputStream, Number>() {
-            @Override
-            public Number eval(InputStream inputStream) {
-                try {
-                    // read up to 5 megs of the file and approximate number of
-                    // lines based on that.
+        return _resource.read(inputStream -> {
+            try {
+                // read up to 5 megs of the file and approximate number of
+                // lines based on that.
 
-                    final int sampleSize = (int) Math.min(length, 1024 * 1024 * 5);
-                    final int chunkSize = Math.min(sampleSize, 1024 * 1024);
+                final int sampleSize = (int) Math.min(length, 1024 * 1024 * 5);
+                final int chunkSize = Math.min(sampleSize, 1024 * 1024);
 
-                    int readSize = 0;
-                    int newlines = 0;
-                    int carriageReturns = 0;
-                    byte[] byteBuffer = new byte[chunkSize];
-                    char[] charBuffer = new char[chunkSize];
+                int readSize = 0;
+                int newlines = 0;
+                int carriageReturns = 0;
+                byte[] byteBuffer = new byte[chunkSize];
+                char[] charBuffer = new char[chunkSize];
 
-                    while (readSize < sampleSize) {
-                        final int read = inputStream.read(byteBuffer);
-                        if (read == -1) {
-                            break;
-                        } else {
-                            readSize += read;
-                        }
-
-                        Reader reader = getReader(byteBuffer, _configuration.getEncoding());
-                        reader.read(charBuffer);
-                        for (char c : charBuffer) {
-                            if ('\n' == c) {
-                                newlines++;
-                            } else if ('\r' == c) {
-                                carriageReturns++;
-                            }
-                        }
+                while (readSize < sampleSize) {
+                    final int read = inputStream.read(byteBuffer);
+                    if (read == -1) {
+                        break;
+                    } else {
+                        readSize += read;
                     }
 
-                    int lines = Math.max(newlines, carriageReturns);
-
-                    logger.info("Found {} lines breaks in {} bytes", lines, sampleSize);
-
-                    long approxCount = (long) (lines * length / sampleSize);
-                    return approxCount;
-                } catch (IOException e) {
-                    logger.error("Unexpected error during COUNT(*) approximation", e);
-                    throw new IllegalStateException(e);
+                    Reader reader = getReader(byteBuffer, _configuration.getEncoding());
+                    reader.read(charBuffer);
+                    for (char c : charBuffer) {
+                        if ('\n' == c) {
+                            newlines++;
+                        } else if ('\r' == c) {
+                            carriageReturns++;
+                        }
+                    }
                 }
+
+                int lines = Math.max(newlines, carriageReturns);
+
+                logger.info("Found {} lines breaks in {} bytes", lines, sampleSize);
+
+                long approxCount = (long) (lines * length / sampleSize);
+                return approxCount;
+            } catch (IOException e) {
+                logger.error("Unexpected error during COUNT(*) approximation", e);
+                throw new IllegalStateException(e);
             }
         });
     }
@@ -386,14 +382,14 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
 
     protected CSVReader createCsvReader(int skipLines) {
         final Reader reader = FileHelper.getReader(_resource.read(), _configuration.getEncoding());
-        final CSVReader csvReader = new CSVReader(reader, _configuration.getSeparatorChar(),
-                _configuration.getQuoteChar(), _configuration.getEscapeChar(), skipLines);
+        final CSVReader csvReader = new CSVReader(reader, _configuration.getSeparatorChar(), _configuration
+                .getQuoteChar(), _configuration.getEscapeChar(), skipLines);
         return csvReader;
     }
 
     protected CSVReader createCsvReader(BufferedReader reader) {
-        final CSVReader csvReader = new CSVReader(reader, _configuration.getSeparatorChar(),
-                _configuration.getQuoteChar(), _configuration.getEscapeChar());
+        final CSVReader csvReader = new CSVReader(reader, _configuration.getSeparatorChar(), _configuration
+                .getQuoteChar(), _configuration.getEscapeChar());
         return csvReader;
     }
 

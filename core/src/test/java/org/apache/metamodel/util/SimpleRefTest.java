@@ -18,12 +18,14 @@
  */
 package org.apache.metamodel.util;
 
+import java.util.function.Supplier;
+
 import junit.framework.TestCase;
 
 public class SimpleRefTest extends TestCase {
 
 	public void testGet() throws Exception {
-		Ref<String> lazyRef = new ImmutableRef<String>("foo");
+		Supplier<String> lazyRef = new ImmutableRef<String>("foo");
 
 		assertEquals("foo", lazyRef.get());
 
