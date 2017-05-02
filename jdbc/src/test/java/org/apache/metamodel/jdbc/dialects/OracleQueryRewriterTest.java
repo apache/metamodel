@@ -21,8 +21,6 @@ package org.apache.metamodel.jdbc.dialects;
 import static org.apache.metamodel.jdbc.JdbcDataContext.DATABASE_PRODUCT_ORACLE;
 import static org.junit.Assert.assertEquals;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import org.apache.metamodel.jdbc.JdbcDataContext;

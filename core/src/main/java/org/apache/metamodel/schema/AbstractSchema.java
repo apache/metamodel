@@ -23,11 +23,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.metamodel.util.Action;
 import org.apache.metamodel.util.CollectionUtils;
 import org.apache.metamodel.util.EqualsBuilder;
 import org.apache.metamodel.util.HasNameMapper;
-import org.apache.metamodel.util.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,14 +51,11 @@ public abstract class AbstractSchema implements Schema {
     @Override
     public Relationship[] getRelationships() {
         final Set<Relationship> result = new LinkedHashSet<Relationship>();
-        CollectionUtils.forEach(getTables(), new Action<Table>() {
-            @Override
-            public void run(Table table) {
-                Relationship[] relations = table.getRelationships();
-                for (int i = 0; i < relations.length; i++) {
-                    Relationship relation = relations[i];
-                    result.add(relation);
-                }
+        CollectionUtils.forEach(getTables(), table -> {
+            final Relationship[] relations = table.getRelationships();
+            for (int i = 0; i < relations.length; i++) {
+                final Relationship relation = relations[i];
+                result.add(relation);
             }
         });
         return result.toArray(new Relationship[result.size()]);
@@ -94,11 +89,8 @@ public abstract class AbstractSchema implements Schema {
 
     @Override
     public final Table[] getTables(final TableType type) {
-        return CollectionUtils.filter(getTables(), new Predicate<Table>() {
-            @Override
-            public Boolean eval(Table table) {
-                return table.getType() == type;
-            }
+        return CollectionUtils.filter(getTables(), table -> {
+            return table.getType() == type;
         }).toArray(new Table[0]);
     }
 
@@ -148,7 +140,7 @@ public abstract class AbstractSchema implements Schema {
     public final String toString() {
         return "Schema[name=" + getName() + "]";
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -168,14 +160,15 @@ public abstract class AbstractSchema implements Schema {
                     int tableCount2 = other.getTableCount();
                     eb.append(tableCount1, tableCount2);
                 } catch (Exception e) {
-                    // might occur when schemas are disconnected. Omit this check then.
+                    // might occur when schemas are disconnected. Omit this
+                    // check then.
                 }
             }
             return eb.isEquals();
         }
         return false;
     }
-    
+
     @Override
     public int hashCode() {
         String name = getName();

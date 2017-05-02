@@ -23,7 +23,16 @@ package org.apache.metamodel.util;
  * inclusion/exclusion criteria.
  * 
  * @param <E>
+ * 
+ * @deprecated use {@link java.util.function.Predicate} instead
  */
-public interface Predicate<E> extends Func<E, Boolean> {
+@Deprecated
+@FunctionalInterface
+public interface Predicate<E> extends Func<E, Boolean>, java.util.function.Predicate<E> {
 
+    @Override
+    default boolean test(E t) {
+        // delegate to the deprecated method signature
+        return eval(t);
+    }
 }

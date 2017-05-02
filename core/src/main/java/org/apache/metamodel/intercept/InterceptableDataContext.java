@@ -206,7 +206,7 @@ public class InterceptableDataContext implements UpdateableDataContext {
         Schema[] schemas = getSchemas();
         String[] schemaNames = new String[schemas.length];
         for (int i = 0; i < schemaNames.length; i++) {
-            schemaNames[i] = new HasNameMapper().eval(schemas[i]);
+            schemaNames[i] = new HasNameMapper().apply(schemas[i]);
         }
         return schemaNames;
     }

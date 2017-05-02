@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Supplier;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -57,7 +58,6 @@ import org.apache.metamodel.schema.TableType;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.ImmutableRef;
 import org.apache.metamodel.util.NumberComparator;
-import org.apache.metamodel.util.Ref;
 import org.apache.metamodel.util.Resource;
 import org.apache.metamodel.util.UrlResource;
 import org.slf4j.Logger;
@@ -97,7 +97,7 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
 
     private static final String TEXT_CONTENT_TEMP_SUFFIX = "_metamodel_text_content";
 
-    private final Ref<InputSource> _inputSourceRef;
+    private final Supplier<InputSource> _inputSourceRef;
     private final Map<String, List<Object[]>> _tableData = new HashMap<String, List<Object[]>>();;
     private final String _schemaName;
 
@@ -152,13 +152,10 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
         this(new UrlResource(url), autoFlattenTables);
     }
 
-    private static Ref<InputSource> createInputSourceRef(final Resource resource) {
-        return new Ref<InputSource>() {
-            @Override
-            public InputSource get() {
+    private static Supplier<InputSource> createInputSourceRef(final Resource resource) {
+        return () -> {
                 final InputStream in = resource.read();
                 return new InputSource(in);
-            }
         };
     }
 
@@ -294,7 +291,8 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
                     // Rename all text content columns to reasonable
                     // names (preferably element node name)
                     String currentName = textContentColumn.getName();
-                    String preferredName = currentName.substring(0, currentName.length() - TEXT_CONTENT_TEMP_SUFFIX.length());
+                    String preferredName = currentName.substring(0, currentName.length() - TEXT_CONTENT_TEMP_SUFFIX
+                            .length());
                     column = (MutableColumn) table.getColumnByName(preferredName);
                     if (column == null) {
                         textContentColumn.setName(preferredName);
@@ -327,12 +325,13 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
 
                 if (parentKeyColumn != null) {
                     Table parentTable = parentKeyColumn.getTable();
-                    foreignKeyColumn = new MutableColumn(parentTable.getName() + "_id", parentKeyColumn.getType(), table,
-                            table.getColumnCount(), false);
+                    foreignKeyColumn = new MutableColumn(parentTable.getName() + "_id", parentKeyColumn.getType(),
+                            table, table.getColumnCount(), false);
                     foreignKeyColumn.setNativeType(NATIVE_TYPE_FOREIGN_KEY);
                     table.addColumn(foreignKeyColumn);
 
-                    MutableRelationship.createRelationship(new Column[] { parentKeyColumn }, new Column[] { foreignKeyColumn });
+                    MutableRelationship.createRelationship(new Column[] { parentKeyColumn }, new Column[] {
+                            foreignKeyColumn });
 
                 } else {
                     foreignKeyColumn = null;
@@ -412,8 +411,8 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
         }
         if (column == null && preferredColumnName != null) {
             logger.info("Creating text content column for table: " + table.getName());
-            column = new MutableColumn(preferredColumnName + TEXT_CONTENT_TEMP_SUFFIX, ColumnType.STRING, table,
-                    table.getColumnCount(), true);
+            column = new MutableColumn(preferredColumnName + TEXT_CONTENT_TEMP_SUFFIX, ColumnType.STRING, table, table
+                    .getColumnCount(), true);
             column.setNativeType(NATIVE_TYPE_TEXT);
             table.addColumn(column);
         }
@@ -432,8 +431,8 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
         if (column == null) {
             String tableName = table.getName();
             logger.info("Creating id column for table: " + tableName);
-            column = new MutableColumn(tableName + "_metamodel_surrogate_id", ColumnType.INTEGER, table, table.getColumnCount(),
-                    false);
+            column = new MutableColumn(tableName + "_metamodel_surrogate_id", ColumnType.INTEGER, table, table
+                    .getColumnCount(), false);
             column.setNativeType(NATIVE_TYPE_PRIMARY_KEY);
             column.setIndexed(true);
             table.addColumn(column);
@@ -543,8 +542,8 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
         List<Object[]> tableRows = executeQuery(q).toObjectArrays();
 
         for (Column foreignColumn : foreignColumns) {
-            MutableColumn newPrimaryColumn = new MutableColumn(foreignColumn.getName(), foreignColumn.getType(), primaryTable,
-                    primaryTable.getColumnCount(), foreignColumn.isNullable());
+            MutableColumn newPrimaryColumn = new MutableColumn(foreignColumn.getName(), foreignColumn.getType(),
+                    primaryTable, primaryTable.getColumnCount(), foreignColumn.isNullable());
             newPrimaryColumn.setIndexed(foreignColumn.isIndexed());
             newPrimaryColumn.setNativeType(foreignColumn.getNativeType());
             primaryTable.addColumn(newPrimaryColumn);
@@ -558,7 +557,8 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
         ((MutableRelationship) relationship).remove();
 
         if (logger.isInfoEnabled()) {
-            logger.info("Tables '" + primaryTableName + "' and '" + foreignTableName + "' flattened to: " + primaryTableName);
+            logger.info("Tables '" + primaryTableName + "' and '" + foreignTableName + "' flattened to: "
+                    + primaryTableName);
             if (logger.isDebugEnabled()) {
                 logger.debug(primaryTableName + " columns: " + Arrays.toString(primaryTable.getColumns()));
             }
@@ -608,7 +608,8 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
                         Column[] foreignColumns = foreignKeyRelationship.getForeignColumns();
 
                         SelectItem countAllItem = SelectItem.getCountAllItem();
-                        Query q = new Query().select(foreignColumns).select(countAllItem).from(table).groupBy(foreignColumns);
+                        Query q = new Query().select(foreignColumns).select(countAllItem).from(table).groupBy(
+                                foreignColumns);
                         DataSet data = executeQuery(q);
                         Comparable<Object> comparable = NumberComparator.getComparable(1);
                         while (data.next()) {

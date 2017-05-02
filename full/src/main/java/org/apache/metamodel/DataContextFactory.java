@@ -558,6 +558,7 @@ public class DataContextFactory {
      *            should be autodetected.
      * @return a DataContext object that matches the request
      */
+    @SuppressWarnings("resource")
     public static UpdateableDataContext createMongoDbDataContext(String hostname, Integer port, String databaseName,
             String username, char[] password, SimpleTableDef[] tableDefs) {
         try {

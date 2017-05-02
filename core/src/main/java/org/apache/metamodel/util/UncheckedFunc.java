@@ -18,12 +18,22 @@
  */
 package org.apache.metamodel.util;
 
-public abstract class UncheckedFunc<I, O> implements Func<I, O> {
+import java.util.function.Function;
+
+/**
+ * Represents a {@link Function} that allows for throwing checked exceptions,
+ * making it more appropriate for encapsulating code blocks that may fail.
+ * 
+ * @param <I>
+ * @param <O>
+ */
+@FunctionalInterface
+public interface UncheckedFunc<I, O> extends Function<I, O> {
 
     @Override
-    public O eval(I arg) {
+    public default O apply(I arg) {
         try {
-            return evalUnchecked(arg);
+            return applyUnchecked(arg);
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
@@ -32,5 +42,5 @@ public abstract class UncheckedFunc<I, O> implements Func<I, O> {
         }
     }
 
-    protected abstract O evalUnchecked(I arg) throws Exception;
+    public O applyUnchecked(I arg) throws Exception;
 }

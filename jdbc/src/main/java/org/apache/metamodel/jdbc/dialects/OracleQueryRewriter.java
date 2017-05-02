@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.jdbc.dialects;
 
-import static org.apache.metamodel.jdbc.JdbcDataContext.DATABASE_PRODUCT_ORACLE;
-
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.schema.ColumnType;

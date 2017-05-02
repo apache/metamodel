@@ -18,26 +18,28 @@
  */
 package org.apache.metamodel.util;
 
+import java.util.function.Supplier;
+
 /**
  * Simple/hard implementation of the {@link Ref} interface.
  * 
  * @param <E>
  */
-public final class ImmutableRef<E> implements Ref<E> {
+public final class ImmutableRef<E> implements Supplier<E> {
 
-	private final E _object;
+    private final E _object;
 
-	public ImmutableRef(E object) {
-		_object = object;
-	}
+    public ImmutableRef(E object) {
+        _object = object;
+    }
 
-	@Override
-	public E get() {
-		return _object;
-	}
+    @Override
+    public E get() {
+        return _object;
+    }
 
-	public static <E> Ref<E> of(E object) {
-		return new ImmutableRef<E>(object);
-	}
+    public static <E> Supplier<E> of(E object) {
+        return new ImmutableRef<E>(object);
+    }
 
 }

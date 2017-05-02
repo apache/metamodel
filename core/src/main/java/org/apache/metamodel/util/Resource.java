@@ -20,6 +20,7 @@ package org.apache.metamodel.util;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.function.Function;
 
 /**
  * Represents a resource from which we can read and write bytes
@@ -159,5 +160,16 @@ public interface Resource extends HasName {
      * @throws ResourceException
      *             if an error occurs while reading
      */
-    public <E> E read(Func<InputStream, E> readCallback) throws ResourceException;
+    public <E> E read(UncheckedFunc<InputStream, E> readCallback) throws ResourceException;
+
+    /**
+     * * Opens up an {@link InputStream} to read from the resource, and allows a
+     * callback function to perform writing actions on it and return the
+     * function's result.
+     * 
+     * @param readCallback
+     * @return
+     * @throws ResourceException
+     */
+    public <E> E read(Function<InputStream, E> readCallback) throws ResourceException;
 }

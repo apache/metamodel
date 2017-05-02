@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.FromItem;
@@ -34,9 +35,9 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.CompositeSchema;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.util.Func;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * DataContext for composite datacontexts. Composite DataContexts wrap several
@@ -92,12 +93,7 @@ public class CompositeDataContext extends AbstractDataContext {
         } else {
             // we create a datacontext which can materialize tables from
             // separate datacontexts.
-            final Func<Table, DataContext> dataContextRetrievalFunction = new Func<Table, DataContext>() {
-                @Override
-                public DataContext eval(Table table) {
-                    return getDataContext(table);
-                }
-            };
+            final Function<Table, DataContext> dataContextRetrievalFunction = table -> getDataContext(table);
             return new CompositeQueryDelegate(dataContextRetrievalFunction).executeQuery(query);
         }
     }

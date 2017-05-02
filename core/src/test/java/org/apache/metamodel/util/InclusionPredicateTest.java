@@ -27,10 +27,10 @@ public class InclusionPredicateTest extends TestCase {
     public void testEval() throws Exception {
         InclusionPredicate<String> predicate = new InclusionPredicate<String>(Arrays.asList("foo","bar","baz"));
         
-        assertTrue(predicate.eval("foo"));
-        assertTrue(predicate.eval("bar"));
-        assertTrue(predicate.eval("baz"));
+        assertTrue(predicate.test("foo"));
+        assertTrue(predicate.test("bar"));
+        assertTrue(predicate.test("baz"));
         
-        assertFalse(predicate.eval("hello world"));
+        assertFalse(predicate.test("hello world"));
     }
 }

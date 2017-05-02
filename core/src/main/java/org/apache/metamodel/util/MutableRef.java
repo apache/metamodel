@@ -18,12 +18,14 @@
  */
 package org.apache.metamodel.util;
 
+import java.util.function.Supplier;
+
 /**
  * Represents a mutable reference to any object
  * 
  * @param <E>
  */
-public final class MutableRef<E> implements Ref<E> {
+public final class MutableRef<E> implements Supplier<E> {
 
 	private E _object;
 

@@ -19,6 +19,7 @@
 package org.apache.metamodel.util;
 
 import java.io.Serializable;
+import java.util.function.Supplier;
 
 /**
  * A serializable reference to an object which may or may not be serializable.
@@ -27,7 +28,7 @@ import java.io.Serializable;
  * 
  * @param <E>
  */
-public final class SerializableRef<E> implements Ref<E>, Serializable {
+public final class SerializableRef<E> implements Supplier<E>, Serializable {
 
     private static final long serialVersionUID = 1L;
 

@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel;
 
-import org.apache.metamodel.util.Action;
-
 /**
  * Represents any updating operation or update script that can be executed on a
  * {@link UpdateableDataContext}. Users of MetaModel should implement their own
@@ -27,13 +25,13 @@ import org.apache.metamodel.util.Action;
  * {@link UpdateableDataContext#executeUpdate(UpdateScript)} method for
  * execution.
  */
-public interface UpdateScript extends Action<UpdateCallback> {
+@FunctionalInterface
+public interface UpdateScript {
 
 	/**
 	 * Invoked by MetaModel when the update script should be run. User should
 	 * implement this method and invoke update operations on the
 	 * {@link UpdateCallback}.
 	 */
-	@Override
 	public void run(UpdateCallback callback);
 }

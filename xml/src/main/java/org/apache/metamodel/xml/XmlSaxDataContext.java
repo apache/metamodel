@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -43,7 +44,6 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.Action;
 import org.apache.metamodel.util.FileResource;
-import org.apache.metamodel.util.Ref;
 import org.apache.metamodel.util.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +67,7 @@ public class XmlSaxDataContext extends QueryPostprocessDataContext {
 
     public static final String COLUMN_NAME_ROW_ID = "row_id";
 
-    private final Ref<InputSource> _inputSourceRef;
+    private final Supplier<InputSource> _inputSourceRef;
     private final Map<XmlSaxTableDef, Map<String, String>> _valueXpaths;
     private String _schemaName;
     private XmlSaxTableDef[] _tableDefs;
@@ -84,7 +84,7 @@ public class XmlSaxDataContext extends QueryPostprocessDataContext {
      * 
      * @see XmlSaxTableDef
      */
-    public XmlSaxDataContext(Ref<InputSource> inputSourceRef, XmlSaxTableDef... tableDefs) {
+    public XmlSaxDataContext(Supplier<InputSource> inputSourceRef, XmlSaxTableDef... tableDefs) {
         _inputSourceRef = inputSourceRef;
         _tableDefs = tableDefs;
         _valueXpaths = new HashMap<XmlSaxTableDef, Map<String, String>>();
@@ -108,13 +108,10 @@ public class XmlSaxDataContext extends QueryPostprocessDataContext {
         this(createInputSourceRef(new FileResource(file)), tableDefs);
     }
 
-    private static Ref<InputSource> createInputSourceRef(final Resource resource) {
-        return new Ref<InputSource>() {
-            @Override
-            public InputSource get() {
-                final InputStream in = resource.read();
-                return new InputSource(in);
-            }
+    private static Supplier<InputSource> createInputSourceRef(final Resource resource) {
+        return () -> {
+            final InputStream in = resource.read();
+            return new InputSource(in);
         };
     }
 
@@ -124,8 +121,8 @@ public class XmlSaxDataContext extends QueryPostprocessDataContext {
 
         for (XmlSaxTableDef tableDef : _tableDefs) {
             final String rowXpath = tableDef.getRowXpath();
-            final MutableTable table = new MutableTable(getTableName(tableDef)).setSchema(schema).setRemarks(
-                    "XPath: " + rowXpath);
+            final MutableTable table = new MutableTable(getTableName(tableDef)).setSchema(schema).setRemarks("XPath: "
+                    + rowXpath);
 
             final MutableColumn rowIndexColumn = new MutableColumn(COLUMN_NAME_ROW_ID, ColumnType.INTEGER)
                     .setColumnNumber(0).setNullable(false).setTable(table).setRemarks("Row/tag index (0-based)");
@@ -225,8 +222,8 @@ public class XmlSaxDataContext extends QueryPostprocessDataContext {
                 SAXParserFactory saxFactory = SAXParserFactory.newInstance();
                 SAXParser saxParser = saxFactory.newSAXParser();
                 XMLReader xmlReader = saxParser.getXMLReader();
-                xmlReader
-                        .setContentHandler(new XmlSaxContentHandler(tableDef.getRowXpath(), rowPublisher, valueXpaths));
+                xmlReader.setContentHandler(new XmlSaxContentHandler(tableDef.getRowXpath(), rowPublisher,
+                        valueXpaths));
                 try {
                     xmlReader.parse(_inputSourceRef.get());
                 } catch (XmlStopParsingException e) {

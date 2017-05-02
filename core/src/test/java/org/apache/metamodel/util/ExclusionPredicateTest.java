@@ -27,10 +27,10 @@ public class ExclusionPredicateTest extends TestCase {
     public void testEval() throws Exception {
         ExclusionPredicate<String> predicate = new ExclusionPredicate<String>(Arrays.asList("foo","bar","baz"));
         
-        assertFalse(predicate.eval("foo"));
-        assertFalse(predicate.eval("bar"));
-        assertFalse(predicate.eval("baz"));
+        assertFalse(predicate.test("foo"));
+        assertFalse(predicate.test("bar"));
+        assertFalse(predicate.test("baz"));
         
-        assertTrue(predicate.eval("hello world"));
+        assertTrue(predicate.test("hello world"));
     }
 }
