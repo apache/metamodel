@@ -34,6 +34,7 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
 import org.apache.metamodel.util.DateUtils;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
@@ -774,5 +775,21 @@ public class ExcelDataContextTest extends TestCase {
 
         assertNotNull(ds);
         ds.close();
+    }
+
+    public void testCustomColumnNames() throws Exception {
+        final String firstColumnName = "first";
+        final String secondColumnName = "second";
+        final String thirdColumnName = "third";
+
+        final ExcelConfiguration configuration = new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE,
+                new CustomColumnNamingStrategy(firstColumnName, secondColumnName, thirdColumnName), true, false);
+        final DataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/Spreadsheet2007.xlsx"),
+                configuration);
+        final Table table = dataContext.getDefaultSchema().getTable(0);
+
+        assertNotNull(table.getColumnByName(firstColumnName));
+        assertNotNull(table.getColumnByName(secondColumnName));
+        assertNotNull(table.getColumnByName(thirdColumnName));
     }
 }

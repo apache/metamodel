@@ -64,6 +64,21 @@ public abstract class AbstractFilterBuilder<B> implements FilterBuilder<B> {
     }
 
     @Override
+    public B notIn(Collection<?> values) {
+        return applyFilter(new FilterItem(_selectItem, OperatorType.NOT_IN, values));
+    }
+
+    @Override
+    public B notIn(Number... numbers) {
+        return applyFilter(new FilterItem(_selectItem, OperatorType.NOT_IN, numbers));
+    }
+
+    @Override
+    public B notIn(String... strings) {
+        return applyFilter(new FilterItem(_selectItem, OperatorType.NOT_IN, strings));
+    }
+
+    @Override
     public B isNull() {
         return applyFilter(new FilterItem(_selectItem, OperatorType.EQUALS_TO, null));
     }
@@ -434,6 +449,15 @@ public abstract class AbstractFilterBuilder<B> implements FilterBuilder<B> {
         }
         return applyFilter(new FilterItem(_selectItem, OperatorType.LIKE, string));
     }
+
+    @Override
+    public B notLike(String string) {
+        if (string == null) {
+            throw new IllegalArgumentException("string cannot be null");
+        }
+        return applyFilter(new FilterItem(_selectItem, OperatorType.NOT_LIKE, string));
+    }
+
 
     @Override
     public B gt(Column column) {

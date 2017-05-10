@@ -103,10 +103,12 @@ public interface SatisfiedQueryBuilder<B extends SatisfiedQueryBuilder<?>> {
     public SatisfiedOrderByBuilder<B> orderBy(Column column);
 
     public GroupedQueryBuilder groupBy(String columnName);
+    
+    public GroupedQueryBuilder groupBy(String ... columnNames);
 
     public GroupedQueryBuilder groupBy(Column column);
 
-    public B groupBy(Column... columns);
+    public GroupedQueryBuilder groupBy(Column... columns);
 
     /**
      * Gets the built query as a {@link Query} object. Typically the returned

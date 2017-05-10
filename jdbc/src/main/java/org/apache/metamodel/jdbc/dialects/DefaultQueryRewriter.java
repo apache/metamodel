@@ -41,12 +41,16 @@ import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.query.SumAggregateFunction;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Generic query rewriter that adds syntax enhancements that are only possible
  * to resolve just before execution time.
  */
 public class DefaultQueryRewriter extends AbstractQueryRewriter {
+    
+    private static final Logger logger = LoggerFactory.getLogger(DefaultQueryRewriter.class);
 
     private static final String SPECIAL_ALIAS_CHARACTERS = "- ,.|*%()!#¤/\\=?;:~";
     private static final Set<Class<? extends FunctionType>> SUPPORTED_FUNCTION_CLASSES = new HashSet<>(
@@ -133,9 +137,10 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
                 return rewriteFilterItemWithOperandLiteral(item, timestampLiteral);
             } else if (operand instanceof Iterable || operand.getClass().isArray()) {
                 // operand is a set of values (typically in combination with an
-                // IN operator). Each individual element must be escaped.
+                // IN or NOT IN operator). Each individual element must be escaped.
 
-                assert OperatorType.IN.equals(item.getOperator());
+                assert OperatorType.IN.equals(item.getOperator()) ||
+                        OperatorType.NOT_IN.equals(item.getOperator());
 
                 @SuppressWarnings("unchecked")
                 final List<Object> elements = (List<Object>) CollectionUtils.toList(operand);

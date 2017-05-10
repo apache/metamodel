@@ -98,8 +98,7 @@ class FixedWidthDataSet extends AbstractDataSet {
 			if (columnNumber < stringValues.length) {
 				rowValues[i] = stringValues[columnNumber];
 			} else {
-				// Ticket #125: Missing values should be enterpreted as
-				// null.
+				// Ticket #125: Missing values should be interpreted as null.
 				rowValues[i] = null;
 			}
 		}

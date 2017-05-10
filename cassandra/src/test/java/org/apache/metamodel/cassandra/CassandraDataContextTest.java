@@ -32,6 +32,7 @@ import javax.swing.table.TableModel;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.data.FilteredDataSet;
+import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.parser.QueryParserException;
 import org.apache.metamodel.schema.ColumnType;
@@ -113,10 +114,25 @@ public class CassandraDataContextTest {
 
     @Test
     public void testWhereColumnEqualsValues() throws Exception {
-        DataSet ds = dc.query().from(testTableName).select("id").and("title").where("id").isEquals(firstRowId)
+        DataSet ds = dc.query().from(testTableName).select("id").and("title").where("title").isEquals(firstRowTitle)
                 .execute();
 
         assertEquals(FilteredDataSet.class, ds.getClass());
+        try {
+            assertTrue(ds.next());
+            assertEquals("Row[values=[" + firstRowId + ", " + firstRowTitle + "]]", ds.getRow().toString());
+            assertFalse(ds.next());
+        } finally {
+            ds.close();
+        }
+    }
+    
+    @Test
+    public void testPrimaryKeyLookup() throws Exception {
+        DataSet ds = dc.query().from(testTableName).select("id").and("title").where("id").isEquals(firstRowId)
+                .execute();
+
+        assertEquals(InMemoryDataSet.class, ds.getClass());
         try {
             assertTrue(ds.next());
             assertEquals("Row[values=[" + firstRowId + ", " + firstRowTitle + "]]", ds.getRow().toString());

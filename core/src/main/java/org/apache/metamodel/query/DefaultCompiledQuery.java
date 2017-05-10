@@ -101,7 +101,7 @@ public class DefaultCompiledQuery implements CompiledQuery {
                 final FilterItem newChildItem = copyFilterItem(childItem, values, parameterIndex);
                 newChildItems[i] = newChildItem;
             }
-            final FilterItem newFilter = new FilterItem(newChildItems);
+            final FilterItem newFilter = new FilterItem(item.getLogicalOperator(), newChildItems);
             return newFilter;
         } else {
             if (item.getOperand() instanceof QueryParameter) {

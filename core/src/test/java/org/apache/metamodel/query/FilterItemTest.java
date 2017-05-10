@@ -428,6 +428,34 @@ public class FilterItemTest extends TestCase {
         assertEquals("foo IN ()", new FilterItem(selectItem, OperatorType.IN, operand).toSql());
     }
 
+    public void testNotInOperandSql() throws Exception {
+        SelectItem selectItem = new SelectItem("foo", "foo");
+        Object operand = new String[] { "foo", "bar" };
+        assertEquals("foo NOT IN ('foo' , 'bar')", new FilterItem(selectItem, OperatorType.NOT_IN, operand).toSql());
+
+        operand = Arrays.asList("foo", "bar", "baz");
+        assertEquals("foo NOT IN ('foo' , 'bar' , 'baz')", new FilterItem(selectItem, OperatorType.NOT_IN, operand).toSql());
+
+        operand = "foo";
+        assertEquals("foo NOT IN ('foo')", new FilterItem(selectItem, OperatorType.NOT_IN, operand).toSql());
+
+        operand = new ArrayList<Object>();
+        assertEquals("foo NOT IN ()", new FilterItem(selectItem, OperatorType.NOT_IN, operand).toSql());
+    }
+
+    public void testNotLikeOperandSql() throws Exception {
+        Column column = new MutableColumn("foo");
+        SelectItem selectItem = new SelectItem(column);
+        String operand = "%foo";
+        assertEquals("foo NOT LIKE '%foo'", new FilterItem(selectItem, OperatorType.NOT_LIKE, operand).toSql());
+
+        operand = "foo%";
+        assertEquals("foo NOT LIKE 'foo%'", new FilterItem(selectItem, OperatorType.NOT_LIKE, operand).toSql());
+
+        operand = "%foo%foo%";
+        assertEquals("foo NOT LIKE '%foo%foo%'", new FilterItem(selectItem, OperatorType.NOT_LIKE, operand).toSql());
+    }
+
     public void testInOperandEvaluate() throws Exception {
         SelectItem selectItem = new SelectItem(new MutableColumn("foo", ColumnType.VARCHAR, null, 1, null, null, true,
                 null, false, null));

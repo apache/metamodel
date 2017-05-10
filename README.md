@@ -9,6 +9,7 @@ MetaModel is a data access framework, providing a common interface for explorati
 ### Mailing lists
 
  * Developer list:  dev@metamodel.apache.org
+ * User list:  user@metamodel.apache.org
  * Commits list:    commits@metamodel.apache.org
 
 ### Website
@@ -17,7 +18,7 @@ http://metamodel.apache.org/
 
 ### Documentation
 
-Please check out our [wiki for user documentation](http://wiki.apache.org/metamodel/).
+Please check out our [wiki for user documentation](https://cwiki.apache.org/confluence/display/METAMODEL).
 
 ### Building the code
 

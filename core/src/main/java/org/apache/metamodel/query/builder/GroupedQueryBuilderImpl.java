@@ -30,6 +30,7 @@ import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.query.parser.SelectItemParser;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.BaseObject;
@@ -96,7 +97,7 @@ final class GroupedQueryBuilderImpl extends BaseObject implements GroupedQueryBu
 
     @Override
     public ColumnSelectBuilder<GroupedQueryBuilder> select(String columnName) {
-        Column column = findColumn(columnName);
+        final Column column = findColumn(columnName);
         return select(column);
     }
 
@@ -196,8 +197,8 @@ final class GroupedQueryBuilderImpl extends BaseObject implements GroupedQueryBu
             for (FromItem fromItem : fromItems) {
                 final Table table = fromItem.getTable();
                 if (table != null) {
-                    logger.debug("Table available in FROM item: {}. Column names: {}", table,
-                            Arrays.toString(table.getColumnNames()));
+                    logger.debug("Table available in FROM item: {}. Column names: {}", table, Arrays.toString(table
+                            .getColumnNames()));
                 }
             }
         }
@@ -271,8 +272,14 @@ final class GroupedQueryBuilderImpl extends BaseObject implements GroupedQueryBu
 
     @Override
     public GroupedQueryBuilder groupBy(String columnName) {
-        Column column = findColumn(columnName);
+        final Column column = findColumn(columnName);
         return groupBy(column);
+    }
+
+    @Override
+    public GroupedQueryBuilder groupBy(String... columnNames) {
+        _query.groupBy(columnNames);
+        return this;
     }
 
     @Override
@@ -282,6 +289,21 @@ final class GroupedQueryBuilderImpl extends BaseObject implements GroupedQueryBu
         }
         _query.groupBy(columns);
         return this;
+    }
+
+    @Override
+    public HavingBuilder having(String columnExpression) {
+        final SelectItemParser parser = new SelectItemParser(_query, false);
+        final SelectItem selectItem = parser.findSelectItem(columnExpression);
+        return having(selectItem);
+    }
+    
+    @Override
+    public HavingBuilder having(SelectItem selectItem) {
+        if (selectItem == null) {
+            throw new IllegalArgumentException("selectItem cannot be null");
+        }
+        return new HavingBuilderImpl(selectItem, _query, this);
     }
 
     @Override

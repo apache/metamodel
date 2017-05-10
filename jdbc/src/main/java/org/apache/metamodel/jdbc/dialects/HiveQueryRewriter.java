@@ -24,7 +24,7 @@ import org.apache.metamodel.schema.ColumnType;
 /**
  * Query rewriter for Apache Hive
  */
-public class HiveQueryRewriter extends DefaultQueryRewriter implements IQueryRewriter {
+public class HiveQueryRewriter extends DefaultQueryRewriter {
 
     public HiveQueryRewriter(JdbcDataContext dataContext) {
         super(dataContext);
@@ -34,6 +34,16 @@ public class HiveQueryRewriter extends DefaultQueryRewriter implements IQueryRew
     public String rewriteColumnType(ColumnType columnType, Integer columnSize) {
         if (columnType == ColumnType.INTEGER) {
             return "INT";
+        }
+
+        if(columnType == ColumnType.STRING) {
+            return "STRING";
+        }
+
+        // Hive does not support VARCHAR without a width, nor VARCHAR(MAX).
+        // Returning max allowable column size instead.
+        if (columnType == ColumnType.VARCHAR && columnSize == null) {
+            return super.rewriteColumnType(columnType, 65535);
         }
         return super.rewriteColumnType(columnType, columnSize);
     }

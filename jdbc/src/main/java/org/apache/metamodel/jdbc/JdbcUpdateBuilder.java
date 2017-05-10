@@ -72,7 +72,7 @@ final class JdbcUpdateBuilder extends AbstractRowUpdationBuilder {
                 for (int i = 0; i < columns.length; i++) {
                     boolean explicitNull = explicitNulls[i];
                     if (values[i] != null || explicitNull) {
-                        JdbcUtils.setStatementValue(st, valueCounter, columns[i], values[i]);
+                        _queryRewriter.setStatementParameter(st, valueCounter, columns[i], values[i]);
 
                         valueCounter++;
                     }
@@ -84,7 +84,7 @@ final class JdbcUpdateBuilder extends AbstractRowUpdationBuilder {
                         final Object operand = whereItem.getOperand();
                         final Column column = whereItem.getSelectItem().getColumn();
 
-                        JdbcUtils.setStatementValue(st, valueCounter, column, operand);
+                        _queryRewriter.setStatementParameter(st, valueCounter, column, operand);
 
                         valueCounter++;
                     }

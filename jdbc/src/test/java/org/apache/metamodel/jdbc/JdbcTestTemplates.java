@@ -207,6 +207,13 @@ public class JdbcTestTemplates {
         assertFalse(ds.next());
         ds.close();
 
+        // NOT LIKE
+        ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("code").notLike("%1").execute();
+        assertTrue(ds.next());
+        assertEquals("2", ds.getRow().getValue(0).toString());
+        assertFalse(ds.next());
+        ds.close();
+
         // regular IN (with string)
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("code").in("C01", "C02")
                 .execute();
@@ -219,6 +226,21 @@ public class JdbcTestTemplates {
         ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("id").in(1.0, 2.0, 4.0).execute();
         assertTrue(ds.next());
         assertEquals("3", ds.getRow().getValue(0).toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        // regular NOT IN (with string)
+        ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("code").notIn("C01", "C02")
+                .execute();
+        assertTrue(ds.next());
+        assertEquals("1", ds.getRow().getValue(0).toString());
+        assertFalse(ds.next());
+        ds.close();
+
+        // regular NOT IN (with decimals)
+        ds = dc.query().from(schema.getTableByName("test_table")).selectCount().where("id").notIn(1.0, 2.0, 4.0).execute();
+        assertTrue(ds.next());
+        assertEquals("1", ds.getRow().getValue(0).toString());
         assertFalse(ds.next());
         ds.close();
 
