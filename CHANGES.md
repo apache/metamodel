@@ -3,6 +3,7 @@
  * [METAMODEL-6] - Added update summary containing information about changes on returning UpdateableDataContext.executeUpdate(..)
  * [METAMODEL-222] - Added support for Java 8 lambdas, removed support for Java 7.
  * [METAMODEL-1087] - Removed deprecated APIs from MetaModel's codebase.
+ * [METAMODEL-1139] - Employed Java 8 functional types (java.util.function) in favor of (now deprecated) Ref, Action, Func. 
 
 ### Apache MetaModel 4.6.0
 

@@ -28,6 +28,7 @@ import java.util.Map;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DefaultRow;
@@ -293,7 +294,7 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
     }
 
     @Override
-    public void executeUpdate(UpdateScript update) {
+    public UpdateSummary executeUpdate(UpdateScript update) {
         final DynamoDbUpdateCallback callback = new DynamoDbUpdateCallback(this);
         try {
             update.run(callback);
@@ -302,5 +303,6 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
                 Thread.currentThread().interrupt();
             }
         }
+        return callback.getUpdateSummary();
     }
 }
