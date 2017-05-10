@@ -22,8 +22,6 @@ import java.io.Closeable;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.table.TableModel;
-
 import org.apache.metamodel.query.SelectItem;
 
 /**
@@ -65,14 +63,6 @@ public interface DataSet extends Closeable, Iterable<Row> {
      */
     @Override
     public void close();
-
-    /**
-     * Converts the DataSet into a TableModel (will load all values into memory).
-     * 
-     * @deprecated instantiate a new {@link DataSetTableModel} instead.
-     */
-    @Deprecated
-    public TableModel toTableModel();
 
     /**
      * Converts the DataSet into a list of object arrays (will load all values

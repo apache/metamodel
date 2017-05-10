@@ -26,6 +26,7 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.Column;
@@ -110,20 +111,6 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
      */
     public ExcelConfiguration getConfiguration() {
         return _configuration;
-    }
-
-    /**
-     * Gets the Excel file being read.
-     * 
-     * @return a file.
-     * @deprecated
-     */
-    @Deprecated
-    public File getFile() {
-        if (_resource instanceof FileResource) {
-            return ((FileResource) _resource).getFile();
-        }
-        return null;
     }
 
     /**
@@ -225,8 +212,8 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
     }
 
     @Override
-    public void executeUpdate(UpdateScript update) {
-        ExcelUpdateCallback updateCallback = new ExcelUpdateCallback(this);
+    public UpdateSummary executeUpdate(UpdateScript update) {
+        final ExcelUpdateCallback updateCallback = new ExcelUpdateCallback(this);
         synchronized (WRITE_LOCK) {
             try {
                 update.run(updateCallback);
@@ -234,5 +221,6 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
                 updateCallback.close();
             }
         }
+        return updateCallback.getUpdateSummary();
     }
 }

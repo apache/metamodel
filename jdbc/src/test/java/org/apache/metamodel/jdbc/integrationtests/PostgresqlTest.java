@@ -24,6 +24,7 @@ import java.sql.DatabaseMetaData;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -33,8 +34,10 @@ import org.apache.metamodel.BatchUpdateScript;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
+import org.apache.metamodel.drop.DropTable;
 import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.jdbc.JdbcTestTemplates;
@@ -476,6 +479,42 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                 }
             });
         }
+    }
+
+    public void testGetGeneratedKeys() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        final JdbcDataContext dc = new JdbcDataContext(getConnection());
+        final Schema schema = dc.getDefaultSchema();
+        final String tableName = "my_table_with_generated_keys";
+        
+        if (schema.getTableByName(tableName) != null) {
+            dc.executeUpdate(new DropTable(schema, tableName));
+        }
+
+        final UpdateSummary updateSummary = dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback cb) {
+                Table table = cb.createTable(schema, tableName).withColumn("id").ofType(ColumnType.INTEGER)
+                        .ofNativeType("SERIAL").nullable(false).asPrimaryKey().withColumn("foo").ofType(
+                                ColumnType.STRING).execute();
+                assertEquals(tableName, table.getName());
+
+                cb.insertInto(table).value("foo", "hello").execute();
+                cb.insertInto(table).value("foo", "world").execute();
+            }
+        });
+
+        final Optional<Integer> insertedRows = updateSummary.getInsertedRows();
+        assertTrue(insertedRows.isPresent());
+        assertEquals(2, insertedRows.get().intValue());
+        
+        final Optional<Iterable<Object>> generatedKeys = updateSummary.getGeneratedKeys();
+        assertTrue(generatedKeys.isPresent());
+        assertEquals("[1, 2]", generatedKeys.get().toString());
+        
     }
 
     public void testBlob() throws Exception {

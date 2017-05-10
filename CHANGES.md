@@ -1,3 +1,9 @@
+### Apache MetaModel 5.0
+
+ * [METAMODEL-6] - Added update summary containing information about changes on returning UpdateableDataContext.executeUpdate(..)
+ * [METAMODEL-222] - Added support for Java 8 lambdas, removed support for Java 7.
+ * [METAMODEL-1087] - Removed deprecated APIs from MetaModel's codebase.
+
 ### Apache MetaModel 4.6.0
 
  * [METAMODEL-1136] - New connector for Amazon DynamoDB.

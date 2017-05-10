@@ -33,6 +33,7 @@ import java.util.List;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.EmptyDataSet;
@@ -132,90 +133,12 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
     }
 
     /**
-     * @deprecated use {@link #CsvDataContext(File, CsvConfiguration)} instead.
-     */
-    @Deprecated
-    public CsvDataContext(File file, char separatorChar) {
-        this(file, separatorChar, CsvConfiguration.DEFAULT_QUOTE_CHAR);
-    }
-
-    /**
-     * @deprecated use {@link #CsvDataContext(File, CsvConfiguration)} instead.
-     */
-    @Deprecated
-    public CsvDataContext(File file, char separatorChar, char quoteChar) {
-        this(file, new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, FileHelper.DEFAULT_ENCODING,
-                separatorChar, quoteChar, CsvConfiguration.DEFAULT_ESCAPE_CHAR));
-    }
-
-    /**
-     * @deprecated use {@link #CsvDataContext(File, CsvConfiguration)} instead.
-     */
-    @Deprecated
-    public CsvDataContext(File file, char separatorChar, char quoteChar, String encoding) {
-        this(file, new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, encoding, separatorChar, quoteChar,
-                CsvConfiguration.DEFAULT_ESCAPE_CHAR));
-    }
-
-    /**
-     * @deprecated use {@link #CsvDataContext(URL, CsvConfiguration)} instead.
-     */
-    @Deprecated
-    public CsvDataContext(URL url, char separatorChar, char quoteChar) {
-        this(url, separatorChar, quoteChar, FileHelper.DEFAULT_ENCODING);
-    }
-
-    /**
-     * @deprecated use {@link #CsvDataContext(URL, CsvConfiguration)} instead.
-     */
-    @Deprecated
-    public CsvDataContext(URL url, char separatorChar, char quoteChar, String encoding) {
-        this(url, new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, encoding, separatorChar, quoteChar,
-                CsvConfiguration.DEFAULT_ESCAPE_CHAR));
-    }
-
-    /**
-     * @deprecated use {@link #CsvDataContext(InputStream, CsvConfiguration)}
-     *             instead.
-     */
-    @Deprecated
-    public CsvDataContext(InputStream inputStream, char separatorChar, char quoteChar) {
-        this(inputStream, new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, FileHelper.DEFAULT_ENCODING,
-                separatorChar, quoteChar, CsvConfiguration.DEFAULT_ESCAPE_CHAR));
-    }
-
-    /**
-     * @deprecated use {@link #CsvDataContext(InputStream, CsvConfiguration)}
-     *             instead.
-     */
-    @Deprecated
-    public CsvDataContext(InputStream inputStream, char separatorChar, char quoteChar, String encoding) {
-        this(inputStream, new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, encoding, separatorChar,
-                quoteChar, CsvConfiguration.DEFAULT_ESCAPE_CHAR));
-    }
-
-    /**
      * Gets the CSV configuration used
      * 
      * @return a CSV configuration
      */
     public CsvConfiguration getConfiguration() {
         return _configuration;
-    }
-
-    /**
-     * Gets the CSV file being read
-     * 
-     * @return a file
-     * 
-     * @deprecated use {@link #getResource()} instead.
-     */
-    @Deprecated
-    public File getFile() {
-        if (_resource instanceof FileResource) {
-            return ((FileResource) _resource).getFile();
-        }
-        return null;
     }
 
     /**
@@ -419,9 +342,10 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
     }
 
     @Override
-    public void executeUpdate(UpdateScript update) {
+    public UpdateSummary executeUpdate(UpdateScript update) {
         checkWritable();
-        CsvUpdateCallback callback = new CsvUpdateCallback(this);
+        
+        final CsvUpdateCallback callback = new CsvUpdateCallback(this);
         synchronized (WRITE_LOCK) {
             try {
                 update.run(callback);
@@ -429,5 +353,6 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
                 callback.close();
             }
         }
+        return callback.getUpdateSummary();
     }
 }

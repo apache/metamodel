@@ -271,18 +271,6 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
         return orderBy(column, Direction.ASC);
     }
 
-    /**
-     * @deprecated use orderBy(Column, Direction) instead
-     */
-    @Deprecated
-    public Query orderBy(Column column, boolean ascending) {
-        if (ascending) {
-            return orderBy(column, Direction.ASC);
-        } else {
-            return orderBy(column, Direction.DESC);
-        }
-    }
-
     public Query orderBy(Column column, Direction direction) {
         SelectItem selectItem = _selectClause.getSelectItem(column);
         if (selectItem == null) {

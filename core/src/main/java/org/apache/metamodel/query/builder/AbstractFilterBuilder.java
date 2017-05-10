@@ -208,24 +208,12 @@ public abstract class AbstractFilterBuilder<B> implements FilterBuilder<B> {
         throw new UnsupportedOperationException("Argument must be a Boolean, Number, Date or String. Found: " + obj);
     }
 
-    @Deprecated
-    @Override
-    public B higherThan(Column arg) {
-        return greaterThan(arg);
-    }
-
     @Override
     public B greaterThan(Column column) {
         if (column == null) {
             throw new IllegalArgumentException("column cannot be null");
         }
         return applyFilter(new FilterItem(_selectItem, OperatorType.GREATER_THAN, new SelectItem(column)));
-    }
-
-    @Deprecated
-    @Override
-    public B higherThan(Date arg) {
-        return greaterThan(arg);
     }
 
     @Override
@@ -236,24 +224,12 @@ public abstract class AbstractFilterBuilder<B> implements FilterBuilder<B> {
         return applyFilter(new FilterItem(_selectItem, OperatorType.GREATER_THAN, date));
     }
 
-    @Deprecated
-    @Override
-    public B higherThan(Number arg) {
-        return greaterThan(arg);
-    }
-
     @Override
     public B greaterThan(Number number) {
         if (number == null) {
             throw new IllegalArgumentException("number cannot be null");
         }
         return applyFilter(new FilterItem(_selectItem, OperatorType.GREATER_THAN, number));
-    }
-
-    @Deprecated
-    @Override
-    public B higherThan(String arg) {
-        return greaterThan(arg);
     }
 
     @Override
@@ -578,36 +554,6 @@ public abstract class AbstractFilterBuilder<B> implements FilterBuilder<B> {
     @Override
     public B ne(Object obj) {
         return differentFrom(obj);
-    }
-
-    @Override
-    @Deprecated
-    public B equals(Boolean bool) {
-        return isEquals(bool);
-    }
-
-    @Override
-    @Deprecated
-    public B equals(Column column) {
-        return isEquals(column);
-    }
-
-    @Override
-    @Deprecated
-    public B equals(Date date) {
-        return isEquals(date);
-    }
-
-    @Override
-    @Deprecated
-    public B equals(Number number) {
-        return isEquals(number);
-    }
-
-    @Override
-    @Deprecated
-    public B equals(String string) {
-        return isEquals(string);
     }
 
     @Override

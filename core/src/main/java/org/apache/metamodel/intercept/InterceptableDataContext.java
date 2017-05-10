@@ -21,6 +21,7 @@ package org.apache.metamodel.intercept;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.create.TableCreationBuilder;
 import org.apache.metamodel.data.DataSet;
@@ -241,7 +242,7 @@ public class InterceptableDataContext implements UpdateableDataContext {
     }
 
     @Override
-    public void executeUpdate(UpdateScript update) {
+    public UpdateSummary executeUpdate(UpdateScript update) {
         if (!(_delegate instanceof UpdateableDataContext)) {
             throw new UnsupportedOperationException("Delegate is not an UpdateableDataContext");
         }
@@ -250,14 +251,13 @@ public class InterceptableDataContext implements UpdateableDataContext {
         if (_tableCreationInterceptors.isEmpty() && _tableDropInterceptors.isEmpty()
                 && _rowInsertionInterceptors.isEmpty() && _rowUpdationInterceptors.isEmpty()
                 && _rowDeletionInterceptors.isEmpty()) {
-            delegate.executeUpdate(update);
-            return;
+            return delegate.executeUpdate(update);
         }
 
-        UpdateScript interceptableUpdateScript = new InterceptableUpdateScript(this, update,
+        final UpdateScript interceptableUpdateScript = new InterceptableUpdateScript(this, update,
                 _tableCreationInterceptors, _tableDropInterceptors, _rowInsertionInterceptors,
                 _rowUpdationInterceptors, _rowDeletionInterceptors);
-        delegate.executeUpdate(interceptableUpdateScript);
+        return delegate.executeUpdate(interceptableUpdateScript);
     }
 
     @Override

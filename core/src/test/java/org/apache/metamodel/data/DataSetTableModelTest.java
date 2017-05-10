@@ -40,8 +40,7 @@ public class DataSetTableModelTest extends TestCase {
         rows.add(new DefaultRow(header, new Object[] { 2, "John", "Taylor" }));
         DataSet data = new InMemoryDataSet(header, rows);
 
-        @SuppressWarnings("deprecation")
-        TableModel tableModel = data.toTableModel();
+        TableModel tableModel = new DataSetTableModel(data);
         data.close();
 
         assertEquals(3, tableModel.getColumnCount());

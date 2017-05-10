@@ -108,17 +108,6 @@ public interface Row extends Serializable {
     /**
      * Creates a row similar to this one but only with a subset of the values.
      * 
-     * @param selectItems
-     *            the select items (~ columns) to sub-select the row with
-     * @return a new Row object containing only the select items requested
-     * @deprecated use {@link #getSubSelection(DataSetHeader)} instead.
-     */
-    @Deprecated
-    public Row getSubSelection(SelectItem[] selectItems);
-
-    /**
-     * Creates a row similar to this one but only with a subset of the values.
-     * 
      * @param header
      *            the new header to sub-select the row with
      * @return a new Row object containing only the select items in the newly

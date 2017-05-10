@@ -34,14 +34,19 @@ final class JdbcSimpleUpdateCallback extends JdbcUpdateCallback {
     public JdbcSimpleUpdateCallback(JdbcDataContext dataContext) {
         super(dataContext);
     }
-    
+
     @Override
     protected void closePreparedStatement(PreparedStatement preparedStatement) {
         FileHelper.safeClose(preparedStatement);
     }
 
     @Override
-    protected void executePreparedStatement(PreparedStatement st) throws SQLException {
-        st.executeUpdate();
+    protected int executePreparedStatement(PreparedStatement st) throws SQLException {
+        return st.executeUpdate();
+    }
+    
+    @Override
+    protected boolean isGeneratedKeysCollectionEnabled() {
+        return true;
     }
 }

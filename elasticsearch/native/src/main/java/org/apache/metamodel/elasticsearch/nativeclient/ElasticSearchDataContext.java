@@ -29,6 +29,7 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
@@ -90,7 +91,8 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     private final Client elasticSearchClient;
     private final String indexName;
-    // Table definitions that are set from the beginning, not supposed to be changed.
+    // Table definitions that are set from the beginning, not supposed to be
+    // changed.
     private final List<SimpleTableDef> staticTableDefinitions;
 
     // Table definitions that are discovered, these can change
@@ -149,8 +151,8 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         logger.info("Detecting schema for index '{}'", indexName);
 
         final ClusterState cs;
-        final ClusterStateRequestBuilder clusterStateRequestBuilder =
-                getElasticSearchClient().admin().cluster().prepareState();
+        final ClusterStateRequestBuilder clusterStateRequestBuilder = getElasticSearchClient().admin().cluster()
+                .prepareState();
 
         // different methods here to set the index name, so we have to use
         // reflection :-/
@@ -280,7 +282,8 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     @Override
     protected DataSet materializeMainSchemaTable(Table table, List<SelectItem> selectItems,
             List<FilterItem> whereItems, int firstRow, int maxRows) {
-        final QueryBuilder queryBuilder = ElasticSearchUtils.createQueryBuilderForSimpleWhere(whereItems, LogicalOperator.AND);
+        final QueryBuilder queryBuilder = ElasticSearchUtils.createQueryBuilderForSimpleWhere(whereItems,
+                LogicalOperator.AND);
         if (queryBuilder != null) {
             // where clause can be pushed down to an ElasticSearch query
             final SearchRequestBuilder searchRequest = createSearchRequest(table, firstRow, maxRows, queryBuilder);
@@ -358,10 +361,11 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     }
 
     @Override
-    public void executeUpdate(UpdateScript update) {
+    public UpdateSummary executeUpdate(UpdateScript update) {
         final ElasticSearchUpdateCallback callback = new ElasticSearchUpdateCallback(this);
         update.run(callback);
         callback.onExecuteUpdateFinished();
+        return callback.getUpdateSummary();
     }
 
     /**

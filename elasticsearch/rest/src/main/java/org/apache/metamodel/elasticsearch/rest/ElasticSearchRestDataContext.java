@@ -31,6 +31,7 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
@@ -84,8 +85,7 @@ import io.searchbox.params.Parameters;
  * This implementation supports either automatic discovery of a schema or manual
  * specification of a schema, through the {@link SimpleTableDef} class.
  */
-public class ElasticSearchRestDataContext extends QueryPostprocessDataContext implements
-        DataContext,
+public class ElasticSearchRestDataContext extends QueryPostprocessDataContext implements DataContext,
         UpdateableDataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchRestDataContext.class);
@@ -261,8 +261,8 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, List<SelectItem> selectItems, List<FilterItem> whereItems,
-            int firstRow, int maxRows) {
+    protected DataSet materializeMainSchemaTable(Table table, List<SelectItem> selectItems,
+            List<FilterItem> whereItems, int firstRow, int maxRows) {
         final QueryBuilder queryBuilder = ElasticSearchUtils.createQueryBuilderForSimpleWhere(whereItems,
                 LogicalOperator.AND);
         if (queryBuilder != null) {
@@ -371,11 +371,12 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
     }
 
     @Override
-    public void executeUpdate(UpdateScript update) {
+    public UpdateSummary executeUpdate(UpdateScript update) {
         final boolean isBatch = update instanceof BatchUpdateScript;
         final JestElasticSearchUpdateCallback callback = new JestElasticSearchUpdateCallback(this, isBatch);
         update.run(callback);
         callback.onExecuteUpdateFinished();
+        return callback.getUpdateSummary();
     }
 
     /**

@@ -167,12 +167,6 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
 
                     // check for simple queries with or without simple criteria
                     if (orderByItems.isEmpty()) {
-                        // no WHERE criteria set
-                        if (whereItems.isEmpty()) {
-                            final DataSet dataSet = materializeTable(table, selectItems, firstRow, maxRows);
-                            return dataSet;
-                        }
-
                         final DataSet dataSet = materializeTable(table, selectItems, whereItems, firstRow, maxRows);
                         return dataSet;
                     }
@@ -313,7 +307,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
 
             // Dispatching to the concrete subclass of
             // QueryPostprocessDataContextStrategy
-            dataSet = materializeTable(table, selectItemsToMaterialize, 1, -1);
+            dataSet = materializeTable(table, selectItemsToMaterialize, Collections.emptyList(), 1, -1);
 
         } else if (joinType != null) {
             // We need to (recursively) materialize a joined FromItem
@@ -436,12 +430,6 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
      */
     protected boolean isScalarFunctionMaterialized(ScalarFunction function) {
         return false;
-    }
-
-    @Deprecated
-    protected DataSet materializeTable(final Table table, final List<SelectItem> selectItems, final int firstRow,
-            final int maxRows) {
-        return materializeTable(table, selectItems, Collections.<FilterItem> emptyList(), firstRow, maxRows);
     }
 
     protected boolean isMainSchemaTable(Table table) {
@@ -597,17 +585,6 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         dataSet = selectionDataSet;
 
         return dataSet;
-    }
-
-    /**
-     * 
-     * @return
-     * 
-     * @deprecated use {@link #getDefaultSchema()} instead
-     */
-    @Deprecated
-    protected Schema getMainSchemaInternal() {
-        return getDefaultSchema();
     }
 
     /**

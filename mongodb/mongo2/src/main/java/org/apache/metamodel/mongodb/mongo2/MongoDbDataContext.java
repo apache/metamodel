@@ -31,6 +31,7 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
@@ -38,7 +39,6 @@ import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.mongodb.common.MongoDBUtils;
-import org.apache.metamodel.mongodb.common.MongoDbTableDef;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.OperatorType;
@@ -81,17 +81,6 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     private final SimpleTableDef[] _tableDefs;
     private WriteConcernAdvisor _writeConcernAdvisor;
     private Schema _schema;
-
-    /**
-     * Constructor available for backwards compatibility
-     *
-     * @deprecated use {@link #MongoDbDataContext(DB, SimpleTableDef...)}
-     *             instead
-     */
-    @Deprecated
-    public MongoDbDataContext(DB mongoDb, MongoDbTableDef... tableDefs) {
-        this(mongoDb, (SimpleTableDef[]) tableDefs);
-    }
 
     /**
      * Constructs a {@link MongoDbDataContext}. This constructor accepts a
@@ -287,9 +276,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                 // "SELECT [columns] FROM [table] WHERE [conditions]"
                 // query.
                 for (SelectItem selectItem : selectItems) {
-                    if (selectItem.getAggregateFunction() != null
-                            || selectItem.getScalarFunction() != null
-                                    || selectItem.getColumn() == null) {
+                    if (selectItem.hasFunction() || selectItem.getColumn() == null) {
                         allSelectItemsAreColumns = false;
                         break;
                     }
@@ -503,25 +490,26 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     /**
      * Executes an update with a specific {@link WriteConcernAdvisor}.
      */
-    public void executeUpdate(UpdateScript update, WriteConcernAdvisor writeConcernAdvisor) {
+    public UpdateSummary executeUpdate(UpdateScript update, WriteConcernAdvisor writeConcernAdvisor) {
         MongoDbUpdateCallback callback = new MongoDbUpdateCallback(this, writeConcernAdvisor);
         try {
             update.run(callback);
         } finally {
             callback.close();
         }
+        return callback.getUpdateSummary();
     }
 
     /**
      * Executes an update with a specific {@link WriteConcern}.
      */
-    public void executeUpdate(UpdateScript update, WriteConcern writeConcern) {
-        executeUpdate(update, new SimpleWriteConcernAdvisor(writeConcern));
+    public UpdateSummary executeUpdate(UpdateScript update, WriteConcern writeConcern) {
+        return executeUpdate(update, new SimpleWriteConcernAdvisor(writeConcern));
     }
 
     @Override
-    public void executeUpdate(UpdateScript update) {
-        executeUpdate(update, getWriteConcernAdvisor());
+    public UpdateSummary executeUpdate(UpdateScript update) {
+        return executeUpdate(update, getWriteConcernAdvisor());
     }
 
     /**

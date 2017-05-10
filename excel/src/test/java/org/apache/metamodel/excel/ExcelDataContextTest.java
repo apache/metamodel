@@ -22,8 +22,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
-
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.UpdateCallback;
@@ -39,7 +37,10 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
 import org.apache.metamodel.util.DateUtils;
 import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Month;
+
+import junit.framework.TestCase;
 
 public class ExcelDataContextTest extends TestCase {
 
@@ -74,7 +75,6 @@ public class ExcelDataContextTest extends TestCase {
         }
     }
 
-    @SuppressWarnings("deprecation")
     public void testEmptyFile() throws Exception {
         File file = copyOf("src/test/resources/empty_file.xls");
         ExcelDataContext dc = new ExcelDataContext(file);
@@ -86,7 +86,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals("sheet", table.getName());
         assertEquals(0, table.getColumnCount());
 
-        assertSame(file, dc.getFile());
+        assertSame(file, ((FileResource) dc.getResource()).getFile());
     }
 
     public void testEmptyFileNoHeaderLine() throws Exception {

@@ -57,26 +57,6 @@ public class OrderByItem extends BaseObject implements QueryItem, Cloneable {
 	}
 
 	/**
-	 * Creates an OrderByItem
-	 * 
-	 * @param selectItem
-	 * @param ascending
-	 * @deprecated user OrderByItem(SelectItem, Direction) instead
-	 */
-	@Deprecated
-	public OrderByItem(SelectItem selectItem, boolean ascending) {
-		if (selectItem == null) {
-			throw new IllegalArgumentException("SelectItem cannot be null");
-		}
-		_selectItem = selectItem;
-		if (ascending) {
-			_direction = Direction.ASC;
-		} else {
-			_direction = Direction.DESC;
-		}
-	}
-
-	/**
 	 * Creates an ascending OrderByItem
 	 * 
 	 * @param selectItem

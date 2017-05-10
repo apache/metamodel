@@ -466,27 +466,6 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
     }
 
     /**
-     * Gets the {@link FilterItem}s that this filter item consists of, if it is
-     * a compound filter item.
-     *
-     * @deprecated use {@link #getChildItems()} instead
-     */
-    @Deprecated
-    public FilterItem[] getOrItems() {
-        return getChildItems();
-    }
-
-    /**
-     * Gets the number of child items, if this is a compound filter item.
-     *
-     * @deprecated use {@link #getChildItemCount()} instead.
-     */
-    @Deprecated
-    public int getOrItemCount() {
-        return getChildItemCount();
-    }
-
-    /**
      * Get the number of child items, if this is a compound filter item.
      */
     public int getChildItemCount() {

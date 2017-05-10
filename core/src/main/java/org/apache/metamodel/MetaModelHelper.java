@@ -311,8 +311,8 @@ public final class MetaModelHelper {
             }
             final DataSetHeader groupByHeader = new CachingDataSetHeader(groupBySelects);
 
-            // Creates a list of SelectItems that have functions
-            List<SelectItem> functionItems = getFunctionSelectItems(selectItems);
+            // Creates a list of SelectItems that have aggregate functions
+            List<SelectItem> functionItems = getAggregateFunctionSelectItems(selectItems);
 
             // Loop through the dataset and identify groups
             while (dataSet.next()) {
@@ -503,23 +503,6 @@ public final class MetaModelHelper {
         }
 
         return new InMemoryDataSet(header, resultRows);
-    }
-
-    /**
-     * 
-     * @param selectItems
-     * @return
-     * 
-     * @deprecated use {@link #getAggregateFunctionSelectItems(Iterable)} or
-     *             {@link #getScalarFunctionSelectItems(Iterable)} instead
-     */
-    @Deprecated
-    public static List<SelectItem> getFunctionSelectItems(Iterable<SelectItem> selectItems) {
-        return CollectionUtils.filter(selectItems, selectItem -> {
-            @SuppressWarnings("deprecation")
-            final FunctionType function = selectItem.getFunction();
-            return function != null;
-        });
     }
 
     public static List<SelectItem> getAggregateFunctionSelectItems(Iterable<SelectItem> selectItems) {

@@ -23,8 +23,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.table.TableModel;
-
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
@@ -37,15 +35,6 @@ import org.apache.metamodel.util.BaseObject;
 public abstract class AbstractDataSet extends BaseObject implements DataSet {
 
     private final DataSetHeader _header;
-
-    /**
-     * @deprecated use one of the other constructors, to provide header
-     *             information.
-     */
-    @Deprecated
-    public AbstractDataSet() {
-        _header = null;
-    }
 
     public AbstractDataSet(SelectItem[] selectItems) {
         this(Arrays.asList(selectItems));
@@ -104,15 +93,6 @@ public abstract class AbstractDataSet extends BaseObject implements DataSet {
     @Override
     public void close() {
         // do nothing
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final TableModel toTableModel() {
-        TableModel tableModel = new DataSetTableModel(this);
-        return tableModel;
     }
 
     /**
