@@ -61,6 +61,7 @@ under the License.
 		<module>core</module>
 		<module>pojo</module>
 		<module>fixedwidth</module>
+		<module>dynamodb</module>
 		<module>excel</module>
 		<module>csv</module>
 		<module>json</module>
@@ -378,6 +379,8 @@ under the License.
 							<exclude>**/src/assembly/metamodel-packaged-assembly-descriptor.xml</exclude>
 							<exclude>**/.gitignore/**</exclude>
 							<exclude>.git/**</exclude>
+							<exclude>.gitattributes</exclude>
+							<exclude>**/.toDelete</exclude>
 							<exclude>**/src/main/resources/META-INF/services/**</exclude>
 							<exclude>**/src/test/resources/**</exclude>
 							<exclude>**/src/site/**</exclude>

@@ -70,6 +70,11 @@ public class SyntaxExamplesTest extends TestCase {
         dc.query().from(table1).selectCount().select(col1).groupBy(col1).having(FunctionType.SUM, col1).greaterThan(3)
                 .orderBy(col1).asc();
     }
+    
+    public void testMultiGroupByAndHaving() throws Exception {
+        dc.query().from(table1).select("foo", "bar", "COUNT(*)").groupBy("foo","bar").having("COUNT(*)").greaterThan(3)
+                .orderBy(col1).asc();
+    }
 
     public void testMultipleTables() throws Exception {
         Query q = dc.query().from(table1).as("t1").and(table2).as("t2").select(col1).where(col1).greaterThan(col2)

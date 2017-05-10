@@ -193,9 +193,9 @@ public class DataContextFactory {
      */
     public static UpdateableDataContext createCsvDataContext(File file, char separatorChar, char quoteChar,
             String encoding) {
-        CsvConfiguration configuration = new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, encoding,
+        final CsvConfiguration configuration = new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, encoding,
                 separatorChar, quoteChar, CsvConfiguration.DEFAULT_ESCAPE_CHAR);
-        CsvDataContext dc = new CsvDataContext(file, configuration);
+        final CsvDataContext dc = new CsvDataContext(file, configuration);
         return dc;
     }
 
@@ -209,7 +209,7 @@ public class DataContextFactory {
      * @return a DataContext object that matches the request
      */
     public static UpdateableDataContext createCsvDataContext(File file, CsvConfiguration configuration) {
-        CsvDataContext dc = new CsvDataContext(file, configuration);
+        final CsvDataContext dc = new CsvDataContext(file, configuration);
         return dc;
     }
 
@@ -243,9 +243,9 @@ public class DataContextFactory {
      */
     public static DataContext createCsvDataContext(InputStream inputStream, char separatorChar, char quoteChar,
             String encoding) {
-        CsvConfiguration configuration = new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, encoding,
+        final CsvConfiguration configuration = new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, encoding,
                 separatorChar, quoteChar, CsvConfiguration.DEFAULT_ESCAPE_CHAR);
-        CsvDataContext dc = new CsvDataContext(inputStream, configuration);
+        final CsvDataContext dc = new CsvDataContext(inputStream, configuration);
         return dc;
     }
 
@@ -259,7 +259,7 @@ public class DataContextFactory {
      * @return a DataContext object that matches the request
      */
     public static DataContext createCsvDataContext(InputStream inputStream, CsvConfiguration configuration) {
-        CsvDataContext dc = new CsvDataContext(inputStream, configuration);
+        final CsvDataContext dc = new CsvDataContext(inputStream, configuration);
         return dc;
     }
 
@@ -289,14 +289,14 @@ public class DataContextFactory {
      * @return a DataContext object that matches the request
      */
     public static DataContext createFixedWidthDataContext(File file, FixedWidthConfiguration configuration) {
-        FixedWidthDataContext dc = new FixedWidthDataContext(file, configuration);
+        final FixedWidthDataContext dc = new FixedWidthDataContext(file, configuration);
         return dc;
     }
     /**
     * Creates a DataContext based on a fixed width file.
     * 
-    * @param file
-    *            the file to read from.
+    * @param resource
+    *            the resource to read from.
     * @param configuration
     *            the fixed width configuration to use
     * @return a DataContext object that matches the request
@@ -567,7 +567,7 @@ public class DataContextFactory {
             } else {
                 serverAddress = new ServerAddress(hostname, port);
             }
-            MongoClient mongoClient = null;
+            final MongoClient mongoClient;
             final MongoDatabase mongoDb;
             if (Strings.isNullOrEmpty(username)) {
                 mongoClient = new MongoClient(serverAddress);
@@ -649,7 +649,7 @@ public class DataContextFactory {
     public static UpdateableDataContext createCouchDbDataContext(String hostname, Integer port, String username,
             String password, SimpleTableDef[] tableDefs) {
 
-        Builder httpClientBuilder = new Builder();
+        final Builder httpClientBuilder = new Builder();
         httpClientBuilder.host(hostname);
         if (port != null) {
             httpClientBuilder.port(port);

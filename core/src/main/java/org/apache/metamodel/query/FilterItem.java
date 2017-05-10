@@ -60,7 +60,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
      * Private constructor, used for cloning
      */
     private FilterItem(SelectItem selectItem, OperatorType operator, Object operand, List<FilterItem> orItems,
-            String expression, LogicalOperator logicalOperator) {
+                       String expression, LogicalOperator logicalOperator) {
         _selectItem = selectItem;
         _operator = operator;
         _operand = validateOperand(operand);
@@ -103,7 +103,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
             require("Can only use EQUALS or DIFFERENT_FROM operator with null-operand",
                     _operator == OperatorType.DIFFERENT_FROM || _operator == OperatorType.EQUALS_TO);
         }
-        if (_operator == OperatorType.LIKE) {
+        if (_operator == OperatorType.LIKE || _operator == OperatorType.NOT_LIKE) {
             ColumnType type = _selectItem.getColumn().getType();
             if (type != null) {
                 require("Can only use LIKE operator with strings", type.isLiteral()
@@ -295,7 +295,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
         sb.append(operator.toSql());
         sb.append(' ');
 
-        if (operator == OperatorType.IN) {
+        if (operator == OperatorType.IN || operator == OperatorType.NOT_IN) {
             operand = CollectionUtils.toList(operand);
         }
         return operand;
@@ -375,9 +375,15 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
         } else if (_operator == OperatorType.LIKE) {
             WildcardPattern matcher = new WildcardPattern((String) operandValue, '%');
             return matcher.matches((String) selectItemValue);
+        } else if (_operator == OperatorType.NOT_LIKE) {
+            WildcardPattern matcher = new WildcardPattern((String) operandValue, '%');
+            return !matcher.matches((String) selectItemValue);
         } else if (_operator == OperatorType.IN) {
             Set<?> inValues = getInValues();
             return inValues.contains(selectItemValue);
+        } else if (_operator == OperatorType.NOT_IN) {
+            Set<?> inValues = getInValues();
+            return !inValues.contains(selectItemValue);
         } else {
             throw new IllegalStateException("Operator could not be determined");
         }

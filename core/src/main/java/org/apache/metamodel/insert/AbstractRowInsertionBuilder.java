@@ -84,7 +84,10 @@ public abstract class AbstractRowInsertionBuilder<U extends UpdateCallback> exte
         sb.append(") VALUES (");
         Object[] values = getValues();
         for (int i = 0; i < values.length; i++) {
-            Object value = values[i];
+            if (i != 0) {
+                sb.append(',');
+            }
+            final Object value = values[i];
             final String stringValue;
             if (value == null) {
                 stringValue = "NULL";

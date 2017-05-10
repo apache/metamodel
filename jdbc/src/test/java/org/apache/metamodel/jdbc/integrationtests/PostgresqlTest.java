@@ -22,8 +22,10 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.table.TableModel;
@@ -68,12 +70,12 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
     protected String getPropertyPrefix() {
         return "postgresql";
     }
-    
+
     public void testTimestampValueInsertSelect() throws Exception {
         if (!isConfigured()) {
             return;
         }
-        
+
         final Connection connection = getConnection();
         JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.MICROSECONDS);
     }
@@ -116,8 +118,8 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                Table table = callback.createTable(dc.getDefaultSchema(), "test_table").withColumn("foo")
-                        .ofType(ColumnType.INTEGER).withColumn("bar").ofType(ColumnType.VARCHAR).execute();
+                Table table = callback.createTable(dc.getDefaultSchema(), "test_table").withColumn("foo").ofType(
+                        ColumnType.INTEGER).withColumn("bar").ofType(ColumnType.VARCHAR).execute();
                 callback.insertInto(table).value("foo", 1).value("bar", "hello").execute();
                 callback.insertInto(table).value("foo", 2).value("bar", "there").execute();
                 callback.insertInto(table).value("foo", 3).value("bar", "world").execute();
@@ -200,10 +202,10 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback cb) {
-                Table table = cb.createTable(schema, "my_table").withColumn("id").asPrimaryKey()
-                        .ofType(ColumnType.INTEGER).ofNativeType("SERIAL").nullable(false).withColumn("name")
-                        .ofType(ColumnType.VARCHAR).ofSize(10).withColumn("foo").ofType(ColumnType.BOOLEAN)
-                        .nullable(true).withColumn("bar").ofType(ColumnType.BOOLEAN).nullable(true).execute();
+                Table table = cb.createTable(schema, "my_table").withColumn("id").asPrimaryKey().ofType(
+                        ColumnType.INTEGER).ofNativeType("SERIAL").nullable(false).withColumn("name").ofType(
+                                ColumnType.VARCHAR).ofSize(10).withColumn("foo").ofType(ColumnType.BOOLEAN).nullable(
+                                        true).withColumn("bar").ofType(ColumnType.BOOLEAN).nullable(true).execute();
 
                 assertEquals("my_table", table.getName());
             }
@@ -270,9 +272,9 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
             @Override
             public void run(UpdateCallback cb) {
                 Table table = cb.createTable(schema, "my_table").withColumn("id").ofType(ColumnType.INTEGER)
-                        .ofNativeType("SERIAL").nullable(false).withColumn("name").ofType(ColumnType.VARCHAR)
-                        .ofSize(10).withColumn("foo").ofType(ColumnType.BOOLEAN).nullable(true).withColumn("bar")
-                        .ofType(ColumnType.BOOLEAN).nullable(true).execute();
+                        .ofNativeType("SERIAL").nullable(false).withColumn("name").ofType(ColumnType.VARCHAR).ofSize(10)
+                        .withColumn("foo").ofType(ColumnType.BOOLEAN).nullable(true).withColumn("bar").ofType(
+                                ColumnType.BOOLEAN).nullable(true).execute();
 
                 assertEquals("my_table", table.getName());
             }
@@ -330,6 +332,51 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                 }
             });
         }
+    }
+
+    public void testJsonAndJsonbDatatypes() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+
+        final JdbcDataContext dc = new JdbcDataContext(getConnection());
+
+        final Schema schema = dc.getDefaultSchema();
+
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback cb) {
+                final Table table = cb.createTable(schema, "json_datatypes_table").withColumn("id").ofType(ColumnType.INTEGER)
+                        .ofNativeType("SERIAL").asPrimaryKey().nullable(false).withColumn("col_json").ofNativeType(
+                                "json").withColumn("col_jsonb").ofNativeType("jsonb").execute();
+                assertEquals("json_datatypes_table", table.getName());
+
+                final Map<String, Object> map = new HashMap<>();
+                map.put("foo", "bar");
+                cb.insertInto(table).value("id", 1).value("col_json", map).execute();
+                cb.insertInto(table).value("id", 2).value("col_jsonb", "{'foo':'baz'}".replace('\'', '"')).execute();
+            }
+        });
+
+        try {
+            final DataSet ds = dc.query().from("json_datatypes_table").select("col_json", "col_jsonb").execute();
+            
+            assertTrue(ds.next());
+            assertEquals("Row[values=[{foo=bar}, null]]", ds.getRow().toString());
+            assertTrue(ds.getRow().getValue(0) instanceof Map);
+            assertTrue(ds.next());
+            assertEquals("Row[values=[null, {foo=baz}]]", ds.getRow().toString());
+            assertTrue(ds.getRow().getValue(1) instanceof Map);
+            assertFalse(ds.next());
+        } finally {
+            dc.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback cb) {
+                    cb.dropTable("json_datatypes_table").execute();
+                }
+            });
+        }
+
     }
 
     /**
@@ -418,7 +465,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
             assertTrue(ds.next());
             Double nAn = (Double) ds.getRow().getValue(ds.getSelectItems()[0]);
             assertFalse(ds.next());
-    
+
             assertEquals(Double.MIN_VALUE, minVal, DELTA);
             assertEquals(Double.MAX_VALUE, maxVal, DELTA);
             assertTrue(Double.isInfinite(negInf));
@@ -469,7 +516,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         assertEquals("[1, 2]", generatedKeys.get().toString());
         
     }
-    
+
     public void testBlob() throws Exception {
         if (!isConfigured()) {
             return;
@@ -555,8 +602,8 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                 @Override
                 public void run(UpdateCallback cb) {
                     Table table = cb.createTable(schema, "my_table").withColumn("id").ofType(ColumnType.INTEGER)
-                            .ofNativeType("SERIAL").nullable(false).withColumn("person name").ofSize(255)
-                            .withColumn("age").ofType(ColumnType.INTEGER).execute();
+                            .ofNativeType("SERIAL").nullable(false).withColumn("person name").ofSize(255).withColumn(
+                                    "age").ofType(ColumnType.INTEGER).execute();
                     assertEquals("[id, person name, age]", Arrays.toString(table.getColumnNames()));
                     assertEquals(
                             "Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=serial,columnSize=10]",
@@ -621,8 +668,8 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                 @Override
                 public void run(UpdateCallback cb) {
                     Table table = cb.createTable(schema, "my_table").withColumn("id").ofType(ColumnType.INTEGER)
-                            .ofNativeType("SERIAL").nullable(false).withColumn("person name").ofSize(255)
-                            .withColumn("age").ofType(ColumnType.INTEGER).execute();
+                            .ofNativeType("SERIAL").nullable(false).withColumn("person name").ofSize(255).withColumn(
+                                    "age").ofType(ColumnType.INTEGER).execute();
                     assertEquals("[id, person name, age]", Arrays.toString(table.getColumnNames()));
                     assertEquals(
                             "Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=serial,columnSize=10]",
@@ -674,8 +721,8 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                 @Override
                 public void run(UpdateCallback cb) {
                     Table table = cb.createTable(schema, "my_table").withColumn("id").ofType(ColumnType.INTEGER)
-                            .ofNativeType("SERIAL").nullable(false).withColumn("person name").ofSize(255)
-                            .withColumn("age").ofType(ColumnType.INTEGER).execute();
+                            .ofNativeType("SERIAL").nullable(false).withColumn("person name").ofSize(255).withColumn(
+                                    "age").ofType(ColumnType.INTEGER).execute();
                     assertEquals("[id, person name, age]", Arrays.toString(table.getColumnNames()));
                     assertEquals(
                             "Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=serial,columnSize=10]",
@@ -745,10 +792,9 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
 
         assertEquals("[Table[name=categories,type=TABLE,remarks=null], "
                 + "Table[name=cust_hist,type=TABLE,remarks=null], " + "Table[name=customers,type=TABLE,remarks=null], "
-                + "Table[name=inventory,type=TABLE,remarks=null], "
-                + "Table[name=orderlines,type=TABLE,remarks=null], " + "Table[name=orders,type=TABLE,remarks=null], "
-                + "Table[name=products,type=TABLE,remarks=null], " + "Table[name=reorder,type=TABLE,remarks=null]]",
-                Arrays.toString(schema.getTables()));
+                + "Table[name=inventory,type=TABLE,remarks=null], " + "Table[name=orderlines,type=TABLE,remarks=null], "
+                + "Table[name=orders,type=TABLE,remarks=null], " + "Table[name=products,type=TABLE,remarks=null], "
+                + "Table[name=reorder,type=TABLE,remarks=null]]", Arrays.toString(schema.getTables()));
 
         Table productsTable = schema.getTableByName("products");
         assertEquals(
@@ -843,7 +889,8 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         Column quantityColumn = orderlinesTable.getColumnByName("quantity");
 
         q.from(orderlinesTable);
-        q.where(new FilterItem(new SelectItem(prodIdColumn), OperatorType.EQUALS_TO, new SelectItem(commonProdIdColumn)));
+        q.where(new FilterItem(new SelectItem(prodIdColumn), OperatorType.EQUALS_TO, new SelectItem(
+                commonProdIdColumn)));
         q.groupBy(titleColumn);
         q.getSelectClause().removeItem(q.getSelectClause().getSelectItem(productPriceColumn));
         SelectItem quantitySum = new SelectItem(FunctionType.SUM, quantityColumn).setAlias("orderAmount");
@@ -854,7 +901,8 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         assertEquals("SELECT \"products\".\"title\" AS product-title, SUM(\"orderlines\".\"quantity\") AS orderAmount "
                 + "FROM public.\"products\", public.\"orderlines\" "
                 + "WHERE \"products\".\"prod_id\" = \"orderlines\".\"prod_id\" " + "GROUP BY \"products\".\"title\" "
-                + "HAVING SUM(\"orderlines\".\"quantity\") > 25 " + "ORDER BY \"products\".\"title\" ASC", q.toString());
+                + "HAVING SUM(\"orderlines\".\"quantity\") > 25 " + "ORDER BY \"products\".\"title\" ASC", q
+                        .toString());
         data = dc.executeQuery(q);
         tableModel = new DataSetTableModel(data);
         assertEquals(2, tableModel.getColumnCount());
@@ -895,8 +943,8 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                 @Override
                 public void run(UpdateCallback cb) {
                     Table table = cb.createTable(schema, "my_table").withColumn("id").ofType(ColumnType.INTEGER)
-                            .ofNativeType("SERIAL").nullable(false).withColumn("person name").ofSize(255)
-                            .withColumn("age").ofType(ColumnType.INTEGER).execute();
+                            .ofNativeType("SERIAL").nullable(false).withColumn("person name").ofSize(255).withColumn(
+                                    "age").ofType(ColumnType.INTEGER).execute();
                     assertEquals("[id, person name, age]", Arrays.toString(table.getColumnNames()));
                     assertEquals(
                             "Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=serial,columnSize=10]",

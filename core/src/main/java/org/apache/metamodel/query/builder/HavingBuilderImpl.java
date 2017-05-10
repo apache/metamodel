@@ -27,61 +27,59 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 
-final class HavingBuilderImpl extends
-		AbstractQueryFilterBuilder<SatisfiedHavingBuilder> implements
-		HavingBuilder, SatisfiedHavingBuilder {
+final class HavingBuilderImpl extends AbstractQueryFilterBuilder<SatisfiedHavingBuilder> implements
+        HavingBuilder,
+        SatisfiedHavingBuilder {
 
-	private final Query _query;
-	private final List<FilterItem> _orFilters;
-	private FilterItem _parentOrFilter;
+    private final Query _query;
+    private final List<FilterItem> _orFilters;
+    private FilterItem _parentOrFilter;
 
-	public HavingBuilderImpl(FunctionType function, Column column, Query query,
-			GroupedQueryBuilder queryBuilder) {
-		super(new SelectItem(function, column), queryBuilder);
-		_query = query;
-		_orFilters = new ArrayList<FilterItem>();
-	}
+    public HavingBuilderImpl(SelectItem selectItem, Query query, GroupedQueryBuilder queryBuilder) {
+        super(selectItem, queryBuilder);
+        _query = query;
+        _orFilters = new ArrayList<FilterItem>();
+    }
 
-	public HavingBuilderImpl(FunctionType function, Column column, Query query,
-			FilterItem parentOrFilter, List<FilterItem> orFilters,
-			GroupedQueryBuilder queryBuilder) {
-		super(new SelectItem(function, column), queryBuilder);
-		_query = query;
-		_orFilters = orFilters;
-		_parentOrFilter = parentOrFilter;
-	}
+    public HavingBuilderImpl(FunctionType function, Column column, Query query, GroupedQueryBuilder queryBuilder) {
+        this(new SelectItem(function, column), query, queryBuilder);
+    }
 
-	@Override
-	protected SatisfiedHavingBuilder applyFilter(FilterItem filter) {
-		if (_parentOrFilter == null) {
-			_query.having(filter);
-		} else {
-			if (_parentOrFilter.getChildItemCount() == 1) {
-				_query.getHavingClause().removeItem(_orFilters.get(0));
-				_query.getHavingClause().addItem(_parentOrFilter);
-			}
-		}
-		_orFilters.add(filter);
-		return this;
-	}
+    public HavingBuilderImpl(FunctionType function, Column column, Query query, FilterItem parentOrFilter,
+            List<FilterItem> orFilters, GroupedQueryBuilder queryBuilder) {
+        this(function, column, query, queryBuilder);
+    }
 
-	@Override
-	public HavingBuilder or(FunctionType function, Column column) {
-		if (function == null) {
-			throw new IllegalArgumentException("function cannot be null");
-		}
-		if (column == null) {
-			throw new IllegalArgumentException("column cannot be null");
-		}
-		if (_parentOrFilter == null) {
-			_parentOrFilter = new FilterItem(_orFilters);
-		}
-		return new HavingBuilderImpl(function, column, _query, _parentOrFilter,
-				_orFilters, getQueryBuilder());
-	}
+    @Override
+    protected SatisfiedHavingBuilder applyFilter(FilterItem filter) {
+        if (_parentOrFilter == null) {
+            _query.having(filter);
+        } else {
+            if (_parentOrFilter.getChildItemCount() == 1) {
+                _query.getHavingClause().removeItem(_orFilters.get(0));
+                _query.getHavingClause().addItem(_parentOrFilter);
+            }
+        }
+        _orFilters.add(filter);
+        return this;
+    }
 
-	@Override
-	public HavingBuilder and(FunctionType function, Column column) {
-		return getQueryBuilder().having(function, column);
-	}
+    @Override
+    public HavingBuilder or(FunctionType function, Column column) {
+        if (function == null) {
+            throw new IllegalArgumentException("function cannot be null");
+        }
+        if (column == null) {
+            throw new IllegalArgumentException("column cannot be null");
+        }
+        if (_parentOrFilter == null) {
+            _parentOrFilter = new FilterItem(_orFilters);
+        }
+        return new HavingBuilderImpl(function, column, _query, _parentOrFilter, _orFilters, getQueryBuilder());
+    }
+
+    @Override
+    public HavingBuilder and(FunctionType function, Column column) {
+        return getQueryBuilder().having(function, column);
+    }
 }

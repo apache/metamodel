@@ -105,6 +105,7 @@ final class SalesforceTable extends AbstractTable {
         case _int:
             return ColumnType.INTEGER;
         case _double:
+        case currency:
             return ColumnType.DOUBLE;
         case date:
             return ColumnType.DATE;
@@ -120,7 +121,6 @@ final class SalesforceTable extends AbstractTable {
         case textarea:
         case encryptedstring:
         case base64:
-        case currency:
         case id:
         case picklist:
             return ColumnType.VARCHAR;

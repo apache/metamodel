@@ -36,17 +36,7 @@ under the License.
 		<dependency>
 			<groupId>com.force.api</groupId>
 			<artifactId>force-partner-api</artifactId>
-			<version>24.0.0</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>gson</artifactId>
-					<groupId>com.google.code.gson</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>js</artifactId>
-					<groupId>rhino</groupId>
-				</exclusion>
-			</exclusions>
+			<version>35.0.1</version>
 		</dependency>
 
 		<!-- provided -->

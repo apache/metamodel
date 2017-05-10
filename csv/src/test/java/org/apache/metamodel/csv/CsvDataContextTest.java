@@ -48,6 +48,7 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.MutableRef;
 
@@ -828,4 +829,26 @@ public class CsvDataContextTest extends TestCase {
     // e.getMessage());
     // }
     // }
+
+    public void testCustomColumnNames() throws Exception {
+        final String firstColumnName = "first";
+        final String secondColumnName = "second";
+        final String thirdColumnName = "third";
+        final String fourthColumnName = "fourth";
+
+        final CsvConfiguration configuration = new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE,
+                new CustomColumnNamingStrategy(firstColumnName, secondColumnName, thirdColumnName, fourthColumnName),
+                FileHelper.DEFAULT_ENCODING, CsvConfiguration.DEFAULT_SEPARATOR_CHAR,
+                CsvConfiguration.DEFAULT_QUOTE_CHAR, CsvConfiguration.DEFAULT_ESCAPE_CHAR, false, true);
+
+        final DataContext dataContext = new CsvDataContext(new File("src/test/resources/csv_people.csv"),
+                configuration);
+
+        final Table table = dataContext.getDefaultSchema().getTable(0);
+
+        assertNotNull(table.getColumnByName(firstColumnName));
+        assertNotNull(table.getColumnByName(secondColumnName));
+        assertNotNull(table.getColumnByName(thirdColumnName));
+        assertNotNull(table.getColumnByName(fourthColumnName));
+    }
 }

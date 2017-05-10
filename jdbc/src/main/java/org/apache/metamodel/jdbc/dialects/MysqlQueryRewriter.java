@@ -24,7 +24,7 @@ import org.apache.metamodel.schema.ColumnType;
 /**
  * Query rewriter for MySQL
  */
-public class MysqlQueryRewriter extends LimitOffsetQueryRewriter implements IQueryRewriter {
+public class MysqlQueryRewriter extends LimitOffsetQueryRewriter {
 
     public MysqlQueryRewriter(JdbcDataContext dataContext) {
         super(dataContext);

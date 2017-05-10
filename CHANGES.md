@@ -4,14 +4,42 @@
  * [METAMODEL-222] - Added support for Java 8 lambdas, removed support for Java 7.
  * [METAMODEL-1087] - Removed deprecated APIs from MetaModel's codebase.
 
-### Apache MetaModel 4.5.4 (work in progress)
+### Apache MetaModel 4.6.0
+
+ * [METAMODEL-1136] - New connector for Amazon DynamoDB.
+ * [METAMODEL-1134] - Added NOT IN and NOT LIKE operators to WHERE filters.
+ * [METAMODEL-1133] - Made PojoDataContext thread-safe.
+
+### Apache MetaModel 4.5.5
+
+ * [METAMODEL-1132] - Support native paging on SQL Server and Oracle database.
+ * [METAMODEL-1128] - Fixed bug pertaining to ElasticSearch REST data set scrolling.
+ * [METAMODEL-1118] - Fixed bug pertaining to cloning of FilterItem.LogicalOperator in compiled queries.
+ * [METAMODEL-1111] - Added WHERE rewrite for Oracle when empty strings are considered as NULL.
+ * [METAMODEL-1122] - Optimized the way the Cassandra module executes primary key lookup queries.
+ * [METAMODEL-1109] - Fixed diacritics/encoding issue with Fixed Width reader.
+ * [METAMODEL-1115] - Added support for passing your own PartnerConnection object to the Salesforce.com connector.
+ * [METAMODEL-1113] - Fixed support for ColumnNamingStrategy in CSV connector.
+ * [METAMODEL-1114] - Added support for ColumnNamingStrategy in EBCDIC connector.
+ * [METAMODEL-1119] - Worked around Hive JDBC driver issues, avoiding non-compliant metadata calls.
+ * [METAMODEL-1123] - Fixed the treatment of a Salesforce.com 'currency' value as a number, not a string.
+ * [METAMODEL-1124] - Fixed the date formatting of date values in MS SQL server.
+ * [METAMODEL-1127] - Fixed setting of null Map on postgres
+ 
+### Apache MetaModel 4.5.4
 
  * [METAMODEL-1099] - Created a new DataContextFactory SPI and a extensible registry of implementations based on ServiceLoader.
+ * [METAMODEL-1099] - Implemented DataContextFactory SPI for connectors: JDBC, CSV, ElasticSearch
+ * [METAMODEL-250] - Added support for EBCDIC files (part of 'fixedwidth' module).
+ * [METAMODEL-1103] - Fixed a bug pertaining to anchoring of wildcards in LIKE operands.
  * [METAMODEL-1088] - Add support for aliases in MongoDB.
  * [METAMODEL-1086] - Fixed encoding issue when CsvDataContext is instantiated with InputStream.
  * [METAMODEL-1094] - Added support for Apache Cassandra version 3.x.
  * [METAMODEL-1093] - Close compiled ResultSets.
-
+ * [METAMODEL-1106] - Fixed bug in JDBC adaptor caused by not quoting columns named as a keyword, e.g. 'index'.
+ * [METAMODEL-1102] - Separated FixedWidthLineParser.
+ * [METAMODEL-1107] - Added support for PostgreSQL's "json" and "jsonb" data types.
+ 
 ### Apache MetaModel 4.5.3
 
  * [METAMODEL-235] - Fixed a bug related to handling of null or missing values in ElasticSearch using REST client.
@@ -61,8 +89,8 @@
 
 ### Apache MetaModel 4.4.0
 
- * [METAMODEL-192] - Added support for Scalar functions. We have a basic set of datatype conversion functions as well as support for UDF via implementing the ScalarFunction interface.
- * [METAMODEL-194] - Added support for setting the "Max rows" flag of a query to 0. This will always return an empty dataset.
+ * [METAMODEL-192] - Added support for Scalar functions. We have a basic set of data type conversion functions as well as support for UDF via implementing the ScalarFunction interface.
+ * [METAMODEL-194] - Added support for setting the "Max rows" flag of a query to 0. This will always return an empty data set.
  * [METAMODEL-173] - Improved CSV writing to non-file destinations. Added .write() and .append() methods to Resource interface.
  * [METAMODEL-170] - Dropped support for Java 6.
  * [METAMODEL-176] - Trimmed the transient dependencies of the JDBC module.

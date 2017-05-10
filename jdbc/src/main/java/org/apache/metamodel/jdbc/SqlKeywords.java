@@ -23,29 +23,52 @@ import java.util.Set;
 
 class SqlKeywords {
 
-	private static final Set<String> KEYWORDS;
+    private static final Set<String> KEYWORDS;
 
-	static {
-		KEYWORDS = new HashSet<String>();
-		KEYWORDS.add("SELECT");
-		KEYWORDS.add("DISTINCT");
-		KEYWORDS.add("AS");
-		KEYWORDS.add("COUNT");
-		KEYWORDS.add("SUM");
-		KEYWORDS.add("MIN");
-		KEYWORDS.add("MAX");
-		KEYWORDS.add("FROM");
-		KEYWORDS.add("WHERE");
-		KEYWORDS.add("LIKE");
-		KEYWORDS.add("IN");
-		KEYWORDS.add("GROUP");
-		KEYWORDS.add("BY");
-		KEYWORDS.add("HAVING");
-		KEYWORDS.add("ORDER");
-	}
+    static {
+        KEYWORDS = new HashSet<String>();
+        KEYWORDS.add("SELECT");
+        KEYWORDS.add("DISTINCT");
+        KEYWORDS.add("AS");
+        KEYWORDS.add("COUNT");
+        KEYWORDS.add("SUM");
+        KEYWORDS.add("MIN");
+        KEYWORDS.add("MAX");
+        KEYWORDS.add("FROM");
+        KEYWORDS.add("WHERE");
+        KEYWORDS.add("LIKE");
+        KEYWORDS.add("IN");
+        KEYWORDS.add("GROUP");
+        KEYWORDS.add("BY");
+        KEYWORDS.add("HAVING");
+        KEYWORDS.add("ORDER");
+        KEYWORDS.add("INDEX");
+        KEYWORDS.add("PRIMARY");
+        KEYWORDS.add("KEY");
+        KEYWORDS.add("CONSTRAINT");
+        KEYWORDS.add("UNIQUE");
+        KEYWORDS.add("IS");
+        KEYWORDS.add("NOT");
+        KEYWORDS.add("NULL");
+        KEYWORDS.add("CREATE");
+        KEYWORDS.add("INSERT");
+        KEYWORDS.add("INTO");
+        KEYWORDS.add("UPDATE");
+        KEYWORDS.add("VALUES");
+        KEYWORDS.add("DELETE");
+        KEYWORDS.add("AND");
+        KEYWORDS.add("OR");
+        KEYWORDS.add("BEGIN");
+        KEYWORDS.add("END");
+        KEYWORDS.add("COLUMN");
+        KEYWORDS.add("TABLE");
+        KEYWORDS.add("SCHEMA");
+        KEYWORDS.add("DATABASE");
+        KEYWORDS.add("CAST");
+    }
 
-	public static boolean isKeyword(String str) {
-		str = str.toUpperCase();
-		return KEYWORDS.contains(str);
-	}
+    public static boolean isKeyword(String str) {
+        str = str.toUpperCase();
+        return KEYWORDS.contains(str);
+    }
 }

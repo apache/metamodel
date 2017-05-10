@@ -18,10 +18,14 @@
  */
 package org.apache.metamodel.fixedwidth;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.ArrayList;
@@ -30,165 +34,228 @@ import java.util.List;
 /**
  * Reader capable of separating values based on a fixed width setting.
  */
-final public class FixedWidthReader implements Closeable {
+class FixedWidthReader implements Closeable {
+    private static final int END_OF_STREAM = -1;
+    private static final int LINE_FEED = '\n';
+    private static final int CARRIAGE_RETURN = '\r';
+    
+    private final int _fixedValueWidth;
+    private final int[] _valueWidths;
+    private int _valueIndex = 0;
+    private final boolean _failOnInconsistentLineWidth;
+    private final boolean _constantWidth;
+    private volatile int _rowNumber;
+    protected final Reader _reader;
+    protected final int _expectedLineLength;
 
-	private final BufferedReader _reader;
-	private final int _fixedValueWidth;
-	private final int[] _valueWidths;
-	private final boolean _failOnInconsistentLineWidth;
-	private final int expectedLineLength;
-	private final boolean constantWidth;
-	private volatile int _rowNumber;
+    public FixedWidthReader(InputStream stream, String charsetName, int fixedValueWidth,
+            boolean failOnInconsistentLineWidth) {
+        this(new BufferedInputStream(stream), charsetName, fixedValueWidth, failOnInconsistentLineWidth);
+    }
 
-	public FixedWidthReader(Reader reader, int fixedValueWidth,
-			boolean failOnInconsistentLineWidth) {
-		this(new BufferedReader(reader), fixedValueWidth,
-				failOnInconsistentLineWidth);
-	}
+    private FixedWidthReader(BufferedInputStream stream, String charsetName, int fixedValueWidth,
+            boolean failOnInconsistentLineWidth) {
+        _reader = initReader(stream, charsetName);
+        _fixedValueWidth = fixedValueWidth;
+        _failOnInconsistentLineWidth = failOnInconsistentLineWidth;
+        _rowNumber = 0;
+        _valueWidths = null;
+        _constantWidth = true;
+        _expectedLineLength = -1;
+    }
 
-	public FixedWidthReader(BufferedReader reader, int fixedValueWidth,
-			boolean failOnInconsistentLineWidth) {
-		_reader = reader;
-		_fixedValueWidth = fixedValueWidth;
-		_failOnInconsistentLineWidth = failOnInconsistentLineWidth;
-		_rowNumber = 0;
-		_valueWidths = null;
+    public FixedWidthReader(InputStream stream, String charsetName, int[] valueWidths,
+            boolean failOnInconsistentLineWidth) {
+        this(new BufferedInputStream(stream), charsetName, valueWidths, failOnInconsistentLineWidth);
+    }
 
-		constantWidth = true;
-		expectedLineLength = -1;
-	}
+    FixedWidthReader(BufferedInputStream stream, String charsetName, int[] valueWidths,
+            boolean failOnInconsistentLineWidth) {
+        _reader = initReader(stream, charsetName);
+        _fixedValueWidth = -1;
+        _valueWidths = valueWidths;
+        _failOnInconsistentLineWidth = failOnInconsistentLineWidth;
+        _rowNumber = 0;
+        _constantWidth = false;
+        int expectedLineLength = 0;
 
-	public FixedWidthReader(Reader reader, int[] valueWidths,
-			boolean failOnInconsistentLineWidth) {
-		this(new BufferedReader(reader), valueWidths,
-				failOnInconsistentLineWidth);
-	}
+        for (final int _valueWidth : _valueWidths) {
+            expectedLineLength += _valueWidth;
+        }
 
-	public FixedWidthReader(BufferedReader reader, int[] valueWidths,
-			boolean failOnInconsistentLineWidth) {
-		_reader = reader;
-		_fixedValueWidth = -1;
-		_valueWidths = valueWidths;
-		_failOnInconsistentLineWidth = failOnInconsistentLineWidth;
-		_rowNumber = 0;
+        _expectedLineLength = expectedLineLength;
+    }
 
-		constantWidth = false;
-		int expectedLineLength = 0;
-		if (_fixedValueWidth == -1) {
-			for (int i = 0; i < _valueWidths.length; i++) {
-				expectedLineLength += _valueWidths[i];
-			}
-		}
-		this.expectedLineLength = expectedLineLength;
-	}
-
-	
-	/***
-	 * Reads the next line in the file.
-	 * 
-	 * @return an array of values in the next line, or null if the end of the
-	 *         file has been reached.
-	 * 
-	 * @throws IllegalStateException
-	 *             if an exception occurs while reading the file.
-	 */
-	public String[] readLine() throws IllegalStateException {
-        String line;
+    private Reader initReader(BufferedInputStream stream, String charsetName) {
         try {
-            line = _reader.readLine();
-            return readLine(line);
+            InputStreamReader inputStreamReader = new InputStreamReader(stream, charsetName);
+            return new BufferedReader(inputStreamReader);
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(String.format("Encoding '%s' was not recognized. ", charsetName));
+        }
+    }
+    
+    /**
+     * This reads and returns the next record from the file. Usually, it is a line but in case the new line characters
+     * are not present, the length of the content depends on the column-widths setting.
+     *
+     * @return an array of values in the next line, or null if the end of the file has been reached.
+     * @throws IllegalStateException if an exception occurs while reading the file.
+     */
+    public String[] readLine() throws IllegalStateException {
+        try {
+            beforeReadLine();
+            _rowNumber++;
+            return getValues();
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
-	}
-	
-	public String[] readLine(String line) throws IOException {
+    }
 
+    /**
+     * Empty hook that enables special behavior in sub-classed readers (by overriding this method). 
+     */
+    protected void beforeReadLine() {
+    }
 
-			final List<String> values = new ArrayList<String>();
-		
-			if (line == null) {
-				return null;
-			}
+    private String[] getValues() throws IOException {
+        final List<String> values = new ArrayList<>();
+        final String singleRecordData = readSingleRecordData();
 
-			StringBuilder nextValue = new StringBuilder();
+        if (singleRecordData == null) {
+            return null;
+        }
 
-			int valueIndex = 0;
+        processSingleRecordData(singleRecordData, values);
+        String[] result = values.toArray(new String[values.size()]);
 
-			final CharacterIterator it = new StringCharacterIterator(line);
-			for (char c = it.first(); c != CharacterIterator.DONE; c = it
-					.next()) {
-				nextValue.append(c);
+        if (!_failOnInconsistentLineWidth && !_constantWidth) {
+            result = correctResult(result);
+        }
 
-				final int valueWidth;
-				if (constantWidth) {
-					valueWidth = _fixedValueWidth;
-				} else {
-					if (valueIndex >= _valueWidths.length) {
-						if (_failOnInconsistentLineWidth) {
-							String[] result = values.toArray(new String[values
-									.size()]);
-							throw new InconsistentValueWidthException(result,
-									line, _rowNumber + 1);
-						} else {
-							// silently ignore the inconsistency
-							break;
-						}
-					}
-					valueWidth = _valueWidths[valueIndex];
-				}
+        validateConsistentValue(singleRecordData, result, values.size());
 
-				if (nextValue.length() == valueWidth) {
-					// write the value
-					values.add(nextValue.toString().trim());
-					nextValue = new StringBuilder();
-					valueIndex++;
-				}
-			}
+        return result;
+    }
 
-			if (nextValue.length() > 0) {
-				values.add(nextValue.toString().trim());
-			}
+    private void validateConsistentValue(String recordData, String[] result, int valuesSize) {
+        if (!_failOnInconsistentLineWidth) {
+            return;
+        }
 
-			String[] result = values.toArray(new String[values.size()]);
+        InconsistentValueWidthException inconsistentValueException = null;
 
-			if (!_failOnInconsistentLineWidth && !constantWidth) {
-				if (result.length != _valueWidths.length) {
-					String[] correctedResult = new String[_valueWidths.length];
-					for (int i = 0; i < result.length
-							&& i < _valueWidths.length; i++) {
-						correctedResult[i] = result[i];
-					}
-					result = correctedResult;
-				}
-			}
+        if (_constantWidth) {
+            if (recordData.length() % _fixedValueWidth != 0) {
+                inconsistentValueException = new InconsistentValueWidthException(result, recordData, _rowNumber);
+            }
+        } else if (result.length != valuesSize || recordData.length() != _expectedLineLength) {
+            inconsistentValueException = new InconsistentValueWidthException(result, recordData, _rowNumber);
+        }
 
-			if (_failOnInconsistentLineWidth) {
-				_rowNumber++;
-				if (constantWidth) {
-					if (line.length() % _fixedValueWidth != 0) {
-						throw new InconsistentValueWidthException(result, line,
-								_rowNumber);
-					}
-				} else {
-					if (result.length != values.size()) {
-						throw new InconsistentValueWidthException(result, line,
-								_rowNumber);
-					}
+        if (inconsistentValueException != null) {
+            throw inconsistentValueException;
+        }
+    }
 
-					if (line.length() != expectedLineLength) {
-						throw new InconsistentValueWidthException(result, line,
-								_rowNumber);
-					}
-				}
-			}
+    private void processSingleRecordData(final String singleRecordData, final List<String> values) {
+        StringBuilder nextValue = new StringBuilder();
+        final CharacterIterator it = new StringCharacterIterator(singleRecordData);
+        _valueIndex = 0;
 
-			return result;
-	}
+        for (char c = it.first(); c != CharacterIterator.DONE; c = it.next()) {
+            processCharacter(c, nextValue, values, singleRecordData);
+        }
 
-	@Override
-	public void close() throws IOException {
-		_reader.close();
-	}
+        if (nextValue.length() > 0) {
+            addNewValueIfAppropriate(values, nextValue);
+        }
+    }
 
+    String readSingleRecordData() throws IOException {
+        StringBuilder line = new StringBuilder();
+        int ch;
+
+        for (ch = _reader.read(); !isEndingCharacter(ch); ch = _reader.read()) {
+            line.append((char)ch);
+        }
+
+        if (ch == CARRIAGE_RETURN) {
+            readLineFeedIfFollows();
+        }
+
+        return (line.length()) > 0 ? line.toString() : null;
+    }
+    
+    private void readLineFeedIfFollows() throws IOException {
+        _reader.mark(1);
+        
+        if (_reader.read() != LINE_FEED) {
+            _reader.reset();
+        }
+    }
+
+    private boolean isEndingCharacter(int ch) {
+        return (ch == CARRIAGE_RETURN || ch == LINE_FEED || ch == END_OF_STREAM);
+    }
+    
+    private void processCharacter(char c, StringBuilder nextValue, List<String> values, String recordData) {
+        nextValue.append(c);
+        final int valueWidth = getValueWidth(values, recordData);
+
+        if (nextValue.length() == valueWidth) {
+            addNewValueIfAppropriate(values, nextValue);
+            nextValue.setLength(0); // clear the buffer
+
+            if (_valueWidths != null) {
+                _valueIndex = (_valueIndex + 1) % _valueWidths.length;
+            }
+        }
+    }
+
+    private int getValueWidth(List<String> values, String recordData) {
+        if (_constantWidth) {
+            return _fixedValueWidth;
+        } else {
+            if (_valueIndex >= _valueWidths.length) {
+                if (_failOnInconsistentLineWidth) {
+                    String[] result = values.toArray(new String[values.size()]);
+                    throw new InconsistentValueWidthException(result, recordData, _rowNumber + 1);
+                } else {
+                    return -1; // silently ignore the inconsistency
+                }
+            }
+
+            return _valueWidths[_valueIndex];
+        }
+    }
+
+    private void addNewValueIfAppropriate(List<String> values, StringBuilder nextValue) {
+        if (_valueWidths != null) {
+            if (values.size() < _valueWidths.length) {
+                values.add(nextValue.toString().trim());
+            }
+        } else {
+            values.add(nextValue.toString().trim());
+        }
+    }
+
+    private String[] correctResult(String[] result) {
+        if (result.length != _valueWidths.length) {
+            String[] correctedResult = new String[_valueWidths.length];
+
+            for (int i = 0; i < result.length && i < _valueWidths.length; i++) {
+                correctedResult[i] = result[i];
+            }
+
+            result = correctedResult;
+        }
+
+        return result;
+    }
+
+    @Override
+    public void close() throws IOException {
+        _reader.close();
+    }
 }

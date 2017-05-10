@@ -18,23 +18,41 @@
  */
 package org.apache.metamodel.cassandra;
 
-import com.datastax.driver.core.*;
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import com.datastax.driver.core.querybuilder.Select;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.query.FilterItem;
-import org.apache.metamodel.schema.*;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ColumnMetadata;
+import com.datastax.driver.core.DataType;
+import com.datastax.driver.core.KeyspaceMetadata;
+import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Statement;
+import com.datastax.driver.core.TableMetadata;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Select.Selection;
 
 /**
  * DataContext implementation for Apache Cassandra database.
@@ -145,6 +163,20 @@ public class CassandraDataContext extends QueryPostprocessDataContext implements
         final MutableSchema theSchema = new MutableSchema(getMainSchemaName());
         for (final SimpleTableDef tableDef : tableDefs) {
             final MutableTable table = tableDef.toTable().setSchema(theSchema);
+
+            final TableMetadata cassandraTable = cassandraCluster.getMetadata().getKeyspace(keySpaceName).getTable(table
+                    .getName());
+            if (cassandraTable != null) {
+                final List<ColumnMetadata> primaryKeys = cassandraTable.getPrimaryKey();
+                for (ColumnMetadata primaryKey : primaryKeys) {
+                    final MutableColumn column = (MutableColumn) table.getColumnByName(primaryKey.getName());
+                    if (column != null) {
+                        column.setPrimaryKey(true);
+                    }
+                    column.setNativeType(primaryKey.getType().getName().name());
+                }
+            }
+
             theSchema.addTable(table);
         }
         return theSchema;
@@ -162,7 +194,7 @@ public class CassandraDataContext extends QueryPostprocessDataContext implements
             query.limit(maxRows);
         }
         final ResultSet resultSet = cassandraCluster.connect().execute(query);
-        
+
         final Iterator<Row> response = resultSet.iterator();
         return new CassandraDataSet(response, columns);
     }
@@ -172,10 +204,34 @@ public class CassandraDataContext extends QueryPostprocessDataContext implements
     }
 
     @Override
+    protected org.apache.metamodel.data.Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems,
+            Column primaryKeyColumn, Object keyValue) {
+        
+        if (primaryKeyColumn.getType() == ColumnType.UUID && keyValue instanceof String) {
+            keyValue = UUID.fromString(keyValue.toString());
+        }
+
+        Selection select = QueryBuilder.select();
+        for (SelectItem selectItem : selectItems) {
+            final Column column = selectItem.getColumn();
+            assert column != null;
+            select = select.column(column.getName());
+        }
+
+        final Statement statement = select.from(keySpaceName, table.getName()).where(QueryBuilder.eq(primaryKeyColumn
+                .getName(), keyValue));
+
+        final Row row = cassandraCluster.connect().execute(statement).one();
+
+        return CassandraUtils.toRow(row, new SimpleDataSetHeader(selectItems));
+    }
+
+    @Override
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
         if (!whereItems.isEmpty()) {
             // not supported - will have to be done by counting client-side
-            logger.debug("Not able to execute count query natively - resorting to query post-processing, which may be expensive");
+            logger.debug(
+                    "Not able to execute count query natively - resorting to query post-processing, which may be expensive");
             return null;
         }
         final Statement statement = QueryBuilder.select().countAll().from(keySpaceName, table.getName());
