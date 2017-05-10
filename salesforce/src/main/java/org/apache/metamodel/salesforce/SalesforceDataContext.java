@@ -77,7 +77,7 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
         try {
             ConnectorConfig config = new ConnectorConfig();
             config.setUsername(username);
-            config.setPassword(password + securityToken);
+            config.setPassword(securityToken == null ? password : password + securityToken);
             config.setAuthEndpoint(endpoint);
             config.setServiceEndpoint(endpoint);
             _connection = Connector.newConnection(config);
@@ -88,7 +88,15 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
 
     public SalesforceDataContext(String username, String password, String securityToken) {
         try {
-            _connection = Connector.newConnection(username, password + securityToken);
+            _connection = Connector.newConnection(username, securityToken == null ? password : password + securityToken);
+        } catch (ConnectionException e) {
+            throw SalesforceUtils.wrapException(e, "Failed to log in to Salesforce service");
+        }
+    }
+
+    public SalesforceDataContext(String username, String password) {
+        try {
+            _connection = Connector.newConnection(username, password);
         } catch (ConnectionException e) {
             throw SalesforceUtils.wrapException(e, "Failed to log in to Salesforce service");
         }
