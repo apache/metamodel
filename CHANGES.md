@@ -1,3 +1,5 @@
+ * [METAMODEL-1140] - Allowed SalesforceDataContext without a security token.
+
 ### Apache MetaModel 4.6.0
 
  * [METAMODEL-1136] - New connector for Amazon DynamoDB.
