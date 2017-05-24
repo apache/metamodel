@@ -28,7 +28,7 @@ import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.util.FileHelper;
 
-import au.com.bytecode.opencsv.CSVParser;
+import com.opencsv.CSVParser;
 
 /**
  * A specialized DataSet implementation for the CSV module under circumstances

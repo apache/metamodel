@@ -29,7 +29,7 @@ import org.apache.metamodel.schema.MutableColumn;
 import org.junit.Assert;
 import org.junit.Test;
 
-import au.com.bytecode.opencsv.CSVParser;
+import com.opencsv.CSVParser;
 
 public class SingleLineCsvRowTest {
 

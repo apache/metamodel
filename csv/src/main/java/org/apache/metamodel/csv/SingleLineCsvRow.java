@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -29,7 +29,7 @@ import org.apache.metamodel.schema.Column;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.com.bytecode.opencsv.CSVParser;
+import com.opencsv.CSVParser;
 
 /**
  * Specialized row implementation for single-line CSV values
@@ -41,7 +41,7 @@ final class SingleLineCsvRow extends AbstractRow {
     private static final Logger logger = LoggerFactory.getLogger(SingleLineCsvRow.class);
 
     private final transient SingleLineCsvDataSet _dataSet;
-    
+
     private final String _line;
     private final int _columnsInTable;
     private final boolean _failOnInconsistentRowLength;

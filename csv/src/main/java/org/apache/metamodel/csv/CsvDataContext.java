@@ -48,8 +48,8 @@ import org.apache.metamodel.util.UrlResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.com.bytecode.opencsv.CSVParser;
-import au.com.bytecode.opencsv.CSVReader;
+import com.opencsv.CSVParser;
+import com.opencsv.CSVReader;
 
 /**
  * DataContext implementation for reading CSV files.
