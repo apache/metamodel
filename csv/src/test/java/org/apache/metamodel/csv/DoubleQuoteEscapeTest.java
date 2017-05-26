@@ -27,8 +27,31 @@ public class DoubleQuoteEscapeTest {
         assertTrue(dataSet.next());
         assertEquals("Row[values=[18, pet\"er]]", dataSet.getRow().toString());
         assertTrue(dataSet.next());
-        assertEquals("Row[values=[18, barbar\"a, \"barb]]", dataSet.getRow().toString());
+        assertEquals("Row[values=[18, barbar\"a, \"\"barb]]", dataSet.getRow().toString());
 
         dataSet.close();
     }
+
+    @Test
+    public void testWeirdQuotes() throws Exception {
+        CsvConfiguration configuration = new CsvConfiguration(1, "UTF-8", ',', '\\', '\\');
+        CsvDataContext dc = new CsvDataContext(new File("src/test/resources/csv_weirdquotes.csv"), configuration);
+
+        DataSet dataSet = dc.query().from("csv_weirdquotes.csv").select("age", "name").execute();
+
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[18, mi\\ke]]", dataSet.getRow().toString());
+
+        assertEquals("mi\\ke", dataSet.getRow().getValue(dc.getColumnByQualifiedLabel("name")));
+
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[19, mic\\hael]]", dataSet.getRow().toString());
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[18, pet\\er]]", dataSet.getRow().toString());
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[18, barbar\\a, \\\\barb]]", dataSet.getRow().toString());
+
+        dataSet.close();
+    }
+
 }
