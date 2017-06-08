@@ -53,7 +53,7 @@ public class UnionDataSetTest {
 
         final DataSetHeader unionHeader =
                 new SimpleDataSetHeader(new Column[] { new MutableColumn("fooUnion"), new MutableColumn("barUnion") });
-        final DataSet unionDataSet = new UnionDataSet(unionHeader, Arrays.asList(ds1, ds2, ds3));
+        final DataSet unionDataSet = UnionDataSet.ofDataSets(unionHeader, Arrays.asList(ds1, ds2, ds3));
         assertTrue(unionDataSet.next());
         assertEquals("Row[values=[1, 2]]", unionDataSet.getRow().toString());
         assertTrue(unionDataSet.next());

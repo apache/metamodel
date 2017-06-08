@@ -18,12 +18,10 @@
  */
 package org.apache.metamodel.query.builder;
 
-import org.apache.metamodel.DataContext;
-import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.InvokableQuery;
 import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.schema.Column;
 
@@ -33,7 +31,7 @@ import org.apache.metamodel.schema.Column;
  * 
  * @param <B>
  */
-public interface SatisfiedQueryBuilder<B extends SatisfiedQueryBuilder<?>> {
+public interface SatisfiedQueryBuilder<B extends SatisfiedQueryBuilder<?>> extends InvokableQuery {
 
     public ColumnSelectBuilder<B> select(Column column);
 
@@ -118,16 +116,6 @@ public interface SatisfiedQueryBuilder<B extends SatisfiedQueryBuilder<?>> {
      * @return a {@link Query} object representing the built query.
      */
     public Query toQuery();
-
-    public CompiledQuery compile();
-
-    /**
-     * Executes the built query. This call is similar to calling
-     * {@link #toQuery()} and then {@link DataContext#executeQuery(Query)}.
-     * 
-     * @return the {@link DataSet} that is returned by executing the query.
-     */
-    public DataSet execute();
 
     /**
      * Finds a column by name within the already defined FROM items

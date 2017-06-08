@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.query.SelectItem;
@@ -60,7 +61,7 @@ public abstract class AbstractDataSet extends BaseObject implements DataSet {
     }
 
     public AbstractDataSet(DataSetHeader header) {
-        _header = header;
+        _header = Objects.requireNonNull(header);
     }
 
     public AbstractDataSet(Column[] columns) {

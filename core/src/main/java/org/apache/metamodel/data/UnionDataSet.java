@@ -21,28 +21,38 @@ package org.apache.metamodel.data;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.apache.metamodel.query.InvokableQuery;
 import org.apache.metamodel.util.ImmutableRef;
 
 /**
  * A {@link DataSet} that represents the union of two or more other data sets
  */
-public class UnionDataSet extends AbstractDataSet {
+public class UnionDataSet extends AbstractDataSet implements WrappingDataSet {
 
     private final Iterable<Supplier<DataSet>> _dataSetProviders;
     private Iterator<Supplier<DataSet>> _iterator;
     private DataSet _currentDataSet;
 
-    public UnionDataSet(DataSetHeader header, Collection<DataSet> dataSets) {
-        this(header, dataSets.stream().map(ds -> ImmutableRef.of(ds)).collect(Collectors.toList()));
+    public static DataSet ofQueries(DataSetHeader header, Collection<InvokableQuery> queries) {
+        final Function<InvokableQuery, Supplier<DataSet>> mapper = q -> {
+            return () -> {
+                return q.execute();
+            };
+        };
+        return new UnionDataSet(header, queries.stream().map(mapper).collect(Collectors.toList()));
     }
 
-    public UnionDataSet(DataSetHeader header, Iterable<Supplier<DataSet>> dataSetProviders) {
+    public static DataSet ofDataSets(DataSetHeader header, Collection<DataSet> dataSets) {
+        return new UnionDataSet(header, dataSets.stream().map(ds -> ImmutableRef.of(ds)).collect(Collectors.toList()));
+    }
+
+    private UnionDataSet(DataSetHeader header, Iterable<Supplier<DataSet>> dataSetProviders) {
         super(header);
-        Objects.nonNull(dataSetProviders);
-        _dataSetProviders = dataSetProviders;
+        _dataSetProviders = Objects.requireNonNull(dataSetProviders);
     }
 
     @Override
@@ -70,4 +80,8 @@ public class UnionDataSet extends AbstractDataSet {
         return _currentDataSet.getRow();
     }
 
+    @Override
+    public DataSet getWrappedDataSet() {
+        return _currentDataSet;
+    }
 }

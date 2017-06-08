@@ -569,6 +569,10 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
     public Integer getFirstRow() {
         return _firstRow;
     }
+    
+    public InvokableQuery invokable(DataContext dataContext) {
+        return new DefaultInvokableQuery(this, dataContext);
+    }
 
     @Override
     protected void decorateIdentity(List<Object> identifiers) {
