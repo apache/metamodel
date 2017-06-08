@@ -1,4 +1,5 @@
  * [METAMODEL-1140] - Allowed SalesforceDataContext without a security token.
+ * [METAMODEL-1141] - Added RFC 4180 compliant CSV parsing.
 
 ### Apache MetaModel 4.6.0
 
