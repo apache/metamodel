@@ -48,8 +48,10 @@ import org.apache.metamodel.util.UrlResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.com.bytecode.opencsv.CSVParser;
-import au.com.bytecode.opencsv.CSVReader;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.ICSVParser;
+import com.opencsv.RFC4180ParserBuilder;
 
 /**
  * DataContext implementation for reading CSV files.
@@ -378,23 +380,30 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
             return new CsvDataSet(csvReader, columns, maxRowsOrNull, columnCount, failOnInconsistentRowLength);
         }
 
-        final CSVParser csvParser = new CSVParser(_configuration.getSeparatorChar(), _configuration.getQuoteChar(),
-                _configuration.getEscapeChar());
-        return new SingleLineCsvDataSet(reader, csvParser, columns, maxRowsOrNull, columnCount,
+        return new SingleLineCsvDataSet(reader, createParser(), columns, maxRowsOrNull, columnCount,
                 failOnInconsistentRowLength);
+    }
+
+    private ICSVParser createParser() {
+        final ICSVParser parser;
+        if (_configuration.getEscapeChar() == _configuration.getQuoteChar()) {
+            parser = new RFC4180ParserBuilder().withSeparator(_configuration.getSeparatorChar())
+                    .withQuoteChar(_configuration.getQuoteChar()).build();
+        } else {
+            parser = new CSVParserBuilder().withSeparator(_configuration.getSeparatorChar())
+                    .withQuoteChar(_configuration.getQuoteChar()).withEscapeChar(_configuration.getEscapeChar())
+                    .build();
+        }
+        return parser;
     }
 
     protected CSVReader createCsvReader(int skipLines) {
         final Reader reader = FileHelper.getReader(_resource.read(), _configuration.getEncoding());
-        final CSVReader csvReader = new CSVReader(reader, _configuration.getSeparatorChar(),
-                _configuration.getQuoteChar(), _configuration.getEscapeChar(), skipLines);
-        return csvReader;
+        return new CSVReader(reader, skipLines, createParser());
     }
 
     protected CSVReader createCsvReader(BufferedReader reader) {
-        final CSVReader csvReader = new CSVReader(reader, _configuration.getSeparatorChar(),
-                _configuration.getQuoteChar(), _configuration.getEscapeChar());
-        return csvReader;
+        return new CSVReader(reader, CSVReader.DEFAULT_SKIP_LINES, createParser());
     }
 
     @Override

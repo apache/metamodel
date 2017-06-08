@@ -38,9 +38,9 @@ under the License.
             <scope>test</scope>
         </dependency>
 		<dependency>
-			<groupId>net.sf.opencsv</groupId>
+			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
-			<version>2.1</version>
+			<version>3.9</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
