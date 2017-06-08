@@ -19,7 +19,6 @@
 package org.apache.metamodel;
 
 import java.util.ArrayList;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,7 +45,6 @@ import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.data.SubSelectionDataSet;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
-import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.GroupByItem;
 import org.apache.metamodel.query.OrderByItem;
 import org.apache.metamodel.query.Query;
