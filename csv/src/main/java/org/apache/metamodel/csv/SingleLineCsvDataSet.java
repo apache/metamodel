@@ -28,7 +28,7 @@ import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.util.FileHelper;
 
-import au.com.bytecode.opencsv.CSVParser;
+import com.opencsv.ICSVParser;
 
 /**
  * A specialized DataSet implementation for the CSV module under circumstances
@@ -38,7 +38,7 @@ import au.com.bytecode.opencsv.CSVParser;
 final class SingleLineCsvDataSet extends AbstractDataSet {
 
     private final BufferedReader _reader;
-    private final CSVParser _csvParser;
+    private final ICSVParser _csvParser;
     private final int _columnsInTable;
     private final boolean _failOnInconsistentRowLength;
 
@@ -46,7 +46,7 @@ final class SingleLineCsvDataSet extends AbstractDataSet {
     private volatile Integer _rowsRemaining;
     private volatile Row _row;
 
-    public SingleLineCsvDataSet(BufferedReader reader, CSVParser csvParser, Column[] columns, Integer maxRows,
+    public SingleLineCsvDataSet(BufferedReader reader, ICSVParser csvParser, Column[] columns, Integer maxRows,
             int columnsInTable, boolean failOnInconsistentRowLength) {
         super(columns);
         _reader = reader;
@@ -91,7 +91,7 @@ final class SingleLineCsvDataSet extends AbstractDataSet {
         return _columnsInTable;
     }
 
-    protected CSVParser getCsvParser() {
+    protected ICSVParser getCsvParser() {
         return _csvParser;
     }
 
