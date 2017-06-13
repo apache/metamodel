@@ -21,10 +21,10 @@ package org.apache.metamodel.csv;
 import java.io.File;
 import java.util.Arrays;
 
-import junit.framework.TestCase;
-
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.Table;
+
+import junit.framework.TestCase;
 
 public class SingleLineCsvDataSetTest extends TestCase {
 

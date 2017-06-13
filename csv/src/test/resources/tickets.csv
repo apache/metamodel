@@ -10,7 +10,7 @@ One way of improving this could be through caching. Another way could be through
 3,DataCleaner 1.5 Release,202,Pattern Finder improvements,DataCleaner-core,None,enhancement,darrenH,assigned,2008-08-19T04:27:12Z+0200,2008-09-16T09:21:56Z+0200,"__Pattern Finder suggestions__:
  * have an option to ignore repeating spaces (so {{{\"aaa aaaaa\" and \"aaa         aaaaa\"}}} are counted as one pattern. 
  * have an option to ignore case, and a different option to preserve case.
- * have an option to treat all 'special' characters as one pattern (so \"aaa*\", \"aaa/\", \"aaa\\" etc' are counted as one pattern, maybe denoted \"aaaS\").
+ * have an option to treat all 'special' characters as one pattern (so \"aaa*\", \"aaa/\", \"aaa\" etc' are counted as one pattern, maybe denoted \"aaaS\").
  * have an option to treat all groups of characters as a single sub-pattern.  The idea is to be able to distinguish easily between names (say) that have two words and names that have more.  This option should have a single pattern for \"Kasper Sorensen\" and \"George Bush\" (the pattern should ideally be \"An An\", denoting any numbers of alpha, space, any number of alpha).  But \"Gorge W Bush\" will have the pattern \"An A An\".
  * it should be possible to combine the above options",BenBor
 3,DataCleaner 1.5 Release,217,Commandline execution of .dcv and .dcp files,DataCleaner-core,None,enhancement,,new,2008-09-04T08:46:56Z+0200,2008-10-19T23:36:38Z+0200,"We should make a command line version of DataCleaner which could take in a .dcp or .dcv file, execute it and save the results in a file or a database (#117). This should ideally be done in DataCleaner core as it would be straight forward to reuse it in DataCleaner-webmonitor in the future then.",kasper
