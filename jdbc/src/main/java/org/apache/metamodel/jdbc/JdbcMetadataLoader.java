@@ -22,10 +22,9 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.schema.Column;
@@ -37,6 +36,7 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * {@link MetadataLoader} for JDBC metadata loading.
@@ -420,7 +420,11 @@ final class JdbcMetadataLoader implements MetadataLoader {
     }
 
     private void loadRelations(ResultSet rs, Schema schema) throws SQLException {
+        // by using nested maps, we can associate a list of pk/fk columns with the tables they belong to
+        // the result set comes flattened out.
+        Map<Table,Map<Table, ColumnsTuple>> relations = new HashMap<>();
         while (rs.next()) {
+
             String pkTableName = rs.getString(3);
             String pkColumnName = rs.getString(4);
 
@@ -453,8 +457,43 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 logger.error("pkColumn={}", pkColumn);
                 logger.error("fkColumn={}", fkColumn);
             } else {
-                MutableRelationship.createRelationship(new Column[] { pkColumn }, new Column[] { fkColumn });
+
+                if (!relations.containsKey(pkTable) ){
+                    relations.put(pkTable, new HashMap<>());
+                }
+
+                //get or init the columns tuple
+                ColumnsTuple ct = relations.get(pkTable).get(fkTable);
+                if (Objects.isNull(ct)){
+                    ct = new ColumnsTuple();
+                    relations.get(pkTable).put(fkTable, ct);
+                }
+                // we can now safely add the columns
+                ct.getPkCols().add(pkColumn);
+                ct.getFkCols().add(fkColumn);
             }
+        }
+
+
+        relations.values()
+                .stream()
+                .flatMap(map -> map.values().stream())
+                .forEach(ct ->
+                    MutableRelationship.createRelationship(
+                            ct.getPkCols().toArray(new Column[0]),
+                            ct.getFkCols().toArray(new Column[0]))
+                );
+    }
+
+
+    private static class ColumnsTuple{
+        List<Column> pkCols = new ArrayList<>();
+        List<Column> fkCols = new ArrayList<>();
+        public List<Column> getFkCols() {
+            return fkCols;
+        }
+        public List<Column> getPkCols() {
+            return pkCols;
         }
     }
 
