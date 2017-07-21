@@ -18,10 +18,7 @@
  */
 package org.apache.metamodel.jdbc;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -39,10 +36,7 @@ import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.schema.Schema;
-import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.*;
 import org.apache.metamodel.update.Update;
 import org.apache.metamodel.util.MutableRef;
 
@@ -520,5 +514,32 @@ public class H2databaseTest extends TestCase {
     
     public void testInterpretationOfNull() throws Exception {
         JdbcTestTemplates.interpretationOfNulls(conn);
+    }
+
+
+    public void testCompositeFkRelation() throws Exception{
+
+        try(Statement stmt = conn.createStatement()){
+            stmt.execute("CREATE TABLE PARENT (P1 INTEGER, P2 INTEGER, P3 INTEGER, P4 INTEGER, PRIMARY  KEY (P1,P2, P3, P4))");
+            stmt.execute("CREATE TABLE CHILD (C1 INTEGER PRIMARY KEY, CP1 INTEGER , CP2 INTEGER, CP3 INTEGER, CP4 INTEGER, FOREIGN  KEY (CP1,CP2,CP3,CP4) REFERENCES  PARENT(P1,P2,P3,P4))");
+        }
+
+        final JdbcDataContext dc = new JdbcDataContext(conn);
+
+        final Schema schema = dc.getDefaultSchema();
+
+        assertEquals(1,schema.getRelationships().length);
+
+        Relationship rel = schema.getRelationships()[0];
+
+        assertEquals("CP1", rel.getForeignColumns()[0].getName());
+        assertEquals("CP2", rel.getForeignColumns()[1].getName());
+        assertEquals("CP3", rel.getForeignColumns()[2].getName());
+        assertEquals("CP4", rel.getForeignColumns()[3].getName());
+
+        assertEquals("P1",rel.getPrimaryColumns()[0].getName());
+        assertEquals("P2",rel.getPrimaryColumns()[1].getName());
+        assertEquals("P3",rel.getPrimaryColumns()[2].getName());
+        assertEquals("P4",rel.getPrimaryColumns()[3].getName());
     }
 }
