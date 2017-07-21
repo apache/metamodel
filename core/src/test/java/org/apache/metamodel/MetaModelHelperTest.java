@@ -213,7 +213,7 @@ public class MetaModelHelperTest extends MetaModelTestCase {
     
     
     
-    private int bigDataSetSize = 10000;
+    private int bigDataSetSize = 3000;
 
     /**
      * 
@@ -380,7 +380,7 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         count++;
       }
       
-      assertTrue(count == 10000);
+      assertTrue(count == bigDataSetSize);
       
       
     }
