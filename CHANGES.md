@@ -7,6 +7,7 @@
  * [METAMODEL-1139] - Employed Java 8 functional types (java.util.function) in favor of (now deprecated) Ref, Action, Func. 
  * [METAMODEL-1140] - Allowed SalesforceDataContext without a security token.
  * [METAMODEL-1141] - Added RFC 4180 compliant CSV parsing.
+ * [METAMODEL-1145] - Fixed bug with modelling JDBC table relationships when there are multiple keys involved in the relationship.
 
 ### Apache MetaModel 4.6.0
 
