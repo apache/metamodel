@@ -43,10 +43,7 @@ import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.JoinType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.schema.Schema;
-import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.*;
 
 /**
  * Test case that tests hsqldb interaction. The test uses an embedded copy of
@@ -442,14 +439,7 @@ public class HsqldbTest extends TestCase {
         assertEquals(idCol, dcon.getDefaultSchema().getTable(0).getColumn(0).getName());
         
         dcon.query().from(mixedcap).select(idCol,nameCol,emailCol).execute();
-        
-//        Query query = new Query();
-//        String subselect = "(select * from \""+mixedcap+"\")";
-//        query.from(subselect);
-//        query.select("test");
-//        
-//        dcon.executeQuery(query);
-        
+
         try(Statement stmt = connection.createStatement();){
           
           stmt.execute("DROP TABLE \"" + mixedcap + "\"" );
@@ -482,12 +472,6 @@ public class HsqldbTest extends TestCase {
               .execute();
           }
         });
-        
-//        Table table = dcon.getDefaultSchema().getTable(0);
-//        assertEquals(mixedcap, table.getName());
-//        assertEquals(idCol, table.getColumn(0).getName());
-//        assertEquals(nameCol, table.getColumn(1).getName());
-//        assertEquals(emailCol, table.getColumn(2).getName());
         
         String queryNoQuotes = "SELECT "+nameCol+", "+idCol + ", " + emailCol + 
             " FROM " + mixedcap + " WHERE " +idCol+ "= 1" ;
