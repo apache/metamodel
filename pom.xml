@@ -105,18 +105,52 @@ under the License.
 	</organization>
 	<developers>
 		<developer>
-			<id>kasper</id>
+			<id>kaspersor</id>
 			<name>Kasper Sørensen</name>
-			<email>kasper.sorensen@humaninference.com</email>
-			<url>http://kasper.eobjects.org</url>
-			<organization>Human Inference</organization>
-			<organizationUrl>http://www.humaninference.com</organizationUrl>
+			<email>i.am.kasper.sorensen@gmail.com</email>
+			<url>https://github.com/kaspersorensen</url>
+		</developer>
+		<developer>
+			<name>Dennis Du Krøger</name>
+			<url>https://github.com/losd</url>
+		</developer>
+		<developer>
+			<name>Ankit Kumar</name>
+			<url>https://github.com/ankit2711</url>
+		</developer>
+		<developer>
+			<name>Alberto Rodriguez</name>
+			<url>https://github.com/albertostratio</url>
+		</developer>
+		<developer>
+			<name>Tomasz Guzialek</name>
+			<url>https://github.com/tomaszguzialek</url>
+		</developer>
+		<developer>
+			<name>Henry Saputra</name>
+			<url>https://github.com/hsaputra</url>
 		</developer>
 	</developers>
 	<contributors>
 		<contributor>
+			<name>Arjan Seijkens</name>
+			<url>https://github.com/arjansh</url>
+		</contributor>
+		<contributor>
+			<name>Jakub Horčička</name>
+			<url>https://github.com/jhorcicka</url>
+		</contributor>
+		<contributor>
 			<name>Francisco Javier Cano</name>
 			<organization>Stratio</organization>
+		</contributor>
+		<contributor>
+			<name>Harel Efraim</name>
+			<url>https://github.com/harel-e</url>
+		</contributor>
+		<contributor>
+			<name>Joerg Unbehauen</name>
+			<url>https://github.com/tomatophantastico</url>
 		</contributor>
 		<contributor>
 			<name>Saurabh Gupta</name>
