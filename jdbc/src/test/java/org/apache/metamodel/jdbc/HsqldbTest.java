@@ -23,11 +23,10 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.table.TableModel;
-
-import junit.framework.TestCase;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelHelper;
@@ -47,10 +46,11 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
+import junit.framework.TestCase;
+
 /**
- * Test case that tests hsqldb interaction. The test uses an embedded copy of
- * the "pentaho sampledata" sample database that can be found at
- * http://pentaho.sourceforge.net.
+ * Test case that tests hsqldb interaction. The test uses an embedded copy of the "pentaho sampledata" sample database
+ * that can be found at http://pentaho.sourceforge.net.
  */
 public class HsqldbTest extends TestCase {
 
@@ -71,7 +71,7 @@ public class HsqldbTest extends TestCase {
         super.tearDown();
         _connection.close();
     }
-    
+
     public void testApproximateCount() throws Exception {
         final JdbcDataContext dataContext = new JdbcDataContext(_connection);
         final DataSet dataSet = dataContext.executeQuery("SELECT APPROXIMATE COUNT(*) FROM customers");
@@ -79,7 +79,7 @@ public class HsqldbTest extends TestCase {
         assertEquals(122, dataSet.getRow().getValue(0));
         assertFalse(dataSet.next());
     }
-    
+
     public void testTimestampValueInsertSelect() throws Exception {
         Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:" + getName(), USERNAME, PASSWORD);
         JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.NANOSECONDS);
@@ -111,8 +111,7 @@ public class HsqldbTest extends TestCase {
                 + "Table[name=CUSTOMER_W_TER,type=TABLE,remarks=null], "
                 + "Table[name=DEPARTMENT_MANAGERS,type=TABLE,remarks=null], "
                 + "Table[name=DIM_TIME,type=TABLE,remarks=null], " + "Table[name=EMPLOYEES,type=TABLE,remarks=null], "
-                + "Table[name=OFFICES,type=TABLE,remarks=null], "
-                + "Table[name=ORDERDETAILS,type=TABLE,remarks=null], "
+                + "Table[name=OFFICES,type=TABLE,remarks=null], " + "Table[name=ORDERDETAILS,type=TABLE,remarks=null], "
                 + "Table[name=ORDERFACT,type=TABLE,remarks=null], " + "Table[name=ORDERS,type=TABLE,remarks=null], "
                 + "Table[name=PAYMENTS,type=TABLE,remarks=null], " + "Table[name=PRODUCTS,type=TABLE,remarks=null], "
                 + "Table[name=QUADRANT_ACTUALS,type=TABLE,remarks=null], "
@@ -146,8 +145,8 @@ public class HsqldbTest extends TestCase {
         Table productsTable = schema.getTableByName("PRODUCTS");
         Table factTable = schema.getTableByName("ORDERFACT");
 
-        Query q = new Query().from(new FromItem(JoinType.INNER, productsTable.getRelationships(factTable)[0])).select(
-                productsTable.getColumns()[0], factTable.getColumns()[0]);
+        Query q = new Query().from(new FromItem(JoinType.INNER, productsTable.getRelationships(factTable)[0]))
+                .select(productsTable.getColumns()[0], factTable.getColumns()[0]);
         assertEquals(
                 "SELECT \"PRODUCTS\".\"PRODUCTCODE\", \"ORDERFACT\".\"ORDERNUMBER\" FROM PUBLIC.\"PRODUCTS\" INNER JOIN PUBLIC.\"ORDERFACT\" ON \"PRODUCTS\".\"PRODUCTCODE\" = \"ORDERFACT\".\"PRODUCTCODE\"",
                 q.toString());
@@ -158,8 +157,8 @@ public class HsqldbTest extends TestCase {
         assertEquals(2, tableModel.getColumnCount());
         assertEquals(2996, tableModel.getRowCount());
 
-        assertEquals(110, MetaModelHelper.executeSingleRowQuery(dc, new Query().selectCount().from(productsTable))
-                .getValue(0));
+        assertEquals(110,
+                MetaModelHelper.executeSingleRowQuery(dc, new Query().selectCount().from(productsTable)).getValue(0));
     }
 
     public void testLimit() throws Exception {
@@ -215,23 +214,21 @@ public class HsqldbTest extends TestCase {
         Schema schema = dc.getSchemaByName("PUBLIC");
         Table productsTable = schema.getTableByName("PRODUCTS");
 
-        Query q = new Query().from(productsTable, "pro-ducts").select(
-                new SelectItem(productsTable.getColumnByName("PRODUCTCODE")).setAlias("c|o|d|e"));
+        Query q = new Query().from(productsTable, "pro-ducts")
+                .select(new SelectItem(productsTable.getColumnByName("PRODUCTCODE")).setAlias("c|o|d|e"));
         q.setMaxRows(5);
 
         assertEquals("SELECT pro-ducts.\"PRODUCTCODE\" AS c|o|d|e FROM PUBLIC.\"PRODUCTS\" pro-ducts", q.toString());
 
         String queryString = queryRewriter.rewriteQuery(q);
-        assertEquals(
-                "SELECT TOP 5 \"pro-ducts\".\"PRODUCTCODE\" AS \"c|o|d|e\" FROM PUBLIC.\"PRODUCTS\" \"pro-ducts\"",
+        assertEquals("SELECT TOP 5 \"pro-ducts\".\"PRODUCTCODE\" AS \"c|o|d|e\" FROM PUBLIC.\"PRODUCTS\" \"pro-ducts\"",
                 queryString);
 
         // We have to test that no additional quoting characters are added every
         // time we run the rewriting
         queryString = queryRewriter.rewriteQuery(q);
         queryString = queryRewriter.rewriteQuery(q);
-        assertEquals(
-                "SELECT TOP 5 \"pro-ducts\".\"PRODUCTCODE\" AS \"c|o|d|e\" FROM PUBLIC.\"PRODUCTS\" \"pro-ducts\"",
+        assertEquals("SELECT TOP 5 \"pro-ducts\".\"PRODUCTCODE\" AS \"c|o|d|e\" FROM PUBLIC.\"PRODUCTS\" \"pro-ducts\"",
                 queryString);
 
         // Test that the original query is still the same (ie. it has been
@@ -248,9 +245,10 @@ public class HsqldbTest extends TestCase {
 
         Column column = dc.getDefaultSchema().getTableByName("PRODUCTS").getColumnByName("PRODUCTCODE");
         assertEquals("PUBLIC.PRODUCTS.PRODUCTCODE", column.getQualifiedLabel());
-        assertEquals("Table[name=PRODUCTS,type=TABLE,remarks=null]", dc.getTableByQualifiedLabel("PUBLIC.PRODUCTS")
-                .toString());
-        assertEquals("Table[name=PRODUCTS,type=TABLE,remarks=null]", dc.getTableByQualifiedLabel("PRODUCTS").toString());
+        assertEquals("Table[name=PRODUCTS,type=TABLE,remarks=null]",
+                dc.getTableByQualifiedLabel("PUBLIC.PRODUCTS").toString());
+        assertEquals("Table[name=PRODUCTS,type=TABLE,remarks=null]",
+                dc.getTableByQualifiedLabel("PRODUCTS").toString());
         assertEquals(
                 "Column[name=PRODUCTCODE,columnNumber=0,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]",
                 dc.getColumnByQualifiedLabel("PUBLIC.PRODUCTS.PRODUCTCODE").toString());
@@ -293,8 +291,8 @@ public class HsqldbTest extends TestCase {
         q = dc.query().from(table).selectCount().where("name").isEquals("m'jello").toQuery();
 
         assertEquals("SELECT COUNT(*) FROM PUBLIC.\"TESTTABLE\" WHERE \"TESTTABLE\".\"NAME\" = 'm'jello'", q.toSql());
-        assertEquals("SELECT COUNT(*) FROM PUBLIC.\"TESTTABLE\" WHERE \"TESTTABLE\".\"NAME\" = 'm''jello'", dc
-                .getQueryRewriter().rewriteQuery(q));
+        assertEquals("SELECT COUNT(*) FROM PUBLIC.\"TESTTABLE\" WHERE \"TESTTABLE\".\"NAME\" = 'm''jello'",
+                dc.getQueryRewriter().rewriteQuery(q));
 
         row = MetaModelHelper.executeSingleRowQuery(dc, q);
         assertEquals(1, ((Number) row.getValue(0)).intValue());
@@ -335,8 +333,8 @@ public class HsqldbTest extends TestCase {
     }
 
     public void testInsertOfDifferentTypes() throws Exception {
-        Connection connection = DriverManager.getConnection("jdbc:hsqldb:mem:different_types_insert", USERNAME,
-                PASSWORD);
+        Connection connection =
+                DriverManager.getConnection("jdbc:hsqldb:mem:different_types_insert", USERNAME, PASSWORD);
 
         try {
             connection.createStatement().execute("DROP TABLE my_table");
@@ -416,5 +414,70 @@ public class HsqldbTest extends TestCase {
     public void testInterpretationOfNull() throws Exception {
         Connection conn = DriverManager.getConnection("jdbc:hsqldb:mem:interpretation_of_null", USERNAME, PASSWORD);
         JdbcTestTemplates.interpretationOfNulls(conn);
+    }
+
+    public void testCapitalization() throws Exception {
+        try (Connection connection =
+                DriverManager.getConnection("jdbc:hsqldb:mem:different_types_insert", USERNAME, PASSWORD)) {
+
+            final JdbcDataContext dcon = new JdbcDataContext(connection);
+
+            final String mixedcap = "MixedCapitalization";
+            final String idCol = "Id";
+            final String nameCol = "name";
+            final String emailCol = "EMAIL";
+            final String createTable = "CREATE TABLE \"" + mixedcap + "\" (\"" + idCol + "\" INTEGER, \"" + nameCol
+                    + "\" LONGVARCHAR,  \"" + emailCol + "\" LONGVARCHAR)";
+
+            try (Statement stmt = connection.createStatement();) {
+
+                stmt.execute(createTable);
+
+            }
+
+            dcon.refreshSchemas();
+            assertEquals(mixedcap, dcon.getDefaultSchema().getTable(0).getName());
+            assertEquals(idCol, dcon.getDefaultSchema().getTable(0).getColumn(0).getName());
+
+            dcon.query().from(mixedcap).select(idCol, nameCol, emailCol).execute();
+
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("DROP TABLE \"" + mixedcap + "\"");
+            }
+            dcon.refreshSchemas();
+            dcon.executeUpdate(new UpdateScript() {
+
+                @Override
+                public void run(UpdateCallback callback) {
+                    callback.createTable(dcon.getDefaultSchemaName(), mixedcap).withColumn(idCol).asPrimaryKey()
+                            .ofType(ColumnType.INTEGER).withColumn(nameCol).ofType(ColumnType.STRING)
+                            .withColumn(emailCol).ofType(ColumnType.STRING).execute();
+                }
+            });
+
+            dcon.executeUpdate(new UpdateScript() {
+
+                @Override
+                public void run(UpdateCallback callback) {
+                    callback.insertInto(mixedcap).value(idCol, 1).value(nameCol, "Sarah")
+                            .value(emailCol, "sarah@example.com").execute();
+                }
+            });
+
+            String queryNoQuotes = "SELECT " + nameCol + ", " + idCol + ", " + emailCol + " FROM " + mixedcap
+                    + " WHERE " + idCol + "= 1";
+            DataSet dsStringQueryNQ = dcon.executeQuery(queryNoQuotes);
+            List<Row> rowsQueryNoQuotes = dsStringQueryNQ.toRows();
+            assertEquals(1, rowsQueryNoQuotes.size());
+            List<Row> rowsQueryObject = dcon.query().from(mixedcap).select(nameCol).select(idCol).select(emailCol)
+                    .where(idCol).eq(1).execute().toRows();
+            assertEquals(1, rowsQueryObject.size());
+
+            assertEquals(rowsQueryObject.get(0).getValue(0), rowsQueryNoQuotes.get(0).getValue(0));
+            assertEquals(rowsQueryObject.get(0).getValue(1), rowsQueryNoQuotes.get(0).getValue(1));
+            assertEquals(rowsQueryObject.get(0).getValue(2), rowsQueryNoQuotes.get(0).getValue(2));
+
+        }
+
     }
 }

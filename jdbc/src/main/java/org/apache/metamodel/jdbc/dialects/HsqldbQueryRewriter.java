@@ -26,6 +26,8 @@ import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 
+import com.google.common.base.CharMatcher;
+
 /**
  * Query rewriter for HSQLDB
  */
@@ -97,6 +99,17 @@ public class HsqldbQueryRewriter extends DefaultQueryRewriter {
             }
         }
         return super.rewriteFilterItem(item);
+    }
+
+    /**
+     * HSQL converts all non-escaped characters to uppercases, this is prevented by always escaping
+     */
+    @Override
+    public boolean needsQuoting(String alias, String identifierQuoteString) {
+
+        boolean containsLowerCase = CharMatcher.JAVA_LOWER_CASE.matchesAnyOf(identifierQuoteString);
+
+        return containsLowerCase || super.needsQuoting(alias, identifierQuoteString);
     }
 
 }
