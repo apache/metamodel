@@ -56,12 +56,6 @@ final class JestElasticSearchDataSet extends AbstractDataSet {
         _closed = new AtomicBoolean(false);
     }
 
-    public JestElasticSearchDataSet(JestClient client, JestResult searchResponse, Column[] columns) {
-        super(columns);
-        _client = client;
-        _searchResponse = searchResponse;
-        _closed = new AtomicBoolean(false);
-    }
 
     @Override
     public void close() {

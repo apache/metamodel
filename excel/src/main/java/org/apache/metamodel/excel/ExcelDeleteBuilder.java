@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -55,7 +56,7 @@ final class ExcelDeleteBuilder extends AbstractRowDeletionBuilder {
         final Workbook workbook = _updateCallback.getWorkbook(false);
 
         final String tableName = getTable().getName();
-        final SelectItem[] selectItems = MetaModelHelper.createSelectItems(getTable().getColumns());
+        final List<SelectItem> selectItems = getTable().getColumns().stream().map(SelectItem::new).collect(Collectors.toList());
         final DataSetHeader header = new SimpleDataSetHeader(selectItems);
         final Sheet sheet = workbook.getSheet(tableName);
 

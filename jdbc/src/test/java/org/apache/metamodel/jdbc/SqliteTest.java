@@ -97,14 +97,13 @@ public class SqliteTest extends TestCase {
 
     public void testGetSchemas() throws Exception {
         DataContext dc = new JdbcDataContext(_connection);
-        String[] schemaNames = dc.getSchemaNames();
+        String[] schemaNames = dc.getSchemaNames().toArray(new String[dc.getSchemaNames().size()]);
         assertEquals("[null]", Arrays.toString(schemaNames));
 
         Schema schema = dc.getDefaultSchema();
         assertNotNull(schema);
         assertNull(schema.getName());
 
-        Table[] tables = schema.getTables();
         assertEquals("[Table[name=system,type=TABLE,remarks=null], "
                 + "Table[name=permission,type=TABLE,remarks=null], "
                 + "Table[name=auth_cookie,type=TABLE,remarks=null], " + "Table[name=session,type=TABLE,remarks=null], "
@@ -115,11 +114,11 @@ public class SqliteTest extends TestCase {
                 + "Table[name=ticket_custom,type=TABLE,remarks=null], " + "Table[name=enum,type=TABLE,remarks=null], "
                 + "Table[name=component,type=TABLE,remarks=null], " + "Table[name=milestone,type=TABLE,remarks=null], "
                 + "Table[name=version,type=TABLE,remarks=null], " + "Table[name=report,type=TABLE,remarks=null]]",
-                Arrays.toString(tables));
+                Arrays.toString(schema.getTables().toArray()));
 
         // Index- and key-info is not yet implemented in the JDBC driver
 
-        assertEquals("[]", Arrays.toString(schema.getRelationships()));
+        assertEquals("[]", Arrays.toString(schema.getRelationships().toArray()));
 
         Table wikiTable = schema.getTableByName("WIKI");
         assertEquals(
@@ -131,13 +130,13 @@ public class SqliteTest extends TestCase {
                         + "Column[name=text,columnNumber=5,type=VARCHAR,nullable=true,nativeType=TEXT,columnSize=2000000000], "
                         + "Column[name=comment,columnNumber=6,type=VARCHAR,nullable=true,nativeType=TEXT,columnSize=2000000000], "
                         + "Column[name=readonly,columnNumber=7,type=INTEGER,nullable=true,nativeType=INTEGER,columnSize=2000000000]]",
-                Arrays.toString(wikiTable.getColumns()));
+                Arrays.toString(wikiTable.getColumns().toArray()));
 
         Table permissionTable = schema.getTableByName("PERMISSION");
         assertEquals(
                 "[Column[name=username,columnNumber=0,type=VARCHAR,nullable=true,nativeType=TEXT,columnSize=2000000000], "
                         + "Column[name=action,columnNumber=1,type=VARCHAR,nullable=true,nativeType=TEXT,columnSize=2000000000]]",
-                Arrays.toString(permissionTable.getColumns()));
+                Arrays.toString(permissionTable.getColumns().toArray()));
     }
 
     public void testExecuteQuery() throws Exception {

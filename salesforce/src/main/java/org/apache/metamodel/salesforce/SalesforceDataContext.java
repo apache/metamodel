@@ -19,10 +19,7 @@
 package org.apache.metamodel.salesforce;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 
 import com.sforce.ws.ConnectorConfig;
 
@@ -167,14 +164,14 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
         try {
             sb.append("SELECT ");
             int i = 0;
-            final Column[] columns = new Column[selectItems.size()];
+            final List<Column> columns = new ArrayList(selectItems.size());
             for (SelectItem selectItem : selectItems) {
                 validateSoqlSupportedSelectItem(selectItem);
-                columns[i] = selectItem.getColumn();
+                columns.set(i,selectItem.getColumn());
                 if (i != 0) {
                     sb.append(", ");
                 }
-                sb.append(columns[i].getName());
+                sb.append(columns.get(i).getName());
                 i++;
             }
 
@@ -366,14 +363,14 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         final StringBuilder sb = new StringBuilder();
         sb.append("SELECT ");
-        for (int i = 0; i < columns.length; i++) {
+        for (int i = 0; i < columns.size(); i++) {
             if (i != 0) {
                 sb.append(',');
             }
-            sb.append(columns[i].getName());
+            sb.append(columns.get(i).getName());
         }
         sb.append(" FROM ");
         sb.append(table.getName());

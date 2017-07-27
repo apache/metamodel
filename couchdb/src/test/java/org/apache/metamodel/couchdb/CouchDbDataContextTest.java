@@ -166,7 +166,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
                 + "Column[name=bar,columnNumber=2,type=STRING,nullable=null,nativeType=null,columnSize=null], "
                 + "Column[name=baz,columnNumber=3,type=INTEGER,nullable=null,nativeType=null,columnSize=null], "
                 + "Column[name=foo,columnNumber=4,type=STRING,nullable=null,nativeType=null,columnSize=null]]",
-                Arrays.toString(table.getColumns()));
+                Arrays.toString(table.getColumns().toArray()));
 
         // first delete the manually created database!
         dc.executeUpdate(new UpdateScript() {
@@ -184,7 +184,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
             public void run(UpdateCallback callback) {
                 Table table = callback.createTable(dc.getDefaultSchema(), databaseName).withColumn("foo")
                         .ofType(ColumnType.STRING).withColumn("greeting").ofType(ColumnType.STRING).execute();
-                assertEquals("[_id, _rev, foo, greeting]", Arrays.toString(table.getColumnNames()));
+                assertEquals("[_id, _rev, foo, greeting]", Arrays.toString(table.getColumnNames().toArray()));
             }
         });
 
@@ -256,10 +256,10 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
 
         // verify schema and execute query
         Schema schema = dc.getMainSchema();
-        assertEquals("[" + getDatabaseName() + "]", Arrays.toString(schema.getTableNames()));
+        assertEquals("[" + getDatabaseName() + "]", Arrays.toString(schema.getTableNames().toArray()));
 
         assertEquals("[_id, _rev, age, gender, name]",
-                Arrays.toString(schema.getTableByName(getDatabaseName()).getColumnNames()));
+                Arrays.toString(schema.getTableByName(getDatabaseName()).getColumnNames().toArray()));
         Column idColumn = schema.getTableByName(getDatabaseName()).getColumnByName("_id");
         assertEquals("Column[name=_id,columnNumber=0,type=STRING,nullable=false,nativeType=null,columnSize=null]",
                 idColumn.toString());
@@ -404,7 +404,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         Table table = dc.getTableByQualifiedLabel(getDatabaseName());
         assertNotNull(table);
 
-        assertEquals("[_id, _rev, name, gender, age]", Arrays.toString(table.getColumnNames()));
+        assertEquals("[_id, _rev, name, gender, age]", Arrays.toString(table.getColumnNames().toArray()));
 
         DataSet ds;
 

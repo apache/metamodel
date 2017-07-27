@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
@@ -253,7 +254,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
             dynamicTableDefinitions.clear();
             dynamicTableDefinitions.addAll(Arrays.asList(tables));
             for (final SimpleTableDef tableDef : dynamicTableDefinitions) {
-                final List<String> tableNames = Arrays.asList(theSchema.getTableNames());
+                final List<String> tableNames = theSchema.getTableNames();
 
                 if (!tableNames.contains(tableDef.getName())) {
                     addTable(theSchema, tableDef);
@@ -294,10 +295,10 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         final SearchRequestBuilder searchRequest = createSearchRequest(table, 1, maxRows, null);
         final SearchResponse response = searchRequest.execute().actionGet();
-        return new ElasticSearchDataSet(elasticSearchClient, response, columns, false);
+        return new ElasticSearchDataSet(elasticSearchClient, response, columns.stream().map(SelectItem::new).collect(Collectors.toList()), false);
     }
 
     private SearchRequestBuilder createSearchRequest(Table table, int firstRow, int maxRows, QueryBuilder queryBuilder) {

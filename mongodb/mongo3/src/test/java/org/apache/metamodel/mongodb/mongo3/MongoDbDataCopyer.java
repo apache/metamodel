@@ -98,7 +98,7 @@ public class MongoDbDataCopyer {
                 final Table sourceTable = getSourceTable();
                 final Table targetTable = callback.createTable(targetDataContext.getDefaultSchema(), _collectionName)
                         .like(sourceTable).execute();
-                final Column[] sourceColumns = sourceTable.getColumns();
+                final Column[] sourceColumns = sourceTable.getColumns().toArray(new Column[sourceTable.getColumns().size()]);
                 final DataSet dataSet = _sourceDataContext.query().from(sourceTable).select(sourceColumns).execute();
                 while (dataSet.next()) {
                     final Row row = dataSet.getRow();

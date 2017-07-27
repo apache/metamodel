@@ -20,6 +20,8 @@ package org.apache.metamodel.json;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
@@ -85,9 +87,9 @@ public class JsonDataContext extends QueryPostprocessDataContext implements Docu
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         final DocumentConverter documentConverter = _schemaBuilder.getDocumentConverter(table);
-        final SelectItem[] selectItems = MetaModelHelper.createSelectItems(columns);
+        final List<SelectItem> selectItems = columns.stream().map(SelectItem::new).collect(Collectors.toList());
         final DataSetHeader header = new CachingDataSetHeader(selectItems);
         final DocumentSource documentSource = getDocumentSourceForTable(table.getName());
 

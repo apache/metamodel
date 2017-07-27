@@ -20,6 +20,7 @@ package org.apache.metamodel.excel;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.List;
 
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
@@ -85,31 +86,31 @@ public class DefaultSpreadsheetReaderDelegateTest extends TestCase {
 
         assertEquals(DefaultSpreadsheetReaderDelegate.class, mainDataContext.getSpreadsheetReaderDelegateClass());
 
-        Table[] tables = schema.getTables();
-        assertTrue(tables.length > 0);
+        List<Table> tables = schema.getTables();
+        assertTrue(tables.size() > 0);
 
-        Table[] comparedTables = null;
+        List<Table> comparedTables = null;
         if (comparedDataContext != null) {
             assertEquals(XlsxSpreadsheetReaderDelegate.class, comparedDataContext.getSpreadsheetReaderDelegateClass());
             comparedTables = comparedDataContext.getDefaultSchema().getTables();
-            assertEquals(comparedTables.length, tables.length);
+            assertEquals(comparedTables.size(), tables.size());
         }
 
-        for (int i = 0; i < tables.length; i++) {
-            Table table = tables[i];
-            Column[] columns = table.getColumns();
+        for (int i = 0; i < tables.size(); i++) {
+            Table table = tables.get(i);
+            List<Column> columns = table.getColumns();
             Query query = mainDataContext.query().from(table).select(columns).toQuery();
             DataSet dataSet = mainDataContext.executeQuery(query);
 
             DataSet comparedDataSet = null;
             if (comparedDataContext != null) {
-                Table comparedTable = comparedTables[i];
+                Table comparedTable = comparedTables.get(i);
                 assertEquals(comparedTable.getName(), table.getName());
                 assertEquals(comparedTable.getColumnCount(), table.getColumnCount());
 
-                Column[] comparedColumns = comparedTable.getColumns();
-                for (int j = 0; j < comparedColumns.length; j++) {
-                    assertEquals(columns[j].getColumnNumber(), comparedColumns[j].getColumnNumber());
+                List<Column> comparedColumns = comparedTable.getColumns();
+                for (int j = 0; j < comparedColumns.size(); j++) {
+                    assertEquals(columns.get(j).getColumnNumber(), comparedColumns.get(j).getColumnNumber());
                 }
 
                 Query comparedQuery = comparedDataContext.query().from(comparedTable).select(comparedColumns).toQuery();
@@ -173,7 +174,7 @@ public class DefaultSpreadsheetReaderDelegateTest extends TestCase {
         ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/Spreadsheet2007.xlsx"));
         applyReaderDelegate(dc);
 
-        Table table = dc.getDefaultSchema().getTables()[0];
+        Table table = dc.getDefaultSchema().getTables().get(0);
 
         final String expectedStyling = "";
 
@@ -194,7 +195,7 @@ public class DefaultSpreadsheetReaderDelegateTest extends TestCase {
         ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/formulas.xlsx"));
         applyReaderDelegate(dc);
 
-        Table table = dc.getDefaultSchema().getTables()[0];
+        Table table = dc.getDefaultSchema().getTables().get(0);
 
         DataSet dataSet = dc.query().from(table).select("Foo").and("Bar").where("Foo").isEquals("7").execute();
         assertTrue(dataSet.next());

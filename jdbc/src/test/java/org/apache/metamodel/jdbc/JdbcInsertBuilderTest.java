@@ -33,7 +33,7 @@ public class JdbcInsertBuilderTest extends JdbcTestCase {
 				new DefaultQueryRewriter(dataContext));
 
 		assertEquals("[EMPLOYEENUMBER, LASTNAME, FIRSTNAME, EXTENSION, EMAIL, OFFICECODE, REPORTSTO, JOBTITLE]",
-				Arrays.toString(table.getColumnNames()));
+				Arrays.toString(table.getColumnNames().toArray()));
 
 		insertBuilder.value("LASTNAME", "foo").value("firstname", "BAR");
 		assertEquals("INSERT INTO PUBLIC._EMPLOYEES_ (LASTNAME,FIRSTNAME) VALUES ('foo','BAR')", insertBuilder.createSqlStatement()
@@ -53,7 +53,7 @@ public class JdbcInsertBuilderTest extends JdbcTestCase {
 				new DefaultQueryRewriter(dataContext));
 
 		assertEquals("[EMPLOYEENUMBER, LASTNAME, FIRSTNAME, EXTENSION, EMAIL, OFFICECODE, REPORTSTO, JOBTITLE]",
-				Arrays.toString(table.getColumnNames()));
+				Arrays.toString(table.getColumnNames().toArray()));
 
 		insertBuilder.value("LASTNAME", "foo").value("firstname", null);
 		assertEquals("INSERT INTO PUBLIC._EMPLOYEES_ (LASTNAME,FIRSTNAME) VALUES ('foo',NULL)", insertBuilder.createSqlStatement()
@@ -68,7 +68,7 @@ public class JdbcInsertBuilderTest extends JdbcTestCase {
 				new DefaultQueryRewriter(dataContext));
 
 		assertEquals("[EMPLOYEENUMBER, LASTNAME, FIRSTNAME, EXTENSION, EMAIL, OFFICECODE, REPORTSTO, JOBTITLE]",
-				Arrays.toString(table.getColumnNames()));
+				Arrays.toString(table.getColumnNames().toArray()));
 
 		insertBuilder.value("LASTNAME", "foo").value("firstname", "BAR");
 		assertEquals("INSERT INTO PUBLIC._EMPLOYEES_ (LASTNAME,FIRSTNAME) VALUES ('foo','BAR')", insertBuilder.createSqlStatement()

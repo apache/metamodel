@@ -19,6 +19,7 @@
 package org.apache.metamodel.salesforce;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -78,9 +79,8 @@ final class SalesforceSchema extends AbstractSchema {
     }
 
     @Override
-    public Table[] getTables() {
-        List<Table> tables = _tableRef.get();
-        return tables.toArray(new Table[tables.size()]);
+    public List<Table> getTables() {
+        return Collections.unmodifiableList(_tableRef.get());
     }
 
     @Override

@@ -68,6 +68,11 @@ public class MutableSchema extends AbstractSchema implements Serializable,
 		return Collections.unmodifiableList(_tables);
 	}
 
+	public List<MutableTable> getMutableTables() {
+		return Collections.unmodifiableList(_tables);
+	}
+
+
 	public MutableSchema setTables(Collection<? extends MutableTable> tables) {
 	    clearTables();
 		for (MutableTable table : tables) {

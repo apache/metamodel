@@ -18,10 +18,7 @@
  */
 package org.apache.metamodel.sugarcrm;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 import org.apache.metamodel.schema.AbstractTable;
@@ -119,9 +116,9 @@ final class SugarCrmTable extends AbstractTable {
     }
 
     @Override
-    public Column[] getColumns() {
+    public List<Column> getColumns() {
         final List<Column> columns = _columnsRef.get();
-        return columns.toArray(new Column[columns.size()]);
+        return Collections.unmodifiableList(columns);
     }
 
     @Override
@@ -135,8 +132,8 @@ final class SugarCrmTable extends AbstractTable {
     }
 
     @Override
-    public Relationship[] getRelationships() {
-        return new Relationship[0];
+    public List<Relationship> getRelationships() {
+        return new ArrayList<>();
     }
 
     @Override

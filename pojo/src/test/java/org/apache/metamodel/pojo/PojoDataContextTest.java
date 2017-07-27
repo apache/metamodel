@@ -65,7 +65,7 @@ public class PojoDataContextTest extends TestCase {
         DataSet dataSet = dc.query().from("persons").innerJoin("titles").on("name", "name").selectAll().execute();
 
         assertEquals("[persons.age, persons.name, titles.name, titles.title]",
-                Arrays.toString(dataSet.getSelectItems()));
+                Arrays.toString(dataSet.getSelectItems().toArray()));
         assertTrue(dataSet.next());
         assertEquals("Row[values=[42, Elvis Presley, Elvis Presley, The King]]", dataSet.getRow().toString());
         assertFalse(dataSet.next());
@@ -117,7 +117,7 @@ public class PojoDataContextTest extends TestCase {
         final Table table = schema.getTable(0);
         assertEquals("foo.bar", table.getQualifiedLabel());
 
-        assertEquals("[col1, col2, col3]", Arrays.toString(table.getColumnNames()));
+        assertEquals("[col1, col2, col3]", Arrays.toString(table.getColumnNames().toArray()));
 
         DataSet ds = dc.query().from("bar").select("col2").where("col3").eq(true).execute();
         assertTrue(ds.next());

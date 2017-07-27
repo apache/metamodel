@@ -39,15 +39,15 @@ public class PojoDataContextFactoryBeanDelegateTest extends TestCase {
 
         Schema schema = dataContext.getDefaultSchema();
         assertEquals("my db", schema.getName());
-        assertEquals("[foo, hello world]", Arrays.toString(schema.getTableNames()));
+        assertEquals("[foo, hello world]", Arrays.toString(schema.getTableNames().toArray()));
 
         assertEquals(
                 "[Column[name=greeting,columnNumber=0,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
                         + "Column[name=who,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]]",
-                Arrays.toString(schema.getTableByName("hello world").getColumns()));
+                Arrays.toString(schema.getTableByName("hello world").getColumns().toArray()));
 
         assertEquals("[Column[name=bar,columnNumber=0,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
                 + "Column[name=baz,columnNumber=1,type=DATE,nullable=true,nativeType=null,columnSize=null]]",
-                Arrays.toString(schema.getTableByName("foo").getColumns()));
+                Arrays.toString(schema.getTableByName("foo").getColumns().toArray()));
     }
 }

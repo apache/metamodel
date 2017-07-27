@@ -51,7 +51,7 @@ public class ExcelSpecifiedConfigurationFromFilenameTest {
 
         assertEquals("example.xlsx", resource.getName());
 
-        assertEquals("[hello, world]", Arrays.toString(excel.getDefaultSchema().getTable(0).getColumnNames()));
+        assertEquals("[hello, world]", Arrays.toString(excel.getDefaultSchema().getTable(0).getColumnNames().toArray()));
 
         Assert.assertTrue(excel.getConfiguration().isSkipEmptyLines());
         Assert.assertTrue(excel.getConfiguration().isSkipEmptyColumns());

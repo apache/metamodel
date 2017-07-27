@@ -18,8 +18,12 @@
  */
 package org.apache.metamodel.csv;
 
+import com.google.common.collect.Lists;
 import org.apache.metamodel.schema.AbstractSchema;
 import org.apache.metamodel.schema.Table;
+
+import java.util.ArrayList;
+import java.util.List;
 
 final class CsvSchema extends AbstractSchema {
 
@@ -54,10 +58,10 @@ final class CsvSchema extends AbstractSchema {
 	}
 
 	@Override
-	public Table[] getTables() {
+	public List<Table> getTables() {
 		if (_table == null) {
-			return new Table[0];
+			return new ArrayList<>();
 		}
-		return new Table[] { _table };
+		return Lists.newArrayList(_table);
 	}
 }

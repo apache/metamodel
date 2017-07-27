@@ -398,9 +398,8 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 return;
             }
             try {
-                final Table[] tables = schema.getTables();
                 final DatabaseMetaData metaData = connection.getMetaData();
-                for (Table table : tables) {
+                for (Table table : schema.getTables()) {
                     loadRelations(table, metaData);
                 }
                 _loadedRelations.add(identity);
@@ -453,7 +452,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 logger.error("pkColumn={}", pkColumn);
                 logger.error("fkColumn={}", fkColumn);
             } else {
-                MutableRelationship.createRelationship(new Column[] { pkColumn }, new Column[] { fkColumn });
+                MutableRelationship.createRelationship(pkColumn, fkColumn);
             }
         }
     }

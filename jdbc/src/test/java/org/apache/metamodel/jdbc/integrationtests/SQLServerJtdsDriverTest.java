@@ -161,7 +161,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         // the jdbc driver represents the date as a VARCHAR
         assertEquals("[Column[name=id,columnNumber=0,type=INTEGER,nullable=false,nativeType=int,columnSize=10], "
                 + "Column[name=birthdate,columnNumber=1,type=VARCHAR,nullable=true,nativeType=date,columnSize=10]]",
-                Arrays.toString(table.getColumns()));
+                Arrays.toString(table.getColumns().toArray()));
 
         DataSet ds = dc.query().from(table).select("id").and("birthdate").execute();
         assertTrue(ds.next());
@@ -184,7 +184,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
                 TableType.VIEW }, DATABASE_NAME);
         Query q = new Query().select("Name").from("Production.Product").where("COlor IS NOT NULL").setMaxRows(5);
         DataSet dataSet = strategy.executeQuery(q);
-        assertEquals("[Name]", Arrays.toString(dataSet.getSelectItems()));
+        assertEquals("[Name]", Arrays.toString(dataSet.getSelectItems().toArray()));
         assertTrue(dataSet.next());
         assertEquals("Row[values=[LL Crankarm]]", dataSet.getRow().toString());
         assertTrue(dataSet.next());
@@ -200,7 +200,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         }
         JdbcDataContext dc = new JdbcDataContext(getConnection(), new TableType[] { TableType.TABLE, TableType.VIEW },
                 DATABASE_NAME);
-        Schema[] schemas = dc.getSchemas();
+        Schema[] schemas = dc.getSchemas().toArray(new Schema[dc.getSchemas().size()]);
 
         assertEquals(8, schemas.length);
         assertEquals("Schema[name=HumanResources]", schemas[0].toString());
@@ -228,7 +228,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         assertEquals("dbo", schema.getName());
 
         assertEquals("[Sales, HumanResources, dbo, Purchasing, sys, Production, INFORMATION_SCHEMA, Person]",
-                Arrays.toString(strategy.getSchemaNames()));
+                Arrays.toString(strategy.getSchemaNames().toArray()));
     }
 
     public void testQueryRewriterQuoteAliases() throws Exception {

@@ -626,7 +626,7 @@ public class JdbcTestTemplates {
             final Table table = defaultSchema.getTableByName(testTableName);
             assertNotNull(table);
 
-            Column[] primaryKeys = table.getPrimaryKeys();
+            Column[] primaryKeys = table.getPrimaryKeys().toArray(new Column[table.getPrimaryKeys().size()]);
             assertEquals(2, primaryKeys.length);
             assertEquals("mykey1", primaryKeys[0].getName().toLowerCase());
             assertEquals("mykey2", primaryKeys[1].getName().toLowerCase());

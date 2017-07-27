@@ -49,6 +49,11 @@ public class SimpleDataSetHeader implements DataSetHeader {
     }
 
 
+    public static SimpleDataSetHeader fromColumns(List<Column> cols){
+        return new SimpleDataSetHeader(cols.stream().map(SelectItem::new).collect(Collectors.toList()));
+    }
+
+
     @Override
     public final List<SelectItem> getSelectItems() {
         return Collections.unmodifiableList(_items);

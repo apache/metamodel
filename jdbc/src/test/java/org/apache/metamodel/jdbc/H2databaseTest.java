@@ -143,16 +143,16 @@ public class H2databaseTest extends TestCase {
         }
 
         JdbcDataContext dc = new JdbcDataContext(conn);
-        assertEquals("[INFORMATION_SCHEMA, PUBLIC]", Arrays.toString(dc.getSchemaNames()));
+        assertEquals("[INFORMATION_SCHEMA, PUBLIC]", Arrays.toString(dc.getSchemaNames().toArray()));
 
         Schema schema = dc.getDefaultSchema();
         assertEquals("PUBLIC", schema.getName());
 
-        assertEquals("[TEST_TABLE]", Arrays.toString(schema.getTableNames()));
+        assertEquals("[TEST_TABLE]", Arrays.toString(schema.getTableNames().toArray()));
 
         Table table = schema.getTableByName("test_table");
 
-        assertEquals("[ID, NAME, AGE]", Arrays.toString(table.getColumnNames()));
+        assertEquals("[ID, NAME, AGE]", Arrays.toString(table.getColumnNames().toArray()));
 
         Column idColumn = table.getColumnByName("ID");
         assertEquals("Column[name=ID,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=10]",
@@ -283,18 +283,18 @@ public class H2databaseTest extends TestCase {
                 String sql = createTableBuilder.createSqlStatement();
                 assertEquals("CREATE TABLE PUBLIC.test_table (id INTEGER, name VARCHAR(255), age INTEGER, PRIMARY KEY(id))", sql);
                 assertNotNull(writtenTable);
-                assertEquals("[ID, NAME, AGE]", Arrays.toString(writtenTable.getColumnNames()));
+                assertEquals("[ID, NAME, AGE]", Arrays.toString(writtenTable.getColumnNames().toArray()));
 
                 writtenTableRef.set(writtenTable);
             }
         });
 
-        assertEquals("[TEST_TABLE]", Arrays.toString(dc.getDefaultSchema().getTableNames()));
+        assertEquals("[TEST_TABLE]", Arrays.toString(dc.getDefaultSchema().getTableNames().toArray()));
 
         readTable = dc.getDefaultSchema().getTableByName("test_table");
-        assertEquals("[ID, NAME, AGE]", Arrays.toString(readTable.getColumnNames()));
+        assertEquals("[ID, NAME, AGE]", Arrays.toString(readTable.getColumnNames().toArray()));
         assertEquals("[Column[name=ID,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=10]]",
-                Arrays.toString(readTable.getPrimaryKeys()));
+                Arrays.toString(readTable.getPrimaryKeys().toArray()));
         assertEquals(writtenTableRef.get(), readTable);
 
         assertFalse(conn.isReadOnly());
@@ -303,7 +303,7 @@ public class H2databaseTest extends TestCase {
         assertSame(conn, dc.getConnection());
 
         readTable = dc.getDefaultSchema().getTableByName("test_table");
-        assertEquals("[ID, NAME, AGE]", Arrays.toString(readTable.getColumnNames()));
+        assertEquals("[ID, NAME, AGE]", Arrays.toString(readTable.getColumnNames().toArray()));
         assertTrue(writtenTableRef.get().getQualifiedLabel().equalsIgnoreCase(readTable.getQualifiedLabel()));
 
         dc.executeUpdate(new UpdateScript() {
@@ -362,7 +362,7 @@ public class H2databaseTest extends TestCase {
         assertFalse(ds.next());
         ds.close();
 
-        assertEquals("[TEST_TABLE]", Arrays.toString(dc.getDefaultSchema().getTableNames()));
+        assertEquals("[TEST_TABLE]", Arrays.toString(dc.getDefaultSchema().getTableNames().toArray()));
 
         dc.executeUpdate(new UpdateScript() {
             @Override
@@ -371,7 +371,7 @@ public class H2databaseTest extends TestCase {
             }
         });
 
-        assertEquals("[]", Arrays.toString(dc.getDefaultSchema().getTableNames()));
+        assertEquals("[]", Arrays.toString(dc.getDefaultSchema().getTableNames().toArray()));
     }
 
     public void testSelectItemsThatReferencesDifferentFromItems() throws Exception {

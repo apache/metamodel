@@ -43,7 +43,7 @@ public class QuerySplitterTest extends JdbcTestCase {
 		Table customersTable = schema.getTableByName("CUSTOMERS");
 		Query q = new Query().from(employeesTable, "e").from(customersTable,
 				"c");
-		q.select(employeesTable.getColumns()[0], customersTable.getColumns()[0]);
+		q.select(employeesTable.getColumns().get(0), customersTable.getColumns().get(0));
 		assertEquals(
 				"SELECT e._EMPLOYEENUMBER_, c._CUSTOMERNUMBER_ FROM PUBLIC._EMPLOYEES_ e, PUBLIC._CUSTOMERS_ c",
 				q.toString().replace('\"', '_'));
@@ -83,10 +83,10 @@ public class QuerySplitterTest extends JdbcTestCase {
 		Table orderDetailsTable = schema.getTableByName("ORDERDETAILS");
 		Query q = new Query().from(employeesTable, "e").from(orderDetailsTable,
 				"c");
-		q.select(orderDetailsTable.getColumns()[0])
+		q.select(orderDetailsTable.getColumns().get(0))
 				.select(new SelectItem(FunctionType.MAX, employeesTable
-						.getColumns()[0]));
-		q.groupBy(orderDetailsTable.getColumns()[0]);
+						.getColumns().get(0)));
+		q.groupBy(orderDetailsTable.getColumns().get(0));
 		assertEquals(
 				"SELECT c._ORDERNUMBER_, MAX(e._EMPLOYEENUMBER_) FROM PUBLIC._EMPLOYEES_ e, PUBLIC._ORDERDETAILS_ c GROUP BY c._ORDERNUMBER_",
 				q.toString().replace('\"', '_'));
@@ -121,8 +121,7 @@ public class QuerySplitterTest extends JdbcTestCase {
 		DataContext dc = new JdbcDataContext(con);
 		Schema schema = dc.getDefaultSchema();
 		Table productsTable = schema.getTableByName("PRODUCTS");
-		Relationship[] relationships = productsTable.getRelationships();
-		Relationship relationship = relationships[0];
+		Relationship relationship = productsTable.getRelationships().iterator().next();
 		assertEquals(
 				"Relationship[primaryTable=PRODUCTS,primaryColumns=[PRODUCTCODE],foreignTable=ORDERFACT,foreignColumns=[PRODUCTCODE]]",
 				relationship.toString());
@@ -153,9 +152,9 @@ public class QuerySplitterTest extends JdbcTestCase {
 		Query sq = new Query().from(employeesTable, "e").from(customersTable,
 				"c");
 		SelectItem empSelectItem = new SelectItem(
-				employeesTable.getColumns()[0]);
+				employeesTable.getColumns().get(0));
 		SelectItem custSelectItem = new SelectItem(
-				customersTable.getColumns()[0]);
+				customersTable.getColumns().get(0));
 		sq.select(empSelectItem, custSelectItem);
 		assertEquals(
 				"SELECT e._EMPLOYEENUMBER_, c._CUSTOMERNUMBER_ FROM PUBLIC._EMPLOYEES_ e, PUBLIC._CUSTOMERS_ c",

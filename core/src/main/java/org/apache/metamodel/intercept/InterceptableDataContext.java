@@ -194,17 +194,15 @@ public class InterceptableDataContext implements UpdateableDataContext {
 
     @Override
     public List<Schema> getSchemas() throws MetaModelException {
-        List<Schema> schemas = _delegate.getSchemas();
-        List<Schema> result = new ArrayList<>(schemas.size());
-        if (!_schemaInterceptors.isEmpty()) {
-            for (int i = 0; i < schemas.size(); i++) {
-                schemas.set(i, _schemaInterceptors.interceptAll(schemas.get(i)));
-            }
-        }else {
-            result = schemas;
-        }
-        return result;
+        return _delegate.getSchemas().stream()
+                .map(schema -> {
+                    if(_schemaInterceptors.isEmpty()){
+                        return schema;
+                    }else{
+                        return _schemaInterceptors.interceptAll(schema);
+                    }
 
+                }).collect(Collectors.toList());
     }
 
     @Override

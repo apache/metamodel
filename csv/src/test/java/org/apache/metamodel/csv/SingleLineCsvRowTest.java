@@ -22,7 +22,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.List;
 
+import com.google.common.collect.Lists;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.MutableColumn;
@@ -35,7 +37,7 @@ public class SingleLineCsvRowTest {
 
     @Test
     public void testSerialize() throws Exception {
-        final Column[] columns = new Column[] { new MutableColumn("1"), new MutableColumn("2") };
+        final List<Column> columns = Lists.newArrayList( new MutableColumn("1"), new MutableColumn("2"));
         CSVParser csvParser = new CSVParser();
         final SingleLineCsvDataSet dataSet = new SingleLineCsvDataSet(null, csvParser, columns, null, 2, false);
         final SingleLineCsvRow originalRow = new SingleLineCsvRow(dataSet, "foo,bar", 2, false, 1);

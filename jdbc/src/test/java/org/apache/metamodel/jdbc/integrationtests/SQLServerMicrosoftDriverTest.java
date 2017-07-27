@@ -56,7 +56,7 @@ public class SQLServerMicrosoftDriverTest extends AbstractJdbIntegrationTest {
                 new TableType[] { TableType.TABLE, TableType.VIEW }, DATABASE_NAME);
         Query q = new Query().select("Name").from("Production.Product").where("COlor IS NOT NULL").setMaxRows(5);
         DataSet dataSet = strategy.executeQuery(q);
-        assertEquals("[Name]", Arrays.toString(dataSet.getSelectItems()));
+        assertEquals("[Name]", Arrays.toString(dataSet.getSelectItems().toArray()));
         assertTrue(dataSet.next());
         assertEquals("Row[values=[LL Crankarm]]", dataSet.getRow().toString());
         assertTrue(dataSet.next());
@@ -73,7 +73,7 @@ public class SQLServerMicrosoftDriverTest extends AbstractJdbIntegrationTest {
         
         JdbcDataContext dc = new JdbcDataContext(getConnection(), new TableType[] { TableType.TABLE, TableType.VIEW },
                 DATABASE_NAME);
-        Schema[] schemas = dc.getSchemas();
+        Schema[] schemas = dc.getSchemas().toArray(new Schema[dc.getSchemas().size()]);
 
         assertEquals(8, schemas.length);
         assertEquals("Schema[name=HumanResources]", schemas[0].toString());
@@ -100,7 +100,7 @@ public class SQLServerMicrosoftDriverTest extends AbstractJdbIntegrationTest {
                 TableType.GLOBAL_TEMPORARY }, DATABASE_NAME);
 
         assertEquals("[Sales, HumanResources, dbo, Purchasing, sys, Production, INFORMATION_SCHEMA, Person]",
-                Arrays.toString(strategy.getSchemaNames()));
+                Arrays.toString(strategy.getSchemaNames().toArray()));
 
         assertEquals("Schema[name=dbo]", strategy.getDefaultSchema().toString());
     }

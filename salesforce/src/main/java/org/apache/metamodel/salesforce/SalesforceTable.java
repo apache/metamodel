@@ -19,6 +19,7 @@
 package org.apache.metamodel.salesforce;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -135,12 +136,12 @@ final class SalesforceTable extends AbstractTable {
     }
 
     @Override
-    public Column[] getColumns() {
+    public List<Column> getColumns() {
         if (_columnRef == null) {
-            return new Column[0];
+            return new ArrayList<>();
         }
         List<Column> columns = _columnRef.get();
-        return columns.toArray(new Column[columns.size()]);
+        return Collections.unmodifiableList(columns);
     }
 
     @Override
@@ -154,8 +155,8 @@ final class SalesforceTable extends AbstractTable {
     }
 
     @Override
-    public Relationship[] getRelationships() {
-        return new Relationship[0];
+    public List<Relationship> getRelationships() {
+        return new ArrayList<>();
     }
 
     @Override

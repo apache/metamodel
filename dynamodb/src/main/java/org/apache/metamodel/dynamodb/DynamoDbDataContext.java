@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
@@ -257,11 +258,8 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-        final List<String> attributeNames = new ArrayList<>(columns.length);
-        for (final Column column : columns) {
-            attributeNames.add(column.getName());
-        }
+    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
+        final List<String> attributeNames = columns.stream().map(col-> col.getName()).collect(Collectors.toList());
         final ScanRequest scanRequest = new ScanRequest(table.getName());
         scanRequest.setAttributesToGet(attributeNames);
         if (maxRows > 0) {

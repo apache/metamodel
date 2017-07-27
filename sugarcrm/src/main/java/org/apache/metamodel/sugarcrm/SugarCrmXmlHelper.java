@@ -39,7 +39,7 @@ import com.sugarcrm.ws.soap.SelectFields;
  */
 final class SugarCrmXmlHelper {
     
-    public static SelectFields createSelectFields(Column ... columns) {
+    public static SelectFields createSelectFields(List<Column> columns) {
         final SelectFields selectFields = new SelectFields();
         selectFields.setArrayType("xsd:string[]");
 

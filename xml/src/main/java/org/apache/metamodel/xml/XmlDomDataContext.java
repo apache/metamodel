@@ -511,8 +511,8 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
                     .map(ftRel -> ftRel.getForeignTable().getName()).collect(Collectors.joining(", ")));
         }
 
-        List<Column> primaryColumns = primaryTable.getColumns();
-        List<Column> foreignColumns = foreignTable.getColumns();
+        List<Column> primaryColumns = new ArrayList<>(primaryTable.getColumns());
+        List<Column> foreignColumns = new ArrayList<>(foreignTable.getColumns());
 
         // Remove the surrogate id
         String primaryTableName = primaryTable.getName();

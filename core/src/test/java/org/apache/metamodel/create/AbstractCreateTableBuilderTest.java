@@ -102,6 +102,6 @@ public class AbstractCreateTableBuilderTest extends TestCase {
         assertEquals("Column[name=bar,columnNumber=1,type=null,nullable=null,nativeType=null,columnSize=null]",
                 table.getColumn(1).toString());
         assertEquals("Column[name=baz,columnNumber=2,type=null,nullable=null,nativeType=null,columnSize=null]",
-                table.getColumn(1).toString());
+                table.getColumn(2).toString());
     }
 }

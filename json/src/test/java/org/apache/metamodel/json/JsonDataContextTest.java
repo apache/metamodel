@@ -55,7 +55,7 @@ public class JsonDataContextTest extends TestCase {
         final Table table = dc.getDefaultSchema().getTable(0);
         assertEquals("tbl", table.getName());
 
-        assertEquals("[cl]", Arrays.toString(table.getColumnNames()));
+        assertEquals("[cl]", Arrays.toString(table.getColumnNames().toArray()));
 
         final DataSet dataSet = dc.query().from("tbl").select("cl").execute();
         assertTrue(dataSet.next());
@@ -68,10 +68,9 @@ public class JsonDataContextTest extends TestCase {
 
     private void runParseabilityTest(JsonDataContext dc) {
         final Table table = dc.getDefaultSchema().getTable(0);
-        assertEquals("[country, gender, id, name]", Arrays.toString(table.getColumnNames()));
-        final Column[] columns = table.getColumns();
+        assertEquals("[country, gender, id, name]", Arrays.toString(table.getColumnNames().toArray()));
 
-        final DataSet dataSet = dc.materializeMainSchemaTable(table, columns, 100000);
+        final DataSet dataSet = dc.materializeMainSchemaTable(table, table.getColumns(), 100000);
         assertTrue(dataSet.next());
         assertEquals("Row[values=[US, null, 1234, John Doe]]", dataSet.getRow().toString());
         assertTrue(dataSet.next());
@@ -105,7 +104,7 @@ public class JsonDataContextTest extends TestCase {
         final JsonDataContext dataContext = new JsonDataContext(resource);
 
         final Schema schema = dataContext.getDefaultSchema();
-        assertEquals("[nested_fields.json]", Arrays.toString(schema.getTableNames()));
+        assertEquals("[nested_fields.json]", Arrays.toString(schema.getTableNames().toArray()));
 
         final DataSet ds = dataContext.query().from(schema.getTable(0))
                 .select(FunctionType.MAP_VALUE, "name", new Object[] { "first" }).execute();
@@ -125,7 +124,7 @@ public class JsonDataContextTest extends TestCase {
         final JsonDataContext dataContext = new JsonDataContext(resource);
 
         final Schema schema = dataContext.getDefaultSchema();
-        assertEquals("[nested_fields.json]", Arrays.toString(schema.getTableNames()));
+        assertEquals("[nested_fields.json]", Arrays.toString(schema.getTableNames().toArray()));
 
         final DataSet ds = dataContext.query().from(schema.getTable(0)).select("name.first").execute();
         try {

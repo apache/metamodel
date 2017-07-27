@@ -62,7 +62,7 @@ public class CsvBigFileMemoryTest extends TestCase {
         System.out.println("time at start: " + timeAtStart);
 
         final DataContext dc = new CsvDataContext(file, new CsvConfiguration(1, false, false));
-        final Table t = dc.getDefaultSchema().getTables()[0];
+        final Table t = dc.getDefaultSchema().getTables().get(0);
 
         final long timeAfterDataContext = System.currentTimeMillis();
         System.out.println("time after DataContext: " + timeAfterDataContext);
@@ -116,7 +116,7 @@ public class CsvBigFileMemoryTest extends TestCase {
     public void testApproximatedCountHugeFile() throws Exception {
         DataContext dc = new CsvDataContext(getHugeFile());
 
-        Table table = dc.getDefaultSchema().getTables()[0];
+        Table table = dc.getDefaultSchema().getTables().get(0);
         Query q = dc.query().from(table).selectCount().toQuery();
         SelectItem selectItem = q.getSelectClause().getItem(0);
         selectItem.setFunctionApproximationAllowed(true);

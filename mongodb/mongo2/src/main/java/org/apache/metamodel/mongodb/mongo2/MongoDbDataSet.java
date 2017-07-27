@@ -29,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
+import java.util.List;
+
 final class MongoDbDataSet extends AbstractDataSet {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoDbDataSet.class);
@@ -39,14 +41,9 @@ final class MongoDbDataSet extends AbstractDataSet {
     private boolean _closed;
     private volatile DBObject _dbObject;
 
-    public MongoDbDataSet(DBCursor cursor, Column[] columns, boolean queryPostProcessed) {
-        super(columns);
-        _cursor = cursor;
-        _queryPostProcessed = queryPostProcessed;
-        _closed = false;
-    }
 
-    public MongoDbDataSet(DBCursor cursor, SelectItem[] selectItems, boolean queryPostProcessed) {
+
+    public MongoDbDataSet(DBCursor cursor, List<SelectItem> selectItems, boolean queryPostProcessed) {
         super(selectItems);
         _cursor = cursor;
         _queryPostProcessed = queryPostProcessed;

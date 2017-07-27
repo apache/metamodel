@@ -21,8 +21,12 @@ package org.apache.metamodel.fixedwidth;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.util.FileHelper;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DataSet implementation for fixed width values.
@@ -33,9 +37,9 @@ class FixedWidthDataSet extends AbstractDataSet {
 	private volatile Integer _rowsRemaining;
 	private volatile Row _row;
 
-	public FixedWidthDataSet(FixedWidthReader reader, Column[] columns,
+	public FixedWidthDataSet(FixedWidthReader reader, List<Column> columns,
 			Integer maxRows) {
-		super(columns);
+		super(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
 		_reader = reader;
 		_rowsRemaining = maxRows;
 	}

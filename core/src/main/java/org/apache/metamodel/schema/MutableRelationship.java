@@ -110,7 +110,7 @@ public class MutableRelationship extends AbstractRelationship implements
 		List<Column> pcols = new ArrayList<>();
 		pcols.add(primaryColumn);
 		List<Column> fcols = new ArrayList<>();
-		pcols.add(foreignColumn);
+		fcols.add(foreignColumn);
 
 
 		return createRelationship(pcols, fcols);

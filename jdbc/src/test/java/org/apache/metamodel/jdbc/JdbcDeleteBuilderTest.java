@@ -50,7 +50,7 @@ public class JdbcDeleteBuilderTest extends JdbcTestCase {
                 dataContext), true);
 
         assertEquals("[EMPLOYEENUMBER, LASTNAME, FIRSTNAME, EXTENSION, EMAIL, OFFICECODE, REPORTSTO, JOBTITLE]",
-                Arrays.toString(table.getColumnNames()));
+                Arrays.toString(table.getColumnNames().toArray()));
 
         updateBuilder.where("firstname").isNull().where("lastname").isNotNull();
         assertEquals(
@@ -64,7 +64,7 @@ public class JdbcDeleteBuilderTest extends JdbcTestCase {
         JdbcUpdateCallback updateCallback = new JdbcSimpleUpdateCallback(dataContext);
 
         assertEquals("[EMPLOYEENUMBER, LASTNAME, FIRSTNAME, EXTENSION, EMAIL, OFFICECODE, REPORTSTO, JOBTITLE]",
-                Arrays.toString(table.getColumnNames()));
+                Arrays.toString(table.getColumnNames().toArray()));
 
         JdbcDeleteBuilder updateBuilder = new JdbcDeleteBuilder(updateCallback, table, new DefaultQueryRewriter(
                 dataContext), false);

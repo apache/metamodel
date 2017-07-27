@@ -55,14 +55,7 @@ final class ElasticSearchDataSet extends AbstractDataSet {
         _searchResponse = searchResponse;
         _closed = new AtomicBoolean(false);
     }
-    
-    public ElasticSearchDataSet(Client client, SearchResponse searchResponse, Column[] columns,
-            boolean queryPostProcessed) {
-        super(columns);
-        _client = client;
-        _searchResponse = searchResponse;
-        _closed = new AtomicBoolean(false);
-    }
+
 
     @Override
     public void close() {

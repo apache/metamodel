@@ -24,6 +24,8 @@ import java.io.OutputStream;
 import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -440,7 +442,7 @@ final class ExcelUtils {
     }
 
     public static DataSet getDataSet(Workbook workbook, Sheet sheet, Table table, ExcelConfiguration configuration) {
-        final SelectItem[] selectItems = MetaModelHelper.createSelectItems(table.getColumns());
+        final List<SelectItem> selectItems = table.getColumns().stream().map(SelectItem::new).collect(Collectors.toList());
         final Iterator<Row> rowIterator = getRowIterator(sheet, configuration, true);
         if (!rowIterator.hasNext()) {
             // no more rows!

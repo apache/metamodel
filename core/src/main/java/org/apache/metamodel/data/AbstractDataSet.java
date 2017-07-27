@@ -64,9 +64,6 @@ public abstract class AbstractDataSet extends BaseObject implements DataSet {
         _header = Objects.requireNonNull(header);
     }
 
-    public AbstractDataSet(Column[] columns) {
-        this(MetaModelHelper.createSelectItems(columns));
-    }
 
     /**
      * {@inheritDoc}

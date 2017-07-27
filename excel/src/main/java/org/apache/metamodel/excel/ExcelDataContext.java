@@ -21,6 +21,7 @@ package org.apache.metamodel.excel;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
@@ -128,7 +129,7 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
     }
 
     @Override
-    public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+    public DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         try {
             SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate();
 

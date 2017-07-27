@@ -23,6 +23,8 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
+import java.util.List;
+
 /**
  * Delegate for spreadsheet-implementation specific operations in an
  * {@link ExcelDataContext}.
@@ -33,6 +35,6 @@ interface SpreadsheetReaderDelegate {
 
     public Schema createSchema(String schemaName) throws Exception;
 
-    public DataSet executeQuery(Table table, Column[] columns, int maxRows) throws Exception;
+    public DataSet executeQuery(Table table, List<Column> columns, int maxRows) throws Exception;
 
 }

@@ -59,8 +59,7 @@ final class JdbcSchema extends MutableSchema {
     }
 
     public Schema toSerializableForm() {
-        MutableTable[] tables = getTables();
-        for (MutableTable table : tables) {
+        for (MutableTable table : getMutableTables()) {
             table.getColumns();
             table.getIndexedColumns();
             table.getPrimaryKeys();
