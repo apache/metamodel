@@ -29,6 +29,8 @@ import org.apache.metamodel.schema.TableType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /**
  * Abstract {@link TableCreationBuilder} implementation, provided as convenience
  * for {@link TableCreatable} implementations. Handles all the building
@@ -72,7 +74,7 @@ public abstract class AbstractTableCreationBuilder<U extends UpdateCallback> imp
     @Override
     public TableCreationBuilder like(Table table) {
         logger.debug("like({})", table);
-        Column[] columns = table.getColumns();
+        List<Column> columns = table.getColumns();
         for (Column column : columns) {
             withColumn(column.getName()).like(column);
         }
@@ -101,12 +103,12 @@ public abstract class AbstractTableCreationBuilder<U extends UpdateCallback> imp
         sb.append("CREATE TABLE ");
         sb.append(_table.getQualifiedLabel());
         sb.append(" (");
-        Column[] columns = _table.getColumns();
-        for (int i = 0; i < columns.length; i++) {
+        List<Column> columns = _table.getColumns();
+        for (int i = 0; i < columns.size(); i++) {
             if (i != 0) {
                 sb.append(',');
             }
-            Column column = columns[i];
+            Column column = columns.get(i);
             sb.append(column.getName());
             ColumnType type = column.getType();
             if (type != null) {
@@ -125,15 +127,15 @@ public abstract class AbstractTableCreationBuilder<U extends UpdateCallback> imp
             }
         }
         boolean primaryKeyExists = false;
-        for(int i = 0 ; i < columns.length ; i++) {
-            if(columns[i].isPrimaryKey()) {
+        for(int i = 0 ; i < columns.size() ; i++) {
+            if(columns.get(i).isPrimaryKey()) {
                 if(!primaryKeyExists) {
                     sb.append(", PRIMARY KEY(");
-                    sb.append(columns[i].getName());
+                    sb.append(columns.get(i).getName());
                     primaryKeyExists = true;
                 } else {
                     sb.append(",");
-                    sb.append(columns[i].getName());
+                    sb.append(columns.get(i).getName());
                 }
             }    
         }

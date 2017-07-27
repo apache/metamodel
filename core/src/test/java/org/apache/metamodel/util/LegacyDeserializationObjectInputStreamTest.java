@@ -75,13 +75,12 @@ public class LegacyDeserializationObjectInputStreamTest extends TestCase {
 
         final Query q = (Query) obj;
         final Table table = q.getFromClause().getItem(0).getTable();
-        final Column[] columns = table.getColumns();
 
         assertEquals("Table[name=mytable,type=TABLE,remarks=null]", table.toString());
         assertEquals("Column[name=mycol1,columnNumber=0,type=INTEGER,nullable=false,nativeType=int,columnSize=16]",
-                columns[0].toString());
+                table.getColumn(0).toString());
         assertEquals("Column[name=mycol1,columnNumber=1,type=VARCHAR,nullable=true,nativeType=text,columnSize=255]",
-                columns[1].toString());
+                table.getColumn(1).toString());
 
         assertEquals("SELECT mytable.\"mycol1\" FROM myschema.mytable WHERE mytable.mycol1 = 'foo'", q.toSql());
     }

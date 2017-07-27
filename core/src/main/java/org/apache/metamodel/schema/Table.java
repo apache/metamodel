@@ -19,6 +19,8 @@
 package org.apache.metamodel.schema;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Represents a table and it's metadata description. Tables reside within a
@@ -49,7 +51,7 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
      * 
      * @return the columns of this table.
      */
-    public Column[] getColumns();
+    public List<Column> getColumns();
 
     /**
      * Convenience method for retrieving a column by it's name.
@@ -93,7 +95,7 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
      * @return all relationsips for this table. To add relations use
      *         TableRelation.createRelation();
      */
-    public Relationship[] getRelationships();
+    public Collection<Relationship> getRelationships();
 
     /**
      * Gets relationships between this table and another table.
@@ -102,7 +104,7 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
      *            another table for which to find relationships to and from.
      * @return an array of relationsips between this and the other table.
      */
-    public Relationship[] getRelationships(Table otherTable);
+    public Collection<Relationship> getRelationships(Table otherTable);
 
     /**
      * Gets a count of relationships to and from this table.
@@ -124,7 +126,7 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
      * @return an array of columns.
      * @see ColumnType
      */
-    public Column[] getNumberColumns();
+    public List<Column> getNumberColumns();
 
     /**
      * Gets all of this table's columns that are of literal (String/text) type.
@@ -132,7 +134,7 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
      * @return an array of columns.
      * @see ColumnType
      */
-    public Column[] getLiteralColumns();
+    public List<Column> getLiteralColumns();
 
     /**
      * Gets all of this table's columns that are time and/or date based.
@@ -140,7 +142,7 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
      * @return an array of columns.
      * @see ColumnType
      */
-    public Column[] getTimeBasedColumns();
+    public List<Column> getTimeBasedColumns();
 
     /**
      * Gets all of this table's columns that are of boolean type.
@@ -148,24 +150,24 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
      * @return an array of columns.
      * @see ColumnType
      */
-    public Column[] getBooleanColumns();
+    public List<Column> getBooleanColumns();
 
     /**
      * Gets all of this table's columns that are indexed.
      * 
      * @return an array of columns.
      */
-    public Column[] getIndexedColumns();
+    public List<Column> getIndexedColumns();
 
     /**
      * @return the relationships where this table is the foreign table
      */
-    public Relationship[] getForeignKeyRelationships();
+    public Collection<Relationship> getForeignKeyRelationships();
 
     /**
      * @return the relationships where this table is the primary table
      */
-    public Relationship[] getPrimaryKeyRelationships();
+    public Collection<Relationship> getPrimaryKeyRelationships();
 
     /**
      * Gets the columns of this table that are known to be foreign keys (ie.
@@ -173,7 +175,7 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
      * 
      * @return an array of columns that are known to be foreign keys.
      */
-    public Column[] getForeignKeys();
+    public List<Column> getForeignKeys();
 
     /**
      * Gets the columns of this table that are known to be primary keys. See
@@ -181,14 +183,14 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
      * 
      * @return an array of columns that are known to be primary keys.
      */
-    public Column[] getPrimaryKeys();
+    public List<Column> getPrimaryKeys();
 
     /**
      * Gets the names of this table's columns.
      * 
      * @return an array of column names.
      */
-    public String[] getColumnNames();
+    public List<String> getColumnNames();
 
     /**
      * Gets the columns of this table that conforms to a specified
@@ -198,7 +200,7 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
      *            the column type to search for.
      * @return an array of columns that match the specified ColumnType.
      */
-    public Column[] getColumnsOfType(ColumnType columnType);
+    public List<Column> getColumnsOfType(ColumnType columnType);
 
     /**
      * Gets the columns of this table that conforms to a specified
@@ -208,6 +210,6 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
      *            the super type of the column
      * @return an array of columns that match the specified SuperColumnType.
      */
-    public Column[] getColumnsOfSuperType(SuperColumnType superColumnType);
+    public List<Column> getColumnsOfSuperType(SuperColumnType superColumnType);
 
 }

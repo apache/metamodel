@@ -20,6 +20,8 @@ package org.apache.metamodel.schema;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,7 +56,7 @@ final class ImmutableTable extends AbstractTable implements Serializable {
 	protected ImmutableTable(Table table, ImmutableSchema schema) {
 		this(table.getName(), table.getType(), schema, table.getRemarks(),
 				table.getQuote());
-		Column[] origColumns = table.getColumns();
+		List<Column> origColumns = table.getColumns();
 		for (Column column : origColumns) {
 			columns.add(new ImmutableColumn(column, this));
 		}
@@ -67,8 +69,8 @@ final class ImmutableTable extends AbstractTable implements Serializable {
 	}
 
 	@Override
-	public Column[] getColumns() {
-		return columns.toArray(new Column[columns.size()]);
+	public List<Column> getColumns() {
+		return Collections.unmodifiableList(columns);
 	}
 
 	@Override
@@ -82,8 +84,8 @@ final class ImmutableTable extends AbstractTable implements Serializable {
 	}
 
 	@Override
-	public Relationship[] getRelationships() {
-		return relationships.toArray(new Relationship[relationships.size()]);
+	public Collection<Relationship> getRelationships() {
+		return Collections.unmodifiableCollection(relationships);
 	}
 
 	@Override

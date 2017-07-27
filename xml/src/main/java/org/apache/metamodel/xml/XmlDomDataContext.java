@@ -21,13 +21,10 @@ package org.apache.metamodel.xml;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -178,7 +175,7 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
     }
 
     @Override
-    public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+    public DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         loadSchema();
         List<Object[]> tableData = _tableData.get(table.getName());
         if (tableData == null) {
@@ -186,7 +183,7 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
                     + _tableData.keySet());
         }
 
-        final SelectItem[] selectItems = MetaModelHelper.createSelectItems(columns);
+        final List<SelectItem> selectItems = columns.stream().map(SelectItem::new).collect(Collectors.toList());
         final DataSetHeader header = new CachingDataSetHeader(selectItems);
 
         final List<Row> resultData = new ArrayList<Row>();
@@ -195,9 +192,9 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
                 break;
             }
             maxRows--;
-            Object[] dataValues = new Object[columns.length];
-            for (int i = 0; i < columns.length; i++) {
-                Column column = columns[i];
+            Object[] dataValues = new Object[columns.size()];
+            for (int i = 0; i < columns.size(); i++) {
+                Column column = columns.get(i);
                 int columnNumber = column.getColumnNumber();
                 // Some rows may not contain values for all columns
                 // (attributes)
@@ -259,7 +256,7 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
 
         // Remove tables from schema that has no data (typically root
         // node or pure XML structure)
-        Table[] tables = _schema.getTables();
+        List<Table> tables = _schema.getTables();
         for (Table table : tables) {
             String tableName = table.getName();
             List<Object[]> tableRows = _tableData.get(tableName);
@@ -330,8 +327,8 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
                     foreignKeyColumn.setNativeType(NATIVE_TYPE_FOREIGN_KEY);
                     table.addColumn(foreignKeyColumn);
 
-                    MutableRelationship.createRelationship(new Column[] { parentKeyColumn }, new Column[] {
-                            foreignKeyColumn });
+                    MutableRelationship.createRelationship(parentKeyColumn ,
+                            foreignKeyColumn );
 
                 } else {
                     foreignKeyColumn = null;
@@ -339,9 +336,9 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
             } else {
                 idColumn = getIdColumn(table);
                 tableRows = _tableData.get(tableName);
-                Column[] foreignKeys = table.getForeignKeys();
-                if (foreignKeys.length == 1) {
-                    foreignKeyColumn = (MutableColumn) foreignKeys[0];
+                List<Column> foreignKeys = table.getForeignKeys();
+                if (foreignKeys.size() == 1) {
+                    foreignKeyColumn = (MutableColumn) foreignKeys.get(0);
                 } else {
                     foreignKeyColumn = null;
                 }
@@ -401,7 +398,7 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
     }
 
     private Column getTextContentColumn(MutableTable table, String preferredColumnName) {
-        Column[] columns = table.getColumns();
+        List<Column> columns = table.getColumns();
         MutableColumn column = null;
         for (Column col : columns) {
             if (NATIVE_TYPE_TEXT.equals(col.getNativeType())) {
@@ -420,7 +417,7 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
     }
 
     private MutableColumn getIdColumn(MutableTable table) {
-        Column[] columns = table.getColumns();
+        List<Column> columns = table.getColumns();
         MutableColumn column = null;
         for (Column col : columns) {
             if (NATIVE_TYPE_PRIMARY_KEY.equals(col.getNativeType())) {
@@ -507,18 +504,15 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
         // Check that foreignTable is not primary table in other relationships
         // (if so we can't flatten as that would require id-rewriting of those
         // foreign tables as well)
-        if (foreignTable.getPrimaryKeyRelationships().length != 0) {
-            Relationship[] foreignPrimaryRelationships = foreignTable.getPrimaryKeyRelationships();
-            String[] foreignPrimaryNames = new String[foreignPrimaryRelationships.length];
-            for (int i = 0; i < foreignPrimaryRelationships.length; i++) {
-                foreignPrimaryNames[i] = foreignPrimaryRelationships[i].getForeignTable().getName();
-            }
+        if (!foreignTable.getPrimaryKeyRelationships().isEmpty()) {
+            Collection<Relationship> foreignPrimaryRelationships = foreignTable.getPrimaryKeyRelationships();
             throw new UnsupportedOperationException("Cannot flatten foreign table '" + foreignTable.getName()
-                    + "' as it acts as primary table for tables: " + Arrays.toString(foreignPrimaryNames));
+                    + "' as it acts as primary table for tables: " + foreignPrimaryRelationships.stream()
+                    .map(ftRel -> ftRel.getForeignTable().getName()).collect(Collectors.joining(", ")));
         }
 
-        List<Column> primaryColumns = new ArrayList<Column>(Arrays.asList(primaryTable.getColumns()));
-        List<Column> foreignColumns = new ArrayList<Column>(Arrays.asList(foreignTable.getColumns()));
+        List<Column> primaryColumns = primaryTable.getColumns();
+        List<Column> foreignColumns = foreignTable.getColumns();
 
         // Remove the surrogate id
         String primaryTableName = primaryTable.getName();
@@ -527,8 +521,7 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
         foreignColumns.remove(idColumn);
 
         // Remove the foreign keys
-        Column[] foreignKeys = foreignTable.getForeignKeys();
-        for (Column foreignKey : foreignKeys) {
+        for (Column foreignKey : foreignTable.getForeignKeys()) {
             foreignColumns.remove(foreignKey);
         }
 
@@ -560,7 +553,7 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
             logger.info("Tables '" + primaryTableName + "' and '" + foreignTableName + "' flattened to: "
                     + primaryTableName);
             if (logger.isDebugEnabled()) {
-                logger.debug(primaryTableName + " columns: " + Arrays.toString(primaryTable.getColumns()));
+                logger.debug(primaryTableName + " columns: " + Arrays.toString(primaryTable.getColumns().toArray()));
             }
         }
 
@@ -574,22 +567,20 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
      * mapped tables).
      */
     public XmlDomDataContext autoFlattenTables() {
-        Table[] tables = _schema.getTables();
-        for (Table table : tables) {
+        for (Table table : _schema.getTables()) {
             // First check to see that this table still exist (ie. has not been
             // flattened in a previous loop)
             if (_tableData.containsKey(table.getName())) {
                 // Find all tables that represent inner tags
-                Relationship[] foreignKeyRelationships = table.getForeignKeyRelationships();
-                if (foreignKeyRelationships.length == 1 && table.getPrimaryKeyRelationships().length == 0) {
-                    Relationship foreignKeyRelationship = foreignKeyRelationships[0];
+                Collection<Relationship> foreignKeyRelationships = table.getForeignKeyRelationships();
+                if (foreignKeyRelationships.size() == 1 && table.getPrimaryKeyRelationships().size() == 0) {
+                    Relationship foreignKeyRelationship = foreignKeyRelationships.iterator().next();
 
                     // If there is exactly one inner tag then we can probably
                     // flatten the tables, but it's only relevant if the inner
                     // tag only carry a single data column
                     int nonDataColumns = 0;
-                    Column[] columns = table.getColumns();
-                    for (Column column : columns) {
+                    for (Column column : table.getColumns()) {
                         String nativeType = column.getNativeType();
                         // Use the native column type constants to determine if
                         // the column is an artificial column
@@ -598,14 +589,14 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
                         }
                     }
 
-                    if (columns.length == nonDataColumns + 1) {
+                    if (table.getColumns().size() == nonDataColumns + 1) {
                         // If the foreign key is unique for all rows, we will
                         // flatten it (otherwise it means that multiple inner
                         // tags occur, which requires two tables to deal with
                         // multiplicity)
                         boolean uniqueForeignKeys = true;
 
-                        Column[] foreignColumns = foreignKeyRelationship.getForeignColumns();
+                        List<Column> foreignColumns = foreignKeyRelationship.getForeignColumns();
 
                         SelectItem countAllItem = SelectItem.getCountAllItem();
                         Query q = new Query().select(foreignColumns).select(countAllItem).from(table).groupBy(

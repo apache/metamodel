@@ -35,7 +35,7 @@ public interface DataSet extends Closeable, Iterable<Row> {
     /**
      * @return the SelectItems that represent the columns of this DataSet
      */
-    public SelectItem[] getSelectItems();
+    public List<SelectItem> getSelectItems();
 
     /**
      * Finds the index of a given SelectItem

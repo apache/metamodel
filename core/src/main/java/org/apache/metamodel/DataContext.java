@@ -27,6 +27,9 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * A DataContext represents the central entry point for interactions with
  * datastores. The DataContext contains of the structure of data (in the form of
@@ -51,7 +54,7 @@ public interface DataContext {
      * @throws MetaModelException
      *             if an error occurs retrieving the schema model
      */
-    public Schema[] getSchemas() throws MetaModelException;
+    public List<Schema> getSchemas() throws MetaModelException;
 
     /**
      * Gets the names of all schemas within this DataContext.
@@ -60,7 +63,7 @@ public interface DataContext {
      * @throws MetaModelException
      *             if an error occurs retrieving the schema model
      */
-    public String[] getSchemaNames() throws MetaModelException;
+    public List<String> getSchemaNames() throws MetaModelException;
 
     /**
      * Gets the default schema of this DataContext.

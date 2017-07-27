@@ -32,14 +32,6 @@ public final class EmptyDataSet extends AbstractDataSet {
         super(header);
     }
 
-    public EmptyDataSet(SelectItem[] selectItems) {
-        super(new SimpleDataSetHeader(selectItems));
-    }
-
-    public EmptyDataSet(Column[] columns) {
-        super(new SimpleDataSetHeader(columns));
-    }
-
     public EmptyDataSet(List<SelectItem> selectItems) {
        this(new SimpleDataSetHeader(selectItems));
     }

@@ -18,10 +18,10 @@
  */
 package org.apache.metamodel;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
+import com.google.common.collect.Lists;
+import javafx.scene.Scene;
 import junit.framework.TestCase;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.Query;
@@ -57,8 +57,8 @@ public class AbstractDataContextTest extends TestCase {
         }
 
         @Override
-        protected String[] getSchemaNamesInternal() {
-            return _schemas.keySet().toArray(new String[0]);
+        protected List<String> getSchemaNamesInternal() {
+            return new ArrayList<>(_schemas.keySet());
         }
 
         @Override
@@ -154,8 +154,8 @@ public class AbstractDataContextTest extends TestCase {
             }
 
             @Override
-            protected String[] getSchemaNamesInternal() {
-                return new String[] { "test" };
+            protected List<String> getSchemaNamesInternal() {
+                return Lists.newArrayList("test");
             }
 
             @Override
@@ -209,12 +209,12 @@ public class AbstractDataContextTest extends TestCase {
 
     public void testGetSchemas() throws Exception {
         MyDataContext dc = new MyDataContext();
-        Schema[] schemas = dc.getSchemas();
-        assertEquals("[Schema[name=barfoo], Schema[name=foo.bar], Schema[name=foobar]]", Arrays.toString(schemas));
+        List<Schema> schemas = dc.getSchemas();
+        assertEquals("[Schema[name=barfoo], Schema[name=foo.bar], Schema[name=foobar]]", Arrays.toString(schemas.toArray()));
 
         dc.refreshSchemas();
         schemas = dc.getSchemas();
-        assertEquals("[Schema[name=barfoo], Schema[name=foo.bar], Schema[name=foobar]]", Arrays.toString(schemas));
+        assertEquals("[Schema[name=barfoo], Schema[name=foo.bar], Schema[name=foobar]]", Arrays.toString(schemas.toArray()));
     }
 
     public void testGetColumnByQualifiedLabelWithNameOverlaps() throws Exception {
@@ -226,8 +226,8 @@ public class AbstractDataContextTest extends TestCase {
             }
 
             @Override
-            protected String[] getSchemaNamesInternal() {
-                return new String[] { "sch" };
+            protected List<String> getSchemaNamesInternal() {
+                return Lists.newArrayList( "sch" );
             }
 
             @Override

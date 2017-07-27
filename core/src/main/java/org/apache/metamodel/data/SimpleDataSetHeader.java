@@ -19,7 +19,9 @@
 package org.apache.metamodel.data;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.query.SelectItem;
@@ -46,13 +48,10 @@ public class SimpleDataSetHeader implements DataSetHeader {
         this(Arrays.asList(selectItems));
     }
 
-    public SimpleDataSetHeader(Column[] columns) {
-        this(MetaModelHelper.createSelectItems(columns));
-    }
 
     @Override
-    public final SelectItem[] getSelectItems() {
-        return _items.toArray(new SelectItem[_items.size()]);
+    public final List<SelectItem> getSelectItems() {
+        return Collections.unmodifiableList(_items);
     }
 
     @Override

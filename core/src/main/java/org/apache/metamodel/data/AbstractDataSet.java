@@ -56,7 +56,7 @@ public abstract class AbstractDataSet extends BaseObject implements DataSet {
         if (dataSet instanceof AbstractDataSet) {
             _header = ((AbstractDataSet) dataSet).getHeader();
         } else {
-            _header = new CachingDataSetHeader(Arrays.asList(dataSet.getSelectItems()));
+            _header = new CachingDataSetHeader(dataSet.getSelectItems());
         }
     }
 
@@ -72,7 +72,7 @@ public abstract class AbstractDataSet extends BaseObject implements DataSet {
      * {@inheritDoc}
      */
     @Override
-    public SelectItem[] getSelectItems() {
+    public List<SelectItem> getSelectItems() {
         return getHeader().getSelectItems();
     }
 
@@ -118,7 +118,7 @@ public abstract class AbstractDataSet extends BaseObject implements DataSet {
      */
     @Override
     public String toString() {
-        return "DataSet[selectItems=" + Arrays.toString(getSelectItems()) + "]";
+        return "DataSet[selectItems=" + Arrays.toString(getSelectItems().toArray()) + "]";
     }
 
     @Override

@@ -36,7 +36,7 @@ public class ScalarFunctionDataSet extends AbstractDataSet implements WrappingDa
 
     public ScalarFunctionDataSet(List<SelectItem> scalarFunctionSelectItemsToEvaluate, DataSet dataSet) {
         super(CollectionUtils.concat(false, scalarFunctionSelectItemsToEvaluate,
-                Arrays.<SelectItem> asList(dataSet.getSelectItems())));
+                dataSet.getSelectItems()));
         _scalarFunctionSelectItemsToEvaluate = scalarFunctionSelectItemsToEvaluate;
         _dataSet = dataSet;
     }

@@ -150,6 +150,11 @@ abstract class SatisfiedFromBuilderCallback extends BaseObject implements Satisf
     }
 
     @Override
+    public SatisfiedSelectBuilder<?> select(List<Column> columns) {
+        return select(columns.toArray(new Column[columns.size()]));
+    }
+
+    @Override
     public SatisfiedSelectBuilder<?> select(String... columnNames) {
         if (columnNames == null) {
             throw new IllegalArgumentException("columnNames cannot be null");

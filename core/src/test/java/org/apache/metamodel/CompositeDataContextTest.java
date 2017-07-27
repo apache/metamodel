@@ -42,11 +42,11 @@ public class CompositeDataContextTest extends TestCase {
 		DataContext composite = new CompositeDataContext(dc1, dc2);
 
 		assertEquals("[schema1, schema2]",
-				Arrays.toString(composite.getSchemaNames()));
+				Arrays.toString(composite.getSchemaNames().toArray()));
 		assertSame(dc1.getDefaultSchema(), composite.getDefaultSchema());
 
 		DataSet ds = composite.query()
-				.from(dc1.getDefaultSchema().getTables()[0]).select("foo")
+				.from(dc1.getDefaultSchema().getTables().get(0)).select("foo")
 				.execute();
 		List<Object[]> objectArrays = ds.toObjectArrays();
 		assertEquals("1", objectArrays.get(0)[0]);
@@ -61,12 +61,12 @@ public class CompositeDataContextTest extends TestCase {
 		DataContext composite = new CompositeDataContext(dc1, dc2);
 
 		assertEquals("[schema]",
-				Arrays.toString(composite.getSchemaNames()));
+				Arrays.toString(composite.getSchemaNames().toArray()));
 
 		Schema schema = composite.getDefaultSchema();
 		assertEquals(4, schema.getTableCount());
 		assertEquals("[table1, an_empty_table, table2, an_empty_table]",
-				Arrays.toString(schema.getTableNames()));
+				Arrays.toString(schema.getTableNames().toArray()));
 		assertTrue(schema instanceof CompositeSchema);
 	}
 
@@ -77,15 +77,14 @@ public class CompositeDataContextTest extends TestCase {
 		DataContext composite = new CompositeDataContext(dc1, dc2);
 
 		assertEquals("[schema]",
-				Arrays.toString(composite.getSchemaNames()));
+				Arrays.toString(composite.getSchemaNames().toArray()));
 
 		Schema schema = composite.getDefaultSchema();
 		assertEquals(4, schema.getTableCount());
-		assertEquals("[table, an_empty_table, table, an_empty_table]", Arrays.toString(schema.getTableNames()));
+		assertEquals("[table, an_empty_table, table, an_empty_table]", Arrays.toString(schema.getTableNames().toArray()));
 		assertTrue(schema instanceof CompositeSchema);
-		Table[] tables = schema.getTables();
-        Table table1 = tables[0];
-        Table table2 = tables[2];
+        Table table1 = schema.getTable(0);
+        Table table2 = schema.getTable(2);
         assertNotSame(table1, table2);
 
 		Query q = composite

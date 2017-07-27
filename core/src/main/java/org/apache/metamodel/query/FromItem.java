@@ -88,16 +88,16 @@ public class FromItem extends BaseObject implements QueryItem, Cloneable {
     public FromItem(JoinType join, Relationship relationship) {
         _join = join;
         _leftSide = new FromItem(relationship.getPrimaryTable());
-        Column[] columns = relationship.getPrimaryColumns();
-        _leftOn = new SelectItem[columns.length];
-        for (int i = 0; i < columns.length; i++) {
-            _leftOn[i] = new SelectItem(columns[i]);
+        List<Column> columns = relationship.getPrimaryColumns();
+        _leftOn = new SelectItem[columns.size()];
+        for (int i = 0; i < columns.size(); i++) {
+            _leftOn[i] = new SelectItem(columns.get(i));
         }
         _rightSide = new FromItem(relationship.getForeignTable());
         columns = relationship.getForeignColumns();
-        _rightOn = new SelectItem[columns.length];
-        for (int i = 0; i < columns.length; i++) {
-            _rightOn[i] = new SelectItem(columns[i]);
+        _rightOn = new SelectItem[columns.size()];
+        for (int i = 0; i < columns.size(); i++) {
+            _rightOn[i] = new SelectItem(columns.get(i));
         }
     }
 

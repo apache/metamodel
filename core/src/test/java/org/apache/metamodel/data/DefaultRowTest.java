@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
+import java.util.List;
 
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
@@ -71,9 +72,9 @@ public class DefaultRowTest extends TestCase {
 
         Row row = (Row) obj;
         assertEquals(2, row.size());
-        SelectItem[] selectItems = row.getSelectItems();
-        assertEquals("foo", selectItems[0].toString());
-        assertEquals("bar", selectItems[1].toString());
+        List<SelectItem> selectItems = row.getSelectItems();
+        assertEquals("foo", selectItems.get(0).toString());
+        assertEquals("bar", selectItems.get(1).toString());
 
         assertEquals("foo", row.getValue(0));
         assertEquals("bar", row.getValue(1));
@@ -81,7 +82,7 @@ public class DefaultRowTest extends TestCase {
         assertEquals(Style.NO_STYLE, row.getStyle(0));
         assertEquals(Style.NO_STYLE, row.getStyle(1));
 
-        Column column = selectItems[0].getColumn();
+        Column column = selectItems.get(0).getColumn();
         assertNotNull(column);
         
         // the columns used to create the object did not have column types assigned.

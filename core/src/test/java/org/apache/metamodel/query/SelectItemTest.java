@@ -24,14 +24,16 @@ import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
+import java.util.List;
+
 public class SelectItemTest extends MetaModelTestCase {
 
     private Schema _schema = getExampleSchema();
 
     public void testSelectColumnInFromItem() throws Exception {
         final Table projectTable = _schema.getTableByName(TABLE_PROJECT);
-        final Column column1 = projectTable.getColumns()[0];
-        final Column column2 = projectTable.getColumns()[1];
+        final Column column1 = projectTable.getColumns().get(0);
+        final Column column2 = projectTable.getColumns().get(1);
 
         Query q = new Query().from(projectTable, "a").from(projectTable, "b");
         q.select(column1, q.getFromClause().getItem(1));
@@ -41,12 +43,12 @@ public class SelectItemTest extends MetaModelTestCase {
     }
     
     public void testToSql() throws Exception {
-        SelectItem selectItem = new SelectItem(_schema.getTableByName(TABLE_PROJECT).getColumns()[0]);
+        SelectItem selectItem = new SelectItem(_schema.getTableByName(TABLE_PROJECT).getColumns().get(0));
         assertEquals("project.project_id", selectItem.toSql());
     }
     
     public void testToSqlFuntionApproximation() throws Exception {
-        SelectItem selectItem = new SelectItem(FunctionType.MAX, _schema.getTableByName(TABLE_PROJECT).getColumns()[0]);
+        SelectItem selectItem = new SelectItem(FunctionType.MAX, _schema.getTableByName(TABLE_PROJECT).getColumns().get(0));
         selectItem.setFunctionApproximationAllowed(true);
         assertEquals("APPROXIMATE MAX(project.project_id)", selectItem.toSql());
     }
@@ -65,10 +67,10 @@ public class SelectItemTest extends MetaModelTestCase {
         FromItem subQueryFrom = new FromItem(roleTable);
         subQueryFrom.setAlias("c");
         subQuery.from(subQueryFrom);
-        Column[] columns = roleTable.getColumns();
+        List<Column> columns = roleTable.getColumns();
         subQuery.select(columns);
 
-        SelectItem subQuerySelectItem = subQuery.getSelectClause().getSelectItem(columns[1]);
+        SelectItem subQuerySelectItem = subQuery.getSelectClause().getSelectItem(columns.get(1));
         FromItem rightSide = new FromItem(subQuery);
         rightSide.setAlias("b");
         SelectItem[] rightOn = new SelectItem[] { subQuerySelectItem };

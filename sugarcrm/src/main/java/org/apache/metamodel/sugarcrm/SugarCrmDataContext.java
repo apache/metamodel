@@ -38,7 +38,7 @@ import org.apache.metamodel.util.LazyRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sugarcrm.ws.soap.EntryValue;
+import com.sugarcrm.ws.soapyxyx.EntryValue;
 import com.sugarcrm.ws.soap.GetEntriesCountResult;
 import com.sugarcrm.ws.soap.GetEntryListResultVersion2;
 import com.sugarcrm.ws.soap.LinkNamesToFieldsArray;

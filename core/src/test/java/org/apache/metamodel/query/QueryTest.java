@@ -106,7 +106,7 @@ public class QueryTest extends MetaModelTestCase {
         Query q1 = new Query();
         Table contributorTable = _schema.getTableByName(TABLE_CONTRIBUTOR);
         Table roleTable = _schema.getTableByName(TABLE_ROLE);
-        FromItem fromItem = new FromItem(JoinType.INNER, contributorTable.getRelationships(roleTable)[0]);
+        FromItem fromItem = new FromItem(JoinType.INNER, contributorTable.getRelationships(roleTable).iterator().next());
         q1.from(fromItem);
 
         Column nameColumn = contributorTable.getColumnByName(COLUMN_CONTRIBUTOR_NAME);

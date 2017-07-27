@@ -19,6 +19,7 @@
 package org.apache.metamodel.data;
 
 import java.io.Serializable;
+import java.util.List;
 
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
@@ -96,7 +97,7 @@ public interface Row extends Serializable {
      * 
      * @return
      */
-    public SelectItem[] getSelectItems();
+    public List<SelectItem> getSelectItems();
 
     /**
      * Gets the values of the row, represented as an object array

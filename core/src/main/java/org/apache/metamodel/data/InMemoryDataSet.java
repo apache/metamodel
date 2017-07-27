@@ -55,7 +55,7 @@ public final class InMemoryDataSet extends AbstractDataSet {
                     + " for this");
         }
 
-        final SelectItem[] selectItems = rows.get(0).getSelectItems();
+        final List<SelectItem> selectItems = rows.get(0).getSelectItems();
 
         if (rows.size() > 3) {
             // not that many records - caching will not have body to scale

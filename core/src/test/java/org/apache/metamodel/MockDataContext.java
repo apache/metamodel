@@ -20,6 +20,7 @@ package org.apache.metamodel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.data.CachingDataSetHeader;
 import org.apache.metamodel.data.DataSet;
@@ -79,9 +80,9 @@ public class MockDataContext extends QueryPostprocessDataContext {
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         if (_tableName.equals(table.getName())) {
-            final SelectItem[] allSelectItems = MetaModelHelper.createSelectItems(table.getColumns());
+            final List<SelectItem> allSelectItems = table.getColumns().stream().map(SelectItem::new).collect(Collectors.toList());
             final DataSetHeader header = new CachingDataSetHeader(allSelectItems);
             final List<Row> data = new ArrayList<Row>();
             data.add(new DefaultRow(header, new Object[] { "1", "hello", "world" }, null));
@@ -91,11 +92,11 @@ public class MockDataContext extends QueryPostprocessDataContext {
 
             final DataSet sourceDataSet = new InMemoryDataSet(header, data);
 
-            final SelectItem[] columnSelectItems = MetaModelHelper.createSelectItems(columns);
+            final List<SelectItem> columnSelectItems = columns.stream().map(SelectItem::new).collect(Collectors.toList());
             final DataSet selectionDataSet = MetaModelHelper.getSelection(columnSelectItems, sourceDataSet);
             return selectionDataSet;
         } else if ("an_empty_table".equals(table.getName())) {
-            return new EmptyDataSet(columns);
+            return new EmptyDataSet(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
         }
         throw new UnsupportedOperationException();
     }

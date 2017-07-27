@@ -46,9 +46,6 @@ public final class CachingDataSetHeader extends SimpleDataSetHeader implements D
         super(items);
     }
 
-    public CachingDataSetHeader(SelectItem[] items) {
-        this(Arrays.asList(items));
-    }
 
     @Override
     public int indexOf(Column column) {

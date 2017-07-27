@@ -38,6 +38,10 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.RowUpdationBuilder;
 import org.apache.metamodel.util.HasNameMapper;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class InterceptableDataContext implements UpdateableDataContext {
 
     private final DataContext _delegate;
@@ -189,27 +193,29 @@ public class InterceptableDataContext implements UpdateableDataContext {
     }
 
     @Override
-    public Schema[] getSchemas() throws MetaModelException {
-        Schema[] schemas = _delegate.getSchemas();
+    public List<Schema> getSchemas() throws MetaModelException {
+        List<Schema> schemas = _delegate.getSchemas();
+        List<Schema> result = new ArrayList<>(schemas.size());
         if (!_schemaInterceptors.isEmpty()) {
-            for (int i = 0; i < schemas.length; i++) {
-                schemas[i] = _schemaInterceptors.interceptAll(schemas[i]);
+            for (int i = 0; i < schemas.size(); i++) {
+                schemas.set(i, _schemaInterceptors.interceptAll(schemas.get(i)));
             }
+        }else {
+            result = schemas;
         }
-        return schemas;
+        return result;
+
     }
 
     @Override
-    public String[] getSchemaNames() throws MetaModelException {
+    public List<String> getSchemaNames() throws MetaModelException {
         if (_schemaInterceptors.isEmpty()) {
             return _delegate.getSchemaNames();
         }
-        Schema[] schemas = getSchemas();
-        String[] schemaNames = new String[schemas.length];
-        for (int i = 0; i < schemaNames.length; i++) {
-            schemaNames[i] = new HasNameMapper().apply(schemas[i]);
-        }
-        return schemaNames;
+
+        return getSchemas().stream()
+                .map(schema -> schema.getName())
+                .collect(Collectors.toList());
     }
 
     @Override
