@@ -36,10 +36,10 @@ import java.sql.DriverManager;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A test case using two simple h2 in memory databases for executing single query over both databases.
+ * A test case using two simple h2 in memory databases for executing single
+ * query over both databases.
  */
 public class MultiJDBCDataSetTest {
-
 
     public static final String DRIVER_CLASS = "org.h2.Driver";
     public static final String EMP_URL_MEMORY_DATABASE = "jdbc:h2:mem:emp";
@@ -53,109 +53,80 @@ public class MultiJDBCDataSetTest {
 
     private int employeeSize = 10000;
     private int departmentSize = 1000;
-    int employeesPerDepartment =  employeeSize/ departmentSize;
-
+    int employeesPerDepartment = employeeSize / departmentSize;
 
     private static final Logger logger = LoggerFactory.getLogger(MultiJDBCDataSetTest.class);
-
 
     @Before
     public void setup() throws Exception {
         Class.forName(DRIVER_CLASS);
         emp_conn = DriverManager.getConnection(EMP_URL_MEMORY_DATABASE);
-        dep_conn =  DriverManager.getConnection(DEP_URL_MEMORY_DATABASE);
-
+        dep_conn = DriverManager.getConnection(DEP_URL_MEMORY_DATABASE);
 
         emp_dcon = new JdbcDataContext(emp_conn);
         dep_dcon = new JdbcDataContext(dep_conn);
 
+        emp_dcon.executeUpdate(new CreateTable(emp_dcon.getDefaultSchema(), "employee").withColumn("id").ofType(
+                ColumnType.INTEGER).asPrimaryKey().withColumn("name").ofType(ColumnType.VARCHAR).ofSize(200).withColumn(
+                        "dep_id").ofType(ColumnType.INTEGER));
 
-
-
-        emp_dcon.executeUpdate(new CreateTable(emp_dcon.getDefaultSchema(),"employee")
-                .withColumn("id").ofType(ColumnType.INTEGER).asPrimaryKey()
-                .withColumn("name").ofType(ColumnType.VARCHAR).ofSize(200)
-                .withColumn("dep_id").ofType(ColumnType.INTEGER));
-
-
-        for(int i = 0;i<employeeSize;i++){
-            emp_dcon.executeUpdate(new InsertInto(emp_dcon.getDefaultSchema().getTableByName("employee"))
-                    .value("id",i)
-                    .value("name","emp" + i)
-                    .value("dep_id",i% departmentSize));
+        for (int i = 0; i < employeeSize; i++) {
+            emp_dcon.executeUpdate(new InsertInto(emp_dcon.getDefaultSchema().getTableByName("employee")).value("id", i)
+                    .value("name", "emp" + i).value("dep_id", i % departmentSize));
         }
 
+        dep_dcon.executeUpdate(new CreateTable(dep_dcon.getDefaultSchema(), "department").withColumn("id").ofType(
+                ColumnType.INTEGER).asPrimaryKey().withColumn("name").ofType(ColumnType.VARCHAR).ofSize(200));
 
-        dep_dcon.executeUpdate(new CreateTable(dep_dcon.getDefaultSchema(),"department")
-                .withColumn("id").ofType(ColumnType.INTEGER).asPrimaryKey()
-                .withColumn("name").ofType(ColumnType.VARCHAR).ofSize(200));
-
-
-        for(int i = 0; i< departmentSize; i++){
-            dep_dcon.executeUpdate(new InsertInto(dep_dcon.getDefaultSchema().getTableByName("department"))
-                    .value("id",i)
-                    .value("name","dep" + i));
+        for (int i = 0; i < departmentSize; i++) {
+            dep_dcon.executeUpdate(new InsertInto(dep_dcon.getDefaultSchema().getTableByName("department")).value("id",
+                    i).value("name", "dep" + i));
         }
 
     }
 
-
     @After
-    public void tearDown(){
+    public void tearDown() {
         dep_dcon.executeUpdate(new DropTable("department"));
         emp_dcon.executeUpdate(new DropTable("employee"));
     }
 
-
-
     @Test
-    public void testJoin(){
+    public void testJoin() {
         Stopwatch duration = Stopwatch.createStarted();
-        CompositeDataContext compDcon = new CompositeDataContext(this.emp_dcon,this.dep_dcon );
+        CompositeDataContext compDcon = new CompositeDataContext(this.emp_dcon, this.dep_dcon);
 
-        DataSet ds = compDcon.query()
-                .from("employee")
-                .innerJoin("department")
-                .on("dep_id","id")
-                .selectAll()
-                .execute();
+        DataSet ds = compDcon.query().from("employee").innerJoin("department").on("dep_id", "id").selectAll().execute();
         int rowCount = 0;
-        while(ds.next()){
+        while (ds.next()) {
             Row row = ds.getRow();
+            Assert.assertNotNull(row);
             rowCount++;
         }
         duration.stop();
         logger.info("Test duration was {} ms", duration.elapsed(TimeUnit.MILLISECONDS));
 
-        Assert.assertEquals(employeeSize,rowCount);
+        Assert.assertEquals(employeeSize, rowCount);
 
     }
 
     @Test
-    public void testSelectiveJoin(){
+    public void testSelectiveJoin() {
         Stopwatch duration = Stopwatch.createStarted();
-        CompositeDataContext compDcon = new CompositeDataContext(this.emp_dcon,this.dep_dcon );
+        CompositeDataContext compDcon = new CompositeDataContext(this.emp_dcon, this.dep_dcon);
 
-        DataSet ds = compDcon.query()
-                .from("employee")
-                .innerJoin("department")
-                .on("dep_id","id")
-                .selectAll()
-                .where(compDcon.getTableByQualifiedLabel("department").getColumnByName("id")).eq(1)
-                .execute();
+        DataSet ds = compDcon.query().from("employee").innerJoin("department").on("dep_id", "id").selectAll().where(
+                compDcon.getTableByQualifiedLabel("department").getColumnByName("id")).eq(1).execute();
         int rowCount = 0;
-        while(ds.next()){
+        while (ds.next()) {
             Row row = ds.getRow();
+            Assert.assertNotNull(row);
             rowCount++;
         }
         duration.stop();
         logger.info("Test duration was {} ms", duration.elapsed(TimeUnit.MILLISECONDS));
 
-        Assert.assertEquals(employeesPerDepartment,rowCount);
-
+        Assert.assertEquals(employeesPerDepartment, rowCount);
     }
-
-
-
 
 }
