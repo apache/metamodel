@@ -29,6 +29,7 @@ under the License.
 		<hadoop.version>2.6.0</hadoop.version>
 		<jackson.version>2.6.3</jackson.version>
 		<easymock.version>3.2</easymock.version>
+		<spring.version>4.2.6.RELEASE</spring.version>
 		<httpcomponents.version>4.4.1</httpcomponents.version>
 		<checksum-maven-plugin.version>1.2</checksum-maven-plugin.version>
 		<skipTests>false</skipTests>
@@ -372,7 +373,7 @@ under the License.
 						<excludeSubProjects>false</excludeSubProjects>
 						<excludes>
 							<exclude>KEYS</exclude>
-							<exclude>*.md</exclude>
+							<exclude>**/*.md</exclude>
 							<exclude>example-metamodel-integrationtest-configuration.properties</exclude>
 							<exclude>travis-metamodel-integrationtest-configuration.properties</exclude>
 							<exclude>**/src/assembly/metamodel-packaged-assembly-descriptor.xml</exclude>
@@ -386,6 +387,7 @@ under the License.
 							<exclude>**/.project</exclude>
 							<exclude>**/.classpath</exclude>
 							<exclude>**/.settings/**</exclude>
+							<exclude>**/.vscode/**</exclude>
 							<exclude>**/.travis.yml</exclude>
 							<exclude>**/target/**</exclude>
 							<exclude>**/*.iml/**</exclude>
@@ -393,6 +395,7 @@ under the License.
 							<exclude>**/*.ipr/**</exclude>
 							<exclude>**/.idea/**</exclude>
 							<exclude>**/tattletale-filters.properties</exclude>
+							<exclude>**/swagger-ui/**</exclude>
 							<exclude>DEPENDENCIES</exclude>
 							<exclude>DISCLAIMER</exclude>
 							<exclude>neo4j-community-*/**</exclude>
@@ -515,6 +518,11 @@ under the License.
 				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.fasterxml.jackson.dataformat</groupId>
+				<artifactId>jackson-dataformat-yaml</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-annotations</artifactId>
 				<version>${jackson.version}</version>
@@ -538,6 +546,34 @@ under the License.
 				<groupId>hsqldb</groupId>
 				<artifactId>hsqldb</artifactId>
 				<version>1.8.0.10</version>
+			</dependency>
+			
+			<!-- Spring -->
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
+				<version>${spring.version}</version>
+			    <exclusions>
+			    	<exclusion>
+			    		<groupId>commons-logging</groupId>
+			    		<artifactId>commons-logging</artifactId>
+			    	</exclusion>
+			    </exclusions>
+			</dependency>
+			<dependency>
+			    <groupId>org.springframework</groupId>
+			    <artifactId>spring-context</artifactId>
+			    <version>${spring.version}</version>
+			</dependency>
+			<dependency>
+			    <groupId>org.springframework</groupId>
+			    <artifactId>spring-test</artifactId>
+			    <version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-webmvc</artifactId>
+				<version>${spring.version}</version>
 			</dependency>
 
 			<!-- Hadoop -->

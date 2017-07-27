@@ -27,10 +27,6 @@ under the License.
 	<artifactId>MetaModel-spring</artifactId>
 	<name>MetaModel module for Spring enabled configuration</name>
 	
-	<properties>
-		<spring.version>3.0.7.RELEASE</spring.version>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
@@ -46,14 +42,7 @@ under the License.
 		<dependency>
 		    <groupId>org.springframework</groupId>
 		    <artifactId>spring-context</artifactId>
-		    <version>${spring.version}</version>
 		    <scope>provided</scope>
-		    <exclusions>
-		    	<exclusion>
-		    		<groupId>commons-logging</groupId>
-		    		<artifactId>commons-logging</artifactId>
-		    	</exclusion>
-		    </exclusions>
 		</dependency>
 
 		<!-- test -->
@@ -70,7 +59,6 @@ under the License.
 		<dependency>
 		    <groupId>org.springframework</groupId>
 		    <artifactId>spring-test</artifactId>
-		    <version>${spring.version}</version>
 		    <scope>test</scope>
 		</dependency>
 	</dependencies>
