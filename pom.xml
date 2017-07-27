@@ -29,6 +29,7 @@ under the License.
 		<hadoop.version>2.6.0</hadoop.version>
 		<jackson.version>2.6.3</jackson.version>
 		<easymock.version>3.2</easymock.version>
+		<spring.version>4.2.6.RELEASE</spring.version>
 		<httpcomponents.version>4.4.1</httpcomponents.version>
 		<checksum-maven-plugin.version>1.2</checksum-maven-plugin.version>
 		<skipTests>false</skipTests>
@@ -42,7 +43,7 @@ under the License.
 		<url>https://git-wip-us.apache.org/repos/asf?p=metamodel.git</url>
 		<connection>scm:git:http://git-wip-us.apache.org/repos/asf/metamodel.git</connection>
 		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/metamodel.git</developerConnection>
-		<tag>5.x</tag>
+		<tag>HEAD</tag>
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
 	<artifactId>MetaModel</artifactId>
@@ -105,18 +106,52 @@ under the License.
 	</organization>
 	<developers>
 		<developer>
-			<id>kasper</id>
+			<id>kaspersor</id>
 			<name>Kasper Sørensen</name>
-			<email>kasper.sorensen@humaninference.com</email>
-			<url>http://kasper.eobjects.org</url>
-			<organization>Human Inference</organization>
-			<organizationUrl>http://www.humaninference.com</organizationUrl>
+			<email>i.am.kasper.sorensen@gmail.com</email>
+			<url>https://github.com/kaspersorensen</url>
+		</developer>
+		<developer>
+			<name>Dennis Du Krøger</name>
+			<url>https://github.com/losd</url>
+		</developer>
+		<developer>
+			<name>Ankit Kumar</name>
+			<url>https://github.com/ankit2711</url>
+		</developer>
+		<developer>
+			<name>Alberto Rodriguez</name>
+			<url>https://github.com/albertostratio</url>
+		</developer>
+		<developer>
+			<name>Tomasz Guzialek</name>
+			<url>https://github.com/tomaszguzialek</url>
+		</developer>
+		<developer>
+			<name>Henry Saputra</name>
+			<url>https://github.com/hsaputra</url>
 		</developer>
 	</developers>
 	<contributors>
 		<contributor>
+			<name>Arjan Seijkens</name>
+			<url>https://github.com/arjansh</url>
+		</contributor>
+		<contributor>
+			<name>Jakub Horčička</name>
+			<url>https://github.com/jhorcicka</url>
+		</contributor>
+		<contributor>
 			<name>Francisco Javier Cano</name>
 			<organization>Stratio</organization>
+		</contributor>
+		<contributor>
+			<name>Harel Efraim</name>
+			<url>https://github.com/harel-e</url>
+		</contributor>
+		<contributor>
+			<name>Joerg Unbehauen</name>
+			<url>https://github.com/tomatophantastico</url>
 		</contributor>
 		<contributor>
 			<name>Saurabh Gupta</name>
@@ -372,7 +407,7 @@ under the License.
 						<excludeSubProjects>false</excludeSubProjects>
 						<excludes>
 							<exclude>KEYS</exclude>
-							<exclude>*.md</exclude>
+							<exclude>**/*.md</exclude>
 							<exclude>example-metamodel-integrationtest-configuration.properties</exclude>
 							<exclude>travis-metamodel-integrationtest-configuration.properties</exclude>
 							<exclude>**/src/assembly/metamodel-packaged-assembly-descriptor.xml</exclude>
@@ -386,6 +421,7 @@ under the License.
 							<exclude>**/.project</exclude>
 							<exclude>**/.classpath</exclude>
 							<exclude>**/.settings/**</exclude>
+							<exclude>**/.vscode/**</exclude>
 							<exclude>**/.travis.yml</exclude>
 							<exclude>**/target/**</exclude>
 							<exclude>**/*.iml/**</exclude>
@@ -393,6 +429,7 @@ under the License.
 							<exclude>**/*.ipr/**</exclude>
 							<exclude>**/.idea/**</exclude>
 							<exclude>**/tattletale-filters.properties</exclude>
+							<exclude>**/swagger-ui/**</exclude>
 							<exclude>DEPENDENCIES</exclude>
 							<exclude>DISCLAIMER</exclude>
 							<exclude>neo4j-community-*/**</exclude>
@@ -515,6 +552,11 @@ under the License.
 				<version>${jackson.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.fasterxml.jackson.dataformat</groupId>
+				<artifactId>jackson-dataformat-yaml</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-annotations</artifactId>
 				<version>${jackson.version}</version>
@@ -538,6 +580,34 @@ under the License.
 				<groupId>hsqldb</groupId>
 				<artifactId>hsqldb</artifactId>
 				<version>1.8.0.10</version>
+			</dependency>
+			
+			<!-- Spring -->
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
+				<version>${spring.version}</version>
+			    <exclusions>
+			    	<exclusion>
+			    		<groupId>commons-logging</groupId>
+			    		<artifactId>commons-logging</artifactId>
+			    	</exclusion>
+			    </exclusions>
+			</dependency>
+			<dependency>
+			    <groupId>org.springframework</groupId>
+			    <artifactId>spring-context</artifactId>
+			    <version>${spring.version}</version>
+			</dependency>
+			<dependency>
+			    <groupId>org.springframework</groupId>
+			    <artifactId>spring-test</artifactId>
+			    <version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-webmvc</artifactId>
+				<version>${spring.version}</version>
 			</dependency>
 
 			<!-- Hadoop -->

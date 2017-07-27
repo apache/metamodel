@@ -45,11 +45,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Generic query rewriter that adds syntax enhancements that are only possible
- * to resolve just before execution time.
+ * Generic query rewriter that adds syntax enhancements that are only possible to resolve just before execution time.
  */
 public class DefaultQueryRewriter extends AbstractQueryRewriter {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(DefaultQueryRewriter.class);
 
     private static final String SPECIAL_ALIAS_CHARACTERS = "- ,.|*%()!#¤/\\=?;:~";
@@ -101,7 +100,7 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
         return super.rewriteColumnType(columnType, columnSize);
     }
 
-    private boolean needsQuoting(String alias, String identifierQuoteString) {
+    protected boolean needsQuoting(String alias, String identifierQuoteString) {
         boolean result = false;
         if (alias != null && identifierQuoteString != null) {
             if (alias.indexOf(identifierQuoteString) == -1) {
@@ -139,11 +138,10 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
                 // operand is a set of values (typically in combination with an
                 // IN or NOT IN operator). Each individual element must be escaped.
 
-                assert OperatorType.IN.equals(item.getOperator()) ||
-                        OperatorType.NOT_IN.equals(item.getOperator());
+                assert OperatorType.IN.equals(item.getOperator()) || OperatorType.NOT_IN.equals(item.getOperator());
 
-                @SuppressWarnings("unchecked")
-                final List<Object> elements = (List<Object>) CollectionUtils.toList(operand);
+                @SuppressWarnings("unchecked") final List<Object> elements =
+                        (List<Object>) CollectionUtils.toList(operand);
 
                 for (ListIterator<Object> it = elements.listIterator(); it.hasNext();) {
                     Object next = it.next();
@@ -169,8 +167,7 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
     }
 
     /**
-     * Rewrites a (non-compound) {@link FilterItem} when it's operand has
-     * already been rewritten into a SQL literal.
+     * Rewrites a (non-compound) {@link FilterItem} when it's operand has already been rewritten into a SQL literal.
      * 
      * @param item
      * @param operandLiteral
@@ -187,11 +184,10 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
     }
 
     /**
-     * Rewrites a {@link Timestamp} into it's literal representation as known by
-     * this SQL dialect.
+     * Rewrites a {@link Timestamp} into it's literal representation as known by this SQL dialect.
      * 
-     * This default implementation returns the JDBC spec's escape syntax for a
-     * timestamp: {ts 'yyyy-mm-dd hh:mm:ss.f . . .'}
+     * This default implementation returns the JDBC spec's escape syntax for a timestamp: {ts 'yyyy-mm-dd hh:mm:ss.f . .
+     * .'}
      * 
      * @param ts
      * @return

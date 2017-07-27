@@ -22,7 +22,12 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,7 +63,8 @@ final class JdbcMetadataLoader implements MetadataLoader {
     private final Set<Integer> _loadedIndexes;
     private final Set<Integer> _loadedPrimaryKeys;
 
-    public JdbcMetadataLoader(JdbcDataContext dataContext, boolean usesCatalogsAsSchemas, String identifierQuoteString) {
+    public JdbcMetadataLoader(JdbcDataContext dataContext, boolean usesCatalogsAsSchemas,
+            String identifierQuoteString) {
         _dataContext = dataContext;
         _usesCatalogsAsSchemas = usesCatalogsAsSchemas;
         _identifierQuoteString = identifierQuoteString;
@@ -92,7 +98,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
     }
 
     private String getJdbcSchemaName(Schema schema) {
-        if(_usesCatalogsAsSchemas) {
+        if (_usesCatalogsAsSchemas) {
             return null;
         } else {
             return schema.getName();
@@ -100,7 +106,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
     }
 
     private String getCatalogName(Schema schema) {
-        if(_usesCatalogsAsSchemas) {
+        if (_usesCatalogsAsSchemas) {
             return schema.getName();
         } else {
             return _dataContext.getCatalogName();
@@ -109,8 +115,8 @@ final class JdbcMetadataLoader implements MetadataLoader {
 
     private void loadTables(JdbcSchema schema, DatabaseMetaData metaData, String[] types) {
         try (ResultSet rs = metaData.getTables(getCatalogName(schema), getJdbcSchemaName(schema), null, types)) {
-            logger.debug("Querying for table types {}, in catalog: {}, schema: {}", types,
-                    _dataContext.getCatalogName(), schema.getName());
+            logger.debug("Querying for table types {}, in catalog: {}, schema: {}", types, _dataContext
+                    .getCatalogName(), schema.getName());
 
             schema.clearTables();
             int tableNumber = -1;
@@ -138,15 +144,15 @@ final class JdbcMetadataLoader implements MetadataLoader {
             if (tablesReturned == 0) {
                 logger.info("No table metadata records returned for schema '{}'", schema.getName());
             } else {
-                logger.debug("Returned {} table metadata records for schema '{}'", new Object[] { tablesReturned,
-                        schema.getName() });
+                logger.debug("Returned {} table metadata records for schema '{}'", new Object[] { tablesReturned, schema
+                        .getName() });
             }
 
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "retrieve table metadata for " + schema.getName());
         }
     }
-    
+
     @Override
     public void loadIndexes(JdbcTable jdbcTable) {
         final int identity = System.identityHashCode(jdbcTable);
@@ -182,7 +188,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
             }
         }
     }
-    
+
     @Override
     public void loadPrimaryKeys(JdbcTable jdbcTable) {
         final int identity = System.identityHashCode(jdbcTable);
@@ -220,7 +226,8 @@ final class JdbcMetadataLoader implements MetadataLoader {
 
     private void loadPrimaryKeys(JdbcTable table, DatabaseMetaData metaData) throws MetaModelException {
         Schema schema = table.getSchema();
-        try (ResultSet rs = metaData.getPrimaryKeys(getCatalogName(schema), getJdbcSchemaName(schema), table.getName());){
+        try (ResultSet rs = metaData.getPrimaryKeys(getCatalogName(schema), getJdbcSchemaName(schema), table
+                .getName());) {
             while (rs.next()) {
                 String columnName = rs.getString(4);
                 if (columnName != null) {
@@ -242,7 +249,8 @@ final class JdbcMetadataLoader implements MetadataLoader {
 
         // Ticket #170: IndexInfo is nice-to-have, not need-to-have, so
         // we will do a nice failover on SQLExceptions
-        try (ResultSet rs = metaData.getIndexInfo(getCatalogName(schema), getJdbcSchemaName(schema), table.getName(), false, true)) {
+        try (ResultSet rs = metaData.getIndexInfo(getCatalogName(schema), getJdbcSchemaName(schema), table.getName(),
+                false, true)) {
             while (rs.next()) {
                 String columnName = rs.getString(9);
                 if (columnName != null) {
@@ -258,7 +266,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
             throw JdbcUtils.wrapException(e, "retrieve index information for " + table.getName());
         }
     }
-    
+
     @Override
     public void loadColumns(JdbcTable jdbcTable) {
         final int identity = System.identityHashCode(jdbcTable);
@@ -309,7 +317,8 @@ final class JdbcMetadataLoader implements MetadataLoader {
         final boolean convertLobs = isLobConversionEnabled();
         final Schema schema = table.getSchema();
 
-        try (ResultSet rs = metaData.getColumns(getCatalogName(schema), getJdbcSchemaName(schema), table.getName(), null)) {
+        try (ResultSet rs = metaData.getColumns(getCatalogName(schema), getJdbcSchemaName(schema), table.getName(),
+                null)) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Querying for columns in table: " + table.getName());
             }
@@ -327,8 +336,8 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 final Integer columnSize = rs.getInt(7);
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("Found column: table=" + table.getName() + ",columnName=" + columnName
-                            + ",nativeType=" + nativeType + ",columnSize=" + columnSize);
+                    logger.debug("Found column: table=" + table.getName() + ",columnName=" + columnName + ",nativeType="
+                            + nativeType + ",columnSize=" + columnSize);
                 }
 
                 ColumnType columnType = _dataContext.getQueryRewriter().getColumnType(jdbcType, nativeType, columnSize);
@@ -362,17 +371,17 @@ final class JdbcMetadataLoader implements MetadataLoader {
 
             final int columnsReturned = columnNumber + 1;
             if (columnsReturned == 0) {
-                logger.info("No column metadata records returned for table '{}' in schema '{}'", table.getName(),
-                        schema.getName());
+                logger.info("No column metadata records returned for table '{}' in schema '{}'", table.getName(), schema
+                        .getName());
             } else {
-                logger.debug("Returned {} column metadata records for table '{}' in schema '{}'", columnsReturned,
-                        table.getName(), schema.getName());
+                logger.debug("Returned {} column metadata records for table '{}' in schema '{}'", columnsReturned, table
+                        .getName(), schema.getName());
             }
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "retrieve table metadata for " + table.getName());
         }
     }
-    
+
     @Override
     public void loadRelations(JdbcSchema jdbcSchema) {
         final int identity = System.identityHashCode(jdbcSchema);
@@ -412,7 +421,8 @@ final class JdbcMetadataLoader implements MetadataLoader {
 
     private void loadRelations(Table table, DatabaseMetaData metaData) {
         Schema schema = table.getSchema();
-        try (ResultSet rs = metaData.getImportedKeys(getCatalogName(schema), getJdbcSchemaName(schema), table.getName())) {
+        try (ResultSet rs = metaData.getImportedKeys(getCatalogName(schema), getJdbcSchemaName(schema), table
+                .getName())) {
             loadRelations(rs, schema);
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "retrieve imported keys for " + table.getName());
@@ -420,7 +430,12 @@ final class JdbcMetadataLoader implements MetadataLoader {
     }
 
     private void loadRelations(ResultSet rs, Schema schema) throws SQLException {
+        // by using nested maps, we can associate a list of pk/fk columns with
+        // the tables they belong to
+        // the result set comes flattened out.
+        Map<Table, Map<Table, ColumnsTuple>> relations = new HashMap<>();
         while (rs.next()) {
+
             String pkTableName = rs.getString(3);
             String pkColumnName = rs.getString(4);
 
@@ -453,8 +468,41 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 logger.error("pkColumn={}", pkColumn);
                 logger.error("fkColumn={}", fkColumn);
             } else {
-                MutableRelationship.createRelationship(new Column[] { pkColumn }, new Column[] { fkColumn });
+
+                if (!relations.containsKey(pkTable)) {
+                    relations.put(pkTable, new HashMap<>());
+                }
+
+                // get or init the columns tuple
+                ColumnsTuple ct = relations.get(pkTable).get(fkTable);
+                if (Objects.isNull(ct)) {
+                    ct = new ColumnsTuple();
+                    relations.get(pkTable).put(fkTable, ct);
+                }
+                // we can now safely add the columns
+                ct.getPkCols().add(pkColumn);
+                ct.getFkCols().add(fkColumn);
             }
+        }
+
+        relations.values().stream().flatMap(map -> map.values().stream()).forEach(ct -> MutableRelationship
+                .createRelationship(ct.getPkCols().toArray(new Column[0]), ct.getFkCols().toArray(new Column[0])));
+    }
+
+    /**
+     * Represents the columns of a relationship while it is being built from a
+     * {@link ResultSet}.
+     */
+    private static class ColumnsTuple {
+        private final List<Column> pkCols = new ArrayList<>();
+        private final List<Column> fkCols = new ArrayList<>();
+
+        public List<Column> getFkCols() {
+            return fkCols;
+        }
+
+        public List<Column> getPkCols() {
+            return pkCols;
         }
     }
 
