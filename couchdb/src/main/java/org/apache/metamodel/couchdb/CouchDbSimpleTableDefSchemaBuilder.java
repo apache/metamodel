@@ -40,8 +40,8 @@ public class CouchDbSimpleTableDefSchemaBuilder extends SimpleTableDefSchemaBuil
     @Override
     public MutableSchema build() {
         MutableSchema schema = super.build();
-        for (MutableTable table : schema.getMutableTables()) {
-            CouchDbTableCreationBuilder.addMandatoryColumns(table);
+        for (Table table : schema.getTables()) {
+            CouchDbTableCreationBuilder.addMandatoryColumns((MutableTable) table);
         }
         return schema;
     }
