@@ -102,7 +102,8 @@ public class MutableTable extends AbstractTable implements Serializable {
 
     @Override
     public List<Column> getColumns() {
-        return Collections.unmodifiableList(_columns);
+        List<Column> columns = getColumnsInternal();
+        return Collections.unmodifiableList(columns);
     }
 
     public MutableTable setColumns(Column... columns) {
@@ -158,7 +159,9 @@ public class MutableTable extends AbstractTable implements Serializable {
 
     @Override
     public List<Relationship> getRelationships() {
-      return Collections.unmodifiableList(_relationships);
+        //init relationships
+        getRelationshipsInternal();
+        return Collections.unmodifiableList(_relationships);
     }
 
     /**
