@@ -21,7 +21,6 @@ package org.apache.metamodel.csv;
 import java.io.IOException;
 import java.util.*;
 
-import com.google.common.collect.Lists;
 import org.apache.metamodel.schema.AbstractTable;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
@@ -147,7 +146,7 @@ final class CsvTable extends AbstractTable {
 
     @Override
     public Collection<Relationship> getRelationships() {
-        return Lists.newArrayList();
+        return Collections.emptyList();
     }
 
     @Override

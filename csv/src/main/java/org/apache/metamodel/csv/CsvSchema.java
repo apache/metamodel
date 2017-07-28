@@ -18,11 +18,11 @@
  */
 package org.apache.metamodel.csv;
 
-import com.google.common.collect.Lists;
 import org.apache.metamodel.schema.AbstractSchema;
 import org.apache.metamodel.schema.Table;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 final class CsvSchema extends AbstractSchema {
@@ -62,6 +62,6 @@ final class CsvSchema extends AbstractSchema {
 		if (_table == null) {
 			return new ArrayList<>();
 		}
-		return Lists.newArrayList(_table);
+		return Collections.singletonList(_table);
 	}
 }

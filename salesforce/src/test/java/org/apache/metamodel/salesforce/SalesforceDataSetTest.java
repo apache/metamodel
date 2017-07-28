@@ -18,21 +18,18 @@
  */
 package org.apache.metamodel.salesforce;
 
-import com.google.common.collect.Lists;
 import com.sforce.soap.partner.QueryResult;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.bind.TypeMapper;
 import com.sforce.ws.parser.PullParserException;
 import com.sforce.ws.parser.XmlInputStream;
 import org.apache.metamodel.data.Row;
-import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -44,7 +41,7 @@ public class SalesforceDataSetTest {
         QueryResult qr = queryResult("/result/double-value.xml");
         MutableColumn version = new MutableColumn("Version", ColumnType.DOUBLE);
 
-        SalesforceDataSet dataSet = new SalesforceDataSet(Lists.newArrayList(version), qr, null);
+        SalesforceDataSet dataSet = new SalesforceDataSet(Collections.singletonList(version), qr, null);
         List<Row> rows = dataSet.toRows();
 
         assertEquals(5386.21, rows.get(0).getValue(version));
