@@ -533,8 +533,8 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
         }
 
         Query q = new Query();
-        q.select(primaryColumns.toArray(new Column[primaryColumns.size()]));
-        q.select(foreignColumns.toArray(new Column[foreignColumns.size()]));
+        q.select(primaryColumns);
+        q.select(foreignColumns);
         q.from(new FromItem(JoinType.LEFT, relationship));
         if (logger.isDebugEnabled()) {
             logger.debug("Setting table data for '{}' to query result: {}", primaryTableName, q.toString());

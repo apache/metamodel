@@ -190,7 +190,7 @@ public final class Converters {
             detectors.put(column, new ColumnTypeDetector());
         }
 
-        Query query = dataContext.query().from(table).select(columns.toArray(new Column[columns.size()])).toQuery();
+        Query query = dataContext.query().from(table).select(columns).toQuery();
         if (sampleSize > 0 && sampleSize != Integer.MAX_VALUE) {
             query.setMaxRows(sampleSize);
         }
