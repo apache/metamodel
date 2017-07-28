@@ -144,9 +144,8 @@ public final class Converters {
                 // group by table
                 .collect(Collectors.toMap(Column::getTable,Arrays::asList))
                 //and detect it
-                .forEach((tab, cols) ->{
-                    autoDetectConvertersInternally(dataContext,tab,cols,sampleSize,result);
-        });
+                .forEach((tab, cols) ->
+                    autoDetectConvertersInternally(dataContext,tab,cols,sampleSize,result));
 
         return result;
     }
