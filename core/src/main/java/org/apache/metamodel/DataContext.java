@@ -27,7 +27,6 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
-import java.util.Collection;
 import java.util.List;
 
 /**

@@ -18,16 +18,14 @@
  */
 package org.apache.metamodel.data;
 
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.util.BaseObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-
-import org.apache.metamodel.MetaModelHelper;
-import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.util.BaseObject;
 
 /**
  * Abstract DataSet implementation. Provides convenient implementations of

@@ -18,14 +18,12 @@
  */
 package org.apache.metamodel.schema;
 
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Abstract {@link Table} implementation. Includes most common/trivial methods.

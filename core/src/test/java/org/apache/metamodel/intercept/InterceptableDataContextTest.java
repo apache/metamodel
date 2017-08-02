@@ -18,11 +18,7 @@
  */
 package org.apache.metamodel.intercept;
 
-import java.util.Arrays;
-import java.util.List;
-
 import junit.framework.TestCase;
-
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MockUpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
@@ -31,6 +27,9 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class InterceptableDataContextTest extends TestCase {
 

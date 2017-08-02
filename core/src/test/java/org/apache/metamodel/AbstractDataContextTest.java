@@ -21,7 +21,6 @@ package org.apache.metamodel;
 import java.util.*;
 
 import com.google.common.collect.Lists;
-import javafx.scene.Scene;
 import junit.framework.TestCase;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.Query;
