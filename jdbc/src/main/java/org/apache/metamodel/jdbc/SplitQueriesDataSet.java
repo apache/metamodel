@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.AbstractDataSet;
@@ -33,6 +30,8 @@ import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.WrappingDataSet;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * DataSet for split queries. Queries will be executed as needed, not at once.

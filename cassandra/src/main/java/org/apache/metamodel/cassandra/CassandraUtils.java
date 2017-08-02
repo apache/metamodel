@@ -18,16 +18,17 @@
  */
 package org.apache.metamodel.cassandra;
 
-import com.datastax.driver.core.ColumnDefinitions;
-import com.datastax.driver.core.DataType;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.datastax.driver.core.ColumnDefinitions;
+import com.datastax.driver.core.DataType;
 
 /**
  * A utility class for Cassandra module.

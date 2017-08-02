@@ -18,14 +18,14 @@
  */
 package org.apache.metamodel.elasticsearch.rest;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import java.util.Map.Entry;
 
 import org.apache.metamodel.elasticsearch.common.ElasticSearchMetaData;
 import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.schema.ColumnType;
 
-import java.util.Map.Entry;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 /**
  * Parser that transforms the ElasticSearch metadata response (json-like format)

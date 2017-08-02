@@ -20,13 +20,13 @@ package org.apache.metamodel.couchdb;
 
 import java.util.List;
 
-import org.ektorp.CouchDbConnector;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.schema.Table;
+import org.ektorp.CouchDbConnector;
 
 final class CouchDbRowDeletionBuilder extends AbstractRowDeletionBuilder {
 

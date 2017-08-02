@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.create;
 
+import java.util.List;
+
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
@@ -28,8 +30,6 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * Abstract {@link TableCreationBuilder} implementation, provided as convenience

@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.excel;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.metamodel.create.AbstractTableCreationBuilder;
 import org.apache.metamodel.create.TableCreationBuilder;
 import org.apache.metamodel.schema.Column;
@@ -27,6 +25,8 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 
 /**
  * {@link TableCreationBuilder} implementation for Excel spreadsheets.

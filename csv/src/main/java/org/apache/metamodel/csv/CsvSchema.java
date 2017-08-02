@@ -18,12 +18,12 @@
  */
 package org.apache.metamodel.csv;
 
-import org.apache.metamodel.schema.AbstractSchema;
-import org.apache.metamodel.schema.Table;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.metamodel.schema.AbstractSchema;
+import org.apache.metamodel.schema.Table;
 
 final class CsvSchema extends AbstractSchema {
 

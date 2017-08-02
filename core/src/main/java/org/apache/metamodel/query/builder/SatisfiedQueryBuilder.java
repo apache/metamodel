@@ -20,8 +20,8 @@ package org.apache.metamodel.query.builder;
 
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FunctionType;
-import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.InvokableQuery;
+import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.schema.Column;
 

@@ -18,14 +18,14 @@
  */
 package org.apache.metamodel.insert;
 
+import java.util.List;
+
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.data.AbstractRowBuilder;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
-
-import java.util.List;
 
 /**
  * Abstract implementation of the {@link RowInsertionBuilder} interface,

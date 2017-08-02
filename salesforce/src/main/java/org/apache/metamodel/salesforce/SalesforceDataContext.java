@@ -19,9 +19,11 @@
 package org.apache.metamodel.salesforce;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
-
-import com.sforce.ws.ConnectorConfig;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
@@ -47,6 +49,7 @@ import com.sforce.soap.partner.Connector;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.soap.partner.QueryResult;
 import com.sforce.ws.ConnectionException;
+import com.sforce.ws.ConnectorConfig;
 
 /**
  * A datacontext that uses the Salesforce API.

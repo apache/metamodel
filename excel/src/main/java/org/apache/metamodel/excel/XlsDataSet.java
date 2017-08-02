@@ -21,12 +21,12 @@ package org.apache.metamodel.excel;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.util.FileHelper;
+import org.apache.poi.ss.usermodel.Workbook;
 
 /**
  * Stream {@link DataSet} implementation for Excel support.

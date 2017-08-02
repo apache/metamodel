@@ -18,12 +18,12 @@
  */
 package org.apache.metamodel.excel;
 
+import java.util.List;
+
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-
-import java.util.List;
 
 /**
  * Delegate for spreadsheet-implementation specific operations in an

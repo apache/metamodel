@@ -18,7 +18,8 @@
  */
 package org.apache.metamodel.elasticsearch.rest;
 
-import io.searchbox.core.DeleteByQuery;
+import java.util.List;
+
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
 import org.apache.metamodel.delete.RowDeletionBuilder;
@@ -29,7 +30,7 @@ import org.apache.metamodel.schema.Table;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
-import java.util.List;
+import io.searchbox.core.DeleteByQuery;
 
 /**
  * {@link RowDeletionBuilder} implementation for
