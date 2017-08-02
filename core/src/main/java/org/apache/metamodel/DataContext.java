@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel;
 
+import java.util.List;
+
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.Query;
@@ -26,8 +28,6 @@ import org.apache.metamodel.query.builder.InitFromBuilder;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-
-import java.util.List;
 
 /**
  * A DataContext represents the central entry point for interactions with

@@ -18,6 +18,12 @@
  */
 package org.apache.metamodel;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.DefaultCompiledQuery;
@@ -28,12 +34,6 @@ import org.apache.metamodel.query.parser.QueryParser;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * Abstract implementation of the DataContext interface. Provides convenient

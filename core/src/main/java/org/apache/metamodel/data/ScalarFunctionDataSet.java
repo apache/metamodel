@@ -18,11 +18,11 @@
  */
 package org.apache.metamodel.data;
 
+import java.util.List;
+
 import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.util.CollectionUtils;
-
-import java.util.List;
 
 /**
  * A {@link DataSet} that enhances another {@link DataSet} with

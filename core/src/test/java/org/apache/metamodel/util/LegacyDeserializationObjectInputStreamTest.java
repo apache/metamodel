@@ -18,11 +18,12 @@
  */
 package org.apache.metamodel.util;
 
-import junit.framework.TestCase;
+import java.io.FileInputStream;
+
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Table;
 
-import java.io.FileInputStream;
+import junit.framework.TestCase;
 
 public class LegacyDeserializationObjectInputStreamTest extends TestCase {
 

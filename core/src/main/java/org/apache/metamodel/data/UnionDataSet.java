@@ -18,15 +18,15 @@
  */
 package org.apache.metamodel.data;
 
-import org.apache.metamodel.query.InvokableQuery;
-import org.apache.metamodel.util.ImmutableRef;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import org.apache.metamodel.query.InvokableQuery;
+import org.apache.metamodel.util.ImmutableRef;
 
 /**
  * A {@link DataSet} that represents the union of two or more other data sets

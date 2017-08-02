@@ -18,13 +18,13 @@
  */
 package org.apache.metamodel.data;
 
-import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
 
 /**
  * Simple implementation of {@link DataSetHeader} which does no magic to improve

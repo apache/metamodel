@@ -18,6 +18,9 @@
  */
 package org.apache.metamodel.intercept;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.UpdateScript;
@@ -36,9 +39,6 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.RowUpdationBuilder;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class InterceptableDataContext implements UpdateableDataContext {
 

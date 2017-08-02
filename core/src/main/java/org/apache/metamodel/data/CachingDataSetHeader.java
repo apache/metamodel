@@ -18,12 +18,12 @@
  */
 package org.apache.metamodel.data;
 
-import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
 
 /**
  * Most common implementation of {@link DataSetHeader}. This implementation is

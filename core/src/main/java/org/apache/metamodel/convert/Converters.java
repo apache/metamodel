@@ -18,6 +18,14 @@
  */
 package org.apache.metamodel.convert;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
@@ -32,14 +40,6 @@ import org.apache.metamodel.schema.SuperColumnType;
 import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * This class consists of static methods for decorating {@link DataContext}s

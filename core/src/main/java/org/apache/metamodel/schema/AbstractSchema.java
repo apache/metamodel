@@ -18,15 +18,15 @@
  */
 package org.apache.metamodel.schema;
 
-import org.apache.metamodel.util.EqualsBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.metamodel.util.EqualsBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract implementation of the {@link Schema} interface. Implements most
