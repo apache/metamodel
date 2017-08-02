@@ -22,9 +22,25 @@ under the License.
     "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 
 <module name="Checker">
+	<module name="SuppressionFilter">
+    <property name="file" value="style/checkstyle_suppressions.xml"/>
+	</module>
+
+	<module name="Header">
+	    <property name="headerFile" value="style/licence_header.txt"/>
+	    <property name="fileExtensions" value="java"/>
+	</module>
+
 	<module name="TreeWalker">
 		<module name="UnusedImports">
 			<property name="processJavadoc" value="true"/>
+		</module>
+		<module name="ImportOrder">
+		    <property name="groups" value="/^java\./,javax,org"/>
+		    <property name="ordered" value="true"/>
+		    <property name="separated" value="true"/>
+		    <property name="option" value="top"/>
+		    <property name="sortStaticImportsAlphabetically" value="true"/>
 		</module>
 	</module>
 </module>
