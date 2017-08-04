@@ -18,18 +18,17 @@
  */
 package org.apache.metamodel.mongodb.mongo3;
 
+import java.util.List;
+
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.mongodb.common.MongoDBUtils;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mongodb.client.MongoCursor;
-
-import java.util.List;
 
 final class MongoDbDataSet extends AbstractDataSet {
 

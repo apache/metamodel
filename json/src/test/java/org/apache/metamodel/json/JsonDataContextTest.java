@@ -21,11 +21,8 @@ package org.apache.metamodel.json;
 import java.io.File;
 import java.util.Arrays;
 
-import junit.framework.TestCase;
-
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.FunctionType;
-import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.builder.SchemaBuilder;
@@ -34,6 +31,8 @@ import org.apache.metamodel.schema.builder.SingleMapColumnSchemaBuilder;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Resource;
 import org.apache.metamodel.util.SimpleTableDef;
+
+import junit.framework.TestCase;
 
 public class JsonDataContextTest extends TestCase {
 

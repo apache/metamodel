@@ -24,10 +24,8 @@ import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.management.relation.Relation;
 import javax.swing.table.TableModel;
 
-import com.google.common.collect.Sets;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.jdbc.JdbcDataContext;
@@ -37,6 +35,8 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+
+import com.google.common.collect.Sets;
 
 /**
  * Integrationtests for Firebird SQL.

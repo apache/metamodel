@@ -22,7 +22,6 @@ import java.io.ObjectStreamException;
 import java.sql.Connection;
 
 import org.apache.metamodel.schema.MutableSchema;
-import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 

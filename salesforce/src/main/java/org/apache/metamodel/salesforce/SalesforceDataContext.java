@@ -164,7 +164,7 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
         try {
             sb.append("SELECT ");
             int i = 0;
-            final List<Column> columns = new ArrayList(selectItems.size());
+            final List<Column> columns = new ArrayList<>(selectItems.size());
             for (SelectItem selectItem : selectItems) {
                 validateSoqlSupportedSelectItem(selectItem);
                 columns.set(i,selectItem.getColumn());
@@ -352,7 +352,6 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
         }
     }
 
-    @SuppressWarnings("deprecation")
     private static void validateSoqlSupportedSelectItem(SelectItem selectItem) throws UnsupportedOperationException {
         if (selectItem.hasFunction()) {
             throw new UnsupportedOperationException("Function select items not supported: " + selectItem);

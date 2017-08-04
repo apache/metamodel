@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.convert.DocumentConverter;
 import org.apache.metamodel.data.CachingDataSetHeader;

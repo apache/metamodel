@@ -28,9 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.swing.table.TableModel;
-import javax.swing.text.html.Option;
 
-import com.google.common.collect.Sets;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
@@ -45,6 +43,8 @@ import org.apache.metamodel.schema.Relationship;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
+
+import com.google.common.collect.Sets;
 
 /**
  * Test case that tests oracle interaction. An express edition of the oracle

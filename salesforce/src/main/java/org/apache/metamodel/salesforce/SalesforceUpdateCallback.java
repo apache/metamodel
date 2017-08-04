@@ -215,7 +215,6 @@ final class SalesforceUpdateCallback extends AbstractUpdateCallback implements C
      * @param idList
      * @param whereItem
      */
-    @SuppressWarnings("deprecation")
     protected void buildIdList(List<String> idList, FilterItem whereItem) {
         if (whereItem.isCompoundFilter()) {
             final LogicalOperator logicalOperator = whereItem.getLogicalOperator();

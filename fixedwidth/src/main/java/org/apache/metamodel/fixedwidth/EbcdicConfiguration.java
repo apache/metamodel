@@ -25,6 +25,8 @@ import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
  */
 public final class EbcdicConfiguration extends FixedWidthConfiguration {
 
+    private static final long serialVersionUID = 1L;
+    
     private final boolean _skipEbcdicHeader;
     private final boolean _eolPresent;
 

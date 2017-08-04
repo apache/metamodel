@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 import javax.swing.table.TableModel;
 
-import org.easymock.EasyMock;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
@@ -54,10 +53,10 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.QueryParameter;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.Relationship;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
+import org.easymock.EasyMock;
 
 public class JdbcDataContextTest extends JdbcTestCase {
 

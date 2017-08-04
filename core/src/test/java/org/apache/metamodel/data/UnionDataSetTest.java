@@ -25,11 +25,11 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.MutableColumn;
 import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 public class UnionDataSetTest {
 
