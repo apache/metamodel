@@ -36,6 +36,8 @@ import com.fasterxml.jackson.databind.ObjectReader;
  * Convenience and utility methods for MetaModel's CouchDB adaptor
  */
 final class CouchDbUtils {
+    
+    private static final ObjectReader OBJECT_READER = new ObjectMapper().readerFor(Map.class);;
 
     /**
      * Safely calls hasNext on a row iterator
@@ -89,8 +91,7 @@ final class CouchDbUtils {
             return null;
         }
         try {
-            final ObjectReader reader = new ObjectMapper().reader(Map.class);
-            return reader.readValue(valueNode);
+            return OBJECT_READER.readValue(valueNode);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
@@ -108,8 +109,7 @@ final class CouchDbUtils {
             return null;
         }
         try {
-            ObjectReader reader = new ObjectMapper().reader(List.class);
-            return reader.readValue(valueNode);
+            return OBJECT_READER.readValue(valueNode);
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

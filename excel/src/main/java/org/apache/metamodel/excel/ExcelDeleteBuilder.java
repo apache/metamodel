@@ -24,17 +24,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Table;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 
 final class ExcelDeleteBuilder extends AbstractRowDeletionBuilder {
 
