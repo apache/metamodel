@@ -49,6 +49,8 @@ import org.apache.metamodel.util.SimpleTableDef;
 public class PojoDataContext extends QueryPostprocessDataContext implements UpdateableDataContext, Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    public static final String DEFAULT_SCHEMA_NAME = "Schema";
 
     private final Map<String, TableDataProvider<?>> _tables;
     private final String _schemaName;
@@ -68,7 +70,7 @@ public class PojoDataContext extends QueryPostprocessDataContext implements Upda
      * @param tables
      */
     public PojoDataContext(List<TableDataProvider<?>> tables) {
-        this("Schema", tables);
+        this(DEFAULT_SCHEMA_NAME, tables);
     }
 
     /**

@@ -18,18 +18,11 @@
  */
 package org.apache.metamodel;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 import org.apache.metamodel.data.CachingDataSetHeader;
 import org.apache.metamodel.data.DataSet;
@@ -179,72 +172,97 @@ public final class MetaModelHelper {
         return getCarthesianProduct(fromDataSets, new FilterItem[0]);
     }
 
+    public static DataSet getCarthesianProduct(DataSet[] fromDataSets, FilterItem... filterItems) {
+        return getCarthesianProduct(fromDataSets, Arrays.asList(filterItems));
+    }
+
     public static DataSet getCarthesianProduct(DataSet[] fromDataSets, Iterable<FilterItem> whereItems) {
+        assert (fromDataSets.length > 0);
         // First check if carthesian product is even nescesary
         if (fromDataSets.length == 1) {
             return getFiltered(fromDataSets[0], whereItems);
         }
+        // do a nested loop join, no matter what
+        Iterator<DataSet> dsIter = Arrays.asList(fromDataSets).iterator();
 
-        List<SelectItem> selectItems = new ArrayList<SelectItem>();
-        for (DataSet dataSet : fromDataSets) {
-            for (int i = 0; i < dataSet.getSelectItems().size(); i++) {
-                SelectItem item = dataSet.getSelectItems().get(i);
-                selectItems.add(item);
-            }
+
+        DataSet joined = dsIter.next();
+
+        while (dsIter.hasNext()) {
+            joined = nestedLoopJoin(dsIter.next(), joined, (whereItems));
+
         }
 
-        int selectItemOffset = 0;
-        List<Object[]> data = new ArrayList<Object[]>();
-        for (int fromDataSetIndex = 0; fromDataSetIndex < fromDataSets.length; fromDataSetIndex++) {
-            DataSet fromDataSet = fromDataSets[fromDataSetIndex];
-            List<SelectItem> fromSelectItems = fromDataSet.getSelectItems();
-            if (fromDataSetIndex == 0) {
-                while (fromDataSet.next()) {
-                    Object[] values = fromDataSet.getRow().getValues();
-                    Object[] row = new Object[selectItems.size()];
-                    System.arraycopy(values, 0, row, selectItemOffset, values.length);
-                    data.add(row);
-                }
-                fromDataSet.close();
-            } else {
-                List<Object[]> fromDataRows = new ArrayList<Object[]>();
-                while (fromDataSet.next()) {
-                    fromDataRows.add(fromDataSet.getRow().getValues());
-                }
-                fromDataSet.close();
-                for (int i = 0; i < data.size(); i = i + fromDataRows.size()) {
-                    Object[] originalRow = data.get(i);
-                    data.remove(i);
-                    for (int j = 0; j < fromDataRows.size(); j++) {
-                        Object[] newRow = fromDataRows.get(j);
-                        System.arraycopy(newRow, 0, originalRow, selectItemOffset, newRow.length);
-                        data.add(i + j, originalRow.clone());
-                    }
-                }
-            }
-            selectItemOffset += fromSelectItems.size();
-        }
+        return joined;
 
-        if (data.isEmpty()) {
-            return new EmptyDataSet(selectItems);
-        }
-
-        final DataSetHeader header = new CachingDataSetHeader(selectItems);
-        final List<Row> rows = new ArrayList<Row>(data.size());
-        for (Object[] objects : data) {
-            rows.add(new DefaultRow(header, objects, null));
-        }
-
-        DataSet result = new InMemoryDataSet(header, rows);
-        if (whereItems != null) {
-            DataSet filteredResult = getFiltered(result, whereItems);
-            result = filteredResult;
-        }
-        return result;
     }
 
-    public static DataSet getCarthesianProduct(DataSet[] fromDataSets, FilterItem... filterItems) {
-        return getCarthesianProduct(fromDataSets, Arrays.asList(filterItems));
+    /**
+     * Executes a simple nested loop join. The innerLoopDs will be copied in an
+     * in-memory dataset.
+     *
+     */
+    public static InMemoryDataSet nestedLoopJoin(DataSet innerLoopDs, DataSet outerLoopDs,
+            Iterable<FilterItem> filtersIterable) {
+
+        List<FilterItem> filters = new ArrayList<>();
+        for (FilterItem fi : filtersIterable) {
+            filters.add(fi);
+        }
+        List<Row> innerRows = innerLoopDs.toRows();
+
+        List<SelectItem> allItems = new ArrayList<>(outerLoopDs.getSelectItems());
+        allItems.addAll(innerLoopDs.getSelectItems());
+
+        Set<FilterItem> applicableFilters = applicableFilters(filters, allItems);
+
+        DataSetHeader jointHeader = new CachingDataSetHeader(allItems);
+
+        List<Row> resultRows = new ArrayList<>();
+        for (Row outerRow : outerLoopDs) {
+            for (Row innerRow : innerRows) {
+
+                Object[] joinedRowObjects = new Object[outerRow.getValues().length + innerRow.getValues().length];
+
+                System.arraycopy(outerRow.getValues(), 0, joinedRowObjects, 0, outerRow.getValues().length);
+                System.arraycopy(innerRow.getValues(), 0, joinedRowObjects, outerRow.getValues().length, innerRow
+                        .getValues().length);
+
+                Row joinedRow = new DefaultRow(jointHeader, joinedRowObjects);
+
+                if (applicableFilters.isEmpty() || applicableFilters.stream().allMatch(fi -> fi.accept(joinedRow))) {
+                    resultRows.add(joinedRow);
+                }
+            }
+        }
+
+        return new InMemoryDataSet(jointHeader, resultRows);
+    }
+
+    /**
+     * Filters the FilterItems such that only the FilterItems are returned,
+     * which contain SelectItems that are contained in selectItemList
+     * 
+     * @param filters
+     * @param selectItemList
+     * @return
+     */
+    private static Set<FilterItem> applicableFilters(Collection<FilterItem> filters,
+            Collection<SelectItem> selectItemList) {
+
+        Set<SelectItem> items = new HashSet<SelectItem>(selectItemList);
+
+        return filters.stream().filter(fi -> {
+            Collection<SelectItem> fiSelectItems = new ArrayList<>();
+            fiSelectItems.add(fi.getSelectItem());
+            Object operand = fi.getOperand();
+            if (operand instanceof SelectItem) {
+                fiSelectItems.add((SelectItem) operand);
+            }
+
+            return items.containsAll(fiSelectItems);
+
+        }).collect(Collectors.toSet());
     }
 
     public static DataSet getFiltered(DataSet dataSet, Iterable<FilterItem> filterItems) {

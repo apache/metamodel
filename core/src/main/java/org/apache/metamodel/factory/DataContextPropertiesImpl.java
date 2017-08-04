@@ -288,6 +288,9 @@ public class DataContextPropertiesImpl implements DataContextProperties {
     @Override
     public SimpleTableDef[] getTableDefs() {
         final Object obj = get(PROPERTY_TABLE_DEFS);
+        if (obj == null) {
+            return null;
+        }
         if (obj instanceof SimpleTableDef[]) {
             return (SimpleTableDef[]) obj;
         }
