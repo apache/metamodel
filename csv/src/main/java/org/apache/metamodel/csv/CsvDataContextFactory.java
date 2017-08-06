@@ -22,8 +22,11 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.factory.DataContextFactory;
 import org.apache.metamodel.factory.DataContextProperties;
 import org.apache.metamodel.factory.ResourceFactoryRegistry;
+import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
+import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.Resource;
+import org.apache.metamodel.util.SimpleTableDef;
 
 public class CsvDataContextFactory implements DataContextFactory {
 
@@ -49,8 +52,17 @@ public class CsvDataContextFactory implements DataContextFactory {
         final boolean failOnInconsistentRowLength = getBoolean(properties.isFailOnInconsistentRowLength(), false);
         final boolean multilineValuesEnabled = getBoolean(properties.isMultilineValuesEnabled(), true);
 
-        final CsvConfiguration configuration = new CsvConfiguration(columnNameLineNumber, encoding, separatorChar,
-                quoteChar, escapeChar, failOnInconsistentRowLength, multilineValuesEnabled);
+        final ColumnNamingStrategy columnNamingStrategy;
+        if (properties.getTableDefs() == null) {
+            columnNamingStrategy = null;
+        } else {
+            final SimpleTableDef firstTable = properties.getTableDefs()[0];
+            final String[] columnNames = firstTable.getColumnNames();
+            columnNamingStrategy = new CustomColumnNamingStrategy(columnNames);
+        }
+
+        final CsvConfiguration configuration = new CsvConfiguration(columnNameLineNumber, columnNamingStrategy,
+                encoding, separatorChar, quoteChar, escapeChar, failOnInconsistentRowLength, multilineValuesEnabled);
         return new CsvDataContext(resource, configuration);
     }
 
