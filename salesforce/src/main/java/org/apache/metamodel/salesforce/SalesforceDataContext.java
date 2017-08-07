@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import com.sforce.ws.ConnectorConfig;
-
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
@@ -50,16 +48,16 @@ import com.sforce.soap.partner.Connector;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.soap.partner.QueryResult;
 import com.sforce.ws.ConnectionException;
+import com.sforce.ws.ConnectorConfig;
 
 /**
  * A datacontext that uses the Salesforce API.
  * 
- * Metadata about schema structure is explored using 'describe' SOAP web
- * services.
+ * Metadata about schema structure is explored using 'describe' SOAP web services.
  * 
- * Queries are fired using the SOQL dialect of SQL, see <a href=
- * "http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_calls_soql_select.htm"
- * >SOQL reference</a>.
+ * Queries are fired using the SOQL dialect of SQL, see
+ * <a href= "http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_calls_soql_select.htm" >SOQL
+ * reference</a>.
  */
 public class SalesforceDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
 
@@ -77,11 +75,13 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
 
     public SalesforceDataContext(String endpoint, String username, String password, String securityToken) {
         try {
-            ConnectorConfig config = new ConnectorConfig();
+            final ConnectorConfig config = new ConnectorConfig();
             config.setUsername(username);
             config.setPassword(securityToken == null ? password : password + securityToken);
-            config.setAuthEndpoint(endpoint);
-            config.setServiceEndpoint(endpoint);
+            if (endpoint != null) {
+                config.setAuthEndpoint(endpoint);
+                config.setServiceEndpoint(endpoint);
+            }
             _connection = Connector.newConnection(config);
         } catch (ConnectionException e) {
             throw SalesforceUtils.wrapException(e, "Failed to log in to Salesforce service");
@@ -90,7 +90,8 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
 
     public SalesforceDataContext(String username, String password, String securityToken) {
         try {
-            _connection = Connector.newConnection(username, securityToken == null ? password : password + securityToken);
+            _connection =
+                    Connector.newConnection(username, securityToken == null ? password : password + securityToken);
         } catch (ConnectionException e) {
             throw SalesforceUtils.wrapException(e, "Failed to log in to Salesforce service");
         }
@@ -105,11 +106,9 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
     }
 
     /**
-     * Creates a {@code SalesforceDataContext} instance , configured with given
-     * salesforce connection.
+     * Creates a {@code SalesforceDataContext} instance , configured with given salesforce connection.
      * 
-     * @param connection
-     *            salesforce connection (cannot be {@code null}).
+     * @param connection salesforce connection (cannot be {@code null}).
      * 
      */
     public SalesforceDataContext(PartnerConnection connection) {
@@ -355,7 +354,6 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
         }
     }
 
-    @SuppressWarnings("deprecation")
     private static void validateSoqlSupportedSelectItem(SelectItem selectItem) throws UnsupportedOperationException {
         if (selectItem.hasFunction()) {
             throw new UnsupportedOperationException("Function select items not supported: " + selectItem);
