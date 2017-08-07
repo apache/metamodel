@@ -1,6 +1,7 @@
 ### Apache MetaModel 5.0
 
  * [METAMODEL-6] - Added update summary containing information about changes on returning UpdateableDataContext.executeUpdate(..)
+ * [METAMODEL-7] - Applied collections, lists etc. instead of arrays in the MetaModel API.
  * [METAMODEL-63] - Added UnionDataSet, a general purpose utility for doing client-side unions from other queries or data sets.
  * [METAMODEL-222] - Added support for Java 8 lambdas, removed support for Java 7.
  * [METAMODEL-1087] - Removed deprecated APIs from MetaModel's codebase.
