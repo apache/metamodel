@@ -21,7 +21,11 @@ package org.apache.metamodel.jdbc.integrationtests;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.swing.table.TableModel;
 
@@ -39,6 +43,8 @@ import org.apache.metamodel.schema.Relationship;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
+
+import com.google.common.collect.Sets;
 
 /**
  * Test case that tests oracle interaction. An express edition of the oracle
@@ -126,7 +132,7 @@ public class OracleTest extends AbstractJdbIntegrationTest {
             return;
         }
         DataContext dc = new JdbcDataContext(getConnection());
-        String[] schemaNames = dc.getSchemaNames();
+        String[] schemaNames = dc.getSchemaNames().toArray(new String[dc.getSchemas().size()]);
 
         String concatSchemas = Arrays.toString(schemaNames);
 
@@ -198,16 +204,19 @@ public class OracleTest extends AbstractJdbIntegrationTest {
                 + ",JdbcTable[name=JOB_HISTORY,type=TABLE,remarks=<null>]"
                 + ",JdbcTable[name=LOCATIONS,type=TABLE,remarks=<null>]"
                 + ",JdbcTable[name=REGIONS,type=TABLE,remarks=<null>]"
-                + ",JdbcTable[name=EMP_DETAILS_VIEW,type=VIEW,remarks=<null>]}", Arrays.toString(schema.getTables()));
+                + ",JdbcTable[name=EMP_DETAILS_VIEW,type=VIEW,remarks=<null>]}", Arrays.toString(schema.getTables().toArray()));
 
-        Relationship[] employeeRelationships = schema.getTableByName("EMPLOYEES").getRelationships();
-        assertEquals(
-                "{Relationship[primaryTable=EMPLOYEES,primaryColumns={EMPLOYEE_ID},foreignTable=DEPARTMENTS,foreignColumns={MANAGER_ID}],"
-                        + "Relationship[primaryTable=DEPARTMENTS,primaryColumns={DEPARTMENT_ID},foreignTable=EMPLOYEES,foreignColumns={DEPARTMENT_ID}],"
-                        + "Relationship[primaryTable=EMPLOYEES,primaryColumns={EMPLOYEE_ID},foreignTable=EMPLOYEES,foreignColumns={MANAGER_ID}],"
-                        + "Relationship[primaryTable=JOBS,primaryColumns={JOB_ID},foreignTable=EMPLOYEES,foreignColumns={JOB_ID}],"
-                        + "Relationship[primaryTable=EMPLOYEES,primaryColumns={EMPLOYEE_ID},foreignTable=JOB_HISTORY,foreignColumns={EMPLOYEE_ID}]}",
-                Arrays.toString(employeeRelationships));
+        Collection<Relationship> employeeRelationships = schema.getTableByName("EMPLOYEES").getRelationships();
+
+        Set<String> employeeRelStrings = employeeRelationships.stream().map(rel -> rel.toString()).collect(Collectors.toSet());
+
+        assertEquals(Sets.newHashSet(
+                "Relationship[primaryTable=EMPLOYEES,primaryColumns={EMPLOYEE_ID},foreignTable=DEPARTMENTS,foreignColumns={MANAGER_ID}]",
+                        "Relationship[primaryTable=DEPARTMENTS,primaryColumns={DEPARTMENT_ID},foreignTable=EMPLOYEES,foreignColumns={DEPARTMENT_ID}]",
+                        "Relationship[primaryTable=EMPLOYEES,primaryColumns={EMPLOYEE_ID},foreignTable=EMPLOYEES,foreignColumns={MANAGER_ID}]",
+                        "Relationship[primaryTable=JOBS,primaryColumns={JOB_ID},foreignTable=EMPLOYEES,foreignColumns={JOB_ID}]",
+                        "Relationship[primaryTable=EMPLOYEES,primaryColumns={EMPLOYEE_ID},foreignTable=JOB_HISTORY,foreignColumns={EMPLOYEE_ID}]"),
+                employeeRelStrings);
 
         assertEquals(
                 "{JdbcColumn[name=EMPLOYEE_ID,columnNumber=0,type=DECIMAL,nullable=false,nativeType=NUMBER,columnSize=6],"
@@ -221,14 +230,14 @@ public class OracleTest extends AbstractJdbIntegrationTest {
                         + "JdbcColumn[name=COMMISSION_PCT,columnNumber=8,type=DECIMAL,nullable=true,nativeType=NUMBER,columnSize=2],"
                         + "JdbcColumn[name=MANAGER_ID,columnNumber=9,type=DECIMAL,nullable=true,nativeType=NUMBER,columnSize=6],"
                         + "JdbcColumn[name=DEPARTMENT_ID,columnNumber=10,type=DECIMAL,nullable=true,nativeType=NUMBER,columnSize=4]}",
-                Arrays.toString(schema.getTableByName("EMPLOYEES").getColumns()));
+                Arrays.toString(schema.getTableByName("EMPLOYEES").getColumns().toArray()));
 
         assertEquals(
                 "{JdbcColumn[name=DEPARTMENT_ID,columnNumber=0,type=DECIMAL,nullable=false,nativeType=NUMBER,columnSize=4],"
                         + "JdbcColumn[name=DEPARTMENT_NAME,columnNumber=1,type=VARCHAR,nullable=false,nativeType=VARCHAR2,columnSize=30],"
                         + "JdbcColumn[name=MANAGER_ID,columnNumber=2,type=DECIMAL,nullable=true,nativeType=NUMBER,columnSize=6],"
                         + "JdbcColumn[name=LOCATION_ID,columnNumber=3,type=DECIMAL,nullable=true,nativeType=NUMBER,columnSize=4]}",
-                Arrays.toString(schema.getTableByName("DEPARTMENTS").getColumns()));
+                Arrays.toString(schema.getTableByName("DEPARTMENTS").getColumns().toArray()));
     }
 
     public void testExecuteQuery() throws Exception {
@@ -238,12 +247,12 @@ public class OracleTest extends AbstractJdbIntegrationTest {
         Schema schema = getDataContext().getSchemaByName("HR");
         Table employeeTable = schema.getTableByName("EMPLOYEES");
         Table departmentsTable = schema.getTableByName("DEPARTMENTS");
-        Relationship relationship = employeeTable.getRelationships(departmentsTable)[0];
-        assertEquals(
-                "Relationship[primaryTable=EMPLOYEES,primaryColumns={EMPLOYEE_ID},foreignTable=DEPARTMENTS,foreignColumns={MANAGER_ID}]",
-                relationship.toString());
+        Optional<Relationship> relationship = employeeTable.getRelationships(departmentsTable).stream()
+                .filter(rel-> rel.toString().equals("Relationship[primaryTable=EMPLOYEES,primaryColumns={EMPLOYEE_ID},foreignTable=DEPARTMENTS,foreignColumns={MANAGER_ID}]"))
+                .findFirst();
+        assertTrue(relationship.isPresent());
 
-        Query q = new Query().from(new FromItem(JoinType.INNER, relationship)).select(
+        Query q = new Query().from(new FromItem(JoinType.INNER, relationship.get())).select(
                 employeeTable.getColumnByName("EMAIL"), departmentsTable.getColumnByName("DEPARTMENT_NAME"));
         q.getSelectClause().getItem(0).setAlias("e-mail");
 

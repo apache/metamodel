@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.schema.Column;
@@ -29,15 +30,14 @@ import org.apache.metamodel.schema.Table;
 
 public class Neo4jCypherQueryBuilder {
 
-    public static String buildSelectQuery(Table table, Column[] columns, int firstRow, int maxRows) {
-        String[] columnNames = new String[columns.length];
-        for (int i = 0; i < columns.length; i++) {
-            columnNames[i] = columns[i].getName();
-        }
+    public static String buildSelectQuery(Table table, List<Column> columns, int firstRow, int maxRows) {
+        List<String> columnNames = columns.stream()
+                .map(col -> col.getName())
+                .collect(Collectors.toList());
         return buildSelectQuery(table.getName(), columnNames, firstRow, maxRows);
     }
 
-    public static String buildSelectQuery(String tableName, String[] columnNames, int firstRow, int maxRows) {
+    public static String buildSelectQuery(String tableName, List<String> columnNames, int firstRow, int maxRows) {
         Map<String, String> returnClauseMap = new LinkedHashMap<>();
         Map<String, Integer> relationshipIndexMap = new LinkedHashMap<>();
         for (String columnName : columnNames) {

@@ -69,7 +69,7 @@ public class FixedWidthConfigurationReaderTest {
      */
     private void performAssertionsOnSpec1(FixedWidthDataContext dataContext) {
         final Table table = dataContext.getDefaultSchema().getTable(0);
-        final String[] columnNames = table.getColumnNames();
+        final String[] columnNames = table.getColumnNames().toArray(new String[0]);
         assertEquals("[Record type, Description, Initials]", Arrays.toString(columnNames));
 
         try (final DataSet dataSet = dataContext.query().from(table).selectAll().execute()) {

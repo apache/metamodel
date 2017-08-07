@@ -27,13 +27,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
+
 final class Neo4jDataSet extends AbstractDataSet {
 
     private JSONObject _resultJSONObject;
     private int _currentRowIndex;
     private Row _row;
 
-    public Neo4jDataSet(SelectItem[] selectItems, JSONObject resultJSONObject) {
+    public Neo4jDataSet(List<SelectItem> selectItems, JSONObject resultJSONObject) {
         super(selectItems);
         _resultJSONObject = resultJSONObject;
         _currentRowIndex = 0;

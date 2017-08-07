@@ -21,6 +21,10 @@ package org.apache.metamodel.csv;
 import org.apache.metamodel.schema.AbstractSchema;
 import org.apache.metamodel.schema.Table;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 final class CsvSchema extends AbstractSchema {
 
     private static final long serialVersionUID = 1L;
@@ -54,10 +58,10 @@ final class CsvSchema extends AbstractSchema {
 	}
 
 	@Override
-	public Table[] getTables() {
+	public List<Table> getTables() {
 		if (_table == null) {
-			return new Table[0];
+			return new ArrayList<>();
 		}
-		return new Table[] { _table };
+		return Collections.singletonList(_table);
 	}
 }

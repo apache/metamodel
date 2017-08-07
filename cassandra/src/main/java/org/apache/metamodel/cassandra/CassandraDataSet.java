@@ -20,10 +20,13 @@
 package org.apache.metamodel.cassandra;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 
 /**
@@ -36,8 +39,8 @@ final class CassandraDataSet extends AbstractDataSet {
 
     private volatile com.datastax.driver.core.Row _dbObject;
 
-    public CassandraDataSet(Iterator<com.datastax.driver.core.Row> cursor, Column[] columns) {
-        super(columns);
+    public CassandraDataSet(Iterator<com.datastax.driver.core.Row> cursor, List<Column> columns) {
+        super(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
         _cursor = cursor;
     }
 

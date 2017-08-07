@@ -30,7 +30,7 @@ public class AbstractRowDeletionCallbackTest extends TestCase {
 
     public void testDelete() throws Exception {
         final MockUpdateableDataContext dc = new MockUpdateableDataContext();
-        final Table table = dc.getDefaultSchema().getTables()[0];
+        final Table table = dc.getDefaultSchema().getTables().get(0);
         DataSet ds = dc.query().from(table).selectCount().execute();
         assertTrue(ds.next());
         assertEquals("3", ds.getRow().getValue(0).toString());

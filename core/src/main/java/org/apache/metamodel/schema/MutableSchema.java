@@ -21,6 +21,7 @@ package org.apache.metamodel.schema;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -63,10 +64,10 @@ public class MutableSchema extends AbstractSchema implements Serializable,
 	}
 
 	@Override
-	public MutableTable[] getTables() {
-		MutableTable[] array = new MutableTable[_tables.size()];
-		return _tables.toArray(array);
+	public List<Table> getTables() {
+		return Collections.unmodifiableList(_tables);
 	}
+
 
 	public MutableSchema setTables(Collection<? extends MutableTable> tables) {
 	    clearTables();

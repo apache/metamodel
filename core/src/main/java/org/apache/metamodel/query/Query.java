@@ -92,6 +92,10 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
         return select(selectItem);
     }
 
+    public Query select(List<Column> columns){
+        return select(columns.toArray(new Column[columns.size()]));
+    }
+
     public Query select(Column... columns) {
         for (Column column : columns) {
             SelectItem selectItem = new SelectItem(column);
@@ -164,7 +168,7 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
 
     public Query selectAll(final FromItem fromItem) {
         if (fromItem.getTable() != null) {
-            final Column[] columns = fromItem.getTable().getColumns();
+            final List<Column> columns = fromItem.getTable().getColumns();
             for (final Column column : columns) {
                 select(column, fromItem);
             }
@@ -235,6 +239,14 @@ public final class Query extends BaseObject implements Cloneable, Serializable {
     }
 
     public Query groupBy(Column... columns) {
+        for (Column column : columns) {
+            SelectItem selectItem = new SelectItem(column).setQuery(this);
+            _groupByClause.addItem(new GroupByItem(selectItem));
+        }
+        return this;
+    }
+
+    public Query groupBy(List<Column> columns) {
         for (Column column : columns) {
             SelectItem selectItem = new SelectItem(column).setQuery(this);
             _groupByClause.addItem(new GroupByItem(selectItem));

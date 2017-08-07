@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -114,7 +115,7 @@ public class OpenOfficeDataContext extends AbstractDataContext {
 	}
 
 	@Override
-	protected String[] getSchemaNamesInternal() {
+	protected List<String> getSchemaNamesInternal() {
 		return _dataContextDelegate.getSchemaNames();
 	}
 

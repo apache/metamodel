@@ -211,7 +211,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         final Scan scan = new Scan();
         for (Column column : columns) {
             if (!column.isPrimaryKey()) {

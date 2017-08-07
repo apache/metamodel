@@ -37,7 +37,7 @@ public class ConvertersTest extends TestCase {
 
     public void testAutoDetectConverters() throws Exception {
         final MockUpdateableDataContext decoratedDataContext = new MockUpdateableDataContext();
-        final Table table = decoratedDataContext.getDefaultSchema().getTables()[0];
+        final Table table = decoratedDataContext.getDefaultSchema().getTables().get(0);
         Map<Column, TypeConverter<?, ?>> converters = Converters.autoDetectConverters(decoratedDataContext, table, 2);
         assertEquals(1, converters.size());
         assertEquals(
@@ -92,7 +92,7 @@ public class ConvertersTest extends TestCase {
             assertEquals("foo is expected to be string", String.class, physicalValues[0].getClass());
         }
 
-        final Table table = dc.getDefaultSchema().getTables()[0];
+        final Table table = dc.getDefaultSchema().getTables().get(0);
         Map<Column, TypeConverter<?, ?>> converters = Converters.autoDetectConverters(dc, table, 1000);
         assertEquals(1, converters.size());
         dc = Converters.addTypeConverters(dc, converters);

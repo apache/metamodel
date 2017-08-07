@@ -26,7 +26,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.SimpleDataSetHeader;
@@ -62,7 +64,7 @@ public class JestElasticSearchUtilsTest {
     public void testCreateRowWithNullValues() throws Exception {
         final Column col1 = new MutableColumn("col1", ColumnType.STRING);
         final Column col2 = new MutableColumn("col2", ColumnType.STRING);
-        final DataSetHeader header = new SimpleDataSetHeader(new Column[] { col1, col2 });
+        final DataSetHeader header = new SimpleDataSetHeader(Lists.newArrayList(col1, col2).stream().map(SelectItem::new).collect(Collectors.toList()));
         final JsonObject source = new JsonObject();
         source.addProperty("col1", "foo");
         source.addProperty("col2", (String) null);
@@ -75,7 +77,7 @@ public class JestElasticSearchUtilsTest {
     @Test
     public void testCreateRowWithNumberValueAndStringType() throws Exception {
         final Column col1 = new MutableColumn("col1", ColumnType.STRING);
-        final DataSetHeader header = new SimpleDataSetHeader(new Column[] { col1 });
+        final DataSetHeader header =  SimpleDataSetHeader.fromColumns(Lists.newArrayList(col1));
         final JsonObject source = new JsonObject();
         source.addProperty("col1", 42);
         final String documentId = "row1";
@@ -87,7 +89,7 @@ public class JestElasticSearchUtilsTest {
     @Test
     public void testCreateRowWithStringValueAndNumberType() throws Exception {
         final Column col1 = new MutableColumn("col1", ColumnType.NUMBER);
-        final DataSetHeader header = new SimpleDataSetHeader(new Column[] { col1 });
+        final DataSetHeader header = SimpleDataSetHeader.fromColumns(Lists.newArrayList(col1));
         final JsonObject source = new JsonObject();
         source.addProperty("col1", "hello world");
         final String documentId = "row1";
@@ -104,7 +106,7 @@ public class JestElasticSearchUtilsTest {
     @Test
     public void testCreateRowWithJsonObject() throws Exception {
         final Column col1 = new MutableColumn("col1", ColumnType.MAP);
-        final DataSetHeader header = new SimpleDataSetHeader(new Column[] { col1 });
+        final DataSetHeader header = SimpleDataSetHeader.fromColumns(Lists.newArrayList(col1));
         final JsonObject source = new JsonObject();
         final JsonObject value = new JsonObject();
         value.addProperty("foo1", "bar");
@@ -122,7 +124,7 @@ public class JestElasticSearchUtilsTest {
     @Test
     public void testCreateRowWithJsonArray() throws Exception {
         final Column col1 = new MutableColumn("col1", ColumnType.LIST);
-        final DataSetHeader header = new SimpleDataSetHeader(new Column[] { col1 });
+        final DataSetHeader header = SimpleDataSetHeader.fromColumns(Lists.newArrayList(col1));
         final JsonObject source = new JsonObject();
         final JsonArray value = new JsonArray();
         value.add(new JsonPrimitive("foo"));
@@ -140,7 +142,7 @@ public class JestElasticSearchUtilsTest {
     @Test
     public void testCreateRowWithDeepNesting() throws Exception {
         final Column col1 = new MutableColumn("col1", ColumnType.LIST);
-        final DataSetHeader header = new SimpleDataSetHeader(new Column[] { col1 });
+        final DataSetHeader header = SimpleDataSetHeader.fromColumns(Lists.newArrayList(col1));
         final JsonObject source = new JsonObject();
 
         final JsonObject obj2 = new JsonObject();

@@ -407,9 +407,8 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 return;
             }
             try {
-                final Table[] tables = schema.getTables();
                 final DatabaseMetaData metaData = connection.getMetaData();
-                for (Table table : tables) {
+                for (Table table : schema.getTables()) {
                     loadRelations(table, metaData);
                 }
                 _loadedRelations.add(identity);
@@ -486,7 +485,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
         }
 
         relations.values().stream().flatMap(map -> map.values().stream()).forEach(ct -> MutableRelationship
-                .createRelationship(ct.getPkCols().toArray(new Column[0]), ct.getFkCols().toArray(new Column[0])));
+                .createRelationship(ct.getPkCols(), ct.getFkCols()));
     }
 
     /**

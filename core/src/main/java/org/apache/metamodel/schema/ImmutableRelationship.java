@@ -19,27 +19,29 @@
 package org.apache.metamodel.schema;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public final class ImmutableRelationship extends AbstractRelationship implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private final Column[] primaryColumns;
-	private final Column[] foreignColumns;
+	private final List<Column> primaryColumns;
+	private final List<Column> foreignColumns;
 
 	public static void create(Relationship origRelationship,
 			ImmutableSchema schema) {
 		ImmutableTable primaryTable = getSimilarTable(
 				origRelationship.getPrimaryTable(), schema);
 		assert primaryTable != null;
-		Column[] primaryColumns = getSimilarColumns(
+		List<Column> primaryColumns = getSimilarColumns(
 				origRelationship.getPrimaryColumns(), primaryTable);
 		checkSameTable(primaryColumns);
 
 		ImmutableTable foreignTable = getSimilarTable(
 				origRelationship.getForeignTable(), schema);
 		assert foreignTable != null;
-		Column[] foreignColumns = getSimilarColumns(
+		List<Column> foreignColumns = getSimilarColumns(
 				origRelationship.getForeignColumns(), foreignTable);
 		checkSameTable(foreignColumns);
 
@@ -49,13 +51,11 @@ public final class ImmutableRelationship extends AbstractRelationship implements
 		foreignTable.addRelationship(relationship);
 	}
 
-	private static Column[] getSimilarColumns(Column[] columns, Table table) {
-		Column[] result = new Column[columns.length];
-		for (int i = 0; i < columns.length; i++) {
-			String name = columns[i].getName();
-			result[i] = table.getColumnByName(name);
-		}
-		return result;
+	private static List<Column> getSimilarColumns(List<Column> columns, Table table) {
+		return columns.stream()
+				.map( col -> table.getColumnByName(col.getName()))
+				.collect(Collectors.toList());
+
 	}
 
 	private static ImmutableTable getSimilarTable(Table table,
@@ -64,19 +64,19 @@ public final class ImmutableRelationship extends AbstractRelationship implements
 		return (ImmutableTable) schema.getTableByName(name);
 	}
 
-	private ImmutableRelationship(Column[] primaryColumns,
-			Column[] foreignColumns) {
+	private ImmutableRelationship(List<Column> primaryColumns,
+			List<Column> foreignColumns) {
 		this.primaryColumns = primaryColumns;
 		this.foreignColumns = foreignColumns;
 	}
 
 	@Override
-	public Column[] getPrimaryColumns() {
+	public List<Column> getPrimaryColumns() {
 		return primaryColumns;
 	}
 
 	@Override
-	public Column[] getForeignColumns() {
+	public List<Column> getForeignColumns() {
 		return foreignColumns;
 	}
 }

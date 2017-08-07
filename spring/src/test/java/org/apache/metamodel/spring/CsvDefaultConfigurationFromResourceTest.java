@@ -53,6 +53,6 @@ public class CsvDefaultConfigurationFromResourceTest {
 
         assertEquals("example.csv", resource.getName());
 
-        assertEquals("[foo, bar]", Arrays.toString(csv.getDefaultSchema().getTable(0).getColumnNames()));
+        assertEquals("[foo, bar]", Arrays.toString(csv.getDefaultSchema().getTable(0).getColumnNames().toArray()));
     }
 }

@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.BatchUpdateScript;
 import org.apache.metamodel.DataContext;
@@ -234,7 +235,7 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
             dynamicTableDefinitions.clear();
             dynamicTableDefinitions.addAll(Arrays.asList(tables));
             for (final SimpleTableDef tableDef : dynamicTableDefinitions) {
-                final List<String> tableNames = Arrays.asList(theSchema.getTableNames());
+                final List<String> tableNames = theSchema.getTableNames();
 
                 if (!tableNames.contains(tableDef.getName())) {
                     addTable(theSchema, tableDef);
@@ -299,11 +300,11 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         SearchResult searchResult = executeSearch(table, createSearchRequest(1, maxRows, null), scrollNeeded(
                 maxRows));
 
-        return new JestElasticSearchDataSet(elasticSearchClient, searchResult, columns);
+        return new JestElasticSearchDataSet(elasticSearchClient, searchResult, columns.stream().map(SelectItem::new).collect(Collectors.toList()));
     }
 
     private SearchSourceBuilder createSearchRequest(int firstRow, int maxRows, QueryBuilder queryBuilder) {

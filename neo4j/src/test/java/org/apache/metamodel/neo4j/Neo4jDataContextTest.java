@@ -19,7 +19,6 @@
 package org.apache.metamodel.neo4j;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -78,13 +77,13 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 
         // Do not check the precise count, Neo4j keeps labels forever, there are
         // probably many more than you imagine...
-        List<String> tableNames = Arrays.asList(schema.getTableNames());
+        List<String> tableNames = schema.getTableNames();
         logger.info("Tables (labels) detected: " + tableNames);
         assertTrue(tableNames.contains("JUnitLabel"));
         assertFalse(tableNames.contains("JUnitLabelTemp"));
 
         Table table = schema.getTableByName("JUnitLabel");
-        List<String> columnNames = Arrays.asList(table.getColumnNames());
+        List<String> columnNames = table.getColumnNames();
         assertTrue(columnNames.contains("property1"));
         assertTrue(columnNames.contains("property2"));
     }
@@ -122,18 +121,18 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
 
         // Do not check the precise count, Neo4j keeps labels forever, there are
         // probably many more than you imagine...
-        List<String> tableNames = Arrays.asList(schema.getTableNames());
+        List<String> tableNames = schema.getTableNames();
         logger.info("Tables (labels) detected: " + tableNames);
         assertTrue(tableNames.contains("JUnitPerson"));
         assertTrue(tableNames.contains("JUnitBook"));
 
         Table tablePerson = schema.getTableByName("JUnitPerson");
-        List<String> personColumnNames = Arrays.asList(tablePerson.getColumnNames());
+        List<String> personColumnNames = tablePerson.getColumnNames();
         assertEquals("[_id, name, age, rel_HAS_READ, rel_HAS_READ#rating, rel_HAS_BROWSED]",
                 personColumnNames.toString());
 
         Table tableBook = schema.getTableByName("JUnitBook");
-        List<String> bookColumnNames = Arrays.asList(tableBook.getColumnNames());
+        List<String> bookColumnNames = tableBook.getColumnNames();
         assertEquals("[_id, title]", bookColumnNames.toString());
     }
 

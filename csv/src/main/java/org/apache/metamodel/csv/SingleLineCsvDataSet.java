@@ -20,11 +20,14 @@ package org.apache.metamodel.csv;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.util.FileHelper;
 
@@ -46,9 +49,9 @@ final class SingleLineCsvDataSet extends AbstractDataSet {
     private volatile Integer _rowsRemaining;
     private volatile Row _row;
 
-    public SingleLineCsvDataSet(BufferedReader reader, ICSVParser csvParser, Column[] columns, Integer maxRows,
-            int columnsInTable, boolean failOnInconsistentRowLength) {
-        super(columns);
+    public SingleLineCsvDataSet(BufferedReader reader, ICSVParser csvParser, List<Column> columns, Integer maxRows,
+                                int columnsInTable, boolean failOnInconsistentRowLength) {
+        super(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
         _reader = reader;
         _csvParser = csvParser;
         _columnsInTable = columnsInTable;

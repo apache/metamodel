@@ -82,11 +82,11 @@ public class DeleteAndInsertBuilder extends AbstractRowUpdationBuilder {
      * @return
      */
     private Row update(final Row original) {
-        SelectItem[] items = original.getSelectItems();
-        Object[] values = new Object[items.length];
-        for (int i = 0; i < items.length; i++) {
+        List<SelectItem> items = original.getSelectItems();
+        Object[] values = new Object[items.size()];
+        for (int i = 0; i < items.size(); i++) {
             final Object value;
-            Column column = items[i].getColumn();
+            Column column = items.get(i).getColumn();
             if (isSet(column)) {
                 // use update statement's value
                 value = getValues()[i];
@@ -103,7 +103,10 @@ public class DeleteAndInsertBuilder extends AbstractRowUpdationBuilder {
         final DataContext dc = _updateCallback.getDataContext();
         final Table table = getTable();
         final List<FilterItem> whereItems = getWhereItems();
-        final DataSet dataSet = dc.query().from(table).select(table.getColumns()).where(whereItems).execute();
+        final DataSet dataSet = dc.query()
+                .from(table)
+                .select(table.getColumns())
+                .where(whereItems).execute();
         final List<Row> rows = dataSet.toRows();
         return rows;
     }

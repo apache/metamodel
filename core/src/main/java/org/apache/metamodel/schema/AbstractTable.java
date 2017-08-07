@@ -18,18 +18,12 @@
  */
 package org.apache.metamodel.schema;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.util.CollectionUtils;
-import org.apache.metamodel.util.HasNameMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Abstract {@link Table} implementation. Includes most common/trivial methods.
@@ -42,13 +36,12 @@ public abstract class AbstractTable implements Table {
 
     @Override
     public final int getColumnCount() {
-        return getColumns().length;
+        return getColumns().size();
     }
 
     @Override
     public Column getColumn(int index) throws IndexOutOfBoundsException {
-        Column[] columns = getColumns();
-        return columns[index];
+        return getColumns().get(index);
     }
 
     @Override
@@ -93,112 +86,102 @@ public abstract class AbstractTable implements Table {
 
     @Override
     public final int getRelationshipCount() {
-        return getRelationships().length;
+        return getRelationships().size();
     }
 
     @Override
-    public final Column[] getNumberColumns() {
-        return CollectionUtils.filter(getColumns(), new Predicate<Column>() {
-            @Override
-            public boolean test(Column col) {
-                ColumnType type = col.getType();
-                return type != null && type.isNumber();
-            }
-        }).toArray(new Column[0]);
+    public final List<Column> getNumberColumns() {
+        return getColumnsOfSuperType(SuperColumnType.NUMBER_TYPE);
     }
 
     @Override
-    public final Column[] getLiteralColumns() {
-        return CollectionUtils.filter(getColumns(), new Predicate<Column>() {
-            @Override
-            public boolean test(Column col) {
-                ColumnType type = col.getType();
-                return type != null && type.isLiteral();
-            }
-        }).toArray(new Column[0]);
+    public final List<Column> getLiteralColumns() {
+        return getColumnsOfSuperType(SuperColumnType.LITERAL_TYPE);
     }
 
     @Override
-    public final Column[] getTimeBasedColumns() {
-        return CollectionUtils.filter(getColumns(), col -> {
-            final ColumnType type = col.getType();
-            return type != null && type.isTimeBased();
-        }).toArray(new Column[0]);
+    public final List<Column> getTimeBasedColumns() {
+        return getColumnsOfSuperType(SuperColumnType.TIME_TYPE);
     }
 
     @Override
-    public final Column[] getBooleanColumns() {
-        return CollectionUtils.filter(getColumns(), col -> {
-            final ColumnType type = col.getType();
-            return type != null && type.isBoolean();
-        }).toArray(new Column[0]);
+    public final List<Column> getBooleanColumns() {
+        return getColumnsOfSuperType(SuperColumnType.BOOLEAN_TYPE);
     }
 
     @Override
-    public final Column[] getIndexedColumns() {
-        return CollectionUtils.filter(getColumns(), Column::isIndexed).toArray(new Column[0]);
+    public final List<Column> getIndexedColumns() {
+        return getColumns().stream()
+                .filter(Column::isIndexed)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public final Relationship[] getForeignKeyRelationships() {
+    public final Collection<Relationship> getForeignKeyRelationships() {
         return CollectionUtils.filter(getRelationships(), rel -> {
             return AbstractTable.this.equals(rel.getForeignTable());
-        }).toArray(new Relationship[0]);
+        });
     }
 
     @Override
-    public final Relationship[] getPrimaryKeyRelationships() {
+    public final List<Relationship> getPrimaryKeyRelationships() {
         return CollectionUtils.filter(getRelationships(), rel -> {
             return AbstractTable.this.equals(rel.getPrimaryTable());
-        }).toArray(new Relationship[0]);
+        });
     }
 
     @Override
-    public final Column[] getForeignKeys() {
-        final Set<Column> columns = new HashSet<Column>();
-        final Relationship[] relationships = getForeignKeyRelationships();
+    public final List<Column> getForeignKeys() {
+        final Set<Column> columns = new LinkedHashSet<>();
+        final Collection<Relationship> relationships = getForeignKeyRelationships();
         CollectionUtils.forEach(relationships, rel -> {
-            Column[] foreignColumns = rel.getForeignColumns();
+            List<Column> foreignColumns = rel.getForeignColumns();
             for (Column column : foreignColumns) {
                 columns.add(column);
             }
         });
-        return columns.toArray(new Column[columns.size()]);
+        return new ArrayList<>(columns);
     }
 
     @Override
-    public final Column[] getPrimaryKeys() {
+    public final List<Column> getPrimaryKeys() {
         final List<Column> primaryKeyColumns = new ArrayList<Column>();
-        final Column[] columnsInTable = getColumns();
+        final List<Column> columnsInTable = getColumns();
         for (Column column : columnsInTable) {
             if (column.isPrimaryKey()) {
                 primaryKeyColumns.add(column);
             }
         }
-        return primaryKeyColumns.toArray(new Column[primaryKeyColumns.size()]);
+        return primaryKeyColumns;
     }
 
     @Override
-    public final String[] getColumnNames() {
-        Column[] columns = getColumns();
-        return CollectionUtils.map(columns, new HasNameMapper()).toArray(new String[columns.length]);
+    public final List<String> getColumnNames() {
+        return getColumns().stream()
+                .map(col -> col.getName())
+                .collect(Collectors.toList());
     }
 
     @Override
-    public final Column[] getColumnsOfType(ColumnType columnType) {
-        Column[] columns = getColumns();
-        return MetaModelHelper.getColumnsByType(columns, columnType);
+    public final List<Column> getColumnsOfType(ColumnType columnType) {
+        return getColumns().stream()
+                .filter(col -> col.getType()!=null)
+                .filter((col -> col.getType().equals(columnType)))
+                .collect(Collectors.toList());
+    }
+
+
+
+    @Override
+    public final List<Column> getColumnsOfSuperType(final SuperColumnType superColumnType) {
+        return getColumns().stream() .filter(col -> col.getType()!=null)
+                .filter((col -> col.getType().getSuperType().equals(superColumnType)))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public final Column[] getColumnsOfSuperType(final SuperColumnType superColumnType) {
-        Column[] columns = getColumns();
-        return MetaModelHelper.getColumnsBySuperType(columns, superColumnType);
-    }
-
-    @Override
-    public final Relationship[] getRelationships(final Table otherTable) {
-        Relationship[] relationships = getRelationships();
+    public final Collection<Relationship> getRelationships(final Table otherTable) {
+        Collection<Relationship> relationships = getRelationships();
 
         return CollectionUtils.filter(relationships, relation -> {
             if (relation.getForeignTable() == otherTable && relation.getPrimaryTable() == AbstractTable.this) {
@@ -207,7 +190,7 @@ public abstract class AbstractTable implements Table {
                 return true;
             }
             return false;
-        }).toArray(new Relationship[0]);
+        });
     }
 
     @Override
@@ -270,12 +253,12 @@ public abstract class AbstractTable implements Table {
             }
 
             try {
-                final String[] columnNames1 = getColumnNames();
-                final String[] columnNames2 = other.getColumnNames();
+                final List<String> columnNames1 = getColumnNames();
+                final List<String> columnNames2 = other.getColumnNames();
 
-                if (columnNames1 != null && columnNames1.length != 0) {
-                    if (columnNames2 != null && columnNames2.length != 0) {
-                        if (!Arrays.equals(columnNames1, columnNames2)) {
+                if (columnNames1 != null && columnNames1.size() != 0) {
+                    if (columnNames2 != null && columnNames2.size() != 0) {
+                        if (!columnNames1.equals(columnNames2)) {
                             return false;
                         }
                     }

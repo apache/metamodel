@@ -27,16 +27,16 @@ public abstract class AbstractRelationship extends BaseObject implements
     
     private static final long serialVersionUID = 1L;
 
-	protected static Table checkSameTable(Column[] columns) {
-		if (columns == null || columns.length == 0) {
+	protected static Table checkSameTable(List<Column> columns) {
+		if (columns == null || columns.size() == 0) {
 			throw new IllegalArgumentException(
 					"At least one key-column must exist on both "
 							+ "primary and foreign side for "
 							+ "a relation to exist.");
 		}
 		Table table = null;
-		for (int i = 0; i < columns.length; i++) {
-			Column column = columns[i];
+		for (int i = 0; i < columns.size(); i++) {
+			Column column = columns.get(i);
 			if (i == 0) {
 				table = column.getTable();
 			} else {
@@ -51,12 +51,12 @@ public abstract class AbstractRelationship extends BaseObject implements
 
 	@Override
 	public Table getForeignTable() {
-		return getForeignColumns()[0].getTable();
+		return getForeignColumns().get(0).getTable();
 	}
 
 	@Override
 	public Table getPrimaryTable() {
-		return getPrimaryColumns()[0].getTable();
+		return getPrimaryColumns().get(0).getTable();
 	}
 
 	@Override
@@ -64,23 +64,23 @@ public abstract class AbstractRelationship extends BaseObject implements
 		StringBuilder sb = new StringBuilder();
 		sb.append("Relationship[");
 		sb.append("primaryTable=" + getPrimaryTable().getName());
-		Column[] columns = getPrimaryColumns();
+		List<Column> columns = getPrimaryColumns();
 		sb.append(",primaryColumns=[");
-		for (int i = 0; i < columns.length; i++) {
+		for (int i = 0; i < columns.size(); i++) {
 			if (i != 0) {
 				sb.append(", ");
 			}
-			sb.append(columns[i].getName());
+			sb.append(columns.get(i).getName());
 		}
 		sb.append("]");
 		sb.append(",foreignTable=" + getForeignTable().getName());
 		columns = getForeignColumns();
 		sb.append(",foreignColumns=[");
-		for (int i = 0; i < columns.length; i++) {
+		for (int i = 0; i < columns.size(); i++) {
 			if (i != 0) {
 				sb.append(", ");
 			}
-			sb.append(columns[i].getName());
+			sb.append(columns.get(i).getName());
 		}
 		sb.append("]");
 		sb.append("]");
@@ -105,11 +105,11 @@ public abstract class AbstractRelationship extends BaseObject implements
 	@Override
 	public boolean containsColumnPair(Column pkColumn, Column fkColumn) {
 		if (pkColumn != null && fkColumn != null) {
-			Column[] primaryColumns = getPrimaryColumns();
-			Column[] foreignColumns = getForeignColumns();
-			for (int i = 0; i < primaryColumns.length; i++) {
-				if (pkColumn.equals(primaryColumns[i])
-						&& fkColumn.equals(foreignColumns[i])) {
+			List<Column> primaryColumns = getPrimaryColumns();
+			List<Column> foreignColumns = getForeignColumns();
+			for (int i = 0; i < primaryColumns.size(); i++) {
+				if (pkColumn.equals(primaryColumns.get(i))
+						&& fkColumn.equals(foreignColumns.get(i))) {
 					return true;
 				}
 			}

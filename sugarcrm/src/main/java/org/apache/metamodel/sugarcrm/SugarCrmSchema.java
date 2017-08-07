@@ -19,6 +19,7 @@
 package org.apache.metamodel.sugarcrm;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -58,8 +59,8 @@ final class SugarCrmSchema extends AbstractSchema {
     }
 
     @Override
-    public Table[] getTables() {
-        return _tables.toArray(new Table[_tables.size()]);
+    public List<Table> getTables() {
+        return Collections.unmodifiableList(_tables);
     }
 
     @Override

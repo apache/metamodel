@@ -25,6 +25,8 @@ import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
 
+import java.util.List;
+
 /**
  * Abstract implementation of the {@link RowInsertionBuilder} interface,
  * provided as a convenience to {@link RowInsertable} implementations. Handles
@@ -53,9 +55,9 @@ public abstract class AbstractRowInsertionBuilder<U extends UpdateCallback> exte
 
     @Override
     public RowInsertionBuilder like(Row row) {
-        SelectItem[] selectItems = row.getSelectItems();
-        for (int i = 0; i < selectItems.length; i++) {
-            SelectItem selectItem = selectItems[i];
+        List<SelectItem> selectItems = row.getSelectItems();
+        for (int i = 0; i < selectItems.size(); i++) {
+            SelectItem selectItem = selectItems.get(i);
             Column column = selectItem.getColumn();
             if (column != null) {
                 if (_table == column.getTable()) {

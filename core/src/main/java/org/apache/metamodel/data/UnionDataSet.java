@@ -67,7 +67,7 @@ public class UnionDataSet extends AbstractDataSet implements WrappingDataSet {
                 return false;
             }
             _currentDataSet = _iterator.next().get();
-            assert getHeader().size() == _currentDataSet.getSelectItems().length;
+            assert getHeader().size() == _currentDataSet.getSelectItems().size();
         }
         return true;
     }

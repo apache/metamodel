@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.http.HttpHost;
 import org.apache.http.client.methods.HttpGet;
@@ -29,7 +30,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DocumentSource;
@@ -296,14 +296,14 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int firstRow, int maxRows) {
-        if ((columns != null) && (columns.length > 0)) {
+    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int firstRow, int maxRows) {
+        if ((columns != null) && (columns.size() > 0)) {
             Neo4jDataSet dataSet = null;
             try {
                 String selectQuery = Neo4jCypherQueryBuilder.buildSelectQuery(table, columns, firstRow, maxRows);
                 String responseJSONString = _requestWrapper.executeCypherQuery(selectQuery);
                 JSONObject resultJSONObject = new JSONObject(responseJSONString);
-                final SelectItem[] selectItems = MetaModelHelper.createSelectItems(columns);
+                final List<SelectItem> selectItems = columns.stream().map(SelectItem::new).collect(Collectors.toList());
                 dataSet = new Neo4jDataSet(selectItems, resultJSONObject);
             } catch (JSONException e) {
                 logger.error("Error occured in parsing JSON while materializing the schema: ", e);
@@ -318,7 +318,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         return materializeMainSchemaTable(table, columns, 1, maxRows);
     }
 

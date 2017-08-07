@@ -270,7 +270,7 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
     }
 
     @Override
-    public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+    public DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         final int lineNumber = _configuration.getColumnNameLineNumber();
         final int columnCount = table.getColumnCount();
 
@@ -282,7 +282,7 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
                 String line = reader.readLine();
                 if (line == null) {
                     FileHelper.safeClose(reader);
-                    return new EmptyDataSet(columns);
+                    return EmptyDataSet.fromColumns(columns);
                 }
             }
         } catch (IOException e) {

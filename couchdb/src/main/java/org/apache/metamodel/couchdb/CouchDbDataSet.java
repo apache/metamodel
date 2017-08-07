@@ -19,6 +19,7 @@
 package org.apache.metamodel.couchdb;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSetHeader;
@@ -37,7 +38,7 @@ final class CouchDbDataSet extends AbstractDataSet {
     private final StreamingViewResult _streamingViewResult;
     private Row _row;
 
-    public CouchDbDataSet(SelectItem[] selectItems, StreamingViewResult streamingViewResult) {
+    public CouchDbDataSet(List<SelectItem> selectItems, StreamingViewResult streamingViewResult) {
         super(selectItems);
         _streamingViewResult = streamingViewResult;
 

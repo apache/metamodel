@@ -227,17 +227,17 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         Table actorTable = schema.getTableByName("actor");
         assertEquals(
                 "[Column[name=actor_id,columnNumber=0,type=SMALLINT,nullable=false,nativeType=SMALLINT UNSIGNED,columnSize=5], Column[name=first_name,columnNumber=1,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=45], Column[name=last_name,columnNumber=2,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=45], Column[name=last_update,columnNumber=3,type=TIMESTAMP,nullable=false,nativeType=TIMESTAMP,columnSize=19]]",
-                Arrays.toString(actorTable.getColumns()));
+                Arrays.toString(actorTable.getColumns().toArray()));
         Table filmTable = schema.getTableByName("film");
         assertEquals(
                 "[Column[name=film_id,columnNumber=0,type=SMALLINT,nullable=false,nativeType=SMALLINT UNSIGNED,columnSize=5], Column[name=title,columnNumber=1,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=255], Column[name=description,columnNumber=2,type=LONGVARCHAR,nullable=true,nativeType=TEXT,columnSize=65535], Column[name=release_year,columnNumber=3,type=DATE,nullable=true,nativeType=YEAR,columnSize=0], Column[name=language_id,columnNumber=4,type=TINYINT,nullable=false,nativeType=TINYINT UNSIGNED,columnSize=3], Column[name=original_language_id,columnNumber=5,type=TINYINT,nullable=true,nativeType=TINYINT UNSIGNED,columnSize=3], Column[name=rental_duration,columnNumber=6,type=TINYINT,nullable=false,nativeType=TINYINT UNSIGNED,columnSize=3], Column[name=rental_rate,columnNumber=7,type=DECIMAL,nullable=false,nativeType=DECIMAL,columnSize=4], Column[name=length,columnNumber=8,type=SMALLINT,nullable=true,nativeType=SMALLINT UNSIGNED,columnSize=5], Column[name=replacement_cost,columnNumber=9,type=DECIMAL,nullable=false,nativeType=DECIMAL,columnSize=5], Column[name=rating,columnNumber=10,type=CHAR,nullable=true,nativeType=ENUM,columnSize=5], Column[name=special_features,columnNumber=11,type=CHAR,nullable=true,nativeType=SET,columnSize=54], Column[name=last_update,columnNumber=12,type=TIMESTAMP,nullable=false,nativeType=TIMESTAMP,columnSize=19]]",
-                Arrays.toString(filmTable.getColumns()));
+                Arrays.toString(filmTable.getColumns().toArray()));
         Table filmActorJoinTable = schema.getTableByName("film_actor");
         assertEquals(
                 "[Column[name=actor_id,columnNumber=0,type=SMALLINT,nullable=false,nativeType=SMALLINT UNSIGNED,columnSize=5], "
                         + "Column[name=film_id,columnNumber=1,type=SMALLINT,nullable=false,nativeType=SMALLINT UNSIGNED,columnSize=5], "
                         + "Column[name=last_update,columnNumber=2,type=TIMESTAMP,nullable=false,nativeType=TIMESTAMP,columnSize=19]]",
-                Arrays.toString(filmActorJoinTable.getColumns()));
+                Arrays.toString(filmActorJoinTable.getColumns().toArray()));
 
         Query q = new Query();
         q.from(new FromItem(actorTable).setAlias("a"));
@@ -314,7 +314,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
                 + "Table[name=nicer_but_slower_film_list,type=VIEW,remarks=], "
                 + "Table[name=sales_by_film_category,type=VIEW,remarks=], "
                 + "Table[name=sales_by_store,type=VIEW,remarks=], " + "Table[name=staff_list,type=VIEW,remarks=]]",
-                Arrays.toString(schema.getTables()));
+                Arrays.toString(schema.getTables().toArray()));
 
         Table filmTable = schema.getTableByName("film");
         assertEquals(
@@ -331,10 +331,10 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
                         + "Column[name=rating,columnNumber=10,type=CHAR,nullable=true,nativeType=ENUM,columnSize=5], "
                         + "Column[name=special_features,columnNumber=11,type=CHAR,nullable=true,nativeType=SET,columnSize=54], "
                         + "Column[name=last_update,columnNumber=12,type=TIMESTAMP,nullable=false,nativeType=TIMESTAMP,columnSize=19]]",
-                Arrays.toString(filmTable.getColumns()));
+                Arrays.toString(filmTable.getColumns().toArray()));
         assertEquals(
                 "[Relationship[primaryTable=language,primaryColumns=[language_id],foreignTable=film,foreignColumns=[language_id]], Relationship[primaryTable=language,primaryColumns=[language_id],foreignTable=film,foreignColumns=[original_language_id]], Relationship[primaryTable=film,primaryColumns=[film_id],foreignTable=film_actor,foreignColumns=[film_id]], Relationship[primaryTable=film,primaryColumns=[film_id],foreignTable=film_category,foreignColumns=[film_id]], Relationship[primaryTable=film,primaryColumns=[film_id],foreignTable=inventory,foreignColumns=[film_id]]]",
-                Arrays.toString(filmTable.getRelationships()));
+                Arrays.toString(filmTable.getRelationships().toArray()));
 
         assertEquals("[Table[name=actor,type=TABLE,remarks=], " + "Table[name=address,type=TABLE,remarks=], "
                 + "Table[name=category,type=TABLE,remarks=], " + "Table[name=city,type=TABLE,remarks=], "
@@ -349,7 +349,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
                 + "Table[name=nicer_but_slower_film_list,type=VIEW,remarks=], "
                 + "Table[name=sales_by_film_category,type=VIEW,remarks=], "
                 + "Table[name=sales_by_store,type=VIEW,remarks=], " + "Table[name=staff_list,type=VIEW,remarks=]]",
-                Arrays.toString(schema.getTables()));
+                Arrays.toString(schema.getTables().toArray()));
 
         Table staffView = schema.getTableByName("staff_list");
         assertEquals(
@@ -361,7 +361,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
                         + "Column[name=city,columnNumber=5,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
                         + "Column[name=country,columnNumber=6,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
                         + "Column[name=SID,columnNumber=7,type=TINYINT,nullable=false,nativeType=TINYINT UNSIGNED,columnSize=3]]",
-                Arrays.toString(staffView.getColumns()));
+                Arrays.toString(staffView.getColumns().toArray()));
     }
 
     public void testSplitQuery() throws Exception {
@@ -377,7 +377,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         assertNotNull(paymentTable);
         Column countryColumn = staffListTable.getColumnByName("country");
         assertNotNull(countryColumn);
-        Column paymentColumn = paymentTable.getColumns()[0];
+        Column paymentColumn = paymentTable.getColumns().get(0);
         assertNotNull(paymentColumn);
         Query q = new Query().from(staffListTable, "sl").from(paymentTable, "e").select(countryColumn, paymentColumn);
         assertEquals("SELECT sl.`country`, e.`payment_id` FROM sakila.`staff_list` sl, sakila.`payment` e",

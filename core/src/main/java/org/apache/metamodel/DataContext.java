@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel;
 
+import java.util.List;
+
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.Query;
@@ -51,7 +53,7 @@ public interface DataContext {
      * @throws MetaModelException
      *             if an error occurs retrieving the schema model
      */
-    public Schema[] getSchemas() throws MetaModelException;
+    public List<Schema> getSchemas() throws MetaModelException;
 
     /**
      * Gets the names of all schemas within this DataContext.
@@ -60,7 +62,7 @@ public interface DataContext {
      * @throws MetaModelException
      *             if an error occurs retrieving the schema model
      */
-    public String[] getSchemaNames() throws MetaModelException;
+    public List<String> getSchemaNames() throws MetaModelException;
 
     /**
      * Gets the default schema of this DataContext.

@@ -19,7 +19,6 @@
 package org.apache.metamodel.data;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
@@ -39,7 +38,7 @@ public class DataSetTableModel extends AbstractTableModel {
 	private boolean _materialized;
 	private final List<Row> _materializedRows = new ArrayList<Row>();
 	private final DataSet _dataSet;
-	private final SelectItem[] _selectItems;
+	private final List<SelectItem> _selectItems;
 
 	public DataSetTableModel(DataSet dataSet) {
 		_dataSet = dataSet;
@@ -49,7 +48,7 @@ public class DataSetTableModel extends AbstractTableModel {
 
 	@Override
 	public int hashCode() {
-		return Arrays.hashCode(_selectItems) + _materializedRows.hashCode();
+		return _selectItems.hashCode() + _materializedRows.hashCode();
 	}
 
 	@Override
@@ -71,7 +70,7 @@ public class DataSetTableModel extends AbstractTableModel {
 	}
 
 	public int getColumnCount() {
-		return _selectItems.length;
+		return _selectItems.size();
 	}
 
 	public int getRowCount() {
@@ -99,7 +98,7 @@ public class DataSetTableModel extends AbstractTableModel {
 
 	@Override
 	public String getColumnName(int column) {
-		return _selectItems[column].getSuperQueryAlias(false);
+		return _selectItems.get(column).getSuperQueryAlias(false);
 	}
 
 	@Override

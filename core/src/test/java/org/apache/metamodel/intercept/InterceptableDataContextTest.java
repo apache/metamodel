@@ -19,8 +19,7 @@
 package org.apache.metamodel.intercept;
 
 import java.util.Arrays;
-
-import junit.framework.TestCase;
+import java.util.List;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MockUpdateableDataContext;
@@ -31,11 +30,13 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
+import junit.framework.TestCase;
+
 public class InterceptableDataContextTest extends TestCase {
 
 	private final MockUpdateableDataContext delegateDataContext = new MockUpdateableDataContext();
 	private final Table table = delegateDataContext.getDefaultSchema()
-			.getTables()[0];
+			.getTables().get(0);
 
 	public void testInterceptSchema() throws Exception {
 		// without an interceptor
@@ -43,15 +44,15 @@ public class InterceptableDataContextTest extends TestCase {
 			DataContext dc = new InterceptableDataContext(delegateDataContext);
 
 			Schema schema = dc.getDefaultSchema();
-			Schema[] schemas = dc.getSchemas();
+			List<Schema> schemas = dc.getSchemas();
 
 			assertEquals("schema", schema.getName());
 			assertEquals(MutableSchema.class, schema.getClass());
 			assertEquals("[information_schema, schema]",
-					Arrays.toString(dc.getSchemaNames()));
-			assertEquals(2, schemas.length);
-			assertEquals("information_schema", schemas[0].getName());
-			assertEquals("schema", schemas[1].getName());
+					Arrays.toString(dc.getSchemaNames().toArray()));
+			assertEquals(2, schemas.size());
+			assertEquals("information_schema", schemas.get(0).getName());
+			assertEquals("schema", schemas.get(1).getName());
 		}
 
 		// with an interceptor
@@ -65,15 +66,15 @@ public class InterceptableDataContextTest extends TestCase {
 					});
 
 			Schema schema = dc.getDefaultSchema();
-			Schema[] schemas = dc.getSchemas();
+			List<Schema> schemas = dc.getSchemas();
 
 			assertEquals("schema foo!", schema.getName());
 			assertEquals(MutableSchema.class, schema.getClass());
 			assertEquals("[information_schema foo!, schema foo!]",
-					Arrays.toString(dc.getSchemaNames()));
-			assertEquals(2, schemas.length);
-			assertEquals("information_schema foo!", schemas[0].getName());
-			assertEquals("schema foo!", schemas[1].getName());
+					Arrays.toString(dc.getSchemaNames().toArray()));
+			assertEquals(2, schemas.size());
+			assertEquals("information_schema foo!", schemas.get(0).getName());
+			assertEquals("schema foo!", schemas.get(1).getName());
 		}
 	}
 
@@ -108,6 +109,6 @@ public class InterceptableDataContextTest extends TestCase {
 				});
 
 		DataSet ds = dc.executeQuery(new Query().from(table));
-		assertEquals("[table.foo, table.bar]", Arrays.toString(ds.getSelectItems()));
+		assertEquals("[table.foo, table.bar]", Arrays.toString(ds.getSelectItems().toArray()));
 	}
 }

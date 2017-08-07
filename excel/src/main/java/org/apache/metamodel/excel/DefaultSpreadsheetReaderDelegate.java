@@ -19,10 +19,13 @@
 package org.apache.metamodel.excel;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.data.MaxRowsDataSet;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
@@ -78,12 +81,12 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     @Override
-    public DataSet executeQuery(Table table, Column[] columns, int maxRows) {
+    public DataSet executeQuery(Table table, List<Column> columns, int maxRows) {
         final Workbook wb = ExcelUtils.readWorkbook(_resource);
         final Sheet sheet = wb.getSheet(table.getName());
 
         if (sheet == null || sheet.getPhysicalNumberOfRows() == 0) {
-            return new EmptyDataSet(columns);
+            return new EmptyDataSet(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
         }
 
         DataSet dataSet = ExcelUtils.getDataSet(wb, sheet, table, _configuration);

@@ -19,6 +19,7 @@
 package org.apache.metamodel.schema;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * Represents a relationship between two tables where one set of columns is the
@@ -41,7 +42,7 @@ public interface Relationship extends Serializable, Comparable<Relationship> {
 	 * 
 	 * @return an array of primary key columns.
 	 */
-	public Column[] getPrimaryColumns();
+	public List<Column> getPrimaryColumns();
 
 	/**
 	 * Gets the table of the foreign key column(s).
@@ -55,7 +56,7 @@ public interface Relationship extends Serializable, Comparable<Relationship> {
 	 * 
 	 * @return an array of foreign key columns.
 	 */
-	public Column[] getForeignColumns();
+	public List<Column> getForeignColumns();
 
 	/**
 	 * Determines whether this relationship contains a specific pair of columns

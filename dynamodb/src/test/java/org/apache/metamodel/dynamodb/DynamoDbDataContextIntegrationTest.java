@@ -147,7 +147,7 @@ public class DynamoDbDataContextIntegrationTest {
                 assertEquals(tableName, table.getName());
 
                 // Right now we can only discover indexed columns
-                assertEquals("[id, counter, project, foundation]", Arrays.toString(table.getColumnNames()));
+                assertEquals("[id, counter, project, foundation]", Arrays.toString(table.getColumnNames().toArray()));
 
                 final Column idColumn = table.getColumnByName("id");
                 assertEquals(true, idColumn.isPrimaryKey());

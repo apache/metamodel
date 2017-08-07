@@ -18,6 +18,9 @@
  */
 package org.apache.metamodel.intercept;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.UpdateScript;
@@ -36,7 +39,6 @@ import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.RowUpdationBuilder;
-import org.apache.metamodel.util.HasNameMapper;
 
 public class InterceptableDataContext implements UpdateableDataContext {
 
@@ -189,27 +191,27 @@ public class InterceptableDataContext implements UpdateableDataContext {
     }
 
     @Override
-    public Schema[] getSchemas() throws MetaModelException {
-        Schema[] schemas = _delegate.getSchemas();
-        if (!_schemaInterceptors.isEmpty()) {
-            for (int i = 0; i < schemas.length; i++) {
-                schemas[i] = _schemaInterceptors.interceptAll(schemas[i]);
-            }
-        }
-        return schemas;
+    public List<Schema> getSchemas() throws MetaModelException {
+        return _delegate.getSchemas().stream()
+                .map(schema -> {
+                    if(_schemaInterceptors.isEmpty()){
+                        return schema;
+                    }else{
+                        return _schemaInterceptors.interceptAll(schema);
+                    }
+
+                }).collect(Collectors.toList());
     }
 
     @Override
-    public String[] getSchemaNames() throws MetaModelException {
+    public List<String> getSchemaNames() throws MetaModelException {
         if (_schemaInterceptors.isEmpty()) {
             return _delegate.getSchemaNames();
         }
-        Schema[] schemas = getSchemas();
-        String[] schemaNames = new String[schemas.length];
-        for (int i = 0; i < schemaNames.length; i++) {
-            schemaNames[i] = new HasNameMapper().apply(schemas[i]);
-        }
-        return schemaNames;
+
+        return getSchemas().stream()
+                .map(schema -> schema.getName())
+                .collect(Collectors.toList());
     }
 
     @Override

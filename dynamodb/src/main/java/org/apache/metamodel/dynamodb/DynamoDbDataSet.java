@@ -19,12 +19,15 @@
 package org.apache.metamodel.dynamodb;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
@@ -35,8 +38,8 @@ final class DynamoDbDataSet extends AbstractDataSet {
     private final Iterator<Map<String, AttributeValue>> _iterator;
     private Map<String, AttributeValue> _currentItem;
 
-    public DynamoDbDataSet(Column[] columns, ScanResult result) {
-        super(columns);
+    public DynamoDbDataSet(List<Column> columns, ScanResult result) {
+        super(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
         _iterator = result.getItems().iterator();
     }
 

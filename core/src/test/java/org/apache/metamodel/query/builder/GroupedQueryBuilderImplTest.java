@@ -32,6 +32,8 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
+import java.util.List;
+
 public class GroupedQueryBuilderImplTest extends TestCase {
 
 	public void testFindColumnWithAlias() throws Exception {
@@ -76,7 +78,7 @@ public class GroupedQueryBuilderImplTest extends TestCase {
 			}
 
 			@Override
-			protected String[] getSchemaNamesInternal() {
+			protected List<String> getSchemaNamesInternal() {
 				throw new UnsupportedOperationException();
 			}
 

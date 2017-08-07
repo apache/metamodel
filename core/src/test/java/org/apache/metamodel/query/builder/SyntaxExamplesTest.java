@@ -42,11 +42,11 @@ public class SyntaxExamplesTest extends TestCase {
         super.setUp();
         dc = new MockDataContext("sch", "tab1", "foo");
         MutableSchema schema = (MutableSchema) dc.getDefaultSchema();
-        table1 = schema.getTables()[0];
+        table1 = schema.getTables().get(0);
         schema.addTable(new MutableTable("tab2").setSchema(schema));
         table2 = schema.getTableByName("tab2");
-        col1 = table1.getColumns()[0];
-        col2 = table1.getColumns()[1];
+        col1 = table1.getColumns().get(0);
+        col2 = table1.getColumns().get(1);
     }
 
     public void testSchema() throws Exception {

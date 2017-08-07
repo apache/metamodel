@@ -20,7 +20,7 @@ package org.apache.metamodel.excel;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.List;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
@@ -34,7 +34,6 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.FileResource;
-import org.apache.metamodel.util.Func;
 import org.apache.metamodel.util.Resource;
 import org.apache.poi.POIXMLDocument;
 import org.slf4j.Logger;
@@ -128,7 +127,7 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
     }
 
     @Override
-    public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+    public DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         try {
             SpreadsheetReaderDelegate delegate = getSpreadsheetReaderDelegate();
 
@@ -186,19 +185,16 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
         if (_spreadsheetReaderDelegate == null) {
             synchronized (this) {
                 if (_spreadsheetReaderDelegate == null) {
-                    _spreadsheetReaderDelegate = _resource.read(new Func<InputStream, SpreadsheetReaderDelegate>() {
-                        @Override
-                        public SpreadsheetReaderDelegate eval(InputStream in) {
-                            try {
-                                if (POIXMLDocument.hasOOXMLHeader(in)) {
-                                    return new XlsxSpreadsheetReaderDelegate(_resource, _configuration);
-                                } else {
-                                    return new DefaultSpreadsheetReaderDelegate(_resource, _configuration);
-                                }
-                            } catch (IOException e) {
-                                logger.warn("Could not identify spreadsheet type, using default", e);
+                    _spreadsheetReaderDelegate = _resource.read(in -> {
+                        try {
+                            if (POIXMLDocument.hasOOXMLHeader(in)) {
+                                return new XlsxSpreadsheetReaderDelegate(_resource, _configuration);
+                            } else {
                                 return new DefaultSpreadsheetReaderDelegate(_resource, _configuration);
                             }
+                        } catch (IOException e) {
+                            logger.warn("Could not identify spreadsheet type, using default", e);
+                            return new DefaultSpreadsheetReaderDelegate(_resource, _configuration);
                         }
                     });
                 }

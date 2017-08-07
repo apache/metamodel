@@ -60,7 +60,7 @@ public abstract class AbstractUpdateCallback implements UpdateCallback {
         final Table table = schema.getTableByName(tableName);
         if (table == null) {
             throw new IllegalArgumentException("Nu such table '" + tableName + "' found in schema: " + schema
-                    + ". Available tables are: " + Arrays.toString(schema.getTableNames()));
+                    + ". Available tables are: " + Arrays.toString(schema.getTableNames().toArray()));
         }
         return dropTable(table);
     }
@@ -82,7 +82,7 @@ public abstract class AbstractUpdateCallback implements UpdateCallback {
         final Table table = schema.getTableByName(tableName);
         if (table == null) {
             throw new IllegalArgumentException("Nu such table '" + tableName + "' found in schema: " + schema
-                    + ". Available tables are: " + Arrays.toString(schema.getTableNames()));
+                    + ". Available tables are: " + Arrays.toString(schema.getTableNames().toArray()));
         }
         return table;
     }

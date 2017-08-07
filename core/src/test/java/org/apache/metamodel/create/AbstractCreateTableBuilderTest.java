@@ -57,11 +57,11 @@ public class AbstractCreateTableBuilderTest extends TestCase {
         assertEquals("tablename", table.getName());
         assertEquals(3, table.getColumnCount());
         assertEquals("Column[name=foo,columnNumber=0,type=VARCHAR,nullable=true,nativeType=vch,columnSize=1234]",
-                table.getColumns()[0].toString());
+                table.getColumn(0).toString());
         assertEquals("Column[name=bar,columnNumber=1,type=null,nullable=null,nativeType=null,columnSize=null]",
-                table.getColumns()[1].toString());
+                table.getColumn(1).toString());
         assertEquals("Column[name=baz,columnNumber=2,type=null,nullable=false,nativeType=null,columnSize=null]",
-                table.getColumns()[2].toString());
+                table.getColumn(2).toString());
 
         System.out.println(builder.toSql());
         assertEquals("CREATE TABLE schema.tablename (foo VARCHAR(1234),bar,baz NOT NULL, PRIMARY KEY(foo))", builder.toSql());
@@ -96,12 +96,12 @@ public class AbstractCreateTableBuilderTest extends TestCase {
         assertEquals("tablename", table.getName());
         assertEquals(3, table.getColumnCount());
         assertEquals("Column[name=foo,columnNumber=0,type=VARCHAR,nullable=true,nativeType=vch,columnSize=1234]",
-                table.getColumns()[0].toString());
-        assertTrue(table.getColumns()[0].isPrimaryKey());
+                table.getColumn(0).toString());
+        assertTrue(table.getColumn(0).isPrimaryKey());
 
         assertEquals("Column[name=bar,columnNumber=1,type=null,nullable=null,nativeType=null,columnSize=null]",
-                table.getColumns()[1].toString());
+                table.getColumn(1).toString());
         assertEquals("Column[name=baz,columnNumber=2,type=null,nullable=null,nativeType=null,columnSize=null]",
-                table.getColumns()[2].toString());
+                table.getColumn(2).toString());
     }
 }

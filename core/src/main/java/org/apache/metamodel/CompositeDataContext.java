@@ -19,7 +19,6 @@
 package org.apache.metamodel;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 
 import org.apache.metamodel.data.DataSet;
@@ -178,10 +178,10 @@ public class CompositeDataContext extends AbstractDataContext {
     }
 
     @Override
-    public String[] getSchemaNamesInternal() throws MetaModelException {
-        Set<String> set = new HashSet<String>();
+    public List<String> getSchemaNamesInternal() throws MetaModelException {
+        Set<String> set = new TreeSet<>();
         for (DataContext dc : _delegates) {
-            String[] schemaNames = dc.getSchemaNames();
+            List<String> schemaNames = dc.getSchemaNames();
             for (String name : schemaNames) {
                 if (!MetaModelHelper.isInformationSchema(name)) {
                     // we skip information schemas, since they're anyways going
@@ -190,9 +190,7 @@ public class CompositeDataContext extends AbstractDataContext {
                 }
             }
         }
-        String[] result = set.toArray(new String[set.size()]);
-        Arrays.sort(result);
-        return result;
+        return new ArrayList<>(set);
     }
 
 }

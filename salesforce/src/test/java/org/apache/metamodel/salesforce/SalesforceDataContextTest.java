@@ -51,7 +51,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
         }
         SalesforceDataContext dc = getSalesforceDataContext();
 
-        Column[] timeColumns = dc.getDefaultSchema().getTableByName("Contact").getTimeBasedColumns();
+        List<Column> timeColumns = dc.getDefaultSchema().getTableByName("Contact").getTimeBasedColumns();
         assertEquals(
                 "[Column[name=Birthdate,columnNumber=30,type=DATE,nullable=true,nativeType=date,columnSize=0], "
                         + "Column[name=CreatedDate,columnNumber=33,type=TIMESTAMP,nullable=false,nativeType=datetime,columnSize=0], "
@@ -61,7 +61,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
                         + "Column[name=LastCURequestDate,columnNumber=39,type=TIMESTAMP,nullable=true,nativeType=datetime,columnSize=0], "
                         + "Column[name=LastCUUpdateDate,columnNumber=40,type=TIMESTAMP,nullable=true,nativeType=datetime,columnSize=0], "
                         + "Column[name=EmailBouncedDate,columnNumber=42,type=TIMESTAMP,nullable=true,nativeType=datetime,columnSize=0]]",
-                Arrays.toString(timeColumns));
+                Arrays.toString(timeColumns.toArray()));
         DataSet ds = dc.query().from("Contact").select("LastModifiedDate").where("Id").eq("003b0000006xfAUAAY")
                 .execute();
         if (ds.next()) {
@@ -121,15 +121,15 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
 
         assertEquals("Salesforce", schema.getName());
 
-        String[] tableNames = schema.getTableNames();
+        List<String> tableNames = schema.getTableNames();
 
-        System.out.println("All tables:\n" + Arrays.toString(tableNames));
+        System.out.println("All tables:\n" + Arrays.toString(tableNames.toArray()));
 
         Table accountTable = schema.getTableByName("Account");
         assertNotNull(accountTable);
 
-        String[] columnNames = accountTable.getColumnNames();
-        System.out.println("Account table columns: " + Arrays.toString(columnNames));
+        List<String> columnNames = accountTable.getColumnNames();
+        System.out.println("Account table columns: " + Arrays.toString(columnNames.toArray()));
 
         Column idColumn = accountTable.getColumnByName("Id");
         Column nameColumn = accountTable.getColumnByName("Name");
@@ -165,7 +165,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
         q.setMaxRows(1);
 
         final DataSet ds = dc.executeQuery(q);
-        final SelectItem[] selectItems = ds.getSelectItems();
+        final List<SelectItem> selectItems = ds.getSelectItems();
         while (ds.next()) {
             Row row = ds.getRow();
 

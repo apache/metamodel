@@ -18,22 +18,23 @@
  */
 package org.apache.metamodel.elasticsearch.rest;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import io.searchbox.client.JestClient;
-import io.searchbox.client.JestResult;
-import io.searchbox.core.SearchScroll;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
+import io.searchbox.client.JestClient;
+import io.searchbox.client.JestResult;
+import io.searchbox.core.SearchScroll;
 
 /**
  * {@link DataSet} implementation for ElasticSearch
@@ -56,12 +57,6 @@ final class JestElasticSearchDataSet extends AbstractDataSet {
         _closed = new AtomicBoolean(false);
     }
 
-    public JestElasticSearchDataSet(JestClient client, JestResult searchResponse, Column[] columns) {
-        super(columns);
-        _client = client;
-        _searchResponse = searchResponse;
-        _closed = new AtomicBoolean(false);
-    }
 
     @Override
     public void close() {

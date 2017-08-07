@@ -79,10 +79,10 @@ public class CsvDataContextTest extends TestCase {
         
         CsvDataContext dc1 = new CsvDataContext(file, csvConfiguration);
 
-        Table[] tables = dc1.getDefaultSchema().getTables();
-        assertEquals(1, tables.length);
+        List<Table> tables = dc1.getDefaultSchema().getTables();
+        assertEquals(1, tables.size());
         
-        Table table = tables[0];
+        Table table = tables.get(0);
         assertEquals("testEmptyFileNoColumnHeaderLine.csv", table.getName());
         assertEquals(2, table.getColumnCount());
         
@@ -100,7 +100,7 @@ public class CsvDataContextTest extends TestCase {
         final CsvDataContext dc = new CsvDataContext(file);
         assertEquals(1, dc.getDefaultSchema().getTableCount());
 
-        final Table table1 = dc.getDefaultSchema().getTables()[0];
+        final Table table1 = dc.getDefaultSchema().getTables().get(0);
         assertEquals("testEmptyFileNoColumnHeaderLine.csv", table1.getName());
         assertEquals(0, table1.getColumnCount());
 
@@ -139,7 +139,7 @@ public class CsvDataContextTest extends TestCase {
                 .replaceAll("\n", "!LINEBREAK!"));
 
         final CsvDataContext dc = new CsvDataContext(targetFile);
-        final Table table = dc.getDefaultSchema().getTables()[0];
+        final Table table = dc.getDefaultSchema().getTables().get(0);
 
         dc.executeUpdate(new UpdateScript() {
             @Override
@@ -181,7 +181,7 @@ public class CsvDataContextTest extends TestCase {
                 CsvConfiguration.NO_COLUMN_NAME_LINE));
         assertEquals(1, dc.getDefaultSchema().getTableCount());
 
-        Table table = dc.getDefaultSchema().getTables()[0];
+        Table table = dc.getDefaultSchema().getTables().get(0);
         assertEquals("empty_file.csv", table.getName());
         assertEquals(0, table.getColumnCount());
     }
@@ -190,7 +190,7 @@ public class CsvDataContextTest extends TestCase {
         DataContext dc = new CsvDataContext(new File("src/test/resources/csv_people.csv"), new CsvConfiguration(20));
         assertEquals(1, dc.getDefaultSchema().getTableCount());
 
-        Table table = dc.getDefaultSchema().getTables()[0];
+        Table table = dc.getDefaultSchema().getTables().get(0);
         assertEquals("csv_people.csv", table.getName());
         assertEquals(0, table.getColumnCount());
     }
@@ -236,7 +236,7 @@ public class CsvDataContextTest extends TestCase {
     public void testApproximatedCountSmallFile() throws Exception {
         DataContext dc = new CsvDataContext(new File("src/test/resources/csv_people.csv"));
 
-        Table table = dc.getDefaultSchema().getTables()[0];
+        Table table = dc.getDefaultSchema().getTables().get(0);
         Query q = dc.query().from(table).selectCount().toQuery();
         SelectItem selectItem = q.getSelectClause().getItem(0);
         selectItem.setFunctionApproximationAllowed(true);
@@ -252,7 +252,7 @@ public class CsvDataContextTest extends TestCase {
 
     public void testFilterOnNumberColumn() throws Exception {
         CsvDataContext dc = new CsvDataContext(new File("src/test/resources/csv_people.csv"));
-        Table table = dc.getDefaultSchema().getTables()[0];
+        Table table = dc.getDefaultSchema().getTables().get(0);
 
         Query q = dc.query().from(table).select("name").where("age").greaterThan(18).toQuery();
         List<Object[]> result = dc.executeQuery(q).toObjectArrays();
@@ -297,7 +297,7 @@ public class CsvDataContextTest extends TestCase {
     }
 
     public void doTicketFileTests(DataContext dc) {
-        Table table = dc.getDefaultSchema().getTables()[0];
+        Table table = dc.getDefaultSchema().getTables().get(0);
         Query q = dc.query().from(table).select(table.getColumns()).toQuery();
 
         DataSet dataSet = dc.executeQuery(q);
@@ -318,18 +318,18 @@ public class CsvDataContextTest extends TestCase {
     public void testHighColumnNameLineNumber() throws Exception {
         File file = new File("src/test/resources/csv_people.csv");
         QueryPostprocessDataContext dc = new CsvDataContext(file, new CsvConfiguration(3));
-        Schema[] schemas = dc.getSchemas();
-        assertEquals(2, schemas.length);
+
+        assertEquals(2, dc.getSchemas().size());
         Schema schema = dc.getDefaultSchema();
         assertEquals("resources", schema.getName());
         assertEquals(1, schema.getTableCount());
-        Table table = schema.getTables()[0];
+        Table table = schema.getTables().get(0);
         assertEquals("csv_people.csv", table.getName());
 
         assertEquals(4, table.getColumnCount());
         assertEquals(0, table.getRelationshipCount());
 
-        Column[] columns = table.getColumns();
+        Column[] columns = table.getColumns().toArray(new Column[0]);
         assertEquals("2", columns[0].getName());
         assertEquals("michael", columns[1].getName());
         assertEquals("male", columns[2].getName());
@@ -350,18 +350,17 @@ public class CsvDataContextTest extends TestCase {
         File file = new File("src/test/resources/csv_people.csv");
         QueryPostprocessDataContext dc = new CsvDataContext(file, new CsvConfiguration(
                 CsvConfiguration.NO_COLUMN_NAME_LINE));
-        Schema[] schemas = dc.getSchemas();
-        assertEquals(2, schemas.length);
+        assertEquals(2, dc.getSchemas().size());
         Schema schema = dc.getDefaultSchema();
         assertEquals("resources", schema.getName());
         assertEquals(1, schema.getTableCount());
-        Table table = schema.getTables()[0];
+        Table table = schema.getTables().get(0);
         assertEquals("csv_people.csv", table.getName());
 
         assertEquals(4, table.getColumnCount());
         assertEquals(0, table.getRelationshipCount());
 
-        Column[] columns = table.getColumns();
+        Column[] columns = table.getColumns().toArray(new Column[0]);
         assertEquals("A", columns[0].getName());
         assertEquals("B", columns[1].getName());
         assertEquals("C", columns[2].getName());
@@ -381,18 +380,17 @@ public class CsvDataContextTest extends TestCase {
     public void testGetSchemas() throws Exception {
         File file = new File("src/test/resources/csv_people.csv");
         QueryPostprocessDataContext dc = new CsvDataContext(file);
-        Schema[] schemas = dc.getSchemas();
-        assertEquals(2, schemas.length);
+        assertEquals(2, dc.getSchemas().size());
         Schema schema = dc.getDefaultSchema();
         assertEquals("resources", schema.getName());
         assertEquals(1, schema.getTableCount());
-        Table table = schema.getTables()[0];
+        Table table = schema.getTables().get(0);
         assertEquals("csv_people.csv", table.getName());
 
         assertEquals(4, table.getColumnCount());
         assertEquals(0, table.getRelationshipCount());
 
-        Column[] columns = table.getColumns();
+        Column[] columns = table.getColumns().toArray(new Column[0]);
         assertEquals("id", columns[0].getName());
         assertEquals("name", columns[1].getName());
         assertEquals("gender", columns[2].getName());
@@ -452,7 +450,7 @@ public class CsvDataContextTest extends TestCase {
         DataSet data = dc.executeQuery(q);
         assertEquals(
                 "[csv_people.csv.gender, MAX(csv_people.csv.age), MIN(csv_people.csv.age), COUNT(*) AS total, MIN(csv_people.csv.id) AS firstId]",
-                Arrays.toString(data.getSelectItems()));
+                Arrays.toString(data.getSelectItems().toArray()));
 
         String[] expectations = new String[] { "Row[values=[female, 20, 17, 5, 5]]", "Row[values=[male, 19, 17, 4, 1]]" };
 
@@ -466,7 +464,7 @@ public class CsvDataContextTest extends TestCase {
     public void testMaterializeTable() throws Exception {
         File file = new File("src/test/resources/csv_people.csv");
         CsvDataContext dc = new CsvDataContext(file, new CsvConfiguration(1, false, false));
-        Table table = dc.getSchemas()[0].getTables()[0];
+        Table table = dc.getSchemas().get(0).getTables().get(0);
         DataSet dataSet = dc.materializeMainSchemaTable(table, table.getColumns(), -1);
         assertNull(dataSet.getRow());
         assertTrue(dataSet.next());
@@ -494,7 +492,7 @@ public class CsvDataContextTest extends TestCase {
     public void testAlternativeDelimitors() throws Exception {
         File file = new File("src/test/resources/csv_semicolon_singlequote.csv");
         CsvDataContext dc = new CsvDataContext(file, semicolonConfiguration);
-        Table table = dc.getSchemas()[0].getTables()[0];
+        Table table = dc.getSchemas().get(0).getTables().get(0);
         DataSet dataSet = dc.materializeMainSchemaTable(table, table.getColumns(), -1);
         assertTrue(dataSet.next());
         assertEquals("Row[values=[1, mike, male, 18]]", dataSet.getRow().toString());
@@ -517,7 +515,7 @@ public class CsvDataContextTest extends TestCase {
     public void testMaxRows() throws Exception {
         File file = new File("src/test/resources/csv_semicolon_singlequote.csv");
         CsvDataContext dc = new CsvDataContext(file, semicolonConfiguration);
-        Table table = dc.getDefaultSchema().getTables()[0];
+        Table table = dc.getDefaultSchema().getTables().get(0);
         Query query = new Query().from(table).select(table.getColumns()).setMaxRows(5);
         DataSet dataSet = dc.executeQuery(query);
 
@@ -528,7 +526,7 @@ public class CsvDataContextTest extends TestCase {
     public void testQueryOnlyAggregate() throws Exception {
         File file = new File("src/test/resources/csv_people.csv");
         QueryPostprocessDataContext dc = new CsvDataContext(file);
-        Table table = dc.getDefaultSchema().getTables()[0];
+        Table table = dc.getDefaultSchema().getTables().get(0);
 
         Query q = new Query().selectCount().from(table);
         assertEquals("SELECT COUNT(*) FROM resources.csv_people.csv", q.toString());
@@ -539,7 +537,7 @@ public class CsvDataContextTest extends TestCase {
         assertEquals(1, row.length);
         assertEquals("[9]", Arrays.toString(row));
 
-        q.select(table.getColumns()[0]);
+        q.select(table.getColumns().get(0));
         assertEquals("SELECT COUNT(*), csv_people.csv.id FROM resources.csv_people.csv", q.toString());
         data = dc.executeQuery(q).toObjectArrays();
         assertEquals(9, data.size());
@@ -563,7 +561,7 @@ public class CsvDataContextTest extends TestCase {
     public void testOffsetAndMaxrows() throws Exception {
         DataContext dc = new CsvDataContext(new File("src/test/resources/csv_people.csv"));
 
-        Table table = dc.getDefaultSchema().getTables()[0];
+        Table table = dc.getDefaultSchema().getTables().get(0);
         Query q = dc.query().from(table).select(table.getColumnByName("name")).toQuery();
         q.setFirstRow(3);
         q.setMaxRows(2);
@@ -571,7 +569,7 @@ public class CsvDataContextTest extends TestCase {
         DataSet ds;
 
         ds = dc.executeQuery(q);
-        assertEquals(1, ds.getSelectItems().length);
+        assertEquals(1, ds.getSelectItems().size());
         assertTrue(ds.next());
         assertEquals("peter", ds.getRow().getValue(0).toString());
         assertTrue(ds.next());
@@ -594,7 +592,7 @@ public class CsvDataContextTest extends TestCase {
         FileHelper.copy(new File("src/test/resources/csv_to_be_truncated.csv"), file);
 
         CsvDataContext dc = new CsvDataContext(file, new CsvConfiguration(1, "UTF8", ',', '"', '\\', true));
-        assertEquals("[id, name, gender, age]", Arrays.toString(dc.getDefaultSchema().getTable(0).getColumnNames()));
+        assertEquals("[id, name, gender, age]", Arrays.toString(dc.getDefaultSchema().getTable(0).getColumnNames().toArray()));
 
         dc.executeUpdate(new UpdateScript() {
             @Override
@@ -628,10 +626,10 @@ public class CsvDataContextTest extends TestCase {
                 Table table = cb.createTable(schema, "foobar").withColumn("foo").withColumn("bar").execute();
                 tableRef.set(table);
                 assertEquals(schema, table.getSchema());
-                assertEquals(schema.getTables()[0], table);
+                assertEquals(schema.getTables().get(0), table);
                 assertTrue(file.exists());
 
-                assertEquals("[foo, bar]", Arrays.toString(table.getColumnNames()));
+                assertEquals("[foo, bar]", Arrays.toString(table.getColumnNames().toArray()));
 
                 cb.insertInto(table).value(0, "f").value(1, "b").execute();
                 cb.insertInto(table).value(0, "o").value(table.getColumnByName("bar"), "a").execute();
@@ -640,9 +638,9 @@ public class CsvDataContextTest extends TestCase {
         });
 
         // query the file to check results
-        final Table readTable = schema.getTables()[0];
+        final Table readTable = schema.getTables().get(0);
         assertEquals(tableRef.get(), readTable);
-        assertEquals("[foo, bar]", Arrays.toString(readTable.getColumnNames()));
+        assertEquals("[foo, bar]", Arrays.toString(readTable.getColumnNames().toArray()));
 
         final Query query = dc.query().from(readTable).select("bar").and("foo").toQuery();
         DataSet ds = dc.executeQuery(query);
@@ -723,15 +721,15 @@ public class CsvDataContextTest extends TestCase {
     public void testOnlyNumberOneSymbol() throws Exception {
         DataContext dc = new CsvDataContext(new File("src/test/resources/csv_only_number_one.csv"));
         Map<Column, TypeConverter<?, ?>> converters = Converters.autoDetectConverters(dc, dc.getDefaultSchema()
-                .getTables()[0], 1000);
+                .getTables().get(0), 1000);
 
         assertEquals(1, converters.size());
         assertEquals(StringToBooleanConverter.class, converters.values().iterator().next().getClass());
 
         dc = Converters.addTypeConverters(dc, converters);
 
-        Table table = dc.getDefaultSchema().getTables()[0];
-        MutableColumn col = (MutableColumn) table.getColumns()[0];
+        Table table = dc.getDefaultSchema().getTables().get(0);
+        MutableColumn col = (MutableColumn) table.getColumns().get(0);
         Query q = dc.query().from(table).select(col).toQuery();
         assertEquals("SELECT csv_only_number_one.csv.number FROM resources.csv_only_number_one.csv", q.toSql());
 

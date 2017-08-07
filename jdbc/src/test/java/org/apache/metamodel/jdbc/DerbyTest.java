@@ -139,7 +139,7 @@ public class DerbyTest extends TestCase {
                 q.toSql());
 
         DataSet dataSet = dc.executeQuery(q);
-        assertEquals("[\"CUSTOMERS\".\"CUSTOMERNUMBER\"]", Arrays.toString(dataSet.getSelectItems()));
+        assertEquals("[\"CUSTOMERS\".\"CUSTOMERNUMBER\"]", Arrays.toString(dataSet.getSelectItems().toArray()));
         assertTrue(dataSet.next());
         assertEquals("Row[values=[114]]", dataSet.getRow().toString());
         assertTrue(dataSet.next());
@@ -152,7 +152,7 @@ public class DerbyTest extends TestCase {
 
     public void testGetSchemaNormalTableTypes() throws Exception {
         DataContext dc = new JdbcDataContext(_connection, new TableType[] { TableType.TABLE, TableType.VIEW }, null);
-        Schema[] schemas = dc.getSchemas();
+        Schema[] schemas = dc.getSchemas().toArray(new Schema[dc.getSchemas().size()]);
 
         assertEquals(11, schemas.length);
         assertEquals("Schema[name=APP]", schemas[0].toString());
@@ -182,7 +182,7 @@ public class DerbyTest extends TestCase {
     public void testGetSchemaAllTableTypes() throws Exception {
         DataContext dc = new JdbcDataContext(_connection,
                 new TableType[] { TableType.OTHER, TableType.GLOBAL_TEMPORARY }, null);
-        Schema[] schemas = dc.getSchemas();
+        Schema[] schemas = dc.getSchemas().toArray(new Schema[dc.getSchemas().size()]);
 
         assertEquals(11, schemas.length);
         assertEquals("Schema[name=APP]", schemas[0].toString());
@@ -194,7 +194,7 @@ public class DerbyTest extends TestCase {
                 + "Table[name=ORDERS,type=TABLE,remarks=], " + "Table[name=PAYMENTS,type=TABLE,remarks=], "
                 + "Table[name=PRODUCTS,type=TABLE,remarks=], " + "Table[name=QUADRANT_ACTUALS,type=TABLE,remarks=], "
                 + "Table[name=TIME,type=TABLE,remarks=], " + "Table[name=TRIAL_BALANCE,type=TABLE,remarks=]]",
-                Arrays.toString(schemas[0].getTables()));
+                Arrays.toString(schemas[0].getTables().toArray()));
         assertEquals("Schema[name=NULLID]", schemas[1].toString());
         assertEquals(0, schemas[1].getTableCount());
         assertEquals("Schema[name=SQLJ]", schemas[2].toString());
@@ -210,7 +210,7 @@ public class DerbyTest extends TestCase {
                 + "Table[name=SYSSCHEMAS,type=OTHER,remarks=], " + "Table[name=SYSSTATEMENTS,type=OTHER,remarks=], "
                 + "Table[name=SYSSTATISTICS,type=OTHER,remarks=], " + "Table[name=SYSTABLEPERMS,type=OTHER,remarks=], "
                 + "Table[name=SYSTABLES,type=OTHER,remarks=], " + "Table[name=SYSTRIGGERS,type=OTHER,remarks=], "
-                + "Table[name=SYSVIEWS,type=OTHER,remarks=]]", Arrays.toString(schemas[3].getTables()));
+                + "Table[name=SYSVIEWS,type=OTHER,remarks=]]", Arrays.toString(schemas[3].getTables().toArray()));
         assertEquals("Schema[name=SYSCAT]", schemas[4].toString());
         assertEquals(0, schemas[4].getTableCount());
         assertEquals("Schema[name=SYSCS_DIAG]", schemas[5].toString());
@@ -221,7 +221,7 @@ public class DerbyTest extends TestCase {
         assertEquals(0, schemas[7].getTableCount());
         assertEquals("Schema[name=SYSIBM]", schemas[8].toString());
         assertEquals(1, schemas[8].getTableCount());
-        assertEquals("[Table[name=SYSDUMMY1,type=OTHER,remarks=]]", Arrays.toString(schemas[8].getTables()));
+        assertEquals("[Table[name=SYSDUMMY1,type=OTHER,remarks=]]", Arrays.toString(schemas[8].getTables().toArray()));
         assertEquals("Schema[name=SYSPROC]", schemas[9].toString());
         assertEquals(0, schemas[9].getTableCount());
         assertEquals("Schema[name=SYSSTAT]", schemas[10].toString());
@@ -241,7 +241,7 @@ public class DerbyTest extends TestCase {
                         + "Column[name=COUNTRY,columnNumber=10,type=VARCHAR,nullable=true,nativeType=VARCHAR,columnSize=255], "
                         + "Column[name=SALESREPEMPLOYEENUMBER,columnNumber=11,type=INTEGER,nullable=true,nativeType=INTEGER,columnSize=10], "
                         + "Column[name=CREDITLIMIT,columnNumber=12,type=BIGINT,nullable=true,nativeType=BIGINT,columnSize=19]]",
-                Arrays.toString(schemas[0].getTableByName("CUSTOMERS").getColumns()));
+                Arrays.toString(schemas[0].getTableByName("CUSTOMERS").getColumns().toArray()));
     }
 
     public void testQueryRewriterQuoteAliases() throws Exception {
@@ -328,7 +328,7 @@ public class DerbyTest extends TestCase {
             assertSame(conn, dc.getConnection());
 
             final Table readTable = dc.getDefaultSchema().getTableByName("test_table");
-            assertEquals("[ID, NAME, AGE]", Arrays.toString(readTable.getColumnNames()));
+            assertEquals("[ID, NAME, AGE]", Arrays.toString(readTable.getColumnNames().toArray()));
             assertTrue(readTable.getColumnByName("id").isPrimaryKey());
             assertFalse(readTable.getColumnByName("age").isPrimaryKey());
             assertFalse(readTable.getColumnByName("name").isPrimaryKey());

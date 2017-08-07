@@ -147,7 +147,7 @@ public class SugarCrmDataContext extends QueryPostprocessDataContext implements 
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(final Table table, final Column[] columns, final int maxRows) {
+    protected DataSet materializeMainSchemaTable(final Table table, final List<Column> columns, final int maxRows) {
 
         final String session = _sessionId.get();
         final String moduleName = table.getName();

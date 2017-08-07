@@ -38,12 +38,12 @@ class XlsxRowPublisherAction implements Action<RowPublisher> {
 			.getLogger(XlsxRowPublisherAction.class);
 
 	private final ExcelConfiguration _configuration;
-	private final Column[] _columns;
+	private final List<Column> _columns;
 	private final String _relationshipId;
 	private final XSSFReader _xssfReader;
 
 	public XlsxRowPublisherAction(ExcelConfiguration configuration,
-			Column[] columns, String relationshipId, XSSFReader xssfReader) {
+			List<Column> columns, String relationshipId, XSSFReader xssfReader) {
 		_configuration = configuration;
 		_columns = columns;
 		_relationshipId = relationshipId;
@@ -66,10 +66,10 @@ class XlsxRowPublisherAction implements Action<RowPublisher> {
 					}
 				}
 
-				Object[] rowData = new Object[_columns.length];
-				Style[] styleData = new Style[_columns.length];
-				for (int i = 0; i < _columns.length; i++) {
-					int columnNumber = _columns[i].getColumnNumber();
+				Object[] rowData = new Object[_columns.size()];
+				Style[] styleData = new Style[_columns.size()];
+				for (int i = 0; i < _columns.size(); i++) {
+					int columnNumber = _columns.get(i).getColumnNumber();
 					if (columnNumber < values.size()) {
 						rowData[i] = values.get(columnNumber);
 						styleData[i] = styles.get(columnNumber);

@@ -21,6 +21,8 @@ package org.apache.metamodel;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 
 import org.apache.metamodel.data.CachingDataSetHeader;
 import org.apache.metamodel.data.DataSet;
@@ -183,6 +185,7 @@ public final class MetaModelHelper {
         // do a nested loop join, no matter what
         Iterator<DataSet> dsIter = Arrays.asList(fromDataSets).iterator();
 
+
         DataSet joined = dsIter.next();
 
         while (dsIter.hasNext()) {
@@ -208,8 +211,8 @@ public final class MetaModelHelper {
         }
         List<Row> innerRows = innerLoopDs.toRows();
 
-        List<SelectItem> allItems = new ArrayList<>(Arrays.asList(outerLoopDs.getSelectItems()));
-        allItems.addAll(Arrays.asList(innerLoopDs.getSelectItems()));
+        List<SelectItem> allItems = new ArrayList<>(outerLoopDs.getSelectItems());
+        allItems.addAll(innerLoopDs.getSelectItems());
 
         Set<FilterItem> applicableFilters = applicableFilters(filters, allItems);
 
@@ -278,7 +281,7 @@ public final class MetaModelHelper {
     }
 
     public static DataSet getSelection(final List<SelectItem> selectItems, final DataSet dataSet) {
-        final List<SelectItem> dataSetSelectItems = Arrays.asList(dataSet.getSelectItems());
+        final List<SelectItem> dataSetSelectItems = dataSet.getSelectItems();
 
         // check if the selection is already the same
         if (selectItems.equals(dataSetSelectItems)) {
@@ -312,18 +315,17 @@ public final class MetaModelHelper {
 
     public static DataSet getGrouped(List<SelectItem> selectItems, DataSet dataSet,
             Collection<GroupByItem> groupByItems) {
-        return getGrouped(selectItems, dataSet, groupByItems.toArray(new GroupByItem[groupByItems.size()]));
+        return getGrouped(selectItems, dataSet, groupByItems);
     }
 
-    public static DataSet getGrouped(List<SelectItem> selectItems, DataSet dataSet, GroupByItem[] groupByItems) {
+    public static DataSet getGrouped(List<SelectItem> selectItems, DataSet dataSet, List<GroupByItem> groupByItems) {
         DataSet result = dataSet;
-        if (groupByItems != null && groupByItems.length > 0) {
+        if (groupByItems != null && groupByItems.size() > 0) {
             Map<Row, Map<SelectItem, List<Object>>> uniqueRows = new HashMap<Row, Map<SelectItem, List<Object>>>();
 
-            final SelectItem[] groupBySelects = new SelectItem[groupByItems.length];
-            for (int i = 0; i < groupBySelects.length; i++) {
-                groupBySelects[i] = groupByItems[i].getSelectItem();
-            }
+            final List<SelectItem> groupBySelects = groupByItems.stream()
+                    .map(gbi -> gbi.getSelectItem())
+                    .collect(Collectors.toList());
             final DataSetHeader groupByHeader = new CachingDataSetHeader(groupBySelects);
 
             // Creates a list of SelectItems that have aggregate functions
@@ -680,12 +682,9 @@ public final class MetaModelHelper {
         if (ds2 == null) {
             throw new IllegalArgumentException("Right DataSet cannot be null");
         }
-        SelectItem[] si1 = ds1.getSelectItems();
-        SelectItem[] si2 = ds2.getSelectItems();
-        SelectItem[] selectItems = new SelectItem[si1.length + si2.length];
-        System.arraycopy(si1, 0, selectItems, 0, si1.length);
-        System.arraycopy(si2, 0, selectItems, si1.length, si2.length);
-
+        List<SelectItem> si1 = ds1.getSelectItems();
+        List<SelectItem> si2 = ds2.getSelectItems();
+        List<SelectItem> selectItems = Stream.concat(si1.stream(),si2.stream()).collect(Collectors.toList());
         List<Row> resultRows = new ArrayList<Row>();
         List<Row> ds2data = readDataSetFull(ds2);
         if (ds2data.isEmpty()) {
@@ -712,7 +711,7 @@ public final class MetaModelHelper {
                 resultRows.addAll(carthesianRows);
             } else {
                 Object[] values = ds1row.getValues();
-                Object[] row = new Object[selectItems.length];
+                Object[] row = new Object[selectItems.size()];
                 System.arraycopy(values, 0, row, 0, values.length);
                 resultRows.add(new DefaultRow(header, row));
             }
@@ -738,11 +737,11 @@ public final class MetaModelHelper {
      * @return the right joined result dataset
      */
     public static DataSet getRightJoin(DataSet ds1, DataSet ds2, FilterItem[] onConditions) {
-        SelectItem[] ds1selects = ds1.getSelectItems();
-        SelectItem[] ds2selects = ds2.getSelectItems();
-        SelectItem[] leftOrderedSelects = new SelectItem[ds1selects.length + ds2selects.length];
-        System.arraycopy(ds1selects, 0, leftOrderedSelects, 0, ds1selects.length);
-        System.arraycopy(ds2selects, 0, leftOrderedSelects, ds1selects.length, ds2selects.length);
+        List<SelectItem> ds1selects = ds1.getSelectItems();
+        List<SelectItem> ds2selects = ds2.getSelectItems();
+        List<SelectItem> leftOrderedSelects = new ArrayList<>();
+        leftOrderedSelects.addAll(ds1selects);
+        leftOrderedSelects.addAll(ds2selects);
 
         // We will reuse the left join algorithm (but switch the datasets
         // around)
@@ -761,12 +760,12 @@ public final class MetaModelHelper {
     }
 
     public static DataSet getDistinct(DataSet dataSet) {
-        SelectItem[] selectItems = dataSet.getSelectItems();
-        GroupByItem[] groupByItems = new GroupByItem[selectItems.length];
-        for (int i = 0; i < groupByItems.length; i++) {
-            groupByItems[i] = new GroupByItem(selectItems[i]);
-        }
-        return getGrouped(Arrays.asList(selectItems), dataSet, groupByItems);
+        List<SelectItem> selectItems = dataSet.getSelectItems();
+        List<GroupByItem> groupByItems = selectItems.stream()
+                .map(GroupByItem::new)
+                .collect(Collectors.toList());
+
+        return getGrouped(selectItems, dataSet, groupByItems);
     }
 
     public static Table[] getTables(Column[] columns) {

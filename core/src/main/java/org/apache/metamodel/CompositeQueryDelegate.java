@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel;
 
+import java.util.List;
 import java.util.function.Function;
 
 import org.apache.metamodel.data.DataSet;
@@ -35,7 +36,7 @@ final class CompositeQueryDelegate extends QueryPostprocessDelegate {
 	}
 
 	@Override
-	protected DataSet materializeMainSchemaTable(Table table, Column[] columns,
+	protected DataSet materializeMainSchemaTable(Table table, List<Column> columns,
 			int maxRows) {
 		// find the appropriate datacontext to execute a simple
 		// table materialization query

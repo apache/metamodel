@@ -22,11 +22,11 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.RowPublisherDataSet;
@@ -72,7 +72,7 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
     }
 
     @Override
-    public DataSet executeQuery(Table table, Column[] columns, int maxRows) throws Exception {
+    public DataSet executeQuery(Table table, List<Column> columns, int maxRows) throws Exception {
         final OPCPackage pkg = openOPCPackage();
         final XSSFReader xssfReader = new XSSFReader(pkg);
         final String relationshipId = _tableNamesToInternalIds.get(table.getName());
@@ -136,13 +136,10 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
         }
     }
 
-    private DataSet buildDataSet(final Column[] columns, int maxRows, final String relationshipId,
+    private DataSet buildDataSet(final List<Column> columns, int maxRows, final String relationshipId,
             final XSSFReader xssfReader, final OPCPackage pkg) throws Exception {
 
-        List<SelectItem> selectItems = new ArrayList<SelectItem>(columns.length);
-        for (Column column : columns) {
-            selectItems.add(new SelectItem(column));
-        }
+        List<SelectItem> selectItems = columns.stream().map(SelectItem::new).collect(Collectors.toList());
         final XlsxRowPublisherAction publishAction = new XlsxRowPublisherAction(_configuration, columns, relationshipId,
                 xssfReader);
 

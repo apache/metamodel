@@ -21,6 +21,8 @@ package org.apache.metamodel.jdbc.integrationtests;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.swing.table.TableModel;
 
@@ -33,6 +35,8 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+
+import com.google.common.collect.Sets;
 
 /**
  * Integrationtests for Firebird SQL.
@@ -56,7 +60,7 @@ public class FirebirdTest extends AbstractJdbIntegrationTest {
 	        return;
 	    }
 		JdbcDataContext dataContext = getDataContext();
-        Schema[] schemas = dataContext.getSchemas();
+        Schema[] schemas = dataContext.getSchemas().toArray(new Schema[dataContext.getSchemas().size()]);
 		assertEquals(1, schemas.length);
 		Schema schema = dataContext.getDefaultSchema();
 		assertEquals("{JdbcTable[name=COUNTRY,type=TABLE,remarks=<null>],"
@@ -69,26 +73,28 @@ public class FirebirdTest extends AbstractJdbIntegrationTest {
 				+ "JdbcTable[name=PROJECT,type=TABLE,remarks=<null>],"
 				+ "JdbcTable[name=PROJ_DEPT_BUDGET,type=TABLE,remarks=<null>],"
 				+ "JdbcTable[name=SALARY_HISTORY,type=TABLE,remarks=<null>],"
-				+ "JdbcTable[name=SALES,type=TABLE,remarks=<null>]}", Arrays.toString(schema.getTables()));
-
-		assertEquals(
-				"{Relationship[primaryTable=COUNTRY,primaryColumns={COUNTRY},foreignTable=CUSTOMER,foreignColumns={COUNTRY}],"
-						+ "Relationship[primaryTable=COUNTRY,primaryColumns={COUNTRY},foreignTable=JOB,foreignColumns={JOB_COUNTRY}],"
-						+ "Relationship[primaryTable=CUSTOMER,primaryColumns={CUST_NO},foreignTable=SALES,foreignColumns={CUST_NO}],"
-						+ "Relationship[primaryTable=DEPARTMENT,primaryColumns={DEPT_NO},foreignTable=DEPARTMENT,foreignColumns={HEAD_DEPT}],"
-						+ "Relationship[primaryTable=DEPARTMENT,primaryColumns={DEPT_NO},foreignTable=EMPLOYEE,foreignColumns={DEPT_NO}],"
-						+ "Relationship[primaryTable=DEPARTMENT,primaryColumns={DEPT_NO},foreignTable=PROJ_DEPT_BUDGET,foreignColumns={DEPT_NO}],"
-						+ "Relationship[primaryTable=EMPLOYEE,primaryColumns={EMP_NO},foreignTable=DEPARTMENT,foreignColumns={MNGR_NO}],"
-						+ "Relationship[primaryTable=EMPLOYEE,primaryColumns={EMP_NO},foreignTable=EMPLOYEE_PROJECT,foreignColumns={EMP_NO}],"
-						+ "Relationship[primaryTable=EMPLOYEE,primaryColumns={EMP_NO},foreignTable=PROJECT,foreignColumns={TEAM_LEADER}],"
-						+ "Relationship[primaryTable=EMPLOYEE,primaryColumns={EMP_NO},foreignTable=SALARY_HISTORY,foreignColumns={EMP_NO}],"
-						+ "Relationship[primaryTable=EMPLOYEE,primaryColumns={EMP_NO},foreignTable=SALES,foreignColumns={SALES_REP}],"
-						+ "Relationship[primaryTable=JOB,primaryColumns={JOB_CODE},foreignTable=EMPLOYEE,foreignColumns={JOB_CODE}],"
-						+ "Relationship[primaryTable=JOB,primaryColumns={JOB_GRADE},foreignTable=EMPLOYEE,foreignColumns={JOB_GRADE}],"
-						+ "Relationship[primaryTable=JOB,primaryColumns={JOB_COUNTRY},foreignTable=EMPLOYEE,foreignColumns={JOB_COUNTRY}],"
-						+ "Relationship[primaryTable=PROJECT,primaryColumns={PROJ_ID},foreignTable=EMPLOYEE_PROJECT,foreignColumns={PROJ_ID}],"
-						+ "Relationship[primaryTable=PROJECT,primaryColumns={PROJ_ID},foreignTable=PROJ_DEPT_BUDGET,foreignColumns={PROJ_ID}]}",
-				Arrays.toString(schema.getRelationships()));
+				+ "JdbcTable[name=SALES,type=TABLE,remarks=<null>]}", Arrays.toString(schema.getTables().toArray()));
+		
+		Set<String> relationStrings = schema.getRelationships().stream().map(rel -> rel.toString()).collect(Collectors.toSet());
+		Set<String> referenceRelationStrings = Sets.newHashSet(
+				"Relationship[primaryTable=COUNTRY,primaryColumns={COUNTRY},foreignTable=CUSTOMER,foreignColumns={COUNTRY}]",
+						"Relationship[primaryTable=COUNTRY,primaryColumns={COUNTRY},foreignTable=JOB,foreignColumns={JOB_COUNTRY}]",
+						"Relationship[primaryTable=CUSTOMER,primaryColumns={CUST_NO},foreignTable=SALES,foreignColumns={CUST_NO}]",
+						"Relationship[primaryTable=DEPARTMENT,primaryColumns={DEPT_NO},foreignTable=DEPARTMENT,foreignColumns={HEAD_DEPT}]",
+						"Relationship[primaryTable=DEPARTMENT,primaryColumns={DEPT_NO},foreignTable=EMPLOYEE,foreignColumns={DEPT_NO}]",
+						"Relationship[primaryTable=DEPARTMENT,primaryColumns={DEPT_NO},foreignTable=PROJ_DEPT_BUDGET,foreignColumns={DEPT_NO}]",
+						"Relationship[primaryTable=EMPLOYEE,primaryColumns={EMP_NO},foreignTable=DEPARTMENT,foreignColumns={MNGR_NO}]",
+						"Relationship[primaryTable=EMPLOYEE,primaryColumns={EMP_NO},foreignTable=EMPLOYEE_PROJECT,foreignColumns={EMP_NO}]",
+						"Relationship[primaryTable=EMPLOYEE,primaryColumns={EMP_NO},foreignTable=PROJECT,foreignColumns={TEAM_LEADER}]",
+						"Relationship[primaryTable=EMPLOYEE,primaryColumns={EMP_NO},foreignTable=SALARY_HISTORY,foreignColumns={EMP_NO}]",
+						"Relationship[primaryTable=EMPLOYEE,primaryColumns={EMP_NO},foreignTable=SALES,foreignColumns={SALES_REP}]",
+						"Relationship[primaryTable=JOB,primaryColumns={JOB_CODE},foreignTable=EMPLOYEE,foreignColumns={JOB_CODE}]",
+						"Relationship[primaryTable=JOB,primaryColumns={JOB_GRADE},foreignTable=EMPLOYEE,foreignColumns={JOB_GRADE}]",
+						"Relationship[primaryTable=JOB,primaryColumns={JOB_COUNTRY},foreignTable=EMPLOYEE,foreignColumns={JOB_COUNTRY}]",
+						"Relationship[primaryTable=PROJECT,primaryColumns={PROJ_ID},foreignTable=EMPLOYEE_PROJECT,foreignColumns={PROJ_ID}]",
+						"Relationship[primaryTable=PROJECT,primaryColumns={PROJ_ID},foreignTable=PROJ_DEPT_BUDGET,foreignColumns={PROJ_ID}]"
+		);
+		assertEquals(relationStrings,referenceRelationStrings);
 	}
 
 	public void testExecuteQuery() throws Exception {
@@ -99,9 +105,9 @@ public class FirebirdTest extends AbstractJdbIntegrationTest {
         Schema schema = dataContext.getDefaultSchema();
 		Table departmentTable = schema.getTableByName("DEPARTMENT");
 		Table employeeTable = schema.getTableByName("EMPLOYEE");
-		Query q = new Query().from(new FromItem(JoinType.INNER, departmentTable.getRelationships(employeeTable)[0]));
-		q.select(departmentTable.getColumns()[1]);
-		q.select(new SelectItem(employeeTable.getColumns()[4]).setAlias("hire-date"));
+		Query q = new Query().from(new FromItem(JoinType.INNER, departmentTable.getRelationships(employeeTable).iterator().next()));
+		q.select(departmentTable.getColumns().get(1));
+		q.select(new SelectItem(employeeTable.getColumns().get(4)).setAlias("hire-date"));
 		assertEquals(
 				"SELECT \"DEPARTMENT\".\"DEPARTMENT\", \"EMPLOYEE\".\"HIRE_DATE\" AS hire-date FROM \"EMPLOYEE\" INNER JOIN \"DEPARTMENT\" ON \"EMPLOYEE\".\"EMP_NO\" = \"DEPARTMENT\".\"MNGR_NO\"",
 				q.toString());

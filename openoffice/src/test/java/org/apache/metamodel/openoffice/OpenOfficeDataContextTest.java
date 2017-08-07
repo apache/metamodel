@@ -57,7 +57,7 @@ public class OpenOfficeDataContextTest extends TestCase {
 
 	public void testGetSchemas() throws Exception {
 		assertEquals("[INFORMATION_SCHEMA, PUBLIC]",
-				Arrays.toString(_dataContext.getSchemaNames()));
+				Arrays.toString(_dataContext.getSchemaNames().toArray()));
 
 		Schema informationSchema = _dataContext
 				.getSchemaByName("INFORMATION_SCHEMA");
@@ -68,10 +68,10 @@ public class OpenOfficeDataContextTest extends TestCase {
 
 		assertEquals(
 				"[Table[name=CONTRIBUTORS,type=TABLE,remarks=null], Table[name=projects,type=TABLE,remarks=null]]",
-				Arrays.toString(schema.getTables()));
+				Arrays.toString(schema.getTables().toArray()));
 		assertEquals(
 				"[Relationship[primaryTable=CONTRIBUTORS,primaryColumns=[ID],foreignTable=projects,foreignColumns=[admin]]]",
-				Arrays.toString(schema.getRelationships()));
+				Arrays.toString(schema.getRelationships().toArray()));
 	}
 
 	public void testQueryUppercaseTable() throws Exception {

@@ -125,11 +125,11 @@ public class ElasticSearchDataContextTest {
     @Test
     public void testSimpleQuery() throws Exception {
         assertEquals("[bulktype, peopletype, tweet1, tweet2]",
-                Arrays.toString(dataContext.getDefaultSchema().getTableNames()));
+                Arrays.toString(dataContext.getDefaultSchema().getTableNames().toArray()));
 
         Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
 
-        assertEquals("[_id, message, postDate, user]", Arrays.toString(table.getColumnNames()));
+        assertEquals("[_id, message, postDate, user]", Arrays.toString(table.getColumnNames().toArray()));
 
         assertEquals(ColumnType.STRING, table.getColumnByName("user").getType());
         assertEquals(ColumnType.DATE, table.getColumnByName("postDate").getType());
@@ -146,7 +146,7 @@ public class ElasticSearchDataContextTest {
     @Test
     public void testDocumentIdAsPrimaryKey() throws Exception {
         Table table = dataContext.getDefaultSchema().getTableByName("tweet2");
-        Column[] pks = table.getPrimaryKeys();
+        Column[] pks = table.getPrimaryKeys().toArray(new Column[0]);
         assertEquals(1, pks.length);
         assertEquals("_id", pks[0].getName());
 
@@ -159,7 +159,7 @@ public class ElasticSearchDataContextTest {
     @Test
     public void testExecutePrimaryKeyLookupQuery() throws Exception {
         Table table = dataContext.getDefaultSchema().getTableByName("tweet2");
-        Column[] pks = table.getPrimaryKeys();
+        Column[] pks = table.getPrimaryKeys().toArray(new Column[0]);
 
         try (DataSet ds = dataContext.query().from(table).selectAll().where(pks[0]).eq("tweet_tweet2_1").execute()) {
             assertTrue(ds.next());
@@ -209,10 +209,10 @@ public class ElasticSearchDataContextTest {
         dataContext.executeUpdate(createTable);
 
         final Table table = schema.getTableByName("testCreateTable");
-        assertEquals("[" + ElasticSearchUtils.FIELD_ID + ", foo, bar]", Arrays.toString(table.getColumnNames()));
+        assertEquals("[" + ElasticSearchUtils.FIELD_ID + ", foo, bar]", Arrays.toString(table.getColumnNames().toArray()));
 
         final Column fooColumn = table.getColumnByName("foo");
-        final Column idColumn = table.getPrimaryKeys()[0];
+        final Column idColumn = table.getPrimaryKeys().get(0);
         assertEquals("Column[name=_id,columnNumber=0,type=STRING,nullable=null,nativeType=null,columnSize=null]",
                 idColumn.toString());
 
@@ -491,7 +491,7 @@ public class ElasticSearchDataContextTest {
         DataSet data = dataContext.executeQuery(q);
         assertEquals(
                 "[peopletype.gender, MAX(peopletype.age), MIN(peopletype.age), COUNT(*) AS total, MIN(peopletype.id) AS firstId]",
-                Arrays.toString(data.getSelectItems()));
+                Arrays.toString(data.getSelectItems().toArray()));
 
         assertTrue(data.next());
         assertEquals("Row[values=[female, 20, 17, 5, 5]]", data.getRow().toString());
@@ -553,7 +553,7 @@ public class ElasticSearchDataContextTest {
 
         ElasticSearchDataContext dataContext2 = new ElasticSearchDataContext(client, indexName2);
 
-        assertEquals("[tweet3]", Arrays.toString(dataContext2.getDefaultSchema().getTableNames()));
+        assertEquals("[tweet3]", Arrays.toString(dataContext2.getDefaultSchema().getTableNames().toArray()));
     }
 
     private static void createIndex() {

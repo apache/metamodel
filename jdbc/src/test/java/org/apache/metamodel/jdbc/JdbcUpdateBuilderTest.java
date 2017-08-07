@@ -33,7 +33,7 @@ public class JdbcUpdateBuilderTest extends JdbcTestCase {
                 dataContext), true);
 
         assertEquals("[EMPLOYEENUMBER, LASTNAME, FIRSTNAME, EXTENSION, EMAIL, OFFICECODE, REPORTSTO, JOBTITLE]",
-                Arrays.toString(table.getColumnNames()));
+                Arrays.toString(table.getColumnNames().toArray()));
 
         updateBuilder.value("LASTNAME", "foo").value("firstname", "BAR");
         assertEquals("UPDATE PUBLIC._EMPLOYEES_ SET LASTNAME='foo',FIRSTNAME='BAR'", updateBuilder.createSqlStatement()
@@ -58,7 +58,7 @@ public class JdbcUpdateBuilderTest extends JdbcTestCase {
                 dataContext), true);
 
         assertEquals("[EMPLOYEENUMBER, LASTNAME, FIRSTNAME, EXTENSION, EMAIL, OFFICECODE, REPORTSTO, JOBTITLE]",
-                Arrays.toString(table.getColumnNames()));
+                Arrays.toString(table.getColumnNames().toArray()));
 
         updateBuilder.value("LASTNAME", "foo").value("firstname", null);
         assertEquals("UPDATE PUBLIC._EMPLOYEES_ SET LASTNAME='foo',FIRSTNAME=NULL", updateBuilder.createSqlStatement()
@@ -71,7 +71,7 @@ public class JdbcUpdateBuilderTest extends JdbcTestCase {
         JdbcUpdateCallback updateCallback = new JdbcSimpleUpdateCallback(dataContext);
 
         assertEquals("[EMPLOYEENUMBER, LASTNAME, FIRSTNAME, EXTENSION, EMAIL, OFFICECODE, REPORTSTO, JOBTITLE]",
-                Arrays.toString(table.getColumnNames()));
+                Arrays.toString(table.getColumnNames().toArray()));
 
         JdbcUpdateBuilder updateBuilder = new JdbcUpdateBuilder(updateCallback, table, new DefaultQueryRewriter(
                 dataContext), false);
@@ -89,7 +89,7 @@ public class JdbcUpdateBuilderTest extends JdbcTestCase {
                 dataContext), true);
 
         assertEquals("[EMPLOYEENUMBER, LASTNAME, FIRSTNAME, EXTENSION, EMAIL, OFFICECODE, REPORTSTO, JOBTITLE]",
-                Arrays.toString(table.getColumnNames()));
+                Arrays.toString(table.getColumnNames().toArray()));
 
         updateBuilder.value("LASTNAME", "foo").value("firstname", "BAR");
         assertEquals("UPDATE PUBLIC._EMPLOYEES_ SET LASTNAME='foo',FIRSTNAME='BAR'", updateBuilder.createSqlStatement()

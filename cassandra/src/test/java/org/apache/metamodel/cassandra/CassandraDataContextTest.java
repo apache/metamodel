@@ -83,7 +83,7 @@ public class CassandraDataContextTest {
 
     @Test
     public void testSchemaAndSimpleQuery() throws Exception {
-        String existingTables = Arrays.toString(dc.getDefaultSchema().getTableNames());
+        String existingTables = Arrays.toString(dc.getDefaultSchema().getTableNames().toArray());
         assertTrue(existingTables.contains(testTableName));
         assertTrue(existingTables.contains(testCounterTableName));
 

@@ -19,6 +19,7 @@
 package org.apache.metamodel.excel;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.metamodel.data.AbstractDataSet;
@@ -46,8 +47,8 @@ final class XlsDataSet extends AbstractDataSet {
      * @param workbook
      * @param rowIterator
      */
-    public XlsDataSet(SelectItem[] selectItems, Workbook workbook,
-            Iterator<org.apache.poi.ss.usermodel.Row> rowIterator) {
+    public XlsDataSet(List<SelectItem> selectItems, Workbook workbook,
+                      Iterator<org.apache.poi.ss.usermodel.Row> rowIterator) {
         super(selectItems);
         _workbook = workbook;
         _rowIterator = rowIterator;

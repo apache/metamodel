@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
@@ -200,7 +201,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
             for (SimpleTableDef tableDef : _tableDefs) {
 
                 MutableTable table = tableDef.toTable().setSchema(schema);
-                Column[] rowIdColumns = table.getColumnsOfType(ColumnType.ROWID);
+                List<Column> rowIdColumns = table.getColumnsOfType(ColumnType.ROWID);
                 for (Column column : rowIdColumns) {
                     if (column instanceof MutableColumn) {
                         ((MutableColumn) column).setPrimaryKey(true);
@@ -286,10 +287,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                     logger.debug("Query can be expressed in full MongoDB, no post processing needed.");
 
                     // prepare for a non-post-processed query
-                    Column[] columns = new Column[selectItems.size()];
-                    for (int i = 0; i < columns.length; i++) {
-                        columns[i] = selectItems.get(i).getColumn();
-                    }
+
 
                     // checking if the query is a primary key lookup query
                     if (whereItems.size() == 1) {
@@ -325,16 +323,15 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                     }
 
                     if (thereIsAtLeastOneAlias) {
-                        final SelectItem[] selectItemsAsArray = selectItems.toArray(new SelectItem[selectItems.size()]);
                         final DataSet dataSet = materializeMainSchemaTableInternal(
                                 table,
-                                selectItemsAsArray,
+                                selectItems,
                                 whereItems,
                                 firstRow,
                                 maxRows, false);
                         return dataSet;
                     } else {
-                        final DataSet dataSet = materializeMainSchemaTableInternal(table, columns, whereItems, firstRow,
+                        final DataSet dataSet = materializeMainSchemaTableInternal(table, selectItems, whereItems, firstRow,
                                 maxRows, false);
                         return dataSet;
                     }
@@ -346,14 +343,8 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
         return super.executeQuery(query);
     }
 
-    private DataSet materializeMainSchemaTableInternal(Table table, Column[] columns, List<FilterItem> whereItems,
-            int firstRow, int maxRows, boolean queryPostProcessed) {
-        MongoCursor<Document> cursor = getDocumentMongoCursor(table, whereItems, firstRow, maxRows);
 
-        return new MongoDbDataSet(cursor, columns, queryPostProcessed);
-    }
-
-    private DataSet materializeMainSchemaTableInternal(Table table, SelectItem[] selectItems, List<FilterItem> whereItems,
+    private DataSet materializeMainSchemaTableInternal(Table table, List<SelectItem> selectItems, List<FilterItem> whereItems,
             int firstRow, int maxRows, boolean queryPostProcessed) {
         MongoCursor<Document> cursor = getDocumentMongoCursor(table, whereItems, firstRow, maxRows);
 
@@ -507,13 +498,26 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
-        return materializeMainSchemaTableInternal(table, columns, null, 1, maxRows, true);
+    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
+
+        return materializeMainSchemaTableInternal(
+                table,
+                columns.stream().map(SelectItem::new).collect(Collectors.toList()),
+                null,
+                1,
+                maxRows,
+                true);
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int firstRow, int maxRows) {
-        return materializeMainSchemaTableInternal(table, columns, null, firstRow, maxRows, true);
+    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int firstRow, int maxRows) {
+        return materializeMainSchemaTableInternal(
+                table,
+                columns.stream().map(SelectItem::new).collect(Collectors.toList()),
+                null,
+                firstRow,
+                maxRows,
+                true);
     }
 
     /**

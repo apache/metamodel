@@ -19,6 +19,7 @@
 package org.apache.metamodel.data;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
@@ -122,7 +123,7 @@ public abstract class AbstractRow implements Cloneable, Row {
     }
 
     @Override
-    public final SelectItem[] getSelectItems() {
+    public final List<SelectItem> getSelectItems() {
         return getHeader().getSelectItems();
     }
 

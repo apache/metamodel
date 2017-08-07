@@ -18,13 +18,15 @@
  */
 package org.apache.metamodel.convert;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
@@ -136,15 +138,18 @@ public final class Converters {
      *         used (eg. with the {@link #addTypeConverters(DataContext, Map)}
      *         method) to decorate the DataContext with type converters.
      */
-    public static Map<Column, TypeConverter<?, ?>> autoDetectConverters(DataContext dataContext, Column[] columns,
+    public static Map<Column, TypeConverter<?, ?>> autoDetectConverters(DataContext dataContext, final List<Column> columns,
             int sampleSize) {
-        columns = MetaModelHelper.getColumnsBySuperType(columns, SuperColumnType.LITERAL_TYPE);
         final Map<Column, TypeConverter<?, ?>> result = new HashMap<Column, TypeConverter<?, ?>>();
-        Table[] tables = MetaModelHelper.getTables(columns);
-        for (Table table : tables) {
-            Column[] tableColumns = MetaModelHelper.getTableColumns(table, columns);
-            autoDetectConvertersInternally(dataContext, table, tableColumns, sampleSize, result);
-        }
+        columns.stream()
+                .filter(col -> col.getType() != null)
+                .filter(col -> col.getType().getSuperType().equals(SuperColumnType.LITERAL_TYPE))
+                // group by table
+                .collect(Collectors.toMap(Column::getTable,Arrays::asList))
+                //and detect it
+                .forEach((tab, cols) ->
+                    autoDetectConvertersInternally(dataContext,tab,cols,sampleSize,result));
+
         return result;
     }
 
@@ -172,14 +177,14 @@ public final class Converters {
     public static Map<Column, TypeConverter<?, ?>> autoDetectConverters(DataContext dataContext, Table table,
             int sampleSize) {
         final Map<Column, TypeConverter<?, ?>> result = new HashMap<Column, TypeConverter<?, ?>>();
-        Column[] columns = table.getColumnsOfSuperType(SuperColumnType.LITERAL_TYPE);
+        List<Column> columns = table.getColumnsOfSuperType(SuperColumnType.LITERAL_TYPE);
         autoDetectConvertersInternally(dataContext, table, columns, sampleSize, result);
         return result;
     }
 
-    private static void autoDetectConvertersInternally(DataContext dataContext, Table table, Column[] columns,
+    private static void autoDetectConvertersInternally(DataContext dataContext, Table table, List<Column> columns,
             int sampleSize, Map<Column, TypeConverter<?, ?>> result) {
-        if (columns == null || columns.length == 0) {
+        if (columns == null || columns.size() == 0) {
             return;
         }
 
@@ -306,7 +311,7 @@ public final class Converters {
      */
     protected static <RB extends RowBuilder<?>> RB convertRow(RB rowBuilder, Map<Column, TypeConverter<?, ?>> converters) {
         Table table = rowBuilder.getTable();
-        Column[] columns = table.getColumns();
+        List<Column> columns = table.getColumns();
         Row row = rowBuilder.toRow();
         for (Column column : columns) {
             @SuppressWarnings("unchecked")

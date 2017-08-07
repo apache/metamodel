@@ -19,6 +19,8 @@
 package org.apache.metamodel.schema;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +38,8 @@ public class MutableRelationship extends AbstractRelationship implements
 	private static final Logger logger = LoggerFactory
 			.getLogger(MutableRelationship.class);
 
-	private final Column[] _primaryColumns;
-	private final Column[] _foreignColumns;
+	private final List<Column> _primaryColumns;
+	private final List<Column> _foreignColumns;
 
 	/**
 	 * Factory method to create relations between two tables by specifying which
@@ -49,8 +51,8 @@ public class MutableRelationship extends AbstractRelationship implements
 	 *            the columns from the foreign key table
 	 * @return the relation created
 	 */
-	public static Relationship createRelationship(Column[] primaryColumns,
-			Column[] foreignColumns) {
+	public static Relationship createRelationship(List<Column> primaryColumns,
+			List<Column> foreignColumns) {
 		Table primaryTable = checkSameTable(primaryColumns);
 		Table foreignTable = checkSameTable(foreignColumns);
 		MutableRelationship relation = new MutableRelationship(primaryColumns,
@@ -105,25 +107,30 @@ public class MutableRelationship extends AbstractRelationship implements
 
 	public static Relationship createRelationship(Column primaryColumn,
 			Column foreignColumn) {
-		return createRelationship(new Column[] { primaryColumn },
-				new Column[] { foreignColumn });
+		List<Column> pcols = new ArrayList<>();
+		pcols.add(primaryColumn);
+		List<Column> fcols = new ArrayList<>();
+		fcols.add(foreignColumn);
+
+
+		return createRelationship(pcols, fcols);
 	}
 
 	/**
 	 * Prevent external instantiation
 	 */
-	private MutableRelationship(Column[] primaryColumns, Column[] foreignColumns) {
+	private MutableRelationship(List<Column> primaryColumns, List<Column> foreignColumns) {
 		_primaryColumns = primaryColumns;
 		_foreignColumns = foreignColumns;
 	}
 
 	@Override
-	public Column[] getPrimaryColumns() {
+	public List<Column> getPrimaryColumns() {
 		return _primaryColumns;
 	}
 
 	@Override
-	public Column[] getForeignColumns() {
+	public List<Column> getForeignColumns() {
 		return _foreignColumns;
 	}
 

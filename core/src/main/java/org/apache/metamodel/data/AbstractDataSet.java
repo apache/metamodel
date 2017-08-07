@@ -24,9 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.util.BaseObject;
 
 /**
@@ -56,7 +54,7 @@ public abstract class AbstractDataSet extends BaseObject implements DataSet {
         if (dataSet instanceof AbstractDataSet) {
             _header = ((AbstractDataSet) dataSet).getHeader();
         } else {
-            _header = new CachingDataSetHeader(Arrays.asList(dataSet.getSelectItems()));
+            _header = new CachingDataSetHeader(dataSet.getSelectItems());
         }
     }
 
@@ -64,15 +62,12 @@ public abstract class AbstractDataSet extends BaseObject implements DataSet {
         _header = Objects.requireNonNull(header);
     }
 
-    public AbstractDataSet(Column[] columns) {
-        this(MetaModelHelper.createSelectItems(columns));
-    }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public SelectItem[] getSelectItems() {
+    public List<SelectItem> getSelectItems() {
         return getHeader().getSelectItems();
     }
 
@@ -118,7 +113,7 @@ public abstract class AbstractDataSet extends BaseObject implements DataSet {
      */
     @Override
     public String toString() {
-        return "DataSet[selectItems=" + Arrays.toString(getSelectItems()) + "]";
+        return "DataSet[selectItems=" + Arrays.toString(getSelectItems().toArray()) + "]";
     }
 
     @Override

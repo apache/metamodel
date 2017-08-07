@@ -19,6 +19,7 @@
 package org.apache.metamodel.schema;
 
 import java.util.Arrays;
+import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -53,17 +54,17 @@ public class MutableTableTest extends TestCase {
         t.addColumn(new MutableColumn("a").setType(ColumnType.VARCHAR));
         t.addColumn(new MutableColumn("r").setType(ColumnType.INTEGER));
 
-        Column[] cols = t.getColumnsOfType(ColumnType.VARCHAR);
-        assertEquals(2, cols.length);
-        assertEquals("b", cols[0].getName());
-        assertEquals("a", cols[1].getName());
+        List<Column> cols = t.getColumnsOfType(ColumnType.VARCHAR);
+        assertEquals(2, cols.size());
+        assertEquals("b", cols.get(0).getName());
+        assertEquals("a", cols.get(1).getName());
 
         cols = t.getColumnsOfType(ColumnType.INTEGER);
-        assertEquals(1, cols.length);
-        assertEquals("r", cols[0].getName());
+        assertEquals(1, cols.size());
+        assertEquals("r", cols.get(0).getName());
 
         cols = t.getColumnsOfType(ColumnType.FLOAT);
-        assertEquals(0, cols.length);
+        assertEquals(0, cols.size());
     }
 
     public void testGetIndexedColumns() throws Exception {
@@ -71,10 +72,10 @@ public class MutableTableTest extends TestCase {
         t.addColumn(new MutableColumn("b").setIndexed(true));
         t.addColumn(new MutableColumn("a").setIndexed(false));
         t.addColumn(new MutableColumn("r").setIndexed(true));
-        Column[] indexedColumns = t.getIndexedColumns();
+        List<Column> indexedColumns = t.getIndexedColumns();
         assertEquals(
                 "[Column[name=b,columnNumber=0,type=null,nullable=null,nativeType=null,columnSize=null], Column[name=r,columnNumber=0,type=null,nullable=null,nativeType=null,columnSize=null]]",
-                Arrays.toString(indexedColumns));
+                Arrays.toString(indexedColumns.toArray()));
         for (Column column : indexedColumns) {
             assertTrue(column.isIndexed());
         }

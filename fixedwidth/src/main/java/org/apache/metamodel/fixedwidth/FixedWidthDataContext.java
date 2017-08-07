@@ -21,6 +21,7 @@ package org.apache.metamodel.fixedwidth;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.util.List;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
@@ -130,7 +131,7 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
     }
 
     @Override
-    public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+    public DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         final FixedWidthReader reader = createReader();
         try {
             for (int i = 1; i <= _configuration.getColumnNameLineNumber(); i++) {

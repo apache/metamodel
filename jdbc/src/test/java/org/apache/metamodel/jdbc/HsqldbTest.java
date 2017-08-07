@@ -100,12 +100,12 @@ public class HsqldbTest extends TestCase {
     public void testGetSchemas() throws Exception {
         assertNotNull(_connection);
         JdbcDataContext dc = new JdbcDataContext(_connection);
-        assertEquals("[Schema[name=INFORMATION_SCHEMA], " + "Schema[name=PUBLIC]]", Arrays.toString(dc.getSchemas()));
+        assertEquals("[Schema[name=INFORMATION_SCHEMA], " + "Schema[name=PUBLIC]]", Arrays.toString(dc.getSchemas().toArray()));
 
         Schema defaultSchema = dc.getDefaultSchema();
         Schema publicSchema = dc.getSchemaByName("PUBLIC");
         assertSame(defaultSchema, publicSchema);
-        Table[] tables = publicSchema.getTables();
+        Table[] tables = publicSchema.getTables().toArray(new Table[publicSchema.getTables().size()]);
         assertEquals(13, tables.length);
         assertEquals("[Table[name=CUSTOMERS,type=TABLE,remarks=null], "
                 + "Table[name=CUSTOMER_W_TER,type=TABLE,remarks=null], "
@@ -127,16 +127,16 @@ public class HsqldbTest extends TestCase {
                         + "Column[name=OFFICECODE,columnNumber=5,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=20], "
                         + "Column[name=REPORTSTO,columnNumber=6,type=INTEGER,nullable=true,nativeType=INTEGER,columnSize=0], "
                         + "Column[name=JOBTITLE,columnNumber=7,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]]",
-                Arrays.toString(empTable.getColumns()));
+                Arrays.toString(empTable.getColumns().toArray()));
 
         assertEquals(
                 "[Column[name=EMPLOYEENUMBER,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=0]]",
-                Arrays.toString(empTable.getPrimaryKeys()));
+                Arrays.toString(empTable.getPrimaryKeys().toArray()));
 
         // Only a single relationship registered in the database
         assertEquals(
                 "[Relationship[primaryTable=PRODUCTS,primaryColumns=[PRODUCTCODE],foreignTable=ORDERFACT,foreignColumns=[PRODUCTCODE]]]",
-                Arrays.toString(publicSchema.getRelationships()));
+                Arrays.toString(publicSchema.getRelationships().toArray()));
     }
 
     public void testExecuteQuery() throws Exception {
@@ -145,8 +145,9 @@ public class HsqldbTest extends TestCase {
         Table productsTable = schema.getTableByName("PRODUCTS");
         Table factTable = schema.getTableByName("ORDERFACT");
 
-        Query q = new Query().from(new FromItem(JoinType.INNER, productsTable.getRelationships(factTable)[0]))
-                .select(productsTable.getColumns()[0], factTable.getColumns()[0]);
+        Query q = new Query().from(new FromItem(JoinType.INNER, productsTable.getRelationships(factTable).iterator().next())).select(
+                productsTable.getColumns().get(0), factTable.getColumns().get(0));
+
         assertEquals(
                 "SELECT \"PRODUCTS\".\"PRODUCTCODE\", \"ORDERFACT\".\"ORDERNUMBER\" FROM PUBLIC.\"PRODUCTS\" INNER JOIN PUBLIC.\"ORDERFACT\" ON \"PRODUCTS\".\"PRODUCTCODE\" = \"ORDERFACT\".\"PRODUCTCODE\"",
                 q.toString());

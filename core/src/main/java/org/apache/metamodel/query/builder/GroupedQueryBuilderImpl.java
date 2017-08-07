@@ -198,7 +198,7 @@ final class GroupedQueryBuilderImpl extends BaseObject implements GroupedQueryBu
                 final Table table = fromItem.getTable();
                 if (table != null) {
                     logger.debug("Table available in FROM item: {}. Column names: {}", table, Arrays.toString(table
-                            .getColumnNames()));
+                            .getColumnNames().toArray()));
                 }
             }
         }

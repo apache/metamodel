@@ -19,13 +19,12 @@
 package org.apache.metamodel.schema;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.apache.metamodel.util.CollectionUtils;
 import org.apache.metamodel.util.EqualsBuilder;
-import org.apache.metamodel.util.HasNameMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,22 +48,15 @@ public abstract class AbstractSchema implements Schema {
     }
 
     @Override
-    public Relationship[] getRelationships() {
-        final Set<Relationship> result = new LinkedHashSet<Relationship>();
-        CollectionUtils.forEach(getTables(), table -> {
-            final Relationship[] relations = table.getRelationships();
-            for (int i = 0; i < relations.length; i++) {
-                final Relationship relation = relations[i];
-                result.add(relation);
-            }
-        });
-        return result.toArray(new Relationship[result.size()]);
+    public Collection<Relationship> getRelationships() {
+        return getTables().stream()
+                .flatMap(tab -> tab.getRelationships().stream())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override
     public Table getTable(int index) throws IndexOutOfBoundsException {
-        Table[] tables = getTables();
-        return tables[index];
+        return getTables().get(index);
     }
 
     @Override
@@ -74,24 +66,24 @@ public abstract class AbstractSchema implements Schema {
 
     @Override
     public final int getTableCount(TableType type) {
-        return getTables(type).length;
+        return getTables(type).size();
     }
 
     @Override
     public final int getRelationshipCount() {
-        return getRelationships().length;
+        return getRelationships().size();
     }
 
     @Override
     public final int getTableCount() {
-        return getTables().length;
+        return getTables().size();
     }
 
     @Override
-    public final Table[] getTables(final TableType type) {
-        return CollectionUtils.filter(getTables(), table -> {
-            return table.getType() == type;
-        }).toArray(new Table[0]);
+    public final List<Table> getTables(final TableType type) {
+        return  getTables().stream()
+                .filter(table -> table.getType().equals(type))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -131,9 +123,10 @@ public abstract class AbstractSchema implements Schema {
     }
 
     @Override
-    public final String[] getTableNames() {
-        Table[] tables = getTables();
-        return CollectionUtils.map(tables, new HasNameMapper()).toArray(new String[tables.length]);
+    public final List<String> getTableNames() {
+        return getTables().stream()
+                .map(table -> table.getName())
+                .collect(Collectors.toList());
     }
 
     @Override

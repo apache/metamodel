@@ -20,13 +20,16 @@ package org.apache.metamodel.salesforce;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.BooleanComparator;
@@ -48,8 +51,8 @@ final class SalesforceDataSet extends AbstractDataSet {
     private SObject[] _records;
     private SObject _record;
 
-    public SalesforceDataSet(Column[] columns, QueryResult queryResult, PartnerConnection connection) {
-        super(columns);
+    public SalesforceDataSet(List<Column> columns, QueryResult queryResult, PartnerConnection connection) {
+        super(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
         _connection = connection;
         _queryResult = queryResult;
         _records = _queryResult.getRecords();

@@ -21,6 +21,7 @@ package org.apache.metamodel.schema;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -100,9 +101,9 @@ public class MutableTable extends AbstractTable implements Serializable {
     }
 
     @Override
-    public Column[] getColumns() {
+    public List<Column> getColumns() {
         List<Column> columns = getColumnsInternal();
-        return columns.toArray(new Column[columns.size()]);
+        return Collections.unmodifiableList(columns);
     }
 
     public MutableTable setColumns(Column... columns) {
@@ -157,9 +158,10 @@ public class MutableTable extends AbstractTable implements Serializable {
     }
 
     @Override
-    public Relationship[] getRelationships() {
-        List<Relationship> relationships = getRelationshipsInternal();
-        return relationships.toArray(new Relationship[relationships.size()]);
+    public List<Relationship> getRelationships() {
+        //init relationships
+        getRelationshipsInternal();
+        return Collections.unmodifiableList(_relationships);
     }
 
     /**

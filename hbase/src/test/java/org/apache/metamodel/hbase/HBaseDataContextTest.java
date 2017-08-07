@@ -59,7 +59,7 @@ public class HBaseDataContextTest extends HBaseTestCase {
         final Table table = _dataContext.getDefaultSchema().getTableByName(EXAMPLE_TABLE_NAME);
         assertNotNull(table);
 
-        assertEquals("[_id, bar, foo]", Arrays.toString(table.getColumnNames()));
+        assertEquals("[_id, bar, foo]", Arrays.toString(table.getColumnNames().toArray()));
         assertEquals(ColumnType.MAP, table.getColumn(1).getType());
 
         // insert two records

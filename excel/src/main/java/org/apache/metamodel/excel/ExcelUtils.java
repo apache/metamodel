@@ -19,15 +19,33 @@
 package org.apache.metamodel.excel;
 
 import java.io.File;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.DataSetHeader;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.EmptyDataSet;
+import org.apache.metamodel.data.Style;
+import org.apache.metamodel.data.Style.SizeUnit;
+import org.apache.metamodel.data.StyleBuilder;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.Action;
+import org.apache.metamodel.util.DateUtils;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FileResource;
+import org.apache.metamodel.util.FormatHelper;
+import org.apache.metamodel.util.InMemoryResource;
+import org.apache.metamodel.util.Resource;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -48,25 +66,6 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.MetaModelHelper;
-import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.data.DataSetHeader;
-import org.apache.metamodel.data.DefaultRow;
-import org.apache.metamodel.data.EmptyDataSet;
-import org.apache.metamodel.data.Style;
-import org.apache.metamodel.data.Style.SizeUnit;
-import org.apache.metamodel.data.StyleBuilder;
-import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.util.Action;
-import org.apache.metamodel.util.DateUtils;
-import org.apache.metamodel.util.FileHelper;
-import org.apache.metamodel.util.FileResource;
-import org.apache.metamodel.util.FormatHelper;
-import org.apache.metamodel.util.Func;
-import org.apache.metamodel.util.InMemoryResource;
-import org.apache.metamodel.util.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.XMLReader;
@@ -115,15 +114,12 @@ final class ExcelUtils {
             }
         }
 
-        return resource.read(new Func<InputStream, Workbook>() {
-            @Override
-            public Workbook eval(InputStream inputStream) {
-                try {
-                    return WorkbookFactory.create(inputStream);
-                } catch (Exception e) {
-                    logger.error("Could not open workbook", e);
-                    throw new IllegalStateException("Could not open workbook", e);
-                }
+        return resource.read(inputStream -> {
+            try {
+                return WorkbookFactory.create(inputStream);
+            } catch (Exception e) {
+                logger.error("Could not open workbook", e);
+                throw new IllegalStateException("Could not open workbook", e);
             }
         });
     }
@@ -275,8 +271,8 @@ final class ExcelUtils {
 
             return getCellValue(wb, evaluatedCell);
         } catch (RuntimeException e) {
-            logger.warn("Exception occurred while evaluating formula at position ({},{}): {}",
-                    new Object[] { cell.getRowIndex(), cell.getColumnIndex(), e.getMessage() });
+            logger.warn("Exception occurred while evaluating formula at position ({},{}): {}", new Object[] { cell
+                    .getRowIndex(), cell.getColumnIndex(), e.getMessage() });
             // Some exceptions we simply log - result will be then be the
             // actual formula
             if (e instanceof FormulaParseException) {
@@ -440,7 +436,8 @@ final class ExcelUtils {
     }
 
     public static DataSet getDataSet(Workbook workbook, Sheet sheet, Table table, ExcelConfiguration configuration) {
-        final SelectItem[] selectItems = MetaModelHelper.createSelectItems(table.getColumns());
+        final List<SelectItem> selectItems = table.getColumns().stream().map(SelectItem::new).collect(Collectors
+                .toList());
         final Iterator<Row> rowIterator = getRowIterator(sheet, configuration, true);
         if (!rowIterator.hasNext()) {
             // no more rows!

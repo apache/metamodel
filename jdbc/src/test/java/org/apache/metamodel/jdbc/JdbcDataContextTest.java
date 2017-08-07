@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 import javax.swing.table.TableModel;
 
-import org.easymock.EasyMock;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
@@ -54,10 +53,10 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.QueryParameter;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.Relationship;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
+import org.easymock.EasyMock;
 
 public class JdbcDataContextTest extends JdbcTestCase {
 
@@ -79,7 +78,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
     public void testQueryMaxRows0() throws Exception {
         final Connection con = getTestDbConnection();
         final DataContext dc = new JdbcDataContext(con);
-        final Table table = dc.getDefaultSchema().getTables()[0];
+        final Table table = dc.getDefaultSchema().getTables().get(0);
         final DataSet dataSet = dc.query().from(table).selectAll().limit(0).execute();
         assertTrue(dataSet instanceof EmptyDataSet);
         assertFalse(dataSet.next());
@@ -142,7 +141,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
         Schema schema = strategy.getSchemaByName(strategy.getDefaultSchemaName());
 
         Query q = new Query();
-        Table table = schema.getTables()[0];
+        Table table = schema.getTables().get(0);
         q.from(table, "a");
         q.select(table.getColumns());
         assertEquals(
@@ -174,7 +173,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
         QueryParameter queryParameter = new QueryParameter();
 
         Query q = new Query();
-        Table table = schema.getTables()[0];
+        Table table = schema.getTables().get(0);
         q.select(table.getColumns());
         q.from(table, "a");
         q.where(table.getColumnByName("CUSTOMERNUMBER"), OperatorType.EQUALS_TO, queryParameter);
@@ -232,7 +231,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
                 .select(FunctionType.TO_DATE, "creditlimit").select("creditlimit").limit(2).execute();
         try {
             assertEquals("[_CUSTOMERS_._CREDITLIMIT_, TO_DATE(_CUSTOMERS_._CREDITLIMIT_), _CUSTOMERS_._CREDITLIMIT_]",
-                    Arrays.toString(dataSet.getSelectItems()).replaceAll("\"", "_"));
+                    Arrays.toString(dataSet.getSelectItems().toArray()).replaceAll("\"", "_"));
 
             assertTrue(dataSet.next());
             final Object value0 = dataSet.getRow().getValue(0);
@@ -282,7 +281,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
         QueryParameter queryParameter = new QueryParameter();
 
         Query q = new Query();
-        Table table = schema.getTables()[0];
+        Table table = schema.getTables().get(0);
         q.select(new SelectItem("COUNT(*)", null));
         q.from(table, "a");
         q.where(table.getColumnByName("CREDITLIMIT"), OperatorType.GREATER_THAN_OR_EQUAL, queryParameter);
@@ -338,7 +337,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
         QueryParameter queryParameter = new QueryParameter();
 
         Query q = new Query();
-        Table table = schema.getTables()[0];
+        Table table = schema.getTables().get(0);
         q.select(new SelectItem("COUNT(*)", null));
         q.from(table, "a");
         q.where(table.getColumnByName("CREDITLIMIT"), OperatorType.LESS_THAN_OR_EQUAL, queryParameter);
@@ -388,7 +387,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
     public void testGetSchemaNormalTableTypes() throws Exception {
         Connection connection = getTestDbConnection();
         JdbcDataContext dc = new JdbcDataContext(connection, new TableType[] { TableType.TABLE, TableType.VIEW }, null);
-        Schema[] schemas = dc.getSchemas();
+        Schema[] schemas = dc.getSchemas().toArray(new Schema[dc.getSchemas().size()]);
 
         assertEquals(2, schemas.length);
         assertEquals("Schema[name=INFORMATION_SCHEMA]", schemas[0].toString());
@@ -405,7 +404,6 @@ public class JdbcDataContextTest extends JdbcTestCase {
                 TableType.GLOBAL_TEMPORARY }, null);
         Schema schema = dc.getDefaultSchema();
         Table customersTable = schema.getTableByName("CUSTOMERS");
-        Column[] columns = customersTable.getColumns();
         assertEquals(
                 "[Column[name=CUSTOMERNUMBER,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=0], "
                         + "Column[name=CUSTOMERNAME,columnNumber=1,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
@@ -423,7 +421,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
                         + "Column[name=SALESREPEMPLOYEENUMBER,columnNumber=11,type=INTEGER,nullable=true,nativeType=INTEGER,"
                         + "columnSize=0], "
                         + "Column[name=CREDITLIMIT,columnNumber=12,type=NUMERIC,nullable=true,nativeType=NUMERIC,columnSize=17]]",
-                Arrays.toString(columns));
+                Arrays.toString(customersTable.getColumns().toArray()));
         connection.close();
     }
 
@@ -432,18 +430,16 @@ public class JdbcDataContextTest extends JdbcTestCase {
         JdbcDataContext dc = new JdbcDataContext(connection, new TableType[] { TableType.TABLE }, null);
         Schema schema = dc.getDefaultSchema();
         Table productsTable = schema.getTableByName("PRODUCTS");
-        Relationship[] relations = productsTable.getRelationships();
 
         /**
          * TODO: A single constraint now exists, create more ...
          */
         assertEquals("[Relationship[primaryTable=PRODUCTS,primaryColumns=[PRODUCTCODE],foreignTable=ORDERFACT,"
-                + "foreignColumns=[PRODUCTCODE]]]", Arrays.toString(relations));
+                + "foreignColumns=[PRODUCTCODE]]]", Arrays.toString(productsTable.getRelationships().toArray()));
 
-        Column[] indexedColumns = productsTable.getIndexedColumns();
         assertEquals(
                 "[Column[name=PRODUCTCODE,columnNumber=0,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]]",
-                Arrays.toString(indexedColumns));
+                Arrays.toString(productsTable.getIndexedColumns().toArray()));
 
         connection.close();
     }
@@ -494,7 +490,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
         Schema schema = dc.getDefaultSchema();
 
         Query q = new Query().setMaxRows(3);
-        Table table = schema.getTables()[0];
+        Table table = schema.getTables().get(0);
         q.from(table, "a");
         q.select(table.getColumns());
         assertEquals("SELECT a.\"CUSTOMERNUMBER\", a.\"CUSTOMERNAME\", a.\"CONTACTLASTNAME\", a.\"CONTACTFIRSTNAME\", "
@@ -540,7 +536,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
         final DataContext dataContext1 = new JdbcDataContext(connection);
         final DataContext dataContext2 = new QueryPostprocessDataContext() {
             @Override
-            public DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+            public DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
                 Query q = new Query();
                 q.from(table, "a");
                 q.select(columns);
@@ -578,7 +574,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
                         + "Column[name=SALESREPEMPLOYEENUMBER,columnNumber=11,type=INTEGER,nullable=true,nativeType=INTEGER,"
                         + "columnSize=0], "
                         + "Column[name=CREDITLIMIT,columnNumber=12,type=NUMERIC,nullable=true,nativeType=NUMERIC,columnSize=17]]",
-                Arrays.toString(customersTable.getColumns()));
+                Arrays.toString(customersTable.getColumns().toArray()));
         assertEquals(
                 "[Column[name=EMPLOYEENUMBER,columnNumber=0,type=INTEGER,nullable=false,nativeType=INTEGER,columnSize=0], "
                         + "Column[name=LASTNAME,columnNumber=1,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50], "
@@ -588,7 +584,7 @@ public class JdbcDataContextTest extends JdbcTestCase {
                         + "Column[name=OFFICECODE,columnNumber=5,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=20], "
                         + "Column[name=REPORTSTO,columnNumber=6,type=INTEGER,nullable=true,nativeType=INTEGER,columnSize=0], "
                         + "Column[name=JOBTITLE,columnNumber=7,type=VARCHAR,nullable=false,nativeType=VARCHAR,columnSize=50]]",
-                Arrays.toString(employeeTable.getColumns()));
+                Arrays.toString(employeeTable.getColumns().toArray()));
 
         Column employeeNumberColumn1 = customersTable.getColumnByName("SALESREPEMPLOYEENUMBER");
         Column countryColumn = customersTable.getColumnByName("COUNTRY");

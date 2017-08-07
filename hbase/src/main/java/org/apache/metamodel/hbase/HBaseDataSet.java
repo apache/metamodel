@@ -19,12 +19,15 @@
 package org.apache.metamodel.hbase;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +40,8 @@ final class HBaseDataSet extends AbstractDataSet {
     private final org.apache.hadoop.hbase.client.Table _hTable;
     private volatile Result _nextResult;
 
-    public HBaseDataSet(Column[] columns, ResultScanner scanner, org.apache.hadoop.hbase.client.Table hTable) {
-        super(columns);
+    public HBaseDataSet(List<Column> columns, ResultScanner scanner, org.apache.hadoop.hbase.client.Table hTable) {
+        super(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
         _scanner = scanner;
         _hTable = hTable;
     }

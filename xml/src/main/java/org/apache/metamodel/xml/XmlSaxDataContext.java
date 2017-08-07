@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -205,13 +206,13 @@ public class XmlSaxDataContext extends QueryPostprocessDataContext {
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, Column[] columns, int maxRows) {
+    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         final XmlSaxTableDef tableDef = getTableDef(table);
 
-        final String[] valueXpaths = new String[columns.length];
-        final SelectItem[] selectItems = new SelectItem[columns.length];
-        for (int i = 0; i < columns.length; i++) {
-            final Column column = columns[i];
+        final String[] valueXpaths = new String[columns.size()];
+        final SelectItem[] selectItems = new SelectItem[columns.size()];
+        for (int i = 0; i < columns.size(); i++) {
+            final Column column = columns.get(i);
             selectItems[i] = new SelectItem(column);
             valueXpaths[i] = getXpath(tableDef, column);
         }
