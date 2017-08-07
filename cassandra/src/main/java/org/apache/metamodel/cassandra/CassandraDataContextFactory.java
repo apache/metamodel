@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.apache.metamodel.ConnectionException;
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.factory.DataContextFactory;
+import org.apache.metamodel.factory.AbstractDataContextFactory;
 import org.apache.metamodel.factory.DataContextProperties;
 import org.apache.metamodel.factory.ResourceFactoryRegistry;
 import org.apache.metamodel.factory.UnsupportedDataContextPropertiesException;
@@ -32,13 +32,11 @@ import com.datastax.driver.core.Cluster.Builder;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
-public class CassandraDataContextFactory implements DataContextFactory {
-
-    public static final String PROPERTY_TYPE = "cassandra";
+public class CassandraDataContextFactory extends AbstractDataContextFactory {
 
     @Override
-    public boolean accepts(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry) {
-        return PROPERTY_TYPE.equals(properties.getDataContextType());
+    protected String getType() {
+        return "cassandra";
     }
 
     @Override

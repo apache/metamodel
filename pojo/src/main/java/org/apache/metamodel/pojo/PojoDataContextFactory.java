@@ -23,19 +23,17 @@ import java.util.List;
 
 import org.apache.metamodel.ConnectionException;
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.factory.DataContextFactory;
+import org.apache.metamodel.factory.AbstractDataContextFactory;
 import org.apache.metamodel.factory.DataContextProperties;
 import org.apache.metamodel.factory.ResourceFactoryRegistry;
 import org.apache.metamodel.factory.UnsupportedDataContextPropertiesException;
 import org.apache.metamodel.util.SimpleTableDef;
 
-public class PojoDataContextFactory implements DataContextFactory {
-
-    public static final String PROPERTY_TYPE = "pojo";
+public class PojoDataContextFactory extends AbstractDataContextFactory {
 
     @Override
-    public boolean accepts(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry) {
-        return PROPERTY_TYPE.equals(properties.getDataContextType());
+    protected String getType() {
+        return "pojo";
     }
 
     @Override

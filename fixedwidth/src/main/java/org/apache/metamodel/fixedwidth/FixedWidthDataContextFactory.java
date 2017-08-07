@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.metamodel.DataContext;
+import org.apache.metamodel.factory.AbstractDataContextFactory;
 import org.apache.metamodel.factory.DataContextFactory;
 import org.apache.metamodel.factory.DataContextProperties;
 import org.apache.metamodel.factory.ResourceFactoryRegistry;
@@ -32,24 +33,20 @@ import org.apache.metamodel.util.Resource;
 /**
  * {@link DataContextFactory} for {@link FixedWidthDataContext}s.
  * 
- * In addition to supporting common properties to define resource path, encoding
- * etc., this implementation expects a custom property called "columns". This
- * property may take one of two forms:
+ * In addition to supporting common properties to define resource path, encoding etc., this implementation expects a
+ * custom property called "columns". This property may take one of two forms:
  * 
  * <ul>
- * <li>A string format where column name and widths in characters are
- * comma-separated. Example: "id,5,name,10,amount,7,account,5".</li>
- * <li>A key/value map where keys are column names (strings) and values are
- * column widths (numbers).</li>
+ * <li>A string format where column name and widths in characters are comma-separated. Example:
+ * "id,5,name,10,amount,7,account,5".</li>
+ * <li>A key/value map where keys are column names (strings) and values are column widths (numbers).</li>
  * </ul>
  */
-public class FixedWidthDataContextFactory implements DataContextFactory {
-
-    public static final String PROPERTY_TYPE = "fixed-width";
+public class FixedWidthDataContextFactory extends AbstractDataContextFactory {
 
     @Override
-    public boolean accepts(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry) {
-        return PROPERTY_TYPE.equals(properties.getDataContextType());
+    protected String getType() {
+        return "fixed-width";
     }
 
     @SuppressWarnings("unchecked")
@@ -88,16 +85,8 @@ public class FixedWidthDataContextFactory implements DataContextFactory {
             }
         }
 
-        final FixedWidthConfiguration configuration = new FixedWidthConfiguration(encoding, columnSpecs,
-                failOnInconsistentRowLength);
+        final FixedWidthConfiguration configuration =
+                new FixedWidthConfiguration(encoding, columnSpecs, failOnInconsistentRowLength);
         return new FixedWidthDataContext(resource, configuration);
-    }
-
-    private String getString(String value, String ifNull) {
-        return value == null ? ifNull : value;
-    }
-
-    private boolean getBoolean(Boolean value, boolean ifNull) {
-        return value == null ? ifNull : value;
     }
 }

@@ -20,7 +20,7 @@ package org.apache.metamodel.excel;
 
 import org.apache.metamodel.ConnectionException;
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.factory.DataContextFactory;
+import org.apache.metamodel.factory.AbstractDataContextFactory;
 import org.apache.metamodel.factory.DataContextProperties;
 import org.apache.metamodel.factory.ResourceFactoryRegistry;
 import org.apache.metamodel.factory.UnsupportedDataContextPropertiesException;
@@ -29,13 +29,11 @@ import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
 import org.apache.metamodel.util.Resource;
 import org.apache.metamodel.util.SimpleTableDef;
 
-public class ExcelDataContextFactory implements DataContextFactory {
-
-    public static final String PROPERTY_TYPE = "excel";
+public class ExcelDataContextFactory extends AbstractDataContextFactory {
 
     @Override
-    public boolean accepts(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry) {
-        return PROPERTY_TYPE.equals(properties.getDataContextType());
+    protected String getType() {
+        return "excel";
     }
 
     @Override
@@ -44,8 +42,8 @@ public class ExcelDataContextFactory implements DataContextFactory {
 
         final Resource resource = resourceFactoryRegistry.createResource(properties.getResourceProperties());
 
-        final int columnNameLineNumber = getInt(properties.getColumnNameLineNumber(),
-                ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE);
+        final int columnNameLineNumber =
+                getInt(properties.getColumnNameLineNumber(), ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE);
         final Boolean skipEmptyLines = getBoolean(properties.isSkipEmptyLines(), true);
         final Boolean skipEmptyColumns = getBoolean(properties.isSkipEmptyColumns(), false);
 
@@ -58,16 +56,8 @@ public class ExcelDataContextFactory implements DataContextFactory {
             columnNamingStrategy = new CustomColumnNamingStrategy(columnNames);
         }
 
-        final ExcelConfiguration configuration = new ExcelConfiguration(columnNameLineNumber, columnNamingStrategy,
-                skipEmptyLines, skipEmptyColumns);
+        final ExcelConfiguration configuration =
+                new ExcelConfiguration(columnNameLineNumber, columnNamingStrategy, skipEmptyLines, skipEmptyColumns);
         return new ExcelDataContext(resource, configuration);
-    }
-
-    private int getInt(Integer value, int ifNull) {
-        return value == null ? ifNull : value;
-    }
-
-    private boolean getBoolean(Boolean value, boolean ifNull) {
-        return value == null ? ifNull : value;
     }
 }
