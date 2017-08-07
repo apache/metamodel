@@ -21,9 +21,6 @@ package org.apache.metamodel.jdbc;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.data.DataSet;
@@ -38,6 +35,8 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The QuerySplitter class makes it possible to split up queries that are

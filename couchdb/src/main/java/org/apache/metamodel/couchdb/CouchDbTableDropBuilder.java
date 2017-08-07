@@ -18,11 +18,11 @@
  */
 package org.apache.metamodel.couchdb;
 
-import org.ektorp.CouchDbInstance;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.drop.AbstractTableDropBuilder;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Table;
+import org.ektorp.CouchDbInstance;
 
 final class CouchDbTableDropBuilder extends AbstractTableDropBuilder {
 

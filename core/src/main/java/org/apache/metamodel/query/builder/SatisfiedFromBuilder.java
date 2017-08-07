@@ -18,11 +18,11 @@
  */
 package org.apache.metamodel.query.builder;
 
+import java.util.List;
+
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
-
-import java.util.List;
 
 /**
  * Represents a builder where the FROM part is satisfied, ie. a SELECT clause is

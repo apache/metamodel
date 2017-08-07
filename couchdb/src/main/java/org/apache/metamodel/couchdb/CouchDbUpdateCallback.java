@@ -25,9 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.ektorp.CouchDbConnector;
-import org.ektorp.CouchDbInstance;
-import org.ektorp.DocumentOperationResult;
 import org.apache.metamodel.AbstractUpdateCallback;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.create.TableCreationBuilder;
@@ -37,6 +34,9 @@ import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.RowUpdationBuilder;
+import org.ektorp.CouchDbConnector;
+import org.ektorp.CouchDbInstance;
+import org.ektorp.DocumentOperationResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

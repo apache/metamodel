@@ -18,11 +18,11 @@
  */
 package org.apache.metamodel.elasticsearch.common;
 
-import org.apache.metamodel.util.TimeComparator;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import org.apache.metamodel.util.TimeComparator;
 
 /**
  * Util class to convert date strings from ElasticSearch to

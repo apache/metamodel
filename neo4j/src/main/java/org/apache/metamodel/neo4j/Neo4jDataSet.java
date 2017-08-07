@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.neo4j;
 
+import java.util.List;
+
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
@@ -26,8 +28,6 @@ import org.apache.metamodel.query.SelectItem;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.List;
 
 final class Neo4jDataSet extends AbstractDataSet {
 

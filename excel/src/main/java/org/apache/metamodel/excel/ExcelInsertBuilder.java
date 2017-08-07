@@ -20,10 +20,6 @@ package org.apache.metamodel.excel;
 
 import java.util.Date;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
 import org.apache.metamodel.data.Style;
 import org.apache.metamodel.data.Style.Color;
 import org.apache.metamodel.data.Style.SizeUnit;
@@ -33,6 +29,10 @@ import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.LazyRef;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
 
 /**
  * {@link RowInsertionBuilder} for excel spreadsheets.

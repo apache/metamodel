@@ -18,15 +18,15 @@
  */
 package org.apache.metamodel.fixedwidth;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.util.FileHelper;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * DataSet implementation for fixed width values.

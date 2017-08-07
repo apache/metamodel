@@ -18,12 +18,12 @@
  */
 package org.apache.metamodel.csv;
 
+import java.util.List;
+
 import org.apache.metamodel.create.AbstractTableCreationBuilder;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-
-import java.util.List;
 
 final class CsvCreateTableBuilder extends AbstractTableCreationBuilder<CsvUpdateCallback> {
 

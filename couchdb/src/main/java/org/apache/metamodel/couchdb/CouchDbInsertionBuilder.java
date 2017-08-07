@@ -21,11 +21,11 @@ package org.apache.metamodel.couchdb;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.ektorp.CouchDbConnector;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
+import org.ektorp.CouchDbConnector;
 
 final class CouchDbInsertionBuilder extends AbstractRowInsertionBuilder<CouchDbUpdateCallback> {
 

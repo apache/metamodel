@@ -16,25 +16,3 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.excel;
-
-import java.util.List;
-
-import org.apache.metamodel.data.DataSet;
-import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.Schema;
-import org.apache.metamodel.schema.Table;
-
-/**
- * Delegate for spreadsheet-implementation specific operations in an
- * {@link ExcelDataContext}.
- */
-interface SpreadsheetReaderDelegate {
-
-    public void notifyTablesModified();
-
-    public Schema createSchema(String schemaName) throws Exception;
-
-    public DataSet executeQuery(Table table, List<Column> columns, int maxRows) throws Exception;
-
-}
