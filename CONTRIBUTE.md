@@ -57,3 +57,4 @@ We stick to the [Google Java Style Guide](http://google-styleguide.googlecode.co
 * We often prefix instance variables with an underscore (_). This to easily distinguish between method local and instance variables, as well as avoiding the overuse of the 'this' keyword in e.g. setter methods.
 * We format indentation using spaces, not tabs. We use 4 spaces for each indentation.
 * We format line wrapping using a desired max line length of 120 characters.
+* We use the default eclipse ordering for import statements. If you are using a different IDE, please adapt the import ordering. For IntelliJ IDEA, you can follow the steps described in this [stackoverflow question](https://stackoverflow.com/questions/14716283/is-it-possible-for-intellij-to-organize-imports-the-same-way-as-in-eclipse).
