@@ -337,7 +337,7 @@ under the License.
 				<executions>
 					<execution>
 						<id>test</id>
-						<phase>test</phase>
+						<phase>verify</phase>
 						<configuration>
 							<configLocation>style/checkstyle.xml</configLocation>
 							<encoding>UTF-8</encoding>

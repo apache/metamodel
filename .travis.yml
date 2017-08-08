@@ -10,12 +10,15 @@ before_install:
   - sed -i.bak s/dbms.security.auth_enabled=true/dbms.security.auth_enabled=false/g neo4j-community-2.2.3/conf/neo4j-server.properties
   - neo4j-community-2.2.3/bin/neo4j start
 
+script: 
+  - mvn verify
+
 services:
   - couchdb
   - mongodb
   
 after_success:
-  - mvn test javadoc:javadoc
+  - mvn javadoc:javadoc
  
 notifications:
   email: false
