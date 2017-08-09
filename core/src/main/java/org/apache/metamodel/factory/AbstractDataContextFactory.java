@@ -76,18 +76,18 @@ public abstract class AbstractDataContextFactory implements DataContextFactory {
 
     private static boolean isNullOrEmpty(Object value) {
         if (value == null) {
-            return false;
+            return true;
         }
         if (value instanceof String && ((String) value).isEmpty()) {
-            return false;
+            return true;
         }
         if (value instanceof Collection && ((Collection<?>) value).isEmpty()) {
-            return false;
+            return true;
         }
         if (value instanceof Map && ((Map<?, ?>) value).isEmpty()) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
 }
