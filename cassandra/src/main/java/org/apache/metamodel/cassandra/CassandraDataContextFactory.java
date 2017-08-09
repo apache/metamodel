@@ -29,7 +29,6 @@ import org.apache.metamodel.factory.UnsupportedDataContextPropertiesException;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Cluster.Builder;
-import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
 public class CassandraDataContextFactory extends AbstractDataContextFactory {
@@ -65,7 +64,7 @@ public class CassandraDataContextFactory extends AbstractDataContextFactory {
 
         final Cluster cluster = clusterBuilder.build();
 
-        final String keySpace = Objects.firstNonNull((String) map.get("keyspace"), properties.getDatabaseName());
+        final String keySpace = getString(map.get("keyspace"), properties.getDatabaseName());
 
         return new CassandraDataContext(cluster, keySpace, properties.getTableDefs());
     }

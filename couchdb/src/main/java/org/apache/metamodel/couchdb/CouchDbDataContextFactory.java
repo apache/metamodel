@@ -53,7 +53,7 @@ public class CouchDbDataContextFactory extends AbstractDataContextFactory {
         } else {
             httpClientBuilder.host(properties.getHostname());
             httpClientBuilder.port(getInt(properties.getPort(), CouchDbDataContext.DEFAULT_PORT));
-            httpClientBuilder.enableSSL(getBoolean((Boolean) properties.toMap().get("ssl"), false));
+            httpClientBuilder.enableSSL(getBoolean(properties.toMap().get("ssl"), false));
         }
 
         httpClientBuilder.username(properties.getUsername());

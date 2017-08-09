@@ -18,7 +18,12 @@
  */
 package org.apache.metamodel.factory;
 
+import java.util.Collection;
+import java.util.Map;
+
 import org.apache.metamodel.DataContext;
+import org.apache.metamodel.util.BooleanComparator;
+import org.apache.metamodel.util.NumberComparator;
 
 /**
  * Abstract implementation of {@link DataContextFactory} with utility methods for easier subclass implementation.
@@ -38,19 +43,51 @@ public abstract class AbstractDataContextFactory implements DataContextFactory {
         return getType().equals(properties.getDataContextType());
     }
 
-    protected String getString(String value, String ifNull) {
-        return value == null ? ifNull : value;
+    protected String getString(Object value, String ifNull) {
+        if (isNullOrEmpty(value)) {
+            return ifNull;
+        }
+        return value.toString();
     }
 
-    protected int getInt(Integer value, int ifNull) {
-        return value == null ? ifNull : value;
+    protected int getInt(Object value, int ifNull) {
+        if (isNullOrEmpty(value)) {
+            return ifNull;
+        }
+        return NumberComparator.toNumber(value).intValue();
     }
 
-    protected boolean getBoolean(Boolean value, boolean ifNull) {
-        return value == null ? ifNull : value;
+    protected boolean getBoolean(Object value, boolean ifNull) {
+        if (isNullOrEmpty(value)) {
+            return ifNull;
+        }
+        return BooleanComparator.toBoolean(value).booleanValue();
     }
 
-    protected char getChar(Character value, char ifNull) {
-        return value == null ? ifNull : value;
+    protected char getChar(Object value, char ifNull) {
+        if (isNullOrEmpty(value)) {
+            return ifNull;
+        }
+        if (value instanceof Character) {
+            return ((Character) value).charValue();
+        }
+        return value.toString().charAt(0);
     }
+
+    private static boolean isNullOrEmpty(Object value) {
+        if (value == null) {
+            return false;
+        }
+        if (value instanceof String && ((String) value).isEmpty()) {
+            return false;
+        }
+        if (value instanceof Collection && ((Collection<?>) value).isEmpty()) {
+            return false;
+        }
+        if (value instanceof Map && ((Map<?, ?>) value).isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
 }
