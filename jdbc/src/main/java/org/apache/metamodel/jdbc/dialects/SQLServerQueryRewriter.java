@@ -113,6 +113,14 @@ public class SQLServerQueryRewriter extends OffsetFetchQueryRewriter {
                 final String dateTimeValue = "CAST('" + format.format(date) + "' AS DATETIME)";
 
                 sb.append(dateTimeValue);
+
+                //Remove TIMESTAMP token as SQL Server doesn't support it
+                int timestampIndex = sb.lastIndexOf("TIMESTAMP");
+                if(timestampIndex != -1)
+                {
+                    sb.replace(timestampIndex, timestampIndex + "TIMESTAMP".length(), "");
+                }
+                
                 return sb.toString();
             }
         }
