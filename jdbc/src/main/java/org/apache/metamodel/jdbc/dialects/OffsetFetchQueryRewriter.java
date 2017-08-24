@@ -27,23 +27,26 @@ import org.apache.metamodel.query.Query;
  */
 public abstract class OffsetFetchQueryRewriter extends DefaultQueryRewriter {
 
-    private final String databaseProductName;
-    private final int databaseSupportedVersion;
+    private final String _databaseProductName;
+    private final int _databaseSupportedVersion;
+    private final boolean _fetchNeedsOrderBy;
 
-    public OffsetFetchQueryRewriter(JdbcDataContext dataContext, int minSupportedVersion) {
+    public OffsetFetchQueryRewriter(final JdbcDataContext dataContext, final int minSupportedVersion,
+            final boolean fetchNeedsOrderBy) {
         super(dataContext);
-        databaseProductName = dataContext.getDatabaseProductName();
-        databaseSupportedVersion = minSupportedVersion;
+        _databaseProductName = dataContext.getDatabaseProductName();
+        _databaseSupportedVersion = minSupportedVersion;
+        _fetchNeedsOrderBy = fetchNeedsOrderBy;
     }
 
     @Override
-    public final boolean isFirstRowSupported() {
-        return true;
+    public boolean isFirstRowSupported(final Query query) {
+        return isSupportedVersion(_databaseProductName, _databaseSupportedVersion) && !query.getOrderByClause().isEmpty();
     }
 
     @Override
-    public final boolean isMaxRowsSupported() {
-        return true;
+    public boolean isMaxRowsSupported() {
+        return isSupportedVersion(_databaseProductName, _databaseSupportedVersion);
     }
 
     /**
@@ -53,17 +56,23 @@ public abstract class OffsetFetchQueryRewriter extends DefaultQueryRewriter {
      * will use the database's "OFFSET i ROWS FETCH NEXT j ROWS ONLY" construct.
      */
     @Override
-    public String rewriteQuery(Query query) {
+    public String rewriteQuery(final Query query) {
+        final boolean hasOrderBy = !query.getOrderByClause().isEmpty();
         String queryString = super.rewriteQuery(query);
-        if(isSupportedVersion(databaseProductName, databaseSupportedVersion)) {
-            Integer maxRows = query.getMaxRows();
-            Integer firstRow = query.getFirstRow();
-            if (maxRows != null && firstRow != null && queryString.indexOf("ORDER BY") >= 0 ) {
-                queryString = queryString.replaceAll("TOP [0-9]+", "");
-                queryString = queryString + " OFFSET " + (firstRow-1) + " ROWS FETCH NEXT " + maxRows + " ROWS ONLY";
+
+        if(isSupportedVersion(_databaseProductName, _databaseSupportedVersion)) {
+            final Integer maxRows = query.getMaxRows();
+            final int firstRow = query.getFirstRow() != null ? query.getFirstRow() : 1;
+
+            if(!_fetchNeedsOrderBy || hasOrderBy) {
+                queryString = queryString + " OFFSET " + (firstRow-1) + " ROWS";
+
+                if (maxRows != null) {
+                    queryString = queryString.replaceAll("TOP [0-9]+", "");
+                    queryString += " FETCH NEXT " + maxRows + " ROWS ONLY";
+                }
             }
         }
         return queryString;
     }
-
 }
