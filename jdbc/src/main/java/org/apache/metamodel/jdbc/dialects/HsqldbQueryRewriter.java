@@ -49,7 +49,7 @@ public class HsqldbQueryRewriter extends DefaultQueryRewriter {
     }
 
     @Override
-    public boolean isFirstRowSupported() {
+    public boolean isFirstRowSupported(final Query query) {
         return true;
     }
 
