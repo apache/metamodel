@@ -11,6 +11,7 @@
  * [METAMODEL-1144] - Optimized evaluation of conditional client-side JOIN statements.
  * [METAMODEL-1145] - Fixed bug with modelling JDBC table relationships when there are multiple keys involved in the relationship.
  * [METAMODEL-1151] - Added DataContextFactory classes for instantiating DataContexts of many types based on properties.
+ * [METAMODEL-1160] - Fixed bug when deserializing v4.x CsvTable objects
 
 ### Apache MetaModel 4.6.0
 
