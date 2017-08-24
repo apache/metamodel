@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.jdbc.dialects;
 
-import static org.apache.metamodel.jdbc.JdbcDataContext.DATABASE_PRODUCT_ORACLE;
-
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.schema.ColumnType;
@@ -32,7 +30,7 @@ public class OracleQueryRewriter extends OffsetFetchQueryRewriter {
     public static final int FIRST_FETCH_SUPPORTING_VERSION = 12;
 
     public OracleQueryRewriter(JdbcDataContext dataContext) {
-        super(dataContext, FIRST_FETCH_SUPPORTING_VERSION);
+        super(dataContext, FIRST_FETCH_SUPPORTING_VERSION, false);
     }
 
     @Override
