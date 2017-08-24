@@ -251,8 +251,7 @@ public class OracleTest extends AbstractJdbIntegrationTest {
         Relationship foundRelationship = null;
         for (Relationship relationship : employeeTable.getRelationships(departmentsTable)) {
             if (relationship.toString()
-                    .equals("Relationship[primaryTable=EMPLOYEES,primaryColumns=[EMPLOYEE_ID],foreignTable=DEPARTMENTS,foreignColumns=[MANAGER_ID]]")
-            {
+                    .equals("Relationship[primaryTable=EMPLOYEES,primaryColumns=[EMPLOYEE_ID],foreignTable=DEPARTMENTS,foreignColumns=[MANAGER_ID]]")) {
                 foundRelationship = relationship;
             }
         } assertNotNull(foundRelationship);
