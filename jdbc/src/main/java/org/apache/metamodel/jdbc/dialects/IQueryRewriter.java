@@ -90,8 +90,11 @@ public interface IQueryRewriter {
      * 
      * @return whether this query rewriter is able to write the "First row"
      *         query property to the query string.
+     *
+     * @param query For some database engines, the content of the query decides
+     *        the ability to change first row
      */
-    public boolean isFirstRowSupported();
+    public boolean isFirstRowSupported(final Query query);
 
     /**
      * Determines whether a specific scalar function is supported by the

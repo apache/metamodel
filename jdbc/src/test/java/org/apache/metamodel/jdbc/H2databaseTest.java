@@ -224,7 +224,7 @@ public class H2databaseTest extends TestCase {
         final IQueryRewriter queryRewriter = dc.getQueryRewriter();
         assertEquals("H2QueryRewriter", queryRewriter.getClass().getSimpleName());
 
-        assertTrue(queryRewriter.isFirstRowSupported());
+        assertTrue(queryRewriter.isFirstRowSupported(new Query()));
         assertTrue(queryRewriter.isMaxRowsSupported());
     }
 

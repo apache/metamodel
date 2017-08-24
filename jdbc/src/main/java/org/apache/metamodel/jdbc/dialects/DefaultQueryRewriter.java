@@ -207,7 +207,7 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
     }
 
     @Override
-    public boolean isFirstRowSupported() {
+    public boolean isFirstRowSupported(final Query query) {
         return false;
     }
 

@@ -1,5 +1,6 @@
 ### Apache MetaModel 5.0
 
+ * [METAMODEL-1161] - Fixed issue with maxRows being ignored on Oracle 
  * [METAMODEL-6] - Added update summary containing information about changes on returning UpdateableDataContext.executeUpdate(..)
  * [METAMODEL-7] - Applied collections, lists etc. instead of arrays in the MetaModel API.
  * [METAMODEL-63] - Added UnionDataSet, a general purpose utility for doing client-side unions from other queries or data sets.
