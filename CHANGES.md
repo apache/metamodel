@@ -1,3 +1,4 @@
+ * [METAMODEL-1161] - Fixed issue with maxRows being ignored on Oracle
  * [METAMODEL-1140] - Allowed SalesforceDataContext without a security token.
  * [METAMODEL-1141] - Added RFC 4180 compliant CSV parsing.
 
