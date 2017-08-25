@@ -21,8 +21,12 @@ package org.apache.metamodel.csv;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectInputStream.GetField;
-import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import org.apache.metamodel.schema.AbstractTable;
 import org.apache.metamodel.schema.Column;
@@ -35,6 +39,7 @@ import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
 import org.apache.metamodel.schema.naming.ColumnNamingSession;
 import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.LegacyDeserializationObjectInputStream;
 
 import com.opencsv.CSVReader;
 
@@ -165,26 +170,14 @@ final class CsvTable extends AbstractTable {
 
     private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
         final GetField getFields = stream.readFields();
-        Arrays.stream(getFields.getObjectStreamClass().getFields()).forEach(f -> {
-            System.out.println(f.getName());
-        });
         Object columns = getFields.get("_columns", null);
         if (columns instanceof Column[]) {
             columns = Arrays.<Column> asList((Column[]) columns);
         }
-        setFieldReflective("_columns", columns);
-        setFieldReflective("_schema", getFields.get("_schema", null));
-        setFieldReflective("_tableName", getFields.get("_tableName", null));
-    }
-
-    private void setFieldReflective(String fieldName, Object value) {
-        try {
-            final Field field = CsvTable.class.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            field.set(this, value);
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException(
-                    "Unable to deserialize and assign field '" + fieldName + "' to value: " + value, e);
-        }
+        final Object schema = getFields.get("_schema", null);
+        final Object tableName = getFields.get("_tableName", null);
+        LegacyDeserializationObjectInputStream.setField(CsvTable.class, this, "_columns", columns);
+        LegacyDeserializationObjectInputStream.setField(CsvTable.class, this, "_schema", schema);
+        LegacyDeserializationObjectInputStream.setField(CsvTable.class, this, "_tableName", tableName);
     }
 }

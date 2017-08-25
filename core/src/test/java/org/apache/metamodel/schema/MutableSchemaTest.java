@@ -82,7 +82,7 @@ public class MutableSchemaTest {
             ois.close();
 
             final MutableSchema sch = (MutableSchema) obj;
-            assertEquals("", sch.getName());
+            assertEquals("schema", sch.getName());
 
             assertEquals(2, sch.getTableCount());
 

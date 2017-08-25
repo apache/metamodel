@@ -56,7 +56,7 @@ public class ImmutableSchemaTest {
             ois.close();
             
             final ImmutableSchema sch = (ImmutableSchema) obj;
-            assertEquals("", sch.getName());
+            assertEquals("schema", sch.getName());
             
             assertEquals(2, sch.getTableCount());
             
