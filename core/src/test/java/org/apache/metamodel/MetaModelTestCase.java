@@ -86,7 +86,7 @@ public abstract class MetaModelTestCase extends TestCase {
      * <li>Views: The ProjectContributor view</li>
      * </ul>
      */
-    protected Schema getExampleSchema() {
+    public static Schema getExampleSchema() {
         MutableSchema schema = new MutableSchema("MetaModelSchema");
 
         MutableTable table1 = new MutableTable(TABLE_CONTRIBUTOR, TableType.TABLE, schema);
