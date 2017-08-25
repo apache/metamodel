@@ -244,8 +244,6 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         Schema schema = strategy.getDefaultSchema();
         assertEquals("dbo", schema.getName());
 
-        assertEquals("[Sales, HumanResources, dbo, Purchasing, sys, Production, INFORMATION_SCHEMA, Person]",
-                Arrays.toString(strategy.getSchemaNames()));
         final List<String> expectedSchemaNames =
                 Arrays.asList("Sales", "HumanResources", "dbo", "Purchasing", "sys", "Production", "INFORMATION_SCHEMA",
                         "Person");
