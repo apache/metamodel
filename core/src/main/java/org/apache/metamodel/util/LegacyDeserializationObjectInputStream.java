@@ -35,26 +35,44 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A specialized {@link ObjectInputStream} for MetaModel which can be used or
- * extended if it is needed to deserialize legacy MetaModel objects. This is
- * needed since the namespace of MetaModel was changed from org.apache.metamodel
- * to org.apache.metamodel.
+ * A specialized {@link ObjectInputStream} for MetaModel which can be used or extended if it is needed to deserialize
+ * legacy MetaModel objects. This is needed since the namespace of MetaModel was changed from org.apache.metamodel to
+ * org.apache.metamodel.
  */
 public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
 
     private static final Logger logger = LoggerFactory.getLogger(LegacyDeserializationObjectInputStream.class);
 
     /**
-     * Implementation of the new {@link FunctionType} and
-     * {@link AggregateFunction} interfaces which still adheres to the
-     * constant/enum values of the old FunctionType definition. While
-     * deserializing old FunctionType objects, we will convert them to this
-     * enum.
+     * Utility method for setting a field in a class
+     * 
+     * @param cls
+     * @param fieldName
+     * @param value
+     */
+    public static void setField(Class<?> cls, Object instance, String fieldName, Object value) {
+        try {
+            final Field field = cls.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(instance, value);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(
+                    "Unable to assign field '" + cls.getSimpleName() + '.' + fieldName + "' to value: " + value, e);
+        }
+    }
+
+    /**
+     * Implementation of the new {@link FunctionType} and {@link AggregateFunction} interfaces which still adheres to
+     * the constant/enum values of the old FunctionType definition. While deserializing old FunctionType objects, we
+     * will convert them to this enum.
      */
     protected static enum LegacyFunctionType implements AggregateFunction {
 
-        COUNT(FunctionType.COUNT), AVG(FunctionType.AVG), SUM(FunctionType.SUM), MAX(FunctionType.MAX), MIN(
-                FunctionType.MIN);
+        COUNT(FunctionType.COUNT),
+        AVG(FunctionType.AVG),
+        SUM(FunctionType.SUM),
+        MAX(FunctionType.MAX),
+        MIN(FunctionType.MIN);
 
         private final AggregateFunction _delegate;
 
@@ -84,24 +102,49 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
     }
 
     /**
-     * Implementation of the new {@link ColumnType} interface which still
-     * adheres to the constant/enum values of the old ColumnType definition.
-     * While deserializing old ColumnType objects, we will convert them to this
-     * enum.
+     * Implementation of the new {@link ColumnType} interface which still adheres to the constant/enum values of the old
+     * ColumnType definition. While deserializing old ColumnType objects, we will convert them to this enum.
      */
     protected static enum LegacyColumnType implements ColumnType {
 
-        CHAR(ColumnType.CHAR), VARCHAR(ColumnType.VARCHAR), LONGVARCHAR(ColumnType.LONGVARCHAR), CLOB(ColumnType.CLOB), NCHAR(
-                ColumnType.NCHAR), NVARCHAR(ColumnType.NVARCHAR), LONGNVARCHAR(ColumnType.LONGNVARCHAR), NCLOB(
-                ColumnType.NCLOB), TINYINT(ColumnType.TINYINT), SMALLINT(ColumnType.SMALLINT), INTEGER(
-                ColumnType.INTEGER), BIGINT(ColumnType.BIGINT), FLOAT(ColumnType.FLOAT), REAL(ColumnType.REAL), DOUBLE(
-                ColumnType.DOUBLE), NUMERIC(ColumnType.NUMERIC), DECIMAL(ColumnType.DECIMAL), DATE(ColumnType.DATE), TIME(
-                ColumnType.TIME), TIMESTAMP(ColumnType.TIMESTAMP), BIT(ColumnType.BIT), BOOLEAN(ColumnType.BOOLEAN), BINARY(
-                ColumnType.BINARY), VARBINARY(ColumnType.VARBINARY), LONGVARBINARY(ColumnType.LONGVARBINARY), BLOB(
-                ColumnType.BLOB), NULL(ColumnType.NULL), OTHER(ColumnType.OTHER), JAVA_OBJECT(ColumnType.JAVA_OBJECT), DISTINCT(
-                ColumnType.DISTINCT), STRUCT(ColumnType.STRUCT), ARRAY(ColumnType.ARRAY), REF(ColumnType.REF), DATALINK(
-                ColumnType.DATALINK), ROWID(ColumnType.ROWID), SQLXML(ColumnType.SQLXML), LIST(ColumnType.LIST), MAP(
-                ColumnType.MAP);
+        CHAR(ColumnType.CHAR),
+        VARCHAR(ColumnType.VARCHAR),
+        LONGVARCHAR(ColumnType.LONGVARCHAR),
+        CLOB(ColumnType.CLOB),
+        NCHAR(ColumnType.NCHAR),
+        NVARCHAR(ColumnType.NVARCHAR),
+        LONGNVARCHAR(ColumnType.LONGNVARCHAR),
+        NCLOB(ColumnType.NCLOB),
+        TINYINT(ColumnType.TINYINT),
+        SMALLINT(ColumnType.SMALLINT),
+        INTEGER(ColumnType.INTEGER),
+        BIGINT(ColumnType.BIGINT),
+        FLOAT(ColumnType.FLOAT),
+        REAL(ColumnType.REAL),
+        DOUBLE(ColumnType.DOUBLE),
+        NUMERIC(ColumnType.NUMERIC),
+        DECIMAL(ColumnType.DECIMAL),
+        DATE(ColumnType.DATE),
+        TIME(ColumnType.TIME),
+        TIMESTAMP(ColumnType.TIMESTAMP),
+        BIT(ColumnType.BIT),
+        BOOLEAN(ColumnType.BOOLEAN),
+        BINARY(ColumnType.BINARY),
+        VARBINARY(ColumnType.VARBINARY),
+        LONGVARBINARY(ColumnType.LONGVARBINARY),
+        BLOB(ColumnType.BLOB),
+        NULL(ColumnType.NULL),
+        OTHER(ColumnType.OTHER),
+        JAVA_OBJECT(ColumnType.JAVA_OBJECT),
+        DISTINCT(ColumnType.DISTINCT),
+        STRUCT(ColumnType.STRUCT),
+        ARRAY(ColumnType.ARRAY),
+        REF(ColumnType.REF),
+        DATALINK(ColumnType.DATALINK),
+        ROWID(ColumnType.ROWID),
+        SQLXML(ColumnType.SQLXML),
+        LIST(ColumnType.LIST),
+        MAP(ColumnType.MAP);
 
         private final ColumnType _delegate;
 
@@ -166,23 +209,26 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
     }
 
     /**
-     * Implementation of the new {@link OperatorType} interface which still
-     * adheres to the constant/enum values of the old OperatorType definition.
-     * While deserializing old OperatorType objects, we will convert them to
-     * this enum.
+     * Implementation of the new {@link OperatorType} interface which still adheres to the constant/enum values of the
+     * old OperatorType definition. While deserializing old OperatorType objects, we will convert them to this enum.
      */
     protected static enum LegacyOperatorType implements OperatorType {
 
-        EQUALS_TO(OperatorType.EQUALS_TO), DIFFERENT_FROM(OperatorType.DIFFERENT_FROM), LIKE(OperatorType.LIKE), GREATER_THAN(
-                OperatorType.GREATER_THAN), GREATER_THAN_OR_EQUAL(OperatorType.GREATER_THAN_OR_EQUAL), LESS_THAN(
-                OperatorType.LESS_THAN), LESS_THAN_OR_EQUAL(OperatorType.LESS_THAN_OR_EQUAL), IN(OperatorType.IN);
+        EQUALS_TO(OperatorType.EQUALS_TO),
+        DIFFERENT_FROM(OperatorType.DIFFERENT_FROM),
+        LIKE(OperatorType.LIKE),
+        GREATER_THAN(OperatorType.GREATER_THAN),
+        GREATER_THAN_OR_EQUAL(OperatorType.GREATER_THAN_OR_EQUAL),
+        LESS_THAN(OperatorType.LESS_THAN),
+        LESS_THAN_OR_EQUAL(OperatorType.LESS_THAN_OR_EQUAL),
+        IN(OperatorType.IN);
 
         private final OperatorType _delegate;
 
         private LegacyOperatorType(OperatorType delegate) {
             _delegate = delegate;
         }
-        
+
         @Override
         public boolean isSpaceDelimited() {
             return _delegate.isSpaceDelimited();
@@ -245,8 +291,8 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
     }
 
     /**
-     * Method that uses the (non-public) isEnum() method of
-     * {@link ObjectStreamClass} to determine if an enum is expected.
+     * Method that uses the (non-public) isEnum() method of {@link ObjectStreamClass} to determine if an enum is
+     * expected.
      * 
      * @param objectStreamClass
      * @return
@@ -260,23 +306,21 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
                 /*
                  * Snippet from the JDK source:
                  * 
-                 * void initNonProxy(ObjectStreamClass model,
-                 * Class<?> cl,
-                 * ClassNotFoundException resolveEx,
+                 * void initNonProxy(ObjectStreamClass model, Class<?> cl, ClassNotFoundException resolveEx,
                  * ObjectStreamClass superDesc)
                  **/
-                final Method initMethod = ObjectStreamClass.class.getDeclaredMethod("initNonProxy", ObjectStreamClass.class,
-                        Class.class, ClassNotFoundException.class, ObjectStreamClass.class);
+                final Method initMethod = ObjectStreamClass.class.getDeclaredMethod("initNonProxy",
+                        ObjectStreamClass.class, Class.class, ClassNotFoundException.class, ObjectStreamClass.class);
                 initMethod.setAccessible(true);
                 initMethod.invoke(objectStreamClass, objectStreamClass, null, null, null);
             }
         } catch (NoSuchFieldError e) {
             logger.debug("Failed to access boolean field 'initialized' in {}", objectStreamClass.getName(), e);
         } catch (Exception e) {
-            logger.debug("Failed to access invoke ObjectStreamClass.initialize() to prepare {}", objectStreamClass
-                    .getName(), e);
+            logger.debug("Failed to access invoke ObjectStreamClass.initialize() to prepare {}",
+                    objectStreamClass.getName(), e);
         }
-        
+
         try {
             final Method isEnumMethod = ObjectStreamClass.class.getDeclaredMethod("isEnum");
             isEnumMethod.setAccessible(true);

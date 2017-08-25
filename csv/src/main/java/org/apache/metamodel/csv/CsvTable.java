@@ -19,7 +19,14 @@
 package org.apache.metamodel.csv;
 
 import java.io.IOException;
-import java.util.*;
+import java.io.ObjectInputStream;
+import java.io.ObjectInputStream.GetField;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import org.apache.metamodel.schema.AbstractTable;
 import org.apache.metamodel.schema.Column;
@@ -32,6 +39,7 @@ import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
 import org.apache.metamodel.schema.naming.ColumnNamingSession;
 import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.LegacyDeserializationObjectInputStream;
 
 import com.opencsv.CSVReader;
 
@@ -96,13 +104,14 @@ final class CsvTable extends AbstractTable {
             for (int i = 1; i < columnNameLineNumber; i++) {
                 reader.readNext();
             }
-            final List<String> columnHeaders = Arrays.asList(Optional.ofNullable(reader.readNext()).orElse(new String[0]));
+            final List<String> columnHeaders =
+                    Arrays.asList(Optional.ofNullable(reader.readNext()).orElse(new String[0]));
 
             reader.close();
             return buildColumns(columnHeaders);
         } catch (IOException e) {
-            throw new IllegalStateException("Exception reading from resource: "
-                    + _schema.getDataContext().getResource().getName(), e);
+            throw new IllegalStateException(
+                    "Exception reading from resource: " + _schema.getDataContext().getResource().getName(), e);
         } finally {
             FileHelper.safeClose(reader);
         }
@@ -112,7 +121,7 @@ final class CsvTable extends AbstractTable {
         if (columnNames == null) {
             return new ArrayList<>();
         }
-        
+
         final CsvConfiguration configuration = _schema.getDataContext().getConfiguration();
         final int columnNameLineNumber = configuration.getColumnNameLineNumber();
         final boolean nullable = !configuration.isFailOnInconsistentRowLength();
@@ -122,10 +131,10 @@ final class CsvTable extends AbstractTable {
 
         try (final ColumnNamingSession namingSession = columnNamingStrategy.startColumnNamingSession()) {
             for (int i = 0; i < columnNames.size(); i++) {
-                final String intrinsicColumnName = columnNameLineNumber == CsvConfiguration.NO_COLUMN_NAME_LINE ? null
-                        : columnNames.get(i);
-                final String columnName = namingSession.getNextColumnName(new ColumnNamingContextImpl(this,
-                        intrinsicColumnName, i));
+                final String intrinsicColumnName =
+                        columnNameLineNumber == CsvConfiguration.NO_COLUMN_NAME_LINE ? null : columnNames.get(i);
+                final String columnName =
+                        namingSession.getNextColumnName(new ColumnNamingContextImpl(this, intrinsicColumnName, i));
                 final Column column = new MutableColumn(columnName, ColumnType.STRING, this, i, null, null, nullable,
                         null, false, null);
                 columns.add(column);
@@ -157,5 +166,18 @@ final class CsvTable extends AbstractTable {
     @Override
     public String getQuote() {
         return null;
+    }
+
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        final GetField getFields = stream.readFields();
+        Object columns = getFields.get("_columns", null);
+        if (columns instanceof Column[]) {
+            columns = Arrays.<Column> asList((Column[]) columns);
+        }
+        final Object schema = getFields.get("_schema", null);
+        final Object tableName = getFields.get("_tableName", null);
+        LegacyDeserializationObjectInputStream.setField(CsvTable.class, this, "_columns", columns);
+        LegacyDeserializationObjectInputStream.setField(CsvTable.class, this, "_schema", schema);
+        LegacyDeserializationObjectInputStream.setField(CsvTable.class, this, "_tableName", tableName);
     }
 }
