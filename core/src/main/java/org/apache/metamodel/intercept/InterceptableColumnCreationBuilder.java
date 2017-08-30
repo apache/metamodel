@@ -99,4 +99,10 @@ final class InterceptableColumnCreationBuilder implements ColumnCreationBuilder 
 		return this;
 	}
 
+	@Override
+	public ColumnCreationBuilder ofKeyPosition(String keyPosition) {
+		_columnCreationBuilder.ofKeyPosition(keyPosition);
+		return this;
+	}
+
 }
