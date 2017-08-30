@@ -104,5 +104,11 @@ public interface Column extends Comparable<Column>, Serializable, NamedStructure
      */
     public boolean isPrimaryKey();
 
+    /**
+     * Determines if this column is (one of) the primary key(s) of its table.
+     *
+     * @return the key position if this column is a primary key, or null if not (or if this
+     *         is not determinable).
+     */
     public String getKeyPosition();
 }

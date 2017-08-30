@@ -85,4 +85,11 @@ public interface ColumnBuilder<T extends ColumnBuilder<?>> {
      * @return a builder object for further column creation.
      */
     public T asPrimaryKey();
+
+    /**
+     * Defines that the created column should be a primary key position
+     *
+     * @return a builder object for further column creation.
+     */
+    public T ofKeyPosition(String keyPosition);
 }

@@ -52,6 +52,7 @@ abstract class AbstractColumnBuilder<T extends ColumnBuilder<?>> implements Colu
         _column.setType(column.getType());
         _column.setNullable(column.isNullable());
         _column.setPrimaryKey(column.isPrimaryKey());
+        _column.setKeyPosition(column.getKeyPosition());
         return getReturnObject();
     }
 
@@ -82,6 +83,12 @@ abstract class AbstractColumnBuilder<T extends ColumnBuilder<?>> implements Colu
     @Override
     public final T asPrimaryKey() {
         _column.setPrimaryKey(true);
+        return getReturnObject();
+    }
+
+    @Override
+    public final T ofKeyPosition(String keyPosition){
+        _column.setKeyPosition(keyPosition);
         return getReturnObject();
     }
 

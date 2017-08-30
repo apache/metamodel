@@ -70,6 +70,8 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
      *            the quote character(s) of the column
      * @param primaryKey
      *            whether the column is a primary key or not
+     * @param keyPosition
+     *            keyPosition of the primary key the column is a primary key
      */
     public ImmutableColumn(String name, ColumnType type, Table table, int columnNumber, Integer columnSize,
             String nativeType, Boolean nullable, String remarks, boolean indexed, String quote, boolean primaryKey,String keyPosition) {
