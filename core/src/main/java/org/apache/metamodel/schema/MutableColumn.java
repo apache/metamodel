@@ -41,6 +41,7 @@ public class MutableColumn extends AbstractColumn implements Serializable {
     private Integer _columnSize = null;
     private String _nativeType = null;
     private String _quoteString = null;
+    private String _keyPosition = null;
 
     public MutableColumn() {
         super();
@@ -64,7 +65,7 @@ public class MutableColumn extends AbstractColumn implements Serializable {
     }
 
     public MutableColumn(String name, ColumnType type, Table table, int columnNumber, Integer columnSize,
-            String nativeType, Boolean nullable, String remarks, boolean indexed, String quote) {
+            String nativeType, Boolean nullable, String remarks, boolean indexed, String quote,String keyPosition) {
         this(name, type, table, columnNumber, nullable);
         setColumnSize(columnSize);
         setNativeType(nativeType);
@@ -185,6 +186,16 @@ public class MutableColumn extends AbstractColumn implements Serializable {
 
     public MutableColumn setPrimaryKey(boolean primaryKey) {
         _primaryKey = primaryKey;
+        return this;
+    }
+
+    @Override
+    public String getKeyPosition() {
+        return _keyPosition;
+    }
+
+    public MutableColumn setKeyPosition(String keyPosition) {
+        _keyPosition = keyPosition;
         return this;
     }
 }

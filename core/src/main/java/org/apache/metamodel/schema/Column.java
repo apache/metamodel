@@ -103,4 +103,6 @@ public interface Column extends Comparable<Column>, Serializable, NamedStructure
      *         is not determinable).
      */
     public boolean isPrimaryKey();
+
+    public String getKeyPosition();
 }

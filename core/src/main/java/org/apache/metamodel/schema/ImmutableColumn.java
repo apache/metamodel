@@ -43,6 +43,7 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
     private final boolean primaryKey;
     private final String name;
     private final String quote;
+    private final String keyPosition;
 
     /**
      * Constructs a new {@link ImmutableColumn}.
@@ -71,7 +72,7 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
      *            whether the column is a primary key or not
      */
     public ImmutableColumn(String name, ColumnType type, Table table, int columnNumber, Integer columnSize,
-            String nativeType, Boolean nullable, String remarks, boolean indexed, String quote, boolean primaryKey) {
+            String nativeType, Boolean nullable, String remarks, boolean indexed, String quote, boolean primaryKey,String keyPosition) {
         this.name = name;
         this.type = type;
         this.table = table;
@@ -83,6 +84,7 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
         this.indexed = indexed;
         this.quote = quote;
         this.primaryKey = primaryKey;
+        this.keyPosition = keyPosition;
     }
 
     /**
@@ -106,12 +108,13 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
         this.indexed = column.isIndexed();
         this.quote = column.getQuote();
         this.primaryKey = column.isPrimaryKey();
+        this.keyPosition = column.getKeyPosition();
     }
 
     protected ImmutableColumn(Column column, ImmutableTable table) {
         this(column.getName(), column.getType(), table, column.getColumnNumber(), column.getColumnSize(), column
                 .getNativeType(), column.isNullable(), column.getRemarks(), column.isIndexed(), column.getQuote(),
-                column.isPrimaryKey());
+                column.isPrimaryKey(),column.getKeyPosition());
     }
 
     @Override
@@ -168,4 +171,7 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
     public String getQuote() {
         return quote;
     }
+
+    @Override
+    public String getKeyPosition(){ return keyPosition; }
 }

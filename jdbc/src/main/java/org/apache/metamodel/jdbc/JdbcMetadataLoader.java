@@ -230,10 +230,12 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 .getName());) {
             while (rs.next()) {
                 String columnName = rs.getString(4);
+                String keyPosition = rs.getString(5);
                 if (columnName != null) {
                     MutableColumn column = (MutableColumn) table.getColumnByName(columnName);
                     if (column != null) {
                         column.setPrimaryKey(true);
+                        column.setKeyPosition(keyPosition);
                     } else {
                         logger.error("Indexed column \"{}\" could not be found in table: {}", columnName, table);
                     }
