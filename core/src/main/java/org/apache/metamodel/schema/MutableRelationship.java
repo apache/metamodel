@@ -18,10 +18,15 @@
  */
 package org.apache.metamodel.schema;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectInputStream.GetField;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.apache.metamodel.util.LegacyDeserializationObjectInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,4 +139,17 @@ public class MutableRelationship extends AbstractRelationship implements
 		return _foreignColumns;
 	}
 
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        final GetField getFields = stream.readFields();
+        Object primaryColumns = getFields.get("_primaryColumns", null);
+        Object foreignColumns = getFields.get("_foreignColumns", null);
+        if (primaryColumns instanceof Column[] && foreignColumns instanceof Column[]) {
+            primaryColumns = Arrays.<Column> asList((Column[]) primaryColumns);
+            foreignColumns = Arrays.<Column> asList((Column[]) foreignColumns);
+        }
+        LegacyDeserializationObjectInputStream.setField(MutableRelationship.class, this, "_primaryColumns",
+                primaryColumns);
+        LegacyDeserializationObjectInputStream.setField(MutableRelationship.class, this, "_foreignColumns",
+                foreignColumns);
+    }
 }

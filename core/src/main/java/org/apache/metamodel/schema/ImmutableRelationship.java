@@ -18,9 +18,15 @@
  */
 package org.apache.metamodel.schema;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectInputStream.GetField;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.metamodel.util.LegacyDeserializationObjectInputStream;
 
 public final class ImmutableRelationship extends AbstractRelationship implements Serializable {
 
@@ -79,4 +85,18 @@ public final class ImmutableRelationship extends AbstractRelationship implements
 	public List<Column> getForeignColumns() {
 		return foreignColumns;
 	}
+
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+        final GetField getFields = stream.readFields();
+        Object primaryColumns = getFields.get("primaryColumns", null);
+        Object foreignColumns = getFields.get("foreignColumns", null);
+        if (primaryColumns instanceof Column[] && foreignColumns instanceof Column[]) {
+            primaryColumns = Arrays.<Column> asList((Column[]) primaryColumns);
+            foreignColumns = Arrays.<Column> asList((Column[]) foreignColumns);
+        }
+        LegacyDeserializationObjectInputStream.setField(ImmutableRelationship.class, this, "primaryColumns",
+                primaryColumns);
+        LegacyDeserializationObjectInputStream.setField(ImmutableRelationship.class, this, "foreignColumns",
+                foreignColumns);
+    }
 }

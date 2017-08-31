@@ -45,6 +45,24 @@ public class LegacyDeserializationObjectInputStream extends ObjectInputStream {
     private static final Logger logger = LoggerFactory.getLogger(LegacyDeserializationObjectInputStream.class);
 
     /**
+     * Utility method for setting a field in a class
+     * 
+     * @param cls
+     * @param fieldName
+     * @param value
+     */
+    public static void setField(Class<?> cls, Object instance, String fieldName, Object value) {
+        try {
+            final Field field = cls.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(instance, value);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(
+                    "Unable to assign field '" + cls.getSimpleName() + '.' + fieldName + "' to value: " + value, e);
+        }
+    }
+
+    /**
      * Implementation of the new {@link FunctionType} and
      * {@link AggregateFunction} interfaces which still adheres to the
      * constant/enum values of the old FunctionType definition. While
