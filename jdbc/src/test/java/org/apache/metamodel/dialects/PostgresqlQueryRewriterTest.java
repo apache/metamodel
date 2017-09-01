@@ -32,27 +32,27 @@ import org.apache.metamodel.schema.MutableTable;
 
 public class PostgresqlQueryRewriterTest extends TestCase {
 
-	public void testRewriteLimit() throws Exception {
-		MutableTable table = new MutableTable("foo");
-		table.setSchema(new MutableSchema("MY_SCHEMA"));
-		table.setQuote("\"");
-		MutableColumn column = new MutableColumn("bar");
-		column.setQuote("\"");
-		column.setTable(table);
-		Query q = new Query().from(table).select(column).setMaxRows(25).setFirstRow(5);
-		String queryString = new PostgresqlQueryRewriter(null).rewriteQuery(q);
-		assertEquals("SELECT \"foo\".\"bar\" FROM \"MY_SCHEMA\".\"foo\" LIMIT 25 OFFSET 4", queryString);
-	}
+    public void testRewriteLimit() throws Exception {
+        MutableTable table = new MutableTable("foo");
+        table.setSchema(new MutableSchema("MY_SCHEMA"));
+        table.setQuote("\"");
+        MutableColumn column = new MutableColumn("bar");
+        column.setQuote("\"");
+        column.setTable(table);
+        Query q = new Query().from(table).select(column).setMaxRows(25).setFirstRow(5);
+        String queryString = new PostgresqlQueryRewriter(null).rewriteQuery(q);
+        assertEquals("SELECT \"foo\".\"bar\" FROM \"MY_SCHEMA\".\"foo\" LIMIT 25 OFFSET 4", queryString);
+    }
 
-	public void testRewriteFromItem() throws Exception {
-		PostgresqlQueryRewriter rewriter = new PostgresqlQueryRewriter(null);
+    public void testRewriteFromItem() throws Exception {
+        PostgresqlQueryRewriter rewriter = new PostgresqlQueryRewriter(null);
 
-		assertEquals("\"public\".foo",
-				rewriter.rewriteFromItem(new FromItem(new MutableTable("foo").setSchema(new MutableSchema("public")))));
-	}
+        assertEquals("\"public\".foo",
+                rewriter.rewriteFromItem(new FromItem(new MutableTable("foo").setSchema(new MutableSchema("public")))));
+    }
 
-	public void testGetColumnType() throws Exception {
-		PostgresqlQueryRewriter rewriter = new PostgresqlQueryRewriter(null);
-		assertEquals(ColumnType.BOOLEAN, rewriter.getColumnType(Types.BIT, "bool", -1));
-	}
+    public void testGetColumnType() throws Exception {
+        PostgresqlQueryRewriter rewriter = new PostgresqlQueryRewriter(null);
+        assertEquals(ColumnType.BOOLEAN, rewriter.getColumnType(Types.BIT, "bool", -1));
+    }
 }

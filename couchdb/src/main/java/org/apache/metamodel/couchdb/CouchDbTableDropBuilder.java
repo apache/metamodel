@@ -26,21 +26,21 @@ import org.ektorp.CouchDbInstance;
 
 final class CouchDbTableDropBuilder extends AbstractTableDropBuilder {
 
-	private final CouchDbUpdateCallback _updateCallback;
+    private final CouchDbUpdateCallback _updateCallback;
 
-	public CouchDbTableDropBuilder(CouchDbUpdateCallback updateCallback, Table table) {
-		super(table);
-		_updateCallback = updateCallback;
-	}
+    public CouchDbTableDropBuilder(CouchDbUpdateCallback updateCallback, Table table) {
+        super(table);
+        _updateCallback = updateCallback;
+    }
 
-	@Override
-	public void execute() throws MetaModelException {
-		CouchDbInstance instance = _updateCallback.getDataContext().getCouchDbInstance();
-		Table table = getTable();
-		MutableSchema schema = (MutableSchema) table.getSchema();
-		schema.removeTable(table);
-		
-		instance.deleteDatabase(table.getName());
-	}
+    @Override
+    public void execute() throws MetaModelException {
+        CouchDbInstance instance = _updateCallback.getDataContext().getCouchDbInstance();
+        Table table = getTable();
+        MutableSchema schema = (MutableSchema) table.getSchema();
+        schema.removeTable(table);
+        
+        instance.deleteDatabase(table.getName());
+    }
 
 }

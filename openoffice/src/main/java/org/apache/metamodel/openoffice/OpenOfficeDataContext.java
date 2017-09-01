@@ -43,89 +43,89 @@ import org.slf4j.LoggerFactory;
 
 public class OpenOfficeDataContext extends AbstractDataContext {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(OpenOfficeDataContext.class);
-	private JdbcDataContext _dataContextDelegate;
-	private Connection _connection;
+    private static final Logger logger = LoggerFactory
+            .getLogger(OpenOfficeDataContext.class);
+    private JdbcDataContext _dataContextDelegate;
+    private Connection _connection;
 
-	public OpenOfficeDataContext(File dbFile) throws MetaModelException {
-		try {
-			String databaseName = dbFile.getName();
-			File tempDir = FileHelper.getTempDir();
+    public OpenOfficeDataContext(File dbFile) throws MetaModelException {
+        try {
+            String databaseName = dbFile.getName();
+            File tempDir = FileHelper.getTempDir();
 
-			ZipFile zipFile = new ZipFile(dbFile);
-			Enumeration<? extends ZipEntry> entries = zipFile.entries();
-			while (entries.hasMoreElements()) {
-				ZipEntry entry = entries.nextElement();
-				String entryName = entry.getName();
-				if (entryName.startsWith("database/")) {
-					File destFile = new File(tempDir, databaseName + "."
-							+ entryName.substring(9));
-					destFile.createNewFile();
+            ZipFile zipFile = new ZipFile(dbFile);
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                String entryName = entry.getName();
+                if (entryName.startsWith("database/")) {
+                    File destFile = new File(tempDir, databaseName + "."
+                            + entryName.substring(9));
+                    destFile.createNewFile();
 
-					if (logger.isDebugEnabled()) {
-						logger.debug("Processing entry: " + entryName);
-						logger.debug("Writing temp file: "
-								+ destFile.getAbsolutePath());
-					}
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Processing entry: " + entryName);
+                        logger.debug("Writing temp file: "
+                                + destFile.getAbsolutePath());
+                    }
 
-					byte[] buffer = new byte[1024];
-					InputStream inputStream = zipFile.getInputStream(entry);
-					OutputStream outputStream = new BufferedOutputStream(
-							new FileOutputStream(destFile));
-					for (int len = inputStream.read(buffer); len >= 0; len = inputStream
-							.read(buffer)) {
-						outputStream.write(buffer, 0, len);
-					}
-					inputStream.close();
-					outputStream.close();
-					destFile.deleteOnExit();
-				} else {
-					logger.debug("Ignoring entry: " + entryName);
-				}
-			}
-			zipFile.close();
+                    byte[] buffer = new byte[1024];
+                    InputStream inputStream = zipFile.getInputStream(entry);
+                    OutputStream outputStream = new BufferedOutputStream(
+                            new FileOutputStream(destFile));
+                    for (int len = inputStream.read(buffer); len >= 0; len = inputStream
+                            .read(buffer)) {
+                        outputStream.write(buffer, 0, len);
+                    }
+                    inputStream.close();
+                    outputStream.close();
+                    destFile.deleteOnExit();
+                } else {
+                    logger.debug("Ignoring entry: " + entryName);
+                }
+            }
+            zipFile.close();
 
-			Class.forName("org.hsqldb.jdbcDriver");
-			String url = "jdbc:hsqldb:file:" + tempDir.getAbsolutePath() + "/"
-					+ databaseName;
-			logger.info("Using database URL: " + url);
-			_connection = DriverManager.getConnection(url, "SA", "");
-			_connection.setReadOnly(true);
-			_dataContextDelegate = new JdbcDataContext(_connection,
-					TableType.DEFAULT_TABLE_TYPES, null);
-		} catch (Exception e) {
-			throw new MetaModelException(e);
-		}
-	}
+            Class.forName("org.hsqldb.jdbcDriver");
+            String url = "jdbc:hsqldb:file:" + tempDir.getAbsolutePath() + "/"
+                    + databaseName;
+            logger.info("Using database URL: " + url);
+            _connection = DriverManager.getConnection(url, "SA", "");
+            _connection.setReadOnly(true);
+            _dataContextDelegate = new JdbcDataContext(_connection,
+                    TableType.DEFAULT_TABLE_TYPES, null);
+        } catch (Exception e) {
+            throw new MetaModelException(e);
+        }
+    }
 
-	@Override
-	public DataSet executeQuery(Query query) throws MetaModelException {
-		return _dataContextDelegate.executeQuery(query);
-	}
+    @Override
+    public DataSet executeQuery(Query query) throws MetaModelException {
+        return _dataContextDelegate.executeQuery(query);
+    }
 
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-		_connection.close();
-	}
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        _connection.close();
+    }
 
-	public Connection getConnection() {
-		return _connection;
-	}
+    public Connection getConnection() {
+        return _connection;
+    }
 
-	@Override
-	protected List<String> getSchemaNamesInternal() {
-		return _dataContextDelegate.getSchemaNames();
-	}
+    @Override
+    protected List<String> getSchemaNamesInternal() {
+        return _dataContextDelegate.getSchemaNames();
+    }
 
-	@Override
-	protected String getDefaultSchemaName() {
-		return _dataContextDelegate.getDefaultSchemaName();
-	}
+    @Override
+    protected String getDefaultSchemaName() {
+        return _dataContextDelegate.getDefaultSchemaName();
+    }
 
-	@Override
-	protected Schema getSchemaByNameInternal(String name) {
-		return _dataContextDelegate.getSchemaByName(name);
-	}
+    @Override
+    protected Schema getSchemaByNameInternal(String name) {
+        return _dataContextDelegate.getSchemaByName(name);
+    }
 }

@@ -24,30 +24,30 @@ import junit.framework.TestCase;
 
 public class BooleanComparatorTest extends TestCase {
 
-	public void testCompare() throws Exception {
-		Comparator<Object> c = BooleanComparator.getComparator();
-		assertEquals(1, c.compare(true, false));
-		assertEquals(-1, c.compare(false, true));
-		assertEquals(0, c.compare(true, true));
-		assertEquals(0, c.compare(false, false));
+    public void testCompare() throws Exception {
+        Comparator<Object> c = BooleanComparator.getComparator();
+        assertEquals(1, c.compare(true, false));
+        assertEquals(-1, c.compare(false, true));
+        assertEquals(0, c.compare(true, true));
+        assertEquals(0, c.compare(false, false));
 
-		assertEquals(1, c.compare("true", "false"));
-		assertEquals(1, c.compare("1", "false"));
-		assertEquals(1, c.compare("true", "0"));
-		assertEquals(1, c.compare("true", "false"));
+        assertEquals(1, c.compare("true", "false"));
+        assertEquals(1, c.compare("1", "false"));
+        assertEquals(1, c.compare("true", "0"));
+        assertEquals(1, c.compare("true", "false"));
 
-		assertEquals(1, c.compare(1, 0));
+        assertEquals(1, c.compare(1, 0));
 
-		assertEquals(1, c.compare(1, "false"));
-		assertEquals(1, c.compare("yes", false));
-		assertEquals(1, c.compare("y", false));
-		assertEquals(1, c.compare("TRUE", false));
-	}
+        assertEquals(1, c.compare(1, "false"));
+        assertEquals(1, c.compare("yes", false));
+        assertEquals(1, c.compare("y", false));
+        assertEquals(1, c.compare("TRUE", false));
+    }
 
-	public void testComparable() throws Exception {
-		Comparable<Object> comparable = BooleanComparator.getComparable(true);
-		assertEquals(1, comparable.compareTo(false));
-		assertEquals(1, comparable.compareTo(0));
-		assertEquals(1, comparable.compareTo("false"));
-	}
+    public void testComparable() throws Exception {
+        Comparable<Object> comparable = BooleanComparator.getComparable(true);
+        assertEquals(1, comparable.compareTo(false));
+        assertEquals(1, comparable.compareTo(0));
+        assertEquals(1, comparable.compareTo("false"));
+    }
 }

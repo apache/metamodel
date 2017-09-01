@@ -23,9 +23,9 @@ import org.junit.Ignore;
 @Ignore
 final class DefaultExampleValueGenerator implements ExampleValueGenerator {
 
-	@Override
-	public String generate(int row, int col) {
-		return "r" + row + "c" + col;
-	}
+    @Override
+    public String generate(int row, int col) {
+        return "r" + row + "c" + col;
+    }
 
 }

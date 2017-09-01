@@ -50,7 +50,7 @@ public class QueryParserTest extends TestCase {
         MutableColumn col = (MutableColumn) dc.getColumnByQualifiedLabel("tbl.baz");
         col.setType(ColumnType.INTEGER);
     };
-	
+    
     public void testQueryWithParenthesis() throws Exception {
         Query q = MetaModelHelper.parseQuery(dc,
                 "select foo from sch.tbl where (foo= 1) and (foo=2)");

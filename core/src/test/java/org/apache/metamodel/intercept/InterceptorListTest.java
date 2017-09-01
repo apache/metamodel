@@ -27,35 +27,35 @@ import junit.framework.TestCase;
 
 public class InterceptorListTest extends TestCase {
 
-	public void testGetInterceptorOfType() throws Exception {
-		DataContext dc = new MockUpdateableDataContext();
-		InterceptableDataContext interceptor = Interceptors.intercept(dc);
-		
-		InterceptorList<DataSet> list = interceptor.getDataSetInterceptors();
-		ConvertedDataSetInterceptor convertedDataSetInterceptor = new ConvertedDataSetInterceptor();
-		list.add(convertedDataSetInterceptor);
-		
-		assertSame(convertedDataSetInterceptor, list.getInterceptorOfType(DataSetInterceptor.class));
-		assertSame(convertedDataSetInterceptor, list.getInterceptorOfType(ConvertedDataSetInterceptor.class));
-		
-		class NoopDataSetInterceptor implements DataSetInterceptor {
-			@Override
-			public DataSet intercept(DataSet dataSet) {
-				return dataSet;
-			}
-		};
-		
-		NoopDataSetInterceptor noopDataSetInterceptor = new NoopDataSetInterceptor();
-		list.add(noopDataSetInterceptor);
-		
-		assertSame(convertedDataSetInterceptor, list.getInterceptorOfType(DataSetInterceptor.class));
-		assertSame(convertedDataSetInterceptor, list.getInterceptorOfType(ConvertedDataSetInterceptor.class));
-		assertSame(noopDataSetInterceptor, list.getInterceptorOfType(NoopDataSetInterceptor.class));
-		
-		list.remove(convertedDataSetInterceptor);
-		
-		assertSame(noopDataSetInterceptor, list.getInterceptorOfType(DataSetInterceptor.class));
-		assertNull(list.getInterceptorOfType(ConvertedDataSetInterceptor.class));
-		assertSame(noopDataSetInterceptor, list.getInterceptorOfType(NoopDataSetInterceptor.class));
-	}
+    public void testGetInterceptorOfType() throws Exception {
+        DataContext dc = new MockUpdateableDataContext();
+        InterceptableDataContext interceptor = Interceptors.intercept(dc);
+        
+        InterceptorList<DataSet> list = interceptor.getDataSetInterceptors();
+        ConvertedDataSetInterceptor convertedDataSetInterceptor = new ConvertedDataSetInterceptor();
+        list.add(convertedDataSetInterceptor);
+        
+        assertSame(convertedDataSetInterceptor, list.getInterceptorOfType(DataSetInterceptor.class));
+        assertSame(convertedDataSetInterceptor, list.getInterceptorOfType(ConvertedDataSetInterceptor.class));
+        
+        class NoopDataSetInterceptor implements DataSetInterceptor {
+            @Override
+            public DataSet intercept(DataSet dataSet) {
+                return dataSet;
+            }
+        };
+        
+        NoopDataSetInterceptor noopDataSetInterceptor = new NoopDataSetInterceptor();
+        list.add(noopDataSetInterceptor);
+        
+        assertSame(convertedDataSetInterceptor, list.getInterceptorOfType(DataSetInterceptor.class));
+        assertSame(convertedDataSetInterceptor, list.getInterceptorOfType(ConvertedDataSetInterceptor.class));
+        assertSame(noopDataSetInterceptor, list.getInterceptorOfType(NoopDataSetInterceptor.class));
+        
+        list.remove(convertedDataSetInterceptor);
+        
+        assertSame(noopDataSetInterceptor, list.getInterceptorOfType(DataSetInterceptor.class));
+        assertNull(list.getInterceptorOfType(ConvertedDataSetInterceptor.class));
+        assertSame(noopDataSetInterceptor, list.getInterceptorOfType(NoopDataSetInterceptor.class));
+    }
 }

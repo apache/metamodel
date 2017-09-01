@@ -27,5 +27,5 @@ import org.apache.metamodel.schema.Column;
  */
 public interface HasReadTypeConverters {
 
-	public void addConverter(Column column, TypeConverter<?, ?> converter);
+    public void addConverter(Column column, TypeConverter<?, ?> converter);
 }

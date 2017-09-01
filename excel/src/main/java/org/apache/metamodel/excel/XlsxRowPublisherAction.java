@@ -34,70 +34,70 @@ import org.xml.sax.XMLReader;
 
 class XlsxRowPublisherAction implements Action<RowPublisher> {
 
-	private static final Logger logger = LoggerFactory
-			.getLogger(XlsxRowPublisherAction.class);
+    private static final Logger logger = LoggerFactory
+            .getLogger(XlsxRowPublisherAction.class);
 
-	private final ExcelConfiguration _configuration;
-	private final List<Column> _columns;
-	private final String _relationshipId;
-	private final XSSFReader _xssfReader;
+    private final ExcelConfiguration _configuration;
+    private final List<Column> _columns;
+    private final String _relationshipId;
+    private final XSSFReader _xssfReader;
 
-	public XlsxRowPublisherAction(ExcelConfiguration configuration,
-			List<Column> columns, String relationshipId, XSSFReader xssfReader) {
-		_configuration = configuration;
-		_columns = columns;
-		_relationshipId = relationshipId;
-		_xssfReader = xssfReader;
-	}
+    public XlsxRowPublisherAction(ExcelConfiguration configuration,
+            List<Column> columns, String relationshipId, XSSFReader xssfReader) {
+        _configuration = configuration;
+        _columns = columns;
+        _relationshipId = relationshipId;
+        _xssfReader = xssfReader;
+    }
 
-	@Override
-	public void run(final RowPublisher publisher) throws Exception {
-		final InputStream sheetData = _xssfReader.getSheet(_relationshipId);
+    @Override
+    public void run(final RowPublisher publisher) throws Exception {
+        final InputStream sheetData = _xssfReader.getSheet(_relationshipId);
 
-		final XlsxRowCallback rowCallback = new XlsxRowCallback() {
-			@Override
-			public boolean row(int rowNumber, List<String> values,
-					List<Style> styles) {
-				if (_configuration.getColumnNameLineNumber() != ExcelConfiguration.NO_COLUMN_NAME_LINE) {
-					final int zeroBasedLineNumber = _configuration.getColumnNameLineNumber() - 1;
+        final XlsxRowCallback rowCallback = new XlsxRowCallback() {
+            @Override
+            public boolean row(int rowNumber, List<String> values,
+                    List<Style> styles) {
+                if (_configuration.getColumnNameLineNumber() != ExcelConfiguration.NO_COLUMN_NAME_LINE) {
+                    final int zeroBasedLineNumber = _configuration.getColumnNameLineNumber() - 1;
                     if (rowNumber <= zeroBasedLineNumber) {
-						// skip header rows
-						return true;
-					}
-				}
+                        // skip header rows
+                        return true;
+                    }
+                }
 
-				Object[] rowData = new Object[_columns.size()];
-				Style[] styleData = new Style[_columns.size()];
-				for (int i = 0; i < _columns.size(); i++) {
-					int columnNumber = _columns.get(i).getColumnNumber();
-					if (columnNumber < values.size()) {
-						rowData[i] = values.get(columnNumber);
-						styleData[i] = styles.get(columnNumber);
-					} else {
-						rowData[i] = null;
-						styleData[i] = Style.NO_STYLE;
-					}
-				}
+                Object[] rowData = new Object[_columns.size()];
+                Style[] styleData = new Style[_columns.size()];
+                for (int i = 0; i < _columns.size(); i++) {
+                    int columnNumber = _columns.get(i).getColumnNumber();
+                    if (columnNumber < values.size()) {
+                        rowData[i] = values.get(columnNumber);
+                        styleData[i] = styles.get(columnNumber);
+                    } else {
+                        rowData[i] = null;
+                        styleData[i] = Style.NO_STYLE;
+                    }
+                }
 
-				return publisher.publish(rowData, styleData);
-			}
-		};
-		final XlsxSheetToRowsHandler handler = new XlsxSheetToRowsHandler(
-				rowCallback, _xssfReader, _configuration);
+                return publisher.publish(rowData, styleData);
+            }
+        };
+        final XlsxSheetToRowsHandler handler = new XlsxSheetToRowsHandler(
+                rowCallback, _xssfReader, _configuration);
 
-		final XMLReader sheetParser = ExcelUtils.createXmlReader();
-		sheetParser.setContentHandler(handler);
-		sheetParser.setErrorHandler(handler);
-		try {
-			sheetParser.parse(new InputSource(sheetData));
-		} catch (XlsxStopParsingException e) {
-			logger.debug("Parsing stop signal thrown");
-		} catch (Exception e) {
-			logger.warn("Unexpected error occurred while parsing", e);
-			throw e;
-		} finally {
-			publisher.finished();
-			FileHelper.safeClose(sheetData);
-		}
-	}
+        final XMLReader sheetParser = ExcelUtils.createXmlReader();
+        sheetParser.setContentHandler(handler);
+        sheetParser.setErrorHandler(handler);
+        try {
+            sheetParser.parse(new InputSource(sheetData));
+        } catch (XlsxStopParsingException e) {
+            logger.debug("Parsing stop signal thrown");
+        } catch (Exception e) {
+            logger.warn("Unexpected error occurred while parsing", e);
+            throw e;
+        } finally {
+            publisher.finished();
+            FileHelper.safeClose(sheetData);
+        }
+    }
 }

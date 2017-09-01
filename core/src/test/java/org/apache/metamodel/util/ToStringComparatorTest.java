@@ -25,27 +25,27 @@ import org.apache.metamodel.util.ToStringComparator;
 
 public class ToStringComparatorTest extends TestCase {
 
-	private Comparator<Object> comparator = ToStringComparator.getComparator();
+    private Comparator<Object> comparator = ToStringComparator.getComparator();
 
-	public void testNotNull() throws Exception {
-		assertEquals(4, comparator.compare("foo", "bar"));
-		assertEquals(-4, comparator.compare("bar", "foo"));
-	}
+    public void testNotNull() throws Exception {
+        assertEquals(4, comparator.compare("foo", "bar"));
+        assertEquals(-4, comparator.compare("bar", "foo"));
+    }
 
-	public void testNull() throws Exception {
-		int result = comparator.compare(null, null);
-		assertEquals(-1, result);
+    public void testNull() throws Exception {
+        int result = comparator.compare(null, null);
+        assertEquals(-1, result);
 
-		result = comparator.compare(1, null);
-		assertEquals(1, result);
+        result = comparator.compare(1, null);
+        assertEquals(1, result);
 
-		result = comparator.compare(null, 1);
-		assertEquals(-1, result);
-	}
+        result = comparator.compare(null, 1);
+        assertEquals(-1, result);
+    }
 
-	public void testComparable() throws Exception {
-		Comparable<Object> comparable = ToStringComparator
-				.getComparable("aaaa");
-		assertEquals(-1, comparable.compareTo("bbbb"));
-	}
+    public void testComparable() throws Exception {
+        Comparable<Object> comparable = ToStringComparator
+                .getComparable("aaaa");
+        assertEquals(-1, comparable.compareTo("bbbb"));
+    }
 }

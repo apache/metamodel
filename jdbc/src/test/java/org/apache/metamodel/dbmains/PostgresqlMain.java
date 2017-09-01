@@ -34,59 +34,59 @@ import org.apache.metamodel.schema.Table;
 
 public class PostgresqlMain {
 
-	private static final String CONNECTION_STRING = "jdbc:postgresql://localhost/dellstore2";
-	private static final String USERNAME = "eobjects";
-	private static final String PASSWORD = "eobjects";
+    private static final String CONNECTION_STRING = "jdbc:postgresql://localhost/dellstore2";
+    private static final String USERNAME = "eobjects";
+    private static final String PASSWORD = "eobjects";
 
-	/**
-	 * @param args
-	 */ 
-	public static void main(String[] args) {
-		Connection connection = null;
-		try {
-			Class.forName("org.postgresql.Driver");
-			connection = DriverManager.getConnection(CONNECTION_STRING,
-					USERNAME, PASSWORD);
+    /**
+     * @param args
+     */ 
+    public static void main(String[] args) {
+        Connection connection = null;
+        try {
+            Class.forName("org.postgresql.Driver");
+            connection = DriverManager.getConnection(CONNECTION_STRING,
+                    USERNAME, PASSWORD);
 
-			JdbcDataContext dc = new JdbcDataContext(connection);
-			final Schema schema = dc.getDefaultSchema();
-			dc.executeUpdate(new UpdateScript() {
-				@Override
-				public void run(UpdateCallback cb) {
-					Table table = cb.createTable(schema, "my_table")
-							.withColumn("id").ofType(ColumnType.INTEGER)
-							.ofNativeType("SERIAL").nullable(false)
-							.withColumn("person name").ofSize(255)
-							.withColumn("age").ofType(ColumnType.INTEGER)
-							.execute();
+            JdbcDataContext dc = new JdbcDataContext(connection);
+            final Schema schema = dc.getDefaultSchema();
+            dc.executeUpdate(new UpdateScript() {
+                @Override
+                public void run(UpdateCallback cb) {
+                    Table table = cb.createTable(schema, "my_table")
+                            .withColumn("id").ofType(ColumnType.INTEGER)
+                            .ofNativeType("SERIAL").nullable(false)
+                            .withColumn("person name").ofSize(255)
+                            .withColumn("age").ofType(ColumnType.INTEGER)
+                            .execute();
 
-					for (int i = 0; i < 1000000; i++) {
-						cb.insertInto(table).value("person name", "John Doe")
-								.value("age", i + 10).execute();
-					}
+                    for (int i = 0; i < 1000000; i++) {
+                        cb.insertInto(table).value("person name", "John Doe")
+                                .value("age", i + 10).execute();
+                    }
 
-				}
-			});
+                }
+            });
 
-			Table table = schema.getTableByName("my_table");
-			Query query = dc.query().from(table).selectCount().toQuery();
-			DataSet ds = dc.executeQuery(query);
-			ds.close();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (connection != null) {
-					connection.createStatement().execute("DROP TABLE my_table");
-				}
-			} catch (SQLException e) {
-				throw new MetaModelException(
-						"Failed to execute INSERT statement", e);
-			}
-		}
+            Table table = schema.getTableByName("my_table");
+            Query query = dc.query().from(table).selectCount().toQuery();
+            DataSet ds = dc.executeQuery(query);
+            ds.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (connection != null) {
+                    connection.createStatement().execute("DROP TABLE my_table");
+                }
+            } catch (SQLException e) {
+                throw new MetaModelException(
+                        "Failed to execute INSERT statement", e);
+            }
+        }
 
-	}
+    }
 
 }

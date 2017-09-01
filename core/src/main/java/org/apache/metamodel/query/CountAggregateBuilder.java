@@ -22,18 +22,18 @@ import org.apache.metamodel.util.AggregateBuilder;
 
 final class CountAggregateBuilder implements AggregateBuilder<Long> {
 
-	private long counter = 0;
+    private long counter = 0;
 
-	@Override
-	public void add(Object o) {
-		if (o != null) {
-			counter++;
-		}
-	}
+    @Override
+    public void add(Object o) {
+        if (o != null) {
+            counter++;
+        }
+    }
 
-	@Override
-	public Long getAggregate() {
-		return counter;
-	}
+    @Override
+    public Long getAggregate() {
+        return counter;
+    }
 
 }

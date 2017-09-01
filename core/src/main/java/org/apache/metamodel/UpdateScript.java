@@ -28,10 +28,10 @@ package org.apache.metamodel;
 @FunctionalInterface
 public interface UpdateScript {
 
-	/**
-	 * Invoked by MetaModel when the update script should be run. User should
-	 * implement this method and invoke update operations on the
-	 * {@link UpdateCallback}.
-	 */
-	public void run(UpdateCallback callback);
+    /**
+     * Invoked by MetaModel when the update script should be run. User should
+     * implement this method and invoke update operations on the
+     * {@link UpdateCallback}.
+     */
+    public void run(UpdateCallback callback);
 }

@@ -25,29 +25,29 @@ import java.util.Date;
  */
 public enum SuperColumnType {
 
-	BOOLEAN_TYPE(Boolean.class),
+    BOOLEAN_TYPE(Boolean.class),
 
-	LITERAL_TYPE(String.class),
+    LITERAL_TYPE(String.class),
 
-	NUMBER_TYPE(Number.class),
+    NUMBER_TYPE(Number.class),
 
-	TIME_TYPE(Date.class),
+    TIME_TYPE(Date.class),
 
-	BINARY_TYPE(byte[].class),
+    BINARY_TYPE(byte[].class),
 
-	OTHER_TYPE(Object.class);
+    OTHER_TYPE(Object.class);
 
-	private Class<?> _javaEquivalentClass;
+    private Class<?> _javaEquivalentClass;
 
-	private SuperColumnType(Class<?> javaEquivalentClass) {
-		_javaEquivalentClass = javaEquivalentClass;
-	}
+    private SuperColumnType(Class<?> javaEquivalentClass) {
+        _javaEquivalentClass = javaEquivalentClass;
+    }
 
-	/**
-	 * @return a java class that is appropriate for handling column values of
-	 *         this column super type
-	 */
-	public Class<?> getJavaEquivalentClass() {
-		return _javaEquivalentClass;
-	}
+    /**
+     * @return a java class that is appropriate for handling column values of
+     *         this column super type
+     */
+    public Class<?> getJavaEquivalentClass() {
+        return _javaEquivalentClass;
+    }
 }

@@ -24,37 +24,37 @@ import junit.framework.TestCase;
 
 public class StyleBuilderTest extends TestCase {
 
-	public void testDefaultColors() throws Exception {
-		StyleBuilder sb = new StyleBuilder();
+    public void testDefaultColors() throws Exception {
+        StyleBuilder sb = new StyleBuilder();
 
-		sb.foreground(1, 1, 1);
-		assertEquals("color: rgb(1,1,1);", sb.create().toCSS());
+        sb.foreground(1, 1, 1);
+        assertEquals("color: rgb(1,1,1);", sb.create().toCSS());
 
-		sb.foreground(0, 0, 0);
-		assertEquals("", sb.create().toCSS());
+        sb.foreground(0, 0, 0);
+        assertEquals("", sb.create().toCSS());
 
-		sb.background(0, 0, 0);
-		assertEquals("background-color: rgb(0,0,0);", sb.create().toCSS());
+        sb.background(0, 0, 0);
+        assertEquals("background-color: rgb(0,0,0);", sb.create().toCSS());
 
-		sb.background(255, 255, 255);
-		assertEquals("", sb.create().toCSS());
-	}
+        sb.background(255, 255, 255);
+        assertEquals("", sb.create().toCSS());
+    }
 
-	public void testCreateNoStyle() throws Exception {
-		Style style = new StyleBuilder().create();
-		assertEquals(Style.NO_STYLE, style);
-		assertSame(Style.NO_STYLE, style);
-	}
+    public void testCreateNoStyle() throws Exception {
+        Style style = new StyleBuilder().create();
+        assertEquals(Style.NO_STYLE, style);
+        assertSame(Style.NO_STYLE, style);
+    }
 
-	public void testCreateColor() throws Exception {
-		Color col1 = StyleBuilder.createColor("eeEE00");
-		assertEquals("Color[238,238,0]", col1.toString());
+    public void testCreateColor() throws Exception {
+        Color col1 = StyleBuilder.createColor("eeEE00");
+        assertEquals("Color[238,238,0]", col1.toString());
 
-		Color col2 = StyleBuilder.createColor(238, 238, 0);
+        Color col2 = StyleBuilder.createColor(238, 238, 0);
 
-		// cache should ensure that these two colors are not only equal, but
-		// also the same!
-		assertEquals(col1, col2);
-		assertSame(col1, col2);
-	}
+        // cache should ensure that these two colors are not only equal, but
+        // also the same!
+        assertEquals(col1, col2);
+        assertSame(col1, col2);
+    }
 }

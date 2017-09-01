@@ -31,8 +31,8 @@ public final class HasNameMapper implements Function<HasName, String>, Serializa
     private static final long serialVersionUID = 1L;
 
     @Override
-	public String apply(HasName arg) {
-		return arg.getName();
-	}
+    public String apply(HasName arg) {
+        return arg.getName();
+    }
 
 }

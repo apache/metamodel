@@ -24,26 +24,26 @@ package org.apache.metamodel.convert;
  */
 public class StringToIntegerConverter implements TypeConverter<String, Integer> {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toPhysicalValue(Integer virtualValue) {
-		if (virtualValue == null) {
-			return null;
-		}
-		return virtualValue.toString();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toPhysicalValue(Integer virtualValue) {
+        if (virtualValue == null) {
+            return null;
+        }
+        return virtualValue.toString();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Integer toVirtualValue(String physicalValue) {
-		if (physicalValue == null || physicalValue.length() == 0) {
-			return null;
-		}
-		return Integer.parseInt(physicalValue);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Integer toVirtualValue(String physicalValue) {
+        if (physicalValue == null || physicalValue.length() == 0) {
+            return null;
+        }
+        return Integer.parseInt(physicalValue);
+    }
 
 }

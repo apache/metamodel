@@ -24,17 +24,17 @@ import junit.framework.TestCase;
 
 public class SchemaNameComparatorTest extends TestCase {
 
-	final Comparator<? super String> comp = SchemaNameComparator.getInstance();
+    final Comparator<? super String> comp = SchemaNameComparator.getInstance();
 
-	public void testNormalComparison() throws Exception {
-		assertTrue(comp.compare("foo", "bar") > 0);
-		assertTrue(comp.compare("bar", "foo") < 0);
-		assertTrue(comp.compare("bar", "bar") == 0);
-	}
+    public void testNormalComparison() throws Exception {
+        assertTrue(comp.compare("foo", "bar") > 0);
+        assertTrue(comp.compare("bar", "foo") < 0);
+        assertTrue(comp.compare("bar", "bar") == 0);
+    }
 
-	public void testNull() throws Exception {
-		assertTrue(comp.compare(null, null) == 0);
-		assertTrue(comp.compare("foo", null) > 0);
-		assertTrue(comp.compare(null, "foo") < 0);
-	}
+    public void testNull() throws Exception {
+        assertTrue(comp.compare(null, null) == 0);
+        assertTrue(comp.compare("foo", null) > 0);
+        assertTrue(comp.compare(null, "foo") < 0);
+    }
 }

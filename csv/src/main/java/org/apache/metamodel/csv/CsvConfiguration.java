@@ -60,12 +60,12 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
 
     public CsvConfiguration(int columnNameLineNumber) {
         this(columnNameLineNumber, FileHelper.DEFAULT_ENCODING, DEFAULT_SEPARATOR_CHAR, DEFAULT_QUOTE_CHAR,
-                DEFAULT_ESCAPE_CHAR);
+            DEFAULT_ESCAPE_CHAR);
     }
 
     public CsvConfiguration(int columnNameLineNumber, boolean failOnInconsistentRowLength, boolean multilineValues) {
         this(columnNameLineNumber, FileHelper.DEFAULT_ENCODING, DEFAULT_SEPARATOR_CHAR, DEFAULT_QUOTE_CHAR,
-                DEFAULT_ESCAPE_CHAR, failOnInconsistentRowLength, multilineValues);
+            DEFAULT_ESCAPE_CHAR, failOnInconsistentRowLength, multilineValues);
     }
 
     public CsvConfiguration(int columnNameLineNumber, String encoding, char separatorChar, char quoteChar,
@@ -77,11 +77,11 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
             char escapeChar, boolean failOnInconsistentRowLength) {
         this(columnNameLineNumber, encoding, separatorChar, quoteChar, escapeChar, failOnInconsistentRowLength, true);
     }
-    
+
     public CsvConfiguration(int columnNameLineNumber, String encoding, char separatorChar, char quoteChar,
             char escapeChar, boolean failOnInconsistentRowLength, boolean multilineValues) {
         this(columnNameLineNumber, null, encoding, separatorChar, quoteChar, escapeChar, failOnInconsistentRowLength,
-                multilineValues);
+            multilineValues);
     }
 
     public CsvConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy, String encoding,
@@ -96,7 +96,7 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
         this.multilineValues = multilineValues;
         this.columnNamingStrategy = columnNamingStrategy;
     }
-    
+
     /**
      * Gets a {@link ColumnNamingStrategy} to use if needed.
      * @return
@@ -112,10 +112,10 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
      * Determines whether to fail (by throwing an
      * {@link InconsistentRowLengthException}) if a line in the CSV file has
      * inconsistent amounts of columns.
-     * 
+     *
      * If set to false (default) MetaModel will gracefully fill in missing null
      * values in or ignore additional values in a line.
-     * 
+     *
      * @return a boolean indicating whether to fail or gracefully compensate for
      *         inconsistent lines in the CSV files.
      */
@@ -126,7 +126,7 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
     /**
      * Determines whether the CSV files read using this configuration should be
      * allowed to have multiline values in them.
-     * 
+     *
      * @return
      */
     public boolean isMultilineValues() {
@@ -135,7 +135,7 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
 
     /**
      * The line number (1 based) from which to get the names of the columns.
-     * 
+     *
      * @return the line number (1 based)
      */
     public int getColumnNameLineNumber() {
@@ -144,7 +144,7 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
 
     /**
      * Gets the file encoding to use for reading the file.
-     * 
+     *
      * @return the text encoding of the file.
      */
     public String getEncoding() {
@@ -154,7 +154,7 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
     /**
      * Gets the separator char (typically comma or semicolon) for separating
      * values.
-     * 
+     *
      * @return the separator char
      */
     public char getSeparatorChar() {
@@ -163,7 +163,7 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
 
     /**
      * Gets the quote char, used for encapsulating values.
-     * 
+     *
      * @return the quote char
      */
     public char getQuoteChar() {
@@ -172,7 +172,7 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
 
     /**
      * Gets the escape char, used for escaping eg. quote chars inside values.
-     * 
+     *
      * @return the escape char
      */
     public char getEscapeChar() {

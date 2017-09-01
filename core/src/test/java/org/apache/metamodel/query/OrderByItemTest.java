@@ -23,11 +23,11 @@ import junit.framework.TestCase;
 
 public class OrderByItemTest extends TestCase {
 
-	public void testSimpleOrderBy() throws Exception {
-		SelectItem selectItem = new SelectItem("foo", "foo");
-		OrderByItem item = new OrderByItem(selectItem, Direction.DESC);
-		assertEquals("foo DESC", item.toString());
-		item = new OrderByItem(selectItem, Direction.ASC);
-		assertEquals("foo ASC", item.toString());
-	}
+    public void testSimpleOrderBy() throws Exception {
+        SelectItem selectItem = new SelectItem("foo", "foo");
+        OrderByItem item = new OrderByItem(selectItem, Direction.DESC);
+        assertEquals("foo DESC", item.toString());
+        item = new OrderByItem(selectItem, Direction.ASC);
+        assertEquals("foo ASC", item.toString());
+    }
 }

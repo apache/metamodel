@@ -27,32 +27,32 @@ import org.apache.metamodel.schema.Column;
 
 public class JdbcColumnTest extends JdbcTestCase {
 
-	public void testEqualsDisconected() throws Exception {
-		Connection con1 = getTestDbConnection();
-		DataContext dc = new JdbcDataContext(con1);
-		Column col1 = dc.getDefaultSchema().getTableByName("EMPLOYEES").getColumnByName("EMPLOYEENUMBER");
-		con1.close();
+    public void testEqualsDisconected() throws Exception {
+        Connection con1 = getTestDbConnection();
+        DataContext dc = new JdbcDataContext(con1);
+        Column col1 = dc.getDefaultSchema().getTableByName("EMPLOYEES").getColumnByName("EMPLOYEENUMBER");
+        con1.close();
 
-		Connection con2 = getTestDbConnection();
-		assertTrue(con1 != con2);
-		dc = new JdbcDataContext(con2);
-		Column col2 = dc.getDefaultSchema().getTableByName("EMPLOYEES").getColumnByName("EMPLOYEENUMBER");
+        Connection con2 = getTestDbConnection();
+        assertTrue(con1 != con2);
+        dc = new JdbcDataContext(con2);
+        Column col2 = dc.getDefaultSchema().getTableByName("EMPLOYEES").getColumnByName("EMPLOYEENUMBER");
 
-		assertEquals(col1, col2);
-		assertTrue(new SelectItem(col1).equals(new SelectItem(col2)));
-		assertTrue(new SelectItem(col1).setAlias("foo").equalsIgnoreAlias(new SelectItem(col2).setAlias("bar")));
+        assertEquals(col1, col2);
+        assertTrue(new SelectItem(col1).equals(new SelectItem(col2)));
+        assertTrue(new SelectItem(col1).setAlias("foo").equalsIgnoreAlias(new SelectItem(col2).setAlias("bar")));
 
-		con2.close();
+        con2.close();
 
-		assertEquals(col1, col2);
-		assertTrue(new SelectItem(col1).equals(new SelectItem(col2)));
-		assertTrue(new SelectItem(col1).setAlias("foo").equalsIgnoreAlias(new SelectItem(col2).setAlias("bar")));
+        assertEquals(col1, col2);
+        assertTrue(new SelectItem(col1).equals(new SelectItem(col2)));
+        assertTrue(new SelectItem(col1).setAlias("foo").equalsIgnoreAlias(new SelectItem(col2).setAlias("bar")));
 
-		try {
-			col2.isIndexed();
-			fail("Exception expected");
-		} catch (MetaModelException e) {
-			assertEquals("Could not load indexes: Connection is closed", e.getMessage());
-		}
-	}
+        try {
+            col2.isIndexed();
+            fail("Exception expected");
+        } catch (MetaModelException e) {
+            assertEquals("Could not load indexes: Connection is closed", e.getMessage());
+        }
+    }
 }

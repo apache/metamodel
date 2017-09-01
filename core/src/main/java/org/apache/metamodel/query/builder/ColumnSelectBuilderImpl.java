@@ -25,30 +25,30 @@ import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 
 final class ColumnSelectBuilderImpl extends SatisfiedSelectBuilderImpl
-		implements ColumnSelectBuilder<GroupedQueryBuilder> {
+        implements ColumnSelectBuilder<GroupedQueryBuilder> {
 
-	private SelectItem selectItem;
+    private SelectItem selectItem;
 
-	public ColumnSelectBuilderImpl(Column column, Query query,
-			GroupedQueryBuilder queryBuilder) {
-		super(queryBuilder);
-		this.selectItem = new SelectItem(column);
+    public ColumnSelectBuilderImpl(Column column, Query query,
+            GroupedQueryBuilder queryBuilder) {
+        super(queryBuilder);
+        this.selectItem = new SelectItem(column);
 
-		query.select(selectItem);
-	}
+        query.select(selectItem);
+    }
 
-	@Override
-	public GroupedQueryBuilder as(String alias) {
-		if (alias == null) {
-			throw new IllegalArgumentException("alias cannot be null");
-		}
-		selectItem.setAlias(alias);
-		return getQueryBuilder();
-	}
+    @Override
+    public GroupedQueryBuilder as(String alias) {
+        if (alias == null) {
+            throw new IllegalArgumentException("alias cannot be null");
+        }
+        selectItem.setAlias(alias);
+        return getQueryBuilder();
+    }
 
-	@Override
-	protected void decorateIdentity(List<Object> identifiers) {
-		super.decorateIdentity(identifiers);
-		identifiers.add(selectItem);
-	}
+    @Override
+    protected void decorateIdentity(List<Object> identifiers) {
+        super.decorateIdentity(identifiers);
+        identifiers.add(selectItem);
+    }
 }

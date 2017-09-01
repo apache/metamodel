@@ -24,23 +24,23 @@ import org.apache.metamodel.schema.Table;
 
 public class FromClauseTest extends MetaModelTestCase {
 
-	public void testGetItemByReference() throws Exception {
-		Schema exampleSchema = getExampleSchema();
-		Table table = exampleSchema.getTableByName(TABLE_CONTRIBUTOR);
+    public void testGetItemByReference() throws Exception {
+        Schema exampleSchema = getExampleSchema();
+        Table table = exampleSchema.getTableByName(TABLE_CONTRIBUTOR);
 
-		Query query = new Query();
-		query.from(table, "foobar");
+        Query query = new Query();
+        query.from(table, "foobar");
 
-		assertNull(query.getFromClause().getItemByReference("foob"));
-		assertNull(query.getFromClause().getItemByReference(TABLE_CONTRIBUTOR));
-		assertEquals("MetaModelSchema.contributor foobar", query
-				.getFromClause().getItemByReference("foobar").toString());
+        assertNull(query.getFromClause().getItemByReference("foob"));
+        assertNull(query.getFromClause().getItemByReference(TABLE_CONTRIBUTOR));
+        assertEquals("MetaModelSchema.contributor foobar", query
+                .getFromClause().getItemByReference("foobar").toString());
 
-		query = new Query();
-		query.from(table);
-		assertNull(query.getFromClause().getItemByReference("foob"));
-		assertEquals("MetaModelSchema.contributor", query.getFromClause()
-				.getItemByReference(TABLE_CONTRIBUTOR).toString());
-		assertNull(query.getFromClause().getItemByReference("foobar"));
-	}
+        query = new Query();
+        query.from(table);
+        assertNull(query.getFromClause().getItemByReference("foob"));
+        assertEquals("MetaModelSchema.contributor", query.getFromClause()
+                .getItemByReference(TABLE_CONTRIBUTOR).toString());
+        assertNull(query.getFromClause().getItemByReference("foobar"));
+    }
 }

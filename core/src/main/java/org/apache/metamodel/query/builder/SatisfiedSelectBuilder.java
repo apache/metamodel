@@ -22,14 +22,14 @@ import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.schema.Column;
 
 public interface SatisfiedSelectBuilder<B extends SatisfiedQueryBuilder<?>>
-		extends SatisfiedQueryBuilder<B> {
-	
-	public ColumnSelectBuilder<B> and(Column column);
+        extends SatisfiedQueryBuilder<B> {
+    
+    public ColumnSelectBuilder<B> and(Column column);
 
-	public SatisfiedSelectBuilder<B> and(Column ... columns);
+    public SatisfiedSelectBuilder<B> and(Column ... columns);
 
-	public FunctionSelectBuilder<B> and(FunctionType function,
-			Column column);
-	
-	public SatisfiedSelectBuilder<B> and(String columnName);
+    public FunctionSelectBuilder<B> and(FunctionType function,
+            Column column);
+    
+    public SatisfiedSelectBuilder<B> and(String columnName);
 }

@@ -24,10 +24,10 @@ import junit.framework.TestCase;
 
 public class InterceptorsTest extends TestCase {
 
-	public void testReuseInterceptor() throws Exception {
-		MockUpdateableDataContext original = new MockUpdateableDataContext();
-		InterceptableDataContext interceptor1 = Interceptors.intercept(original);
-		InterceptableDataContext interceptor2 = Interceptors.intercept(interceptor1);
-		assertSame(interceptor1, interceptor2);
-	}
+    public void testReuseInterceptor() throws Exception {
+        MockUpdateableDataContext original = new MockUpdateableDataContext();
+        InterceptableDataContext interceptor1 = Interceptors.intercept(original);
+        InterceptableDataContext interceptor2 = Interceptors.intercept(interceptor1);
+        assertSame(interceptor1, interceptor2);
+    }
 }

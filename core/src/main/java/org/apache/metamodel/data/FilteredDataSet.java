@@ -24,48 +24,48 @@ package org.apache.metamodel.data;
  */
 public final class FilteredDataSet extends AbstractDataSet implements WrappingDataSet {
 
-	private final DataSet _dataSet;
-	private final IRowFilter[] _filters;
-	private Row _row;
+    private final DataSet _dataSet;
+    private final IRowFilter[] _filters;
+    private Row _row;
 
-	public FilteredDataSet(DataSet dataSet, IRowFilter... filters) {
-	    super(dataSet);
-		_dataSet = dataSet;
-		_filters = filters;
-	}
+    public FilteredDataSet(DataSet dataSet, IRowFilter... filters) {
+        super(dataSet);
+        _dataSet = dataSet;
+        _filters = filters;
+    }
 
-	@Override
-	public void close() {
-		super.close();
-		_dataSet.close();
-	}
-	
-	@Override
-	public DataSet getWrappedDataSet() {
-	    return _dataSet;
-	}
+    @Override
+    public void close() {
+        super.close();
+        _dataSet.close();
+    }
+    
+    @Override
+    public DataSet getWrappedDataSet() {
+        return _dataSet;
+    }
 
-	@Override
-	public boolean next() {
-		boolean next = false;
-		while (_dataSet.next()) {
-			Row row = _dataSet.getRow();
-			for (IRowFilter filter : _filters) {
-				next = filter.accept(row);
-				if (!next) {
-					break;
-				}
-			}
-			if (next) {
-				_row = row;
-				break;
-			}
-		}
-		return next;
-	}
+    @Override
+    public boolean next() {
+        boolean next = false;
+        while (_dataSet.next()) {
+            Row row = _dataSet.getRow();
+            for (IRowFilter filter : _filters) {
+                next = filter.accept(row);
+                if (!next) {
+                    break;
+                }
+            }
+            if (next) {
+                _row = row;
+                break;
+            }
+        }
+        return next;
+    }
 
-	@Override
-	public Row getRow() {
-		return _row;
-	}
+    @Override
+    public Row getRow() {
+        return _row;
+    }
 }

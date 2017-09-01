@@ -57,7 +57,8 @@ final class CsvDeleteBuilder extends AbstractRowDeletionBuilder {
             @Override
             public void run(UpdateCallback callback) {
                 final Table originalTable = getTable();
-                final Table copyTable = callback.createTable(copyDataContext.getDefaultSchema(), originalTable.getName())
+                final Table copyTable = callback
+                        .createTable(copyDataContext.getDefaultSchema(), originalTable.getName())
                         .like(originalTable).execute();
 
                 if (isTruncateTableOperation()) {

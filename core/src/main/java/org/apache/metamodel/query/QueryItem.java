@@ -27,13 +27,13 @@ import java.io.Serializable;
  */
 public interface QueryItem extends Serializable {
 
-	public QueryItem setQuery(Query query);
+    public QueryItem setQuery(Query query);
 
-	public Query getQuery();
-	
-	public String toSql();
-	
-	public String toSql(boolean includeSchemaInColumnPaths);
-	
-	public String toString();
+    public Query getQuery();
+    
+    public String toSql();
+    
+    public String toSql(boolean includeSchemaInColumnPaths);
+    
+    public String toString();
 }

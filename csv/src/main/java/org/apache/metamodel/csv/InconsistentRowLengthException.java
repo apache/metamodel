@@ -34,66 +34,66 @@ import org.apache.metamodel.data.Row;
  * 
  * <pre>
  * while (true) {
- * 	try {
- * 		if (!dataSet.next) {
- * 			break;
- * 		}
- * 		Row row = dataSet.getRow();
- * 		handleRegularRow(row);
- * 	} catch (InconsistentRowLengthException e) {
- * 		handleIrregularRow(e.getSourceLine());
- * 	}
+ *   try {
+ *     if (!dataSet.next) {
+ *       break;
+ *    }
+ *    Row row = dataSet.getRow();
+ *    handleRegularRow(row);
+ *  } catch (InconsistentRowLengthException e) {
+ *    handleIrregularRow(e.getSourceLine());
+ *  }
  * }
  * </pre>
  */
 public final class InconsistentRowLengthException extends
-		InconsistentRowFormatException {
+        InconsistentRowFormatException {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private final int _columnsInTable;
-	private final String[] _line;
+    private final int _columnsInTable;
+    private final String[] _line;
 
-	public InconsistentRowLengthException(int columnsInTable, Row proposedRow,
-			String[] line, int rowNumber) {
-		super(proposedRow, rowNumber);
-		_columnsInTable = columnsInTable;
-		_line = line;
-	}
+    public InconsistentRowLengthException(int columnsInTable, Row proposedRow,
+            String[] line, int rowNumber) {
+        super(proposedRow, rowNumber);
+        _columnsInTable = columnsInTable;
+        _line = line;
+    }
 
-	@Override
-	public String getMessage() {
-		return "Inconsistent length of row no. " + getRowNumber()
-				+ ". Expected " + getColumnsInTable() + " columns but found "
-				+ getColumnsInLine() + ".";
-	}
+    @Override
+    public String getMessage() {
+        return "Inconsistent length of row no. " + getRowNumber()
+                + ". Expected " + getColumnsInTable() + " columns but found "
+                + getColumnsInLine() + ".";
+    }
 
-	/**
-	 * Gets the source line, as parsed by the CSV parser (regardless of table
-	 * metadata).
-	 * 
-	 * @return an array of string values.
-	 */
-	public String[] getSourceLine() {
-		return _line;
-	}
+    /**
+     * Gets the source line, as parsed by the CSV parser (regardless of table
+     * metadata).
+     * 
+     * @return an array of string values.
+     */
+    public String[] getSourceLine() {
+        return _line;
+    }
 
-	/**
-	 * Gets the amount of columns in the parsed line.
-	 * 
-	 * @return an int representing the amount of values in the inconsistent
-	 *         line.
-	 */
-	public int getColumnsInLine() {
-		return _line.length;
-	}
+    /**
+     * Gets the amount of columns in the parsed line.
+     * 
+     * @return an int representing the amount of values in the inconsistent
+     *         line.
+     */
+    public int getColumnsInLine() {
+        return _line.length;
+    }
 
-	/**
-	 * Gets the expected amounts of columns, as defined by the table metadata.
-	 * 
-	 * @return an int representing the amount of columns defined in the table.
-	 */
-	public int getColumnsInTable() {
-		return _columnsInTable;
-	}
+    /**
+     * Gets the expected amounts of columns, as defined by the table metadata.
+     * 
+     * @return an int representing the amount of columns defined in the table.
+     */
+    public int getColumnsInTable() {
+        return _columnsInTable;
+    }
 }

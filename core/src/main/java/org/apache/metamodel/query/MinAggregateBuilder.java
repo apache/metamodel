@@ -23,26 +23,26 @@ import org.apache.metamodel.util.ObjectComparator;
 
 final class MinAggregateBuilder implements AggregateBuilder<Object> {
 
-	private Object min;
+    private Object min;
 
-	@Override
-	public void add(Object o) {
-		if (o == null) {
-			return;
-		}
-		if (min == null) {
-			min = o;
-		} else {
-			Comparable<Object> comparable = ObjectComparator.getComparable(min);
-			if (comparable.compareTo(o) > 0) {
-				min = o;
-			}
-		}
-	}
+    @Override
+    public void add(Object o) {
+        if (o == null) {
+            return;
+        }
+        if (min == null) {
+            min = o;
+        } else {
+            Comparable<Object> comparable = ObjectComparator.getComparable(min);
+            if (comparable.compareTo(o) > 0) {
+                min = o;
+            }
+        }
+    }
 
-	@Override
-	public Object getAggregate() {
-		return min;
-	}
+    @Override
+    public Object getAggregate() {
+        return min;
+    }
 
 }

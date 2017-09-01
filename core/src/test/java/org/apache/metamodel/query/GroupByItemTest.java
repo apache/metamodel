@@ -22,21 +22,21 @@ import junit.framework.TestCase;
 
 public class GroupByItemTest extends TestCase {
 
-	public void testSimpleGroupBy() throws Exception {
-		SelectItem selectItem = new SelectItem("foo", "bar");
-		GroupByItem item = new GroupByItem(selectItem);
-		assertEquals("bar", item.toString());
-	}
+    public void testSimpleGroupBy() throws Exception {
+        SelectItem selectItem = new SelectItem("foo", "bar");
+        GroupByItem item = new GroupByItem(selectItem);
+        assertEquals("bar", item.toString());
+    }
 
-	public void testGroupByClause() throws Exception {
-		GroupByClause clause = new GroupByClause(new Query());
-		SelectItem selectItem = new SelectItem("foo", "foo");
-		GroupByItem item = new GroupByItem(selectItem);
-		clause.addItems(item);
-		selectItem = new SelectItem("bar", "bar");
-		item = new GroupByItem(selectItem);
-		clause.addItems(item);
+    public void testGroupByClause() throws Exception {
+        GroupByClause clause = new GroupByClause(new Query());
+        SelectItem selectItem = new SelectItem("foo", "foo");
+        GroupByItem item = new GroupByItem(selectItem);
+        clause.addItems(item);
+        selectItem = new SelectItem("bar", "bar");
+        item = new GroupByItem(selectItem);
+        clause.addItems(item);
 
-		assertEquals(" GROUP BY foo, bar", clause.toString());
-	}
+        assertEquals(" GROUP BY foo, bar", clause.toString());
+    }
 }

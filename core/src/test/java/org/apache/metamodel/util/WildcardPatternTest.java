@@ -22,35 +22,35 @@ import junit.framework.TestCase;
 
 public class WildcardPatternTest extends TestCase {
 
-	public void testMatches() throws Exception {
-		WildcardPattern pattern = new WildcardPattern("foo%bar", '%');
-		assertTrue(pattern.matches("foobar"));
-		assertTrue(pattern.matches("foofoobar"));
-		assertFalse(pattern.matches("foobarbar"));
-		assertFalse(pattern.matches("w00p"));
+    public void testMatches() throws Exception {
+        WildcardPattern pattern = new WildcardPattern("foo%bar", '%');
+        assertTrue(pattern.matches("foobar"));
+        assertTrue(pattern.matches("foofoobar"));
+        assertFalse(pattern.matches("foobarbar"));
+        assertFalse(pattern.matches("w00p"));
 
-		pattern = new WildcardPattern("*foo*bar", '*');
-		assertTrue(pattern.matches("foobar"));
-		assertTrue(pattern.matches("foofoobar"));
-		assertFalse(pattern.matches("foobarbar"));
-		assertFalse(pattern.matches("w00p"));
+        pattern = new WildcardPattern("*foo*bar", '*');
+        assertTrue(pattern.matches("foobar"));
+        assertTrue(pattern.matches("foofoobar"));
+        assertFalse(pattern.matches("foobarbar"));
+        assertFalse(pattern.matches("w00p"));
 
-		pattern = new WildcardPattern("foo%bar%", '%');
-		assertTrue(pattern.matches("foobar"));
-		assertTrue(pattern.matches("foofoobar"));
-		assertTrue(pattern.matches("foobarbar"));
-		assertFalse(pattern.matches("w00p"));
+        pattern = new WildcardPattern("foo%bar%", '%');
+        assertTrue(pattern.matches("foobar"));
+        assertTrue(pattern.matches("foofoobar"));
+        assertTrue(pattern.matches("foobarbar"));
+        assertFalse(pattern.matches("w00p"));
 
-		pattern = new WildcardPattern("oba%", '%');
-		assertTrue(pattern.matches("obar"));
-		assertFalse(pattern.matches("foobar"));
+        pattern = new WildcardPattern("oba%", '%');
+        assertTrue(pattern.matches("obar"));
+        assertFalse(pattern.matches("foobar"));
 
-		pattern = new WildcardPattern("bar", '%');
-		assertTrue(pattern.matches("bar"));
-		assertFalse(pattern.matches("foobar"));
+        pattern = new WildcardPattern("bar", '%');
+        assertTrue(pattern.matches("bar"));
+        assertFalse(pattern.matches("foobar"));
 
-		pattern = new WildcardPattern("", '%');
-		assertTrue(pattern.matches(""));
-		assertFalse(pattern.matches("foo"));
-	}
+        pattern = new WildcardPattern("", '%');
+        assertTrue(pattern.matches(""));
+        assertFalse(pattern.matches("foo"));
+    }
 }

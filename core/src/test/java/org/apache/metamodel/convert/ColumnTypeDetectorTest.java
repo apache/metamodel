@@ -22,51 +22,51 @@ import junit.framework.TestCase;
 
 public class ColumnTypeDetectorTest extends TestCase {
 
-	public void testBooleanConverter() throws Exception {
-		ColumnTypeDetector d = new ColumnTypeDetector();
+    public void testBooleanConverter() throws Exception {
+        ColumnTypeDetector d = new ColumnTypeDetector();
 
-		d.registerValue("1");
-		d.registerValue("true");
-		d.registerValue("0");
+        d.registerValue("1");
+        d.registerValue("true");
+        d.registerValue("0");
 
-		assertEquals(StringToBooleanConverter.class, d.createConverter()
-				.getClass());
+        assertEquals(StringToBooleanConverter.class, d.createConverter()
+                .getClass());
 
-		d.registerValue("2");
+        d.registerValue("2");
 
-		assertNull(d.createConverter());
-	}
+        assertNull(d.createConverter());
+    }
 
-	public void testIntegerAndDoubleConverter() throws Exception {
-		ColumnTypeDetector d = new ColumnTypeDetector();
+    public void testIntegerAndDoubleConverter() throws Exception {
+        ColumnTypeDetector d = new ColumnTypeDetector();
 
-		d.registerValue("123");
-		d.registerValue("0");
+        d.registerValue("123");
+        d.registerValue("0");
 
-		assertEquals(StringToIntegerConverter.class, d.createConverter()
-				.getClass());
+        assertEquals(StringToIntegerConverter.class, d.createConverter()
+                .getClass());
 
-		d.registerValue("1123.23");
-		d.registerValue("0.0");
+        d.registerValue("1123.23");
+        d.registerValue("0.0");
 
-		assertEquals(StringToDoubleConverter.class, d.createConverter()
-				.getClass());
+        assertEquals(StringToDoubleConverter.class, d.createConverter()
+                .getClass());
 
-		d.registerValue("abc");
+        d.registerValue("abc");
 
-		assertNull(d.createConverter());
-	}
+        assertNull(d.createConverter());
+    }
 
-	public void testDateConverter() throws Exception {
-		ColumnTypeDetector d = new ColumnTypeDetector();
+    public void testDateConverter() throws Exception {
+        ColumnTypeDetector d = new ColumnTypeDetector();
 
-		d.registerValue("2010-12-30");
+        d.registerValue("2010-12-30");
 
-		assertEquals(StringToDateConverter.class, d.createConverter()
-				.getClass());
+        assertEquals(StringToDateConverter.class, d.createConverter()
+                .getClass());
 
-		d.registerValue("2 abc");
+        d.registerValue("2 abc");
 
-		assertNull(d.createConverter());
-	}
+        assertNull(d.createConverter());
+    }
 }

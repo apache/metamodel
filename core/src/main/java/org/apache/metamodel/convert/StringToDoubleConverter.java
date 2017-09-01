@@ -24,26 +24,26 @@ package org.apache.metamodel.convert;
  */
 public class StringToDoubleConverter implements TypeConverter<String, Double> {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toPhysicalValue(Double virtualValue) {
-		if (virtualValue == null) {
-			return null;
-		}
-		return virtualValue.toString();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toPhysicalValue(Double virtualValue) {
+        if (virtualValue == null) {
+            return null;
+        }
+        return virtualValue.toString();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Double toVirtualValue(String physicalValue) {
-		if (physicalValue == null || physicalValue.length() == 0) {
-			return null;
-		}
-		return Double.parseDouble(physicalValue);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Double toVirtualValue(String physicalValue) {
+        if (physicalValue == null || physicalValue.length() == 0) {
+            return null;
+        }
+        return Double.parseDouble(physicalValue);
+    }
 
 }

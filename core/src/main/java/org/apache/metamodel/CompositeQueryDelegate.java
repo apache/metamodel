@@ -28,24 +28,24 @@ import org.apache.metamodel.schema.Table;
 
 final class CompositeQueryDelegate extends QueryPostprocessDelegate {
 
-	private final Function<Table, DataContext> _dataContextRetrievalFunction;
+    private final Function<Table, DataContext> _dataContextRetrievalFunction;
 
-	public CompositeQueryDelegate(
-			Function<Table, DataContext> dataContextRetrievalFunction) {
-		_dataContextRetrievalFunction = dataContextRetrievalFunction;
-	}
+    public CompositeQueryDelegate(
+            Function<Table, DataContext> dataContextRetrievalFunction) {
+        _dataContextRetrievalFunction = dataContextRetrievalFunction;
+    }
 
-	@Override
-	protected DataSet materializeMainSchemaTable(Table table, List<Column> columns,
-			int maxRows) {
-		// find the appropriate datacontext to execute a simple
-		// table materialization query
-		final DataContext dc = _dataContextRetrievalFunction.apply(table);
-		final Query q = new Query().select(columns).from(table);
-		if (maxRows >= 0) {
-			q.setMaxRows(maxRows);
-		}
-		return dc.executeQuery(q);
-	}
+    @Override
+    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns,
+            int maxRows) {
+        // find the appropriate datacontext to execute a simple
+        // table materialization query
+        final DataContext dc = _dataContextRetrievalFunction.apply(table);
+        final Query q = new Query().select(columns).from(table);
+        if (maxRows >= 0) {
+            q.setMaxRows(maxRows);
+        }
+        return dc.executeQuery(q);
+    }
 
 }

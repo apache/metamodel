@@ -30,38 +30,38 @@ final class CsvSchema extends AbstractSchema {
     private static final long serialVersionUID = 1L;
 
     private final String _name;
-	private final transient CsvDataContext _dataContext;
-	private CsvTable _table;
+    private final transient CsvDataContext _dataContext;
+    private CsvTable _table;
 
-	public CsvSchema(String name, CsvDataContext dataContext) {
-		super();
-		_name = name;
-		_dataContext = dataContext;
-	}
+    public CsvSchema(String name, CsvDataContext dataContext) {
+        super();
+        _name = name;
+        _dataContext = dataContext;
+    }
 
-	protected void setTable(CsvTable table) {
-		_table = table;
-	}
+    protected void setTable(CsvTable table) {
+        _table = table;
+    }
 
-	@Override
-	public String getName() {
-		return _name;
-	}
+    @Override
+    public String getName() {
+        return _name;
+    }
 
-	protected CsvDataContext getDataContext() {
-		return _dataContext;
-	}
+    protected CsvDataContext getDataContext() {
+        return _dataContext;
+    }
 
-	@Override
-	public String getQuote() {
-		return null;
-	}
+    @Override
+    public String getQuote() {
+        return null;
+    }
 
-	@Override
-	public List<Table> getTables() {
-		if (_table == null) {
-			return new ArrayList<>();
-		}
-		return Collections.singletonList(_table);
-	}
+    @Override
+    public List<Table> getTables() {
+        if (_table == null) {
+            return new ArrayList<>();
+        }
+        return Collections.singletonList(_table);
+    }
 }

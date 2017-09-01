@@ -25,6 +25,6 @@ import org.apache.metamodel.insert.RowInsertionBuilder;
  * interception of "insert into table" operations before they are executed.
  */
 public interface RowInsertionInterceptor extends
-		Interceptor<RowInsertionBuilder> {
+        Interceptor<RowInsertionBuilder> {
 
 }

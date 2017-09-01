@@ -96,7 +96,9 @@ final class CsvTable extends AbstractTable {
             for (int i = 1; i < columnNameLineNumber; i++) {
                 reader.readNext();
             }
-            final List<String> columnHeaders = Arrays.asList(Optional.ofNullable(reader.readNext()).orElse(new String[0]));
+            final List<String> columnHeaders = Arrays.asList(
+                    Optional.ofNullable(reader.readNext())
+                    .orElse(new String[0]));
 
             reader.close();
             return buildColumns(columnHeaders);

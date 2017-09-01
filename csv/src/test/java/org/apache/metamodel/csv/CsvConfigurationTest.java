@@ -22,25 +22,25 @@ import junit.framework.TestCase;
 
 public class CsvConfigurationTest extends TestCase {
 
-	public void testToString() throws Exception {
-		CsvConfiguration conf = new CsvConfiguration(0, "UTF8", ',', '"', '\\',
-				true);
-		assertEquals(
-				"CsvConfiguration[columnNameLineNumber=0, encoding=UTF8, separatorChar=,, quoteChar=\", escapeChar=\\, failOnInconsistentRowLength=true]",
-				conf.toString());
-	}
+    public void testToString() throws Exception {
+        CsvConfiguration conf = new CsvConfiguration(0, "UTF8", ',', '"', '\\',
+                true);
+        assertEquals(
+                "CsvConfiguration[columnNameLineNumber=0, encoding=UTF8, separatorChar=,, quoteChar=\", escapeChar=\\, failOnInconsistentRowLength=true]",
+                conf.toString());
+    }
 
-	public void testEquals() throws Exception {
-		CsvConfiguration conf1 = new CsvConfiguration(0, "UTF8", ',', '"',
-				'\\', true);
-		CsvConfiguration conf2 = new CsvConfiguration(0, "UTF8", ',', '"',
-				'\\', true);
+    public void testEquals() throws Exception {
+        CsvConfiguration conf1 = new CsvConfiguration(0, "UTF8", ',', '"',
+                '\\', true);
+        CsvConfiguration conf2 = new CsvConfiguration(0, "UTF8", ',', '"',
+                '\\', true);
 
-		assertEquals(conf1, conf2);
+        assertEquals(conf1, conf2);
 
-		CsvConfiguration conf3 = new CsvConfiguration(1, "UTF8", ',', '"',
-				'\\', true);
-		assertFalse(conf1.equals(conf3));
-	}
+        CsvConfiguration conf3 = new CsvConfiguration(1, "UTF8", ',', '"',
+                '\\', true);
+        assertFalse(conf1.equals(conf3));
+    }
 
 }

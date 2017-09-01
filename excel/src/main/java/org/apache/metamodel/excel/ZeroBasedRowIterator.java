@@ -29,28 +29,28 @@ import org.apache.poi.ss.usermodel.Sheet;
  */
 final class ZeroBasedRowIterator implements Iterator<Row> {
 
-	private final Sheet _sheet;
-	private volatile int _rowNumber;
+    private final Sheet _sheet;
+    private volatile int _rowNumber;
 
-	public ZeroBasedRowIterator(Sheet sheet) {
-		_sheet = sheet;
-		_rowNumber = -1;
-	}
+    public ZeroBasedRowIterator(Sheet sheet) {
+        _sheet = sheet;
+        _rowNumber = -1;
+    }
 
-	@Override
-	public boolean hasNext() {
-		return _rowNumber < _sheet.getLastRowNum();
-	}
+    @Override
+    public boolean hasNext() {
+        return _rowNumber < _sheet.getLastRowNum();
+    }
 
-	@Override
-	public Row next() {
-		_rowNumber++;
-		return _sheet.getRow(_rowNumber);
-	}
+    @Override
+    public Row next() {
+        _rowNumber++;
+        return _sheet.getRow(_rowNumber);
+    }
 
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException("remove() is not supported");
-	}
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException("remove() is not supported");
+    }
 
 }

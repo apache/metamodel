@@ -26,39 +26,39 @@ import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 
 final class SatisfiedOrderByBuilderImpl extends GroupedQueryBuilderCallback
-		implements SatisfiedOrderByBuilder<GroupedQueryBuilder> {
+        implements SatisfiedOrderByBuilder<GroupedQueryBuilder> {
 
-	private OrderByItem orderByitem;
+    private OrderByItem orderByitem;
 
-	public SatisfiedOrderByBuilderImpl(Column column, Query query,
-			GroupedQueryBuilder queryBuilder) {
-		super(queryBuilder);
-		orderByitem = new OrderByItem(new SelectItem(column));
-		query.orderBy(orderByitem);
-	}
+    public SatisfiedOrderByBuilderImpl(Column column, Query query,
+            GroupedQueryBuilder queryBuilder) {
+        super(queryBuilder);
+        orderByitem = new OrderByItem(new SelectItem(column));
+        query.orderBy(orderByitem);
+    }
 
-	public SatisfiedOrderByBuilderImpl(FunctionType function, Column column,
-			Query query, GroupedQueryBuilder queryBuilder) {
-		super(queryBuilder);
-		orderByitem = new OrderByItem(new SelectItem(function, column));
-		query.orderBy(orderByitem);
-	}
+    public SatisfiedOrderByBuilderImpl(FunctionType function, Column column,
+            Query query, GroupedQueryBuilder queryBuilder) {
+        super(queryBuilder);
+        orderByitem = new OrderByItem(new SelectItem(function, column));
+        query.orderBy(orderByitem);
+    }
 
-	@Override
-	public GroupedQueryBuilder asc() {
-		orderByitem.setDirection(Direction.ASC);
-		return getQueryBuilder();
-	}
+    @Override
+    public GroupedQueryBuilder asc() {
+        orderByitem.setDirection(Direction.ASC);
+        return getQueryBuilder();
+    }
 
-	@Override
-	public GroupedQueryBuilder desc() {
-		orderByitem.setDirection(Direction.DESC);
-		return getQueryBuilder();
-	}
-	
-	@Override
-	public SatisfiedOrderByBuilder<GroupedQueryBuilder> and(Column column) {
-		return getQueryBuilder().orderBy(column);
-	}
+    @Override
+    public GroupedQueryBuilder desc() {
+        orderByitem.setDirection(Direction.DESC);
+        return getQueryBuilder();
+    }
+    
+    @Override
+    public SatisfiedOrderByBuilder<GroupedQueryBuilder> and(Column column) {
+        return getQueryBuilder().orderBy(column);
+    }
 
 }

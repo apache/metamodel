@@ -30,44 +30,44 @@ import java.util.List;
  */
 public interface Relationship extends Serializable, Comparable<Relationship> {
 
-	/**
-	 * Gets the table of the primary key column(s).
-	 * 
-	 * @return the table of the primary key column(s).
-	 */
-	public Table getPrimaryTable();
+    /**
+     * Gets the table of the primary key column(s).
+     * 
+     * @return the table of the primary key column(s).
+     */
+    public Table getPrimaryTable();
 
-	/**
-	 * Gets the primary key columns of this relationship.
-	 * 
-	 * @return an array of primary key columns.
-	 */
-	public List<Column> getPrimaryColumns();
+    /**
+     * Gets the primary key columns of this relationship.
+     * 
+     * @return an array of primary key columns.
+     */
+    public List<Column> getPrimaryColumns();
 
-	/**
-	 * Gets the table of the foreign key column(s).
-	 * 
-	 * @return the table of the foreign key column(s).
-	 */
-	public Table getForeignTable();
+    /**
+     * Gets the table of the foreign key column(s).
+     * 
+     * @return the table of the foreign key column(s).
+     */
+    public Table getForeignTable();
 
-	/**
-	 * Gets the foreign key columns of this relationship.
-	 * 
-	 * @return an array of foreign key columns.
-	 */
-	public List<Column> getForeignColumns();
+    /**
+     * Gets the foreign key columns of this relationship.
+     * 
+     * @return an array of foreign key columns.
+     */
+    public List<Column> getForeignColumns();
 
-	/**
-	 * Determines whether this relationship contains a specific pair of columns
-	 * 
-	 * @param pkColumn
-	 *            primary key column
-	 * @param fkColumn
-	 *            foreign key column
-	 * @return true if this relation contains the specified primary and foreign
-	 *         columns as a part of the relation
-	 */
-	public boolean containsColumnPair(Column pkColumn, Column fkColumn);
+    /**
+     * Determines whether this relationship contains a specific pair of columns
+     * 
+     * @param pkColumn
+     *            primary key column
+     * @param fkColumn
+     *            foreign key column
+     * @return true if this relation contains the specified primary and foreign
+     *         columns as a part of the relation
+     */
+    public boolean containsColumnPair(Column pkColumn, Column fkColumn);
 
 }

@@ -36,42 +36,42 @@ import org.xml.sax.XMLReader;
 
 public class XmlSaxContentHandlerTest extends TestCase {
 
-	public void testRun() throws Exception {
-		final List<Object[]> rows = new ArrayList<Object[]>();
+    public void testRun() throws Exception {
+        final List<Object[]> rows = new ArrayList<Object[]>();
 
-		SAXParserFactory saxFactory = SAXParserFactory.newInstance();
-		SAXParser saxParser = saxFactory.newSAXParser();
-		XMLReader sheetParser = saxParser.getXMLReader();
-		RowPublisher rowPublisher = new RowPublisher() {
-			@Override
-			public boolean publish(Object[] values, Style[] styles) {
-				throw new UnsupportedOperationException();
-			}
+        SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+        SAXParser saxParser = saxFactory.newSAXParser();
+        XMLReader sheetParser = saxParser.getXMLReader();
+        RowPublisher rowPublisher = new RowPublisher() {
+            @Override
+            public boolean publish(Object[] values, Style[] styles) {
+                throw new UnsupportedOperationException();
+            }
 
-			@Override
-			public boolean publish(Object[] values) {
-				rows.add(values);
-				return true;
-			}
+            @Override
+            public boolean publish(Object[] values) {
+                rows.add(values);
+                return true;
+            }
 
-			@Override
-			public boolean publish(Row row) {
-				throw new UnsupportedOperationException();
-			}
+            @Override
+            public boolean publish(Row row) {
+                throw new UnsupportedOperationException();
+            }
 
-			@Override
-			public void finished() {
-			}
-		};
-		sheetParser.setContentHandler(new XmlSaxContentHandler(
-				"/eobjects.dk/contributors/person", rowPublisher,
-				"/eobjects.dk/contributors/person/name",
-				"/eobjects.dk/contributors/person/address"));
-		sheetParser.parse(new InputSource(new FileReader(
-				"src/test/resources/xml_input_eobjects.xml")));
+            @Override
+            public void finished() {
+            }
+        };
+        sheetParser.setContentHandler(new XmlSaxContentHandler(
+                "/eobjects.dk/contributors/person", rowPublisher,
+                "/eobjects.dk/contributors/person/name",
+                "/eobjects.dk/contributors/person/address"));
+        sheetParser.parse(new InputSource(new FileReader(
+                "src/test/resources/xml_input_eobjects.xml")));
 
-		assertEquals("[kasper, A third address]", Arrays.toString(rows.get(0)));
-		assertEquals("[asbjorn, Asbjorns address]", Arrays.toString(rows.get(1)));
-		assertEquals(2, rows.size());
-	}
+        assertEquals("[kasper, A third address]", Arrays.toString(rows.get(0)));
+        assertEquals("[asbjorn, Asbjorns address]", Arrays.toString(rows.get(1)));
+        assertEquals(2, rows.size());
+    }
 }

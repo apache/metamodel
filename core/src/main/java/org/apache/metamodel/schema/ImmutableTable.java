@@ -34,73 +34,73 @@ import java.util.List;
  */
 final class ImmutableTable extends AbstractTable implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private final List<ImmutableColumn> columns = new ArrayList<ImmutableColumn>();
-	private final List<ImmutableRelationship> relationships = new ArrayList<ImmutableRelationship>();
-	private final ImmutableSchema schema;
-	private final TableType type;
-	private final String remarks;
-	private final String name;
-	private final String quote;
+    private final List<ImmutableColumn> columns = new ArrayList<ImmutableColumn>();
+    private final List<ImmutableRelationship> relationships = new ArrayList<ImmutableRelationship>();
+    private final ImmutableSchema schema;
+    private final TableType type;
+    private final String remarks;
+    private final String name;
+    private final String quote;
 
-	protected ImmutableTable(String name, TableType type, ImmutableSchema schema,
-			String remarks, String quote) {
-		this.name = name;
-		this.type = type;
-		this.schema = schema;
-		this.remarks = remarks;
-		this.quote = quote;
-	}
+    protected ImmutableTable(String name, TableType type, ImmutableSchema schema,
+            String remarks, String quote) {
+        this.name = name;
+        this.type = type;
+        this.schema = schema;
+        this.remarks = remarks;
+        this.quote = quote;
+    }
 
-	protected ImmutableTable(Table table, ImmutableSchema schema) {
-		this(table.getName(), table.getType(), schema, table.getRemarks(),
-				table.getQuote());
-		List<Column> origColumns = table.getColumns();
-		for (Column column : origColumns) {
-			columns.add(new ImmutableColumn(column, this));
-		}
-	}
+    protected ImmutableTable(Table table, ImmutableSchema schema) {
+        this(table.getName(), table.getType(), schema, table.getRemarks(),
+                table.getQuote());
+        List<Column> origColumns = table.getColumns();
+        for (Column column : origColumns) {
+            columns.add(new ImmutableColumn(column, this));
+        }
+    }
 
-	protected void addRelationship(ImmutableRelationship relationship) {
-		if (!relationships.contains(relationship)) {
-			relationships.add(relationship);
-		}
-	}
+    protected void addRelationship(ImmutableRelationship relationship) {
+        if (!relationships.contains(relationship)) {
+            relationships.add(relationship);
+        }
+    }
 
-	@Override
-	public List<Column> getColumns() {
-		return Collections.unmodifiableList(columns);
-	}
+    @Override
+    public List<Column> getColumns() {
+        return Collections.unmodifiableList(columns);
+    }
 
-	@Override
-	public Schema getSchema() {
-		return schema;
-	}
+    @Override
+    public Schema getSchema() {
+        return schema;
+    }
 
-	@Override
-	public TableType getType() {
-		return type;
-	}
+    @Override
+    public TableType getType() {
+        return type;
+    }
 
-	@Override
-	public Collection<Relationship> getRelationships() {
-		return Collections.unmodifiableCollection(relationships);
-	}
+    @Override
+    public Collection<Relationship> getRelationships() {
+        return Collections.unmodifiableCollection(relationships);
+    }
 
-	@Override
-	public String getRemarks() {
-		return remarks;
-	}
+    @Override
+    public String getRemarks() {
+        return remarks;
+    }
 
-	@Override
-	public String getName() {
-		return name;
-	}
+    @Override
+    public String getName() {
+        return name;
+    }
 
-	@Override
-	public String getQuote() {
-		return quote;
-	}
+    @Override
+    public String getQuote() {
+        return quote;
+    }
 
 }

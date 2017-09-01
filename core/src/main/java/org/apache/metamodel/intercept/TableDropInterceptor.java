@@ -25,6 +25,6 @@ import org.apache.metamodel.drop.TableDropBuilder;
  * intercepting "drop table" operations before they are executed.
  */
 public interface TableDropInterceptor extends
-		Interceptor<TableDropBuilder> {
+        Interceptor<TableDropBuilder> {
 
 }

@@ -24,19 +24,19 @@ import junit.framework.TestCase;
 
 public class ExcelConfigurationTest extends TestCase {
 
-	public void testToString() throws Exception {
-		ExcelConfiguration conf = new ExcelConfiguration(1, true, false);
-		assertEquals(
-				"ExcelConfiguration[columnNameLineNumber=1, skipEmptyLines=true, skipEmptyColumns=false]",
-				conf.toString());
-	}
+    public void testToString() throws Exception {
+        ExcelConfiguration conf = new ExcelConfiguration(1, true, false);
+        assertEquals(
+                "ExcelConfiguration[columnNameLineNumber=1, skipEmptyLines=true, skipEmptyColumns=false]",
+                conf.toString());
+    }
 
-	public void testEquals() throws Exception {
-		ExcelConfiguration conf1 = new ExcelConfiguration(1, true, false);
-		ExcelConfiguration conf2 = new ExcelConfiguration(1, true, false);
-		ExcelConfiguration conf3 = new ExcelConfiguration(2, true, false);
+    public void testEquals() throws Exception {
+        ExcelConfiguration conf1 = new ExcelConfiguration(1, true, false);
+        ExcelConfiguration conf2 = new ExcelConfiguration(1, true, false);
+        ExcelConfiguration conf3 = new ExcelConfiguration(2, true, false);
 
-		assertEquals(conf1, conf2);
-		assertFalse(conf1.equals(conf3));
-	}
+        assertEquals(conf1, conf2);
+        assertFalse(conf1.equals(conf3));
+    }
 }

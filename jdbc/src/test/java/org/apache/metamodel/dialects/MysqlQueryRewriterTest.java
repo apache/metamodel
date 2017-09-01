@@ -29,24 +29,24 @@ import org.apache.metamodel.schema.MutableTable;
 
 public class MysqlQueryRewriterTest extends TestCase {
 
-	public void testRewriteLimit() throws Exception {
-		Query q = new Query().from(new MutableTable("foo"))
-				.select(new MutableColumn("bar")).setMaxRows(25).setFirstRow(6);
-		String queryString = new MysqlQueryRewriter(null).rewriteQuery(q);
-		assertEquals("SELECT bar FROM foo LIMIT 25 OFFSET 5", queryString);
-	}
+    public void testRewriteLimit() throws Exception {
+        Query q = new Query().from(new MutableTable("foo"))
+                .select(new MutableColumn("bar")).setMaxRows(25).setFirstRow(6);
+        String queryString = new MysqlQueryRewriter(null).rewriteQuery(q);
+        assertEquals("SELECT bar FROM foo LIMIT 25 OFFSET 5", queryString);
+    }
 
-	public void testRewriteFilterOperandQuote() throws Exception {
-		MutableColumn col = new MutableColumn("bar");
-		Query q = new Query().from(new MutableTable("foo")).select(col)
-				.where(col, OperatorType.EQUALS_TO, "M'jellow strain'ger");
-		String queryString = new MysqlQueryRewriter(null).rewriteQuery(q);
-		assertEquals("SELECT bar FROM foo WHERE bar = 'M\\'jellow strain\\'ger'",
-				queryString);
-	}
-	
-	public void testRewriteLiteralColumnTypesWithoutArgs() throws Exception {
-	    MysqlQueryRewriter qr = new MysqlQueryRewriter(null);
+    public void testRewriteFilterOperandQuote() throws Exception {
+        MutableColumn col = new MutableColumn("bar");
+        Query q = new Query().from(new MutableTable("foo")).select(col)
+                .where(col, OperatorType.EQUALS_TO, "M'jellow strain'ger");
+        String queryString = new MysqlQueryRewriter(null).rewriteQuery(q);
+        assertEquals("SELECT bar FROM foo WHERE bar = 'M\\'jellow strain\\'ger'",
+                queryString);
+    }
+    
+    public void testRewriteLiteralColumnTypesWithoutArgs() throws Exception {
+        MysqlQueryRewriter qr = new MysqlQueryRewriter(null);
         assertEquals("TEXT", qr.rewriteColumnType(ColumnType.VARCHAR, null));
         assertEquals("TEXT", qr.rewriteColumnType(ColumnType.NVARCHAR, null));
         assertEquals("TEXT", qr.rewriteColumnType(ColumnType.STRING, null));

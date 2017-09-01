@@ -31,77 +31,77 @@ import java.util.List;
  * @see Table
  */
 public class MutableSchema extends AbstractSchema implements Serializable,
-		Schema {
+        Schema {
 
-	private static final long serialVersionUID = 4465197783868238863L;
+    private static final long serialVersionUID = 4465197783868238863L;
 
-	private String _name;
-	private final List<MutableTable> _tables;
+    private String _name;
+    private final List<MutableTable> _tables;
 
-	public MutableSchema() {
-		super();
-		_tables = new ArrayList<MutableTable>();
-	}
+    public MutableSchema() {
+        super();
+        _tables = new ArrayList<MutableTable>();
+    }
 
-	public MutableSchema(String name) {
-		this();
-		_name = name;
-	}
+    public MutableSchema(String name) {
+        this();
+        _name = name;
+    }
 
-	public MutableSchema(String name, MutableTable... tables) {
-		this(name);
-		setTables(tables);
-	}
+    public MutableSchema(String name, MutableTable... tables) {
+        this(name);
+        setTables(tables);
+    }
 
-	@Override
-	public String getName() {
-		return _name;
-	}
+    @Override
+    public String getName() {
+        return _name;
+    }
 
-	public MutableSchema setName(String name) {
-		_name = name;
-		return this;
-	}
+    public MutableSchema setName(String name) {
+        _name = name;
+        return this;
+    }
 
-	@Override
-	public List<Table> getTables() {
-		return Collections.unmodifiableList(_tables);
-	}
+    @Override
+    public List<Table> getTables() {
+        return Collections.unmodifiableList(_tables);
+    }
 
 
-	public MutableSchema setTables(Collection<? extends MutableTable> tables) {
-	    clearTables();
-		for (MutableTable table : tables) {
-			_tables.add(table);
-		}
-		return this;
-	}
+    public MutableSchema setTables(Collection<? extends MutableTable> tables) {
+        clearTables();
+        for (MutableTable table : tables) {
+            _tables.add(table);
+        }
+        return this;
+    }
 
-	public MutableSchema setTables(MutableTable... tables) {
-	    clearTables();
-		for (MutableTable table : tables) {
-			_tables.add(table);
-		}
-		return this;
-	}
-	
-	public MutableSchema clearTables() {
-	    _tables.clear();
-	    return this;
-	}
+    public MutableSchema setTables(MutableTable... tables) {
+        clearTables();
+        for (MutableTable table : tables) {
+            _tables.add(table);
+        }
+        return this;
+    }
+    
+    public MutableSchema clearTables() {
+        _tables.clear();
+        return this;
+    }
 
-	public MutableSchema addTable(MutableTable table) {
-		_tables.add(table);
-		return this;
-	}
+    public MutableSchema addTable(MutableTable table) {
+        _tables.add(table);
+        return this;
+    }
 
-	public MutableSchema removeTable(Table table) {
-		_tables.remove(table);
-		return this;
-	}
+    public MutableSchema removeTable(Table table) {
+        _tables.remove(table);
+        return this;
+    }
 
-	@Override
-	public String getQuote() {
-		return null;
-	}
+    @Override
+    public String getQuote() {
+        return null;
+    }
 }

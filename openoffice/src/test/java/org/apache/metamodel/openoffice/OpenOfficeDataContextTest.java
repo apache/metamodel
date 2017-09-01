@@ -34,77 +34,77 @@ import org.apache.metamodel.schema.Table;
 
 public class OpenOfficeDataContextTest extends TestCase {
 
-	private final static File DB_FILE = new File(
-			"src/test/resources/openoffice_db.odb");
-	private OpenOfficeDataContext _dataContext;
+    private final static File DB_FILE = new File(
+            "src/test/resources/openoffice_db.odb");
+    private OpenOfficeDataContext _dataContext;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		_dataContext = new OpenOfficeDataContext(DB_FILE);
-	}
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        _dataContext = new OpenOfficeDataContext(DB_FILE);
+    }
 
-	public void testUnpacking() throws Exception {
-		assertTrue(DB_FILE.exists());
+    public void testUnpacking() throws Exception {
+        assertTrue(DB_FILE.exists());
 
-		Connection connection = _dataContext.getConnection();
-		assertNotNull(connection);
-		assertEquals("HSQL Database Engine", connection.getMetaData()
-				.getDatabaseProductName());
+        Connection connection = _dataContext.getConnection();
+        assertNotNull(connection);
+        assertEquals("HSQL Database Engine", connection.getMetaData()
+                .getDatabaseProductName());
 
-		connection.close();
-	}
+        connection.close();
+    }
 
-	public void testGetSchemas() throws Exception {
-		assertEquals("[INFORMATION_SCHEMA, PUBLIC]",
-				Arrays.toString(_dataContext.getSchemaNames().toArray()));
+    public void testGetSchemas() throws Exception {
+        assertEquals("[INFORMATION_SCHEMA, PUBLIC]",
+                Arrays.toString(_dataContext.getSchemaNames().toArray()));
 
-		Schema informationSchema = _dataContext
-				.getSchemaByName("INFORMATION_SCHEMA");
-		assertEquals(0, informationSchema.getTableCount());
+        Schema informationSchema = _dataContext
+                .getSchemaByName("INFORMATION_SCHEMA");
+        assertEquals(0, informationSchema.getTableCount());
 
-		Schema schema = _dataContext.getDefaultSchema();
-		assertEquals("PUBLIC", schema.getName());
+        Schema schema = _dataContext.getDefaultSchema();
+        assertEquals("PUBLIC", schema.getName());
 
-		assertEquals(
-				"[Table[name=CONTRIBUTORS,type=TABLE,remarks=null], Table[name=projects,type=TABLE,remarks=null]]",
-				Arrays.toString(schema.getTables().toArray()));
-		assertEquals(
-				"[Relationship[primaryTable=CONTRIBUTORS,primaryColumns=[ID],foreignTable=projects,foreignColumns=[admin]]]",
-				Arrays.toString(schema.getRelationships().toArray()));
-	}
+        assertEquals(
+                "[Table[name=CONTRIBUTORS,type=TABLE,remarks=null], Table[name=projects,type=TABLE,remarks=null]]",
+                Arrays.toString(schema.getTables().toArray()));
+        assertEquals(
+                "[Relationship[primaryTable=CONTRIBUTORS,primaryColumns=[ID],foreignTable=projects,foreignColumns=[admin]]]",
+                Arrays.toString(schema.getRelationships().toArray()));
+    }
 
-	public void testQueryUppercaseTable() throws Exception {
-		Schema schema = _dataContext.getDefaultSchema();
-		Table contributorsTable = schema.getTableByName("CONTRIBUTORS");
+    public void testQueryUppercaseTable() throws Exception {
+        Schema schema = _dataContext.getDefaultSchema();
+        Table contributorsTable = schema.getTableByName("CONTRIBUTORS");
 
-		Query q = new Query().from(contributorsTable).select(
-				contributorsTable.getColumns());
+        Query q = new Query().from(contributorsTable).select(
+                contributorsTable.getColumns());
 
-		assertEquals(
-				"SELECT \"CONTRIBUTORS\".\"ID\", \"CONTRIBUTORS\".\"USERNAME\", \"CONTRIBUTORS\".\"ROLE\", \"CONTRIBUTORS\".\"COUNTRY\" FROM PUBLIC.\"CONTRIBUTORS\"",
-				q.toString());
+        assertEquals(
+                "SELECT \"CONTRIBUTORS\".\"ID\", \"CONTRIBUTORS\".\"USERNAME\", \"CONTRIBUTORS\".\"ROLE\", \"CONTRIBUTORS\".\"COUNTRY\" FROM PUBLIC.\"CONTRIBUTORS\"",
+                q.toString());
 
-		DataSet data = _dataContext.executeQuery(q);
-		TableModel tableModel = new DataSetTableModel(data);
-		assertEquals(4, tableModel.getColumnCount());
-		assertEquals(4, tableModel.getRowCount());
-	}
+        DataSet data = _dataContext.executeQuery(q);
+        TableModel tableModel = new DataSetTableModel(data);
+        assertEquals(4, tableModel.getColumnCount());
+        assertEquals(4, tableModel.getRowCount());
+    }
 
-	public void testQueryLowercaseTable() throws Exception {
-		Schema schema = _dataContext.getDefaultSchema();
-		Table projectsTable = schema.getTableByName("projects");
+    public void testQueryLowercaseTable() throws Exception {
+        Schema schema = _dataContext.getDefaultSchema();
+        Table projectsTable = schema.getTableByName("projects");
 
-		Query q = new Query().from(projectsTable).select(
-				projectsTable.getColumns());
+        Query q = new Query().from(projectsTable).select(
+                projectsTable.getColumns());
 
-		assertEquals(
-				"SELECT \"projects\".\"ID\", \"projects\".\"project\", \"projects\".\"type\", \"projects\".\"admin\" FROM PUBLIC.\"projects\"",
-				q.toString());
+        assertEquals(
+                "SELECT \"projects\".\"ID\", \"projects\".\"project\", \"projects\".\"type\", \"projects\".\"admin\" FROM PUBLIC.\"projects\"",
+                q.toString());
 
-		DataSet data = _dataContext.executeQuery(q);
-		TableModel tableModel = new DataSetTableModel(data);
-		assertEquals(4, tableModel.getColumnCount());
-		assertEquals(3, tableModel.getRowCount());
-	}
+        DataSet data = _dataContext.executeQuery(q);
+        TableModel tableModel = new DataSetTableModel(data);
+        assertEquals(4, tableModel.getColumnCount());
+        assertEquals(3, tableModel.getRowCount());
+    }
 }

@@ -28,82 +28,82 @@ import junit.framework.TestCase;
 
 public class WhereBuilderImplTest extends TestCase {
 
-	private MutableColumn col1 = new MutableColumn("col1", ColumnType.BOOLEAN);
-	private MutableColumn col2 = new MutableColumn("col2");
-	private WhereBuilderImpl whereBuilder;
-	private Query query;
+    private MutableColumn col1 = new MutableColumn("col1", ColumnType.BOOLEAN);
+    private MutableColumn col2 = new MutableColumn("col2");
+    private WhereBuilderImpl whereBuilder;
+    private Query query;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		query = new Query();
-		GroupedQueryBuilder queryBuilder = new GroupedQueryBuilderImpl(null,
-				query);
-		whereBuilder = new WhereBuilderImpl(col1, query, queryBuilder);
-	}
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        query = new Query();
+        GroupedQueryBuilder queryBuilder = new GroupedQueryBuilderImpl(null,
+                query);
+        whereBuilder = new WhereBuilderImpl(col1, query, queryBuilder);
+    }
 
-	public void testOr() throws Exception {
-		whereBuilder.eq(true).or(col2).like("%testcase%");
+    public void testOr() throws Exception {
+        whereBuilder.eq(true).or(col2).like("%testcase%");
 
-		assertEquals(" WHERE (col1 = TRUE OR col2 LIKE '%testcase%')",
-				query.toSql());
-	}
+        assertEquals(" WHERE (col1 = TRUE OR col2 LIKE '%testcase%')",
+                query.toSql());
+    }
 
-	public void testNotLike() throws Exception {
-		whereBuilder.eq(true).or(col2).notLike("%test%case%");
+    public void testNotLike() throws Exception {
+        whereBuilder.eq(true).or(col2).notLike("%test%case%");
 
-		assertEquals(" WHERE (col1 = TRUE OR col2 NOT LIKE '%test%case%')",
-				query.toSql());
-	}
+        assertEquals(" WHERE (col1 = TRUE OR col2 NOT LIKE '%test%case%')",
+                query.toSql());
+    }
 
-	public void testAnd() throws Exception {
-		whereBuilder.differentFrom(true).and(col2).eq(1).or(col2).eq(2)
-				.or(col2).eq(3).and(new MutableColumn("col3")).eq(4);
+    public void testAnd() throws Exception {
+        whereBuilder.differentFrom(true).and(col2).eq(1).or(col2).eq(2)
+                .or(col2).eq(3).and(new MutableColumn("col3")).eq(4);
 
-		assertEquals(
-				" WHERE col1 <> TRUE AND (col2 = 1 OR col2 = 2 OR col2 = 3) AND col3 = 4",
-				query.toSql());
-	}
+        assertEquals(
+                " WHERE col1 <> TRUE AND (col2 = 1 OR col2 = 2 OR col2 = 3) AND col3 = 4",
+                query.toSql());
+    }
 
-	public void testInStringArray() throws Exception {
-		whereBuilder.eq(true).or(col2).in("foo", "bar");
+    public void testInStringArray() throws Exception {
+        whereBuilder.eq(true).or(col2).in("foo", "bar");
 
-		assertEquals(" WHERE (col1 = TRUE OR col2 IN ('foo' , 'bar'))",
-				query.toSql());
-	}
+        assertEquals(" WHERE (col1 = TRUE OR col2 IN ('foo' , 'bar'))",
+                query.toSql());
+    }
 
-	public void testNotInStringArray() throws Exception {
-		whereBuilder.eq(true).or(col2).notIn("foo", "bar");
+    public void testNotInStringArray() throws Exception {
+        whereBuilder.eq(true).or(col2).notIn("foo", "bar");
 
-		assertEquals(" WHERE (col1 = TRUE OR col2 NOT IN ('foo' , 'bar'))",
-				query.toSql());
-	}
+        assertEquals(" WHERE (col1 = TRUE OR col2 NOT IN ('foo' , 'bar'))",
+                query.toSql());
+    }
 
-	public void testInNumberArray() throws Exception {
-		whereBuilder.eq(true).or(col2).in(3, 1);
+    public void testInNumberArray() throws Exception {
+        whereBuilder.eq(true).or(col2).in(3, 1);
 
-		assertEquals(" WHERE (col1 = TRUE OR col2 IN (3 , 1))", query.toSql());
-	}
+        assertEquals(" WHERE (col1 = TRUE OR col2 IN (3 , 1))", query.toSql());
+    }
 
-	public void testNotInNumberArray() throws Exception {
-		whereBuilder.eq(true).or(col2).notIn(3, 1);
+    public void testNotInNumberArray() throws Exception {
+        whereBuilder.eq(true).or(col2).notIn(3, 1);
 
-		assertEquals(" WHERE (col1 = TRUE OR col2 NOT IN (3 , 1))", query.toSql());
-	}
+        assertEquals(" WHERE (col1 = TRUE OR col2 NOT IN (3 , 1))", query.toSql());
+    }
 
-	public void testInCollection() throws Exception {
-		Collection<?> col = Arrays.asList("foo", "bar");
-		whereBuilder.eq(true).or(col2).in(col);
+    public void testInCollection() throws Exception {
+        Collection<?> col = Arrays.asList("foo", "bar");
+        whereBuilder.eq(true).or(col2).in(col);
 
-		assertEquals(" WHERE (col1 = TRUE OR col2 IN ('foo' , 'bar'))",
-				query.toSql());
-	}
+        assertEquals(" WHERE (col1 = TRUE OR col2 IN ('foo' , 'bar'))",
+                query.toSql());
+    }
 
-	public void testNotInCollection() throws Exception {
-		Collection<?> col = Arrays.asList("foo", "bar");
-		whereBuilder.eq(true).or(col2).notIn(col);
+    public void testNotInCollection() throws Exception {
+        Collection<?> col = Arrays.asList("foo", "bar");
+        whereBuilder.eq(true).or(col2).notIn(col);
 
-		assertEquals(" WHERE (col1 = TRUE OR col2 NOT IN ('foo' , 'bar'))",
-				query.toSql());
-	}
+        assertEquals(" WHERE (col1 = TRUE OR col2 NOT IN ('foo' , 'bar'))",
+                query.toSql());
+    }
 }

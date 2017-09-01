@@ -26,17 +26,17 @@ import org.apache.metamodel.schema.Schema;
  * datacontexts or type conversion) is needed.
  */
 public abstract class QueryPostprocessDelegate extends
-		QueryPostprocessDataContext {
+        QueryPostprocessDataContext {
 
-	@Override
-	protected String getMainSchemaName() throws MetaModelException {
-		throw new UnsupportedOperationException(
-				"QueryPostprocessDelegate cannot perform schema exploration");
-	}
+    @Override
+    protected String getMainSchemaName() throws MetaModelException {
+        throw new UnsupportedOperationException(
+                "QueryPostprocessDelegate cannot perform schema exploration");
+    }
 
-	@Override
-	protected Schema getMainSchema() throws MetaModelException {
-		throw new UnsupportedOperationException(
-				"QueryPostprocessDelegate cannot perform schema exploration");
-	}
+    @Override
+    protected Schema getMainSchema() throws MetaModelException {
+        throw new UnsupportedOperationException(
+                "QueryPostprocessDelegate cannot perform schema exploration");
+    }
 }

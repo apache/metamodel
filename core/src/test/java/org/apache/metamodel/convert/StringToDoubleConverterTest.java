@@ -22,18 +22,18 @@ import junit.framework.TestCase;
 
 public class StringToDoubleConverterTest extends TestCase {
 
-	private StringToDoubleConverter conv = new StringToDoubleConverter();
+    private StringToDoubleConverter conv = new StringToDoubleConverter();
 
-	public void testToVirtual() throws Exception {
-		assertNull(conv.toVirtualValue(null));
-		assertNull(conv.toVirtualValue(""));
-		assertEquals(123d, conv.toVirtualValue("123").doubleValue());
-		assertEquals(123.0d, conv.toVirtualValue("123.0").doubleValue());
-	}
+    public void testToVirtual() throws Exception {
+        assertNull(conv.toVirtualValue(null));
+        assertNull(conv.toVirtualValue(""));
+        assertEquals(123d, conv.toVirtualValue("123").doubleValue());
+        assertEquals(123.0d, conv.toVirtualValue("123.0").doubleValue());
+    }
 
-	public void testToPhysical() throws Exception {
-		assertNull(conv.toPhysicalValue(null));
-		assertEquals("123.0", conv.toPhysicalValue(123d));
-		assertEquals("123.0", conv.toPhysicalValue(123.0d));
-	}
+    public void testToPhysical() throws Exception {
+        assertNull(conv.toPhysicalValue(null));
+        assertEquals("123.0", conv.toPhysicalValue(123d));
+        assertEquals("123.0", conv.toPhysicalValue(123.0d));
+    }
 }

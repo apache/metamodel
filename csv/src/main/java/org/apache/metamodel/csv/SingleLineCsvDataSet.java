@@ -50,7 +50,7 @@ final class SingleLineCsvDataSet extends AbstractDataSet {
     private volatile Row _row;
 
     public SingleLineCsvDataSet(BufferedReader reader, ICSVParser csvParser, List<Column> columns, Integer maxRows,
-                                int columnsInTable, boolean failOnInconsistentRowLength) {
+            int columnsInTable, boolean failOnInconsistentRowLength) {
         super(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
         _reader = reader;
         _csvParser = csvParser;

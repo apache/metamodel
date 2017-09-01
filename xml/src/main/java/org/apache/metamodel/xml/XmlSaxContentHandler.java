@@ -34,138 +34,138 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 class XmlSaxContentHandler extends DefaultHandler {
 
-	private final boolean _checkAttributes;
-	private final String _rowXpath;
-	private final String[] _valueXpaths;
-	private final StringBuilder _pathBuilder;
-	private final StringBuilder _valueBuilder;
-	private final RowPublisher _rowPublisher;
-	private final Map<String, Integer> _indexIndexes;
-	private final Map<String, AtomicInteger> _indexCounters;
-	private volatile Object[] _rowValues;
-	private volatile int _xpathIndex;
+    private final boolean _checkAttributes;
+    private final String _rowXpath;
+    private final String[] _valueXpaths;
+    private final StringBuilder _pathBuilder;
+    private final StringBuilder _valueBuilder;
+    private final RowPublisher _rowPublisher;
+    private final Map<String, Integer> _indexIndexes;
+    private final Map<String, AtomicInteger> _indexCounters;
+    private volatile Object[] _rowValues;
+    private volatile int _xpathIndex;
 
-	public XmlSaxContentHandler(String rowXpath, RowPublisher rowPublisher,
-			String... valueXpaths) {
-		_indexCounters = new HashMap<String, AtomicInteger>();
-		_indexIndexes = new HashMap<String, Integer>();
-		_rowXpath = rowXpath;
-		_rowPublisher = rowPublisher;
-		_valueXpaths = valueXpaths;
-		_rowValues = new Object[valueXpaths.length];
-		boolean checkAttributes = false;
-		for (int i = 0; i < valueXpaths.length; i++) {
-			String xpath = valueXpaths[i];
+    public XmlSaxContentHandler(String rowXpath, RowPublisher rowPublisher,
+            String... valueXpaths) {
+        _indexCounters = new HashMap<String, AtomicInteger>();
+        _indexIndexes = new HashMap<String, Integer>();
+        _rowXpath = rowXpath;
+        _rowPublisher = rowPublisher;
+        _valueXpaths = valueXpaths;
+        _rowValues = new Object[valueXpaths.length];
+        boolean checkAttributes = false;
+        for (int i = 0; i < valueXpaths.length; i++) {
+            String xpath = valueXpaths[i];
 
-			if (XmlSaxDataContext.COLUMN_NAME_ROW_ID.equals(xpath)) {
-				// we use the indexing mechanism also for the row id.
-				xpath = "index(" + xpath + ")";
-			}
+            if (XmlSaxDataContext.COLUMN_NAME_ROW_ID.equals(xpath)) {
+                // we use the indexing mechanism also for the row id.
+                xpath = "index(" + xpath + ")";
+            }
 
-			if (xpath.startsWith("index(") && xpath.endsWith(")")) {
-				xpath = xpath.substring("index(".length(), xpath.length() - 1);
-				_indexCounters.put(xpath, new AtomicInteger(-1));
-				_indexIndexes.put(xpath, i);
+            if (xpath.startsWith("index(") && xpath.endsWith(")")) {
+                xpath = xpath.substring("index(".length(), xpath.length() - 1);
+                _indexCounters.put(xpath, new AtomicInteger(-1));
+                _indexIndexes.put(xpath, i);
 
-			} else if (xpath.indexOf('@') != -1) {
-				checkAttributes = true;
-			}
-		}
-		_checkAttributes = checkAttributes;
-		_xpathIndex = -1;
-		_pathBuilder = new StringBuilder();
-		_valueBuilder = new StringBuilder();
-	}
+            } else if (xpath.indexOf('@') != -1) {
+                checkAttributes = true;
+            }
+        }
+        _checkAttributes = checkAttributes;
+        _xpathIndex = -1;
+        _pathBuilder = new StringBuilder();
+        _valueBuilder = new StringBuilder();
+    }
 
-	@Override
-	public void startElement(String uri, String localName, String qName,
-			Attributes attributes) throws SAXException {
-		_pathBuilder.append('/');
-		_pathBuilder.append(qName);
+    @Override
+    public void startElement(String uri, String localName, String qName,
+            Attributes attributes) throws SAXException {
+        _pathBuilder.append('/');
+        _pathBuilder.append(qName);
 
-		if (_checkAttributes) {
-			for (int i = 0; i < attributes.getLength(); i++) {
-				String attributeName = attributes.getQName(i);
-				String attributeValue = attributes.getValue(i);
-				startAttribute(attributeName, attributeValue);
-				endAttribute(attributeName, attributeValue);
-			}
-		}
+        if (_checkAttributes) {
+            for (int i = 0; i < attributes.getLength(); i++) {
+                String attributeName = attributes.getQName(i);
+                String attributeValue = attributes.getValue(i);
+                startAttribute(attributeName, attributeValue);
+                endAttribute(attributeName, attributeValue);
+            }
+        }
 
-		String xpath = _pathBuilder.toString();
+        String xpath = _pathBuilder.toString();
 
-		AtomicInteger indexCounter = _indexCounters.get(xpath);
-		if (indexCounter != null) {
-			indexCounter.incrementAndGet();
-		}
+        AtomicInteger indexCounter = _indexCounters.get(xpath);
+        if (indexCounter != null) {
+            indexCounter.incrementAndGet();
+        }
 
-		_xpathIndex = indexOfXpath(xpath);
-	}
+        _xpathIndex = indexOfXpath(xpath);
+    }
 
-	private int indexOfXpath(String path) {
-		if (path == null || path.length() == 0) {
-			return -1;
-		}
-		for (int i = 0; i < _valueXpaths.length; i++) {
-			if (path.equals(_valueXpaths[i])) {
-				return i;
-			}
-		}
-		return -1;
-	}
+    private int indexOfXpath(String path) {
+        if (path == null || path.length() == 0) {
+            return -1;
+        }
+        for (int i = 0; i < _valueXpaths.length; i++) {
+            if (path.equals(_valueXpaths[i])) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
-	@Override
-	public void characters(char[] ch, int start, int length)
-			throws SAXException {
-		if (_xpathIndex != -1) {
-			_valueBuilder.append(ch, start, length);
-		}
-	}
+    @Override
+    public void characters(char[] ch, int start, int length)
+            throws SAXException {
+        if (_xpathIndex != -1) {
+            _valueBuilder.append(ch, start, length);
+        }
+    }
 
-	private void startAttribute(String attributeName, String attributeValue) {
-		_pathBuilder.append('@');
-		_pathBuilder.append(attributeName);
+    private void startAttribute(String attributeName, String attributeValue) {
+        _pathBuilder.append('@');
+        _pathBuilder.append(attributeName);
 
-		int indexOfXpath = indexOfXpath(_pathBuilder.toString());
-		if (indexOfXpath != -1) {
-			_rowValues[indexOfXpath] = attributeValue;
-		}
-	}
+        int indexOfXpath = indexOfXpath(_pathBuilder.toString());
+        if (indexOfXpath != -1) {
+            _rowValues[indexOfXpath] = attributeValue;
+        }
+    }
 
-	private void endAttribute(String attributeName, String attributeValue) {
-		_pathBuilder.setLength(_pathBuilder.length() - attributeName.length()
-				- 1);
-	}
+    private void endAttribute(String attributeName, String attributeValue) {
+        _pathBuilder.setLength(_pathBuilder.length() - attributeName.length()
+                - 1);
+    }
 
-	@Override
-	public void endElement(String uri, String localName, String qName)
-			throws SAXException {
-		if (_xpathIndex != -1) {
-			_rowValues[_xpathIndex] = _valueBuilder.toString().trim();
-		}
-		_xpathIndex = -1;
-		_valueBuilder.setLength(0);
+    @Override
+    public void endElement(String uri, String localName, String qName)
+            throws SAXException {
+        if (_xpathIndex != -1) {
+            _rowValues[_xpathIndex] = _valueBuilder.toString().trim();
+        }
+        _xpathIndex = -1;
+        _valueBuilder.setLength(0);
 
-		if (_rowXpath.equals(_pathBuilder.toString())) {
-			insertRowIndexes();
+        if (_rowXpath.equals(_pathBuilder.toString())) {
+            insertRowIndexes();
 
-			boolean more = _rowPublisher.publish(_rowValues);
-			if (!more) {
-				throw new XmlStopParsingException();
-			}
-			_rowValues = new Object[_valueXpaths.length];
-		}
+            boolean more = _rowPublisher.publish(_rowValues);
+            if (!more) {
+                throw new XmlStopParsingException();
+            }
+            _rowValues = new Object[_valueXpaths.length];
+        }
 
-		_pathBuilder.setLength(_pathBuilder.length() - qName.length() - 1);
-	}
+        _pathBuilder.setLength(_pathBuilder.length() - qName.length() - 1);
+    }
 
-	private void insertRowIndexes() {
-		Set<Entry<String, Integer>> entrySet = _indexIndexes.entrySet();
-		for (Entry<String, Integer> entry : entrySet) {
-			String xpath = entry.getKey();
-			Integer indexIndex = entry.getValue();
-			AtomicInteger indexCount = _indexCounters.get(xpath);
-			_rowValues[indexIndex] = indexCount.get();
-		}
-	}
+    private void insertRowIndexes() {
+        Set<Entry<String, Integer>> entrySet = _indexIndexes.entrySet();
+        for (Entry<String, Integer> entry : entrySet) {
+            String xpath = entry.getKey();
+            Integer indexIndex = entry.getValue();
+            AtomicInteger indexCount = _indexCounters.get(xpath);
+            _rowValues[indexIndex] = indexCount.get();
+        }
+    }
 }

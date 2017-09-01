@@ -22,14 +22,14 @@ import org.apache.metamodel.DataContext;
 
 public final class Interceptors {
 
-	private Interceptors() {
-		// prevent instantiation
-	}
+    private Interceptors() {
+        // prevent instantiation
+    }
 
-	public static InterceptableDataContext intercept(DataContext dc) {
-		if (dc instanceof InterceptableDataContext) {
-			return (InterceptableDataContext) dc;
-		}
-		return new InterceptableDataContext(dc);
-	}
+    public static InterceptableDataContext intercept(DataContext dc) {
+        if (dc instanceof InterceptableDataContext) {
+            return (InterceptableDataContext) dc;
+        }
+        return new InterceptableDataContext(dc);
+    }
 }

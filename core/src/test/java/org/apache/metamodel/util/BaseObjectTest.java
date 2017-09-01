@@ -24,26 +24,26 @@ import junit.framework.TestCase;
 
 public class BaseObjectTest extends TestCase {
 
-	class MyClass extends BaseObject {
-		private int[] ints;
+    class MyClass extends BaseObject {
+        private int[] ints;
 
-		@Override
-		protected void decorateIdentity(List<Object> identifiers) {
-			identifiers.add(ints);
-		}
-	}
+        @Override
+        protected void decorateIdentity(List<Object> identifiers) {
+            identifiers.add(ints);
+        }
+    }
 
-	public void testHashCodeForPrimitiveArray() throws Exception {
-		MyClass o1 = new MyClass();
-		o1.ints = new int[] { 1, 2, 3 };
-		MyClass o2 = new MyClass();
-		o2.ints = new int[] { 4, 5, 6 };
-		MyClass o3 = new MyClass();
-		o3.ints = new int[] { 1, 2, 3 };
+    public void testHashCodeForPrimitiveArray() throws Exception {
+        MyClass o1 = new MyClass();
+        o1.ints = new int[] { 1, 2, 3 };
+        MyClass o2 = new MyClass();
+        o2.ints = new int[] { 4, 5, 6 };
+        MyClass o3 = new MyClass();
+        o3.ints = new int[] { 1, 2, 3 };
 
-		assertTrue(o1.hashCode() == o1.hashCode());
-		assertTrue(o1.hashCode() == o3.hashCode());
-		assertFalse(o1.hashCode() == o2.hashCode());
-		assertFalse(o3.hashCode() == o2.hashCode());
-	}
+        assertTrue(o1.hashCode() == o1.hashCode());
+        assertTrue(o1.hashCode() == o3.hashCode());
+        assertFalse(o1.hashCode() == o2.hashCode());
+        assertFalse(o3.hashCode() == o2.hashCode());
+    }
 }

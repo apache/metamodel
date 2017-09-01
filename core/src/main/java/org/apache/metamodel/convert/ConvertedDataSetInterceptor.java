@@ -36,57 +36,57 @@ import org.apache.metamodel.schema.Column;
  */
 public class ConvertedDataSetInterceptor implements DataSetInterceptor, HasReadTypeConverters {
 
-	private Map<Column, TypeConverter<?, ?>> _converters;
+    private Map<Column, TypeConverter<?, ?>> _converters;
 
-	public ConvertedDataSetInterceptor() {
-		this(new HashMap<Column, TypeConverter<?, ?>>());
-	}
+    public ConvertedDataSetInterceptor() {
+        this(new HashMap<Column, TypeConverter<?, ?>>());
+    }
 
-	public ConvertedDataSetInterceptor(
-			Map<Column, TypeConverter<?, ?>> converters) {
-		_converters = converters;
-	}
+    public ConvertedDataSetInterceptor(
+            Map<Column, TypeConverter<?, ?>> converters) {
+        _converters = converters;
+    }
 
-	@Override
-	public void addConverter(Column column, TypeConverter<?, ?> converter) {
-		if (converter == null) {
-			_converters.remove(column);
-		} else {
-			_converters.put(column, converter);
-		}
-	}
-	
-	protected Map<Column, TypeConverter<?, ?>> getConverters(DataSet dataSet) {
-		return _converters;
-	}
+    @Override
+    public void addConverter(Column column, TypeConverter<?, ?> converter) {
+        if (converter == null) {
+            _converters.remove(column);
+        } else {
+            _converters.put(column, converter);
+        }
+    }
+    
+    protected Map<Column, TypeConverter<?, ?>> getConverters(DataSet dataSet) {
+        return _converters;
+    }
 
-	@Override
-	public final DataSet intercept(DataSet dataSet) {
-		Map<Column, TypeConverter<?, ?>> converters = getConverters(dataSet);
-		if (converters.isEmpty()) {
-			return dataSet;
-		}
+    @Override
+    public final DataSet intercept(DataSet dataSet) {
+        Map<Column, TypeConverter<?, ?>> converters = getConverters(dataSet);
+        if (converters.isEmpty()) {
+            return dataSet;
+        }
 
-		boolean hasConverter = false;
-		List<SelectItem> selectItems = dataSet.getSelectItems();
-		TypeConverter<?, ?>[] converterArray = new TypeConverter[selectItems.size()];
-		for (int i = 0; i < selectItems.size(); i++) {
-			SelectItem selectItem = selectItems.get(i);
-			Column column = selectItem.getColumn();
-			if (column != null && selectItem.getAggregateFunction() == null) {
-				TypeConverter<?, ?> converter = converters.get(column);
-				if (converter != null) {
-					hasConverter = true;
-					converterArray[i] = converter;
-				}
-			}
-		}
+        boolean hasConverter = false;
+        List<SelectItem> selectItems = dataSet.getSelectItems();
+        TypeConverter<?, ?>[] converterArray = new TypeConverter[selectItems.size()];
+        for (int i = 0; i < selectItems.size(); i++) {
+            SelectItem selectItem = selectItems.get(i);
+            Column column = selectItem.getColumn();
+            if (column != null && selectItem.getAggregateFunction() == null) {
+                TypeConverter<?, ?> converter = converters.get(column);
+                if (converter != null) {
+                    hasConverter = true;
+                    converterArray[i] = converter;
+                }
+            }
+        }
 
-		if (!hasConverter) {
-			return dataSet;
-		}
+        if (!hasConverter) {
+            return dataSet;
+        }
 
-		return new ConvertedDataSet(dataSet, converterArray);
-	}
+        return new ConvertedDataSet(dataSet, converterArray);
+    }
 
 }

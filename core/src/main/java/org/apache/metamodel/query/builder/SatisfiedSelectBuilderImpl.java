@@ -22,46 +22,46 @@ import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.schema.Column;
 
 class SatisfiedSelectBuilderImpl extends GroupedQueryBuilderCallback implements
-		SatisfiedSelectBuilder<GroupedQueryBuilder> {
+        SatisfiedSelectBuilder<GroupedQueryBuilder> {
 
-	public SatisfiedSelectBuilderImpl(GroupedQueryBuilder queryBuilder) {
-		super(queryBuilder);
-	}
+    public SatisfiedSelectBuilderImpl(GroupedQueryBuilder queryBuilder) {
+        super(queryBuilder);
+    }
 
-	@Override
-	public ColumnSelectBuilder<GroupedQueryBuilder> and(Column column) {
-		if (column == null) {
-			throw new IllegalArgumentException("column cannot be null");
-		}
-		return getQueryBuilder().select(column);
-	}
+    @Override
+    public ColumnSelectBuilder<GroupedQueryBuilder> and(Column column) {
+        if (column == null) {
+            throw new IllegalArgumentException("column cannot be null");
+        }
+        return getQueryBuilder().select(column);
+    }
 
-	@Override
-	public SatisfiedSelectBuilder<GroupedQueryBuilder> and(Column... columns) {
-		if (columns == null) {
-			throw new IllegalArgumentException("columns cannot be null");
-		}
-		return getQueryBuilder().select(columns);
-	}
+    @Override
+    public SatisfiedSelectBuilder<GroupedQueryBuilder> and(Column... columns) {
+        if (columns == null) {
+            throw new IllegalArgumentException("columns cannot be null");
+        }
+        return getQueryBuilder().select(columns);
+    }
 
-	@Override
-	public FunctionSelectBuilder<GroupedQueryBuilder> and(
-			FunctionType functionType, Column column) {
-		if (functionType == null) {
-			throw new IllegalArgumentException("functionType cannot be null");
-		}
-		if (column == null) {
-			throw new IllegalArgumentException("column cannot be null");
-		}
-		return getQueryBuilder().select(functionType, column);
-	}
+    @Override
+    public FunctionSelectBuilder<GroupedQueryBuilder> and(
+            FunctionType functionType, Column column) {
+        if (functionType == null) {
+            throw new IllegalArgumentException("functionType cannot be null");
+        }
+        if (column == null) {
+            throw new IllegalArgumentException("column cannot be null");
+        }
+        return getQueryBuilder().select(functionType, column);
+    }
 
-	@Override
-	public SatisfiedSelectBuilder<GroupedQueryBuilder> and(String columnName) {
-		if (columnName == null) {
-			throw new IllegalArgumentException("columnName cannot be null");
-		}
-		return getQueryBuilder().select(columnName);
-	}
+    @Override
+    public SatisfiedSelectBuilder<GroupedQueryBuilder> and(String columnName) {
+        if (columnName == null) {
+            throw new IllegalArgumentException("columnName cannot be null");
+        }
+        return getQueryBuilder().select(columnName);
+    }
 
 }

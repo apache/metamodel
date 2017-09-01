@@ -34,76 +34,76 @@ import org.apache.metamodel.util.EqualsBuilder;
  */
 public class DataSetTableModel extends AbstractTableModel {
 
-	private static final long serialVersionUID = 267644807447629777L;
-	private boolean _materialized;
-	private final List<Row> _materializedRows = new ArrayList<Row>();
-	private final DataSet _dataSet;
-	private final List<SelectItem> _selectItems;
+    private static final long serialVersionUID = 267644807447629777L;
+    private boolean _materialized;
+    private final List<Row> _materializedRows = new ArrayList<Row>();
+    private final DataSet _dataSet;
+    private final List<SelectItem> _selectItems;
 
-	public DataSetTableModel(DataSet dataSet) {
-		_dataSet = dataSet;
-		_selectItems = dataSet.getSelectItems();
-		_materialized = false;
-	}
+    public DataSetTableModel(DataSet dataSet) {
+        _dataSet = dataSet;
+        _selectItems = dataSet.getSelectItems();
+        _materialized = false;
+    }
 
-	@Override
-	public int hashCode() {
-		return _selectItems.hashCode() + _materializedRows.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return _selectItems.hashCode() + _materializedRows.hashCode();
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null) {
-			return false;
-		}
-		if (obj == this) {
-			return true;
-		}
-		if (getClass() == obj.getClass()) {
-			DataSetTableModel that = (DataSetTableModel) obj;
-			EqualsBuilder eb = new EqualsBuilder();
-			eb.append(_materializedRows, that._materializedRows);
-			eb.append(_selectItems, that._selectItems);
-			return eb.isEquals();
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (getClass() == obj.getClass()) {
+            DataSetTableModel that = (DataSetTableModel) obj;
+            EqualsBuilder eb = new EqualsBuilder();
+            eb.append(_materializedRows, that._materializedRows);
+            eb.append(_selectItems, that._selectItems);
+            return eb.isEquals();
+        }
+        return false;
+    }
 
-	public int getColumnCount() {
-		return _selectItems.size();
-	}
+    public int getColumnCount() {
+        return _selectItems.size();
+    }
 
-	public int getRowCount() {
-		materialize();
-		return _materializedRows.size();
-	}
+    public int getRowCount() {
+        materialize();
+        return _materializedRows.size();
+    }
 
-	private void materialize() {
-		if (!_materialized) {
-		    try {
-		        while (_dataSet.next()) {
-		            _materializedRows.add(_dataSet.getRow());
-		        }
-		    } finally {
-		        _dataSet.close();
-		    }
-			_materialized = true;
-		}
-	}
+    private void materialize() {
+        if (!_materialized) {
+            try {
+                while (_dataSet.next()) {
+                    _materializedRows.add(_dataSet.getRow());
+                }
+            } finally {
+                _dataSet.close();
+            }
+            _materialized = true;
+        }
+    }
 
-	public Object getValueAt(int rowIndex, int columnIndex) {
-		materialize();
-		return _materializedRows.get(rowIndex).getValue(columnIndex);
-	}
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        materialize();
+        return _materializedRows.get(rowIndex).getValue(columnIndex);
+    }
 
-	@Override
-	public String getColumnName(int column) {
-		return _selectItems.get(column).getSuperQueryAlias(false);
-	}
+    @Override
+    public String getColumnName(int column) {
+        return _selectItems.get(column).getSuperQueryAlias(false);
+    }
 
-	@Override
-	public void setValueAt(Object value, int rowIndex, int columnIndex) {
-		throw new UnsupportedOperationException(
-				"DataSetTableModels are immutable, so setValueAt() method is unsupported.");
-	}
+    @Override
+    public void setValueAt(Object value, int rowIndex, int columnIndex) {
+        throw new UnsupportedOperationException(
+                "DataSetTableModels are immutable, so setValueAt() method is unsupported.");
+    }
 }

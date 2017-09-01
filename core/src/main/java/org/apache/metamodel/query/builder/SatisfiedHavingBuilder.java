@@ -23,7 +23,7 @@ import org.apache.metamodel.schema.Column;
 
 public interface SatisfiedHavingBuilder extends GroupedQueryBuilder {
 
-	public HavingBuilder or(FunctionType functionType, Column column);
+    public HavingBuilder or(FunctionType functionType, Column column);
 
-	public HavingBuilder and(FunctionType functionType, Column column);
+    public HavingBuilder and(FunctionType functionType, Column column);
 }

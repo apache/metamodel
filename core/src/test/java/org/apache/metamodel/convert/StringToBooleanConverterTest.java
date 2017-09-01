@@ -22,16 +22,16 @@ import junit.framework.TestCase;
 
 public class StringToBooleanConverterTest extends TestCase {
 
-	private StringToBooleanConverter conv = new StringToBooleanConverter();
+    private StringToBooleanConverter conv = new StringToBooleanConverter();
 
-	public void testToVirtual() throws Exception {
-		assertNull(conv.toVirtualValue(null));
-		assertNull(conv.toVirtualValue(""));
-		assertEquals(true, conv.toVirtualValue("true").booleanValue());
-	}
+    public void testToVirtual() throws Exception {
+        assertNull(conv.toVirtualValue(null));
+        assertNull(conv.toVirtualValue(""));
+        assertEquals(true, conv.toVirtualValue("true").booleanValue());
+    }
 
-	public void testToPhysical() throws Exception {
-		assertNull(conv.toPhysicalValue(null));
-		assertEquals("true", conv.toPhysicalValue(true));
-	}
+    public void testToPhysical() throws Exception {
+        assertNull(conv.toPhysicalValue(null));
+        assertEquals("true", conv.toPhysicalValue(true));
+    }
 }

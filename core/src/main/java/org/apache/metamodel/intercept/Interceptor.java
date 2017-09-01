@@ -36,15 +36,15 @@ package org.apache.metamodel.intercept;
  */
 public interface Interceptor<E> {
 
-	/**
-	 * Interception method invoked by MetaModel when the intercepted object is
-	 * being activated.
-	 * 
-	 * @param input
-	 *            the intercepted object
-	 * @return the intercepted object, or a modification of this if the object
-	 *         is to be replaced by the interceptor. The returned object must
-	 *         not be null.
-	 */
-	public E intercept(E input);
+    /**
+     * Interception method invoked by MetaModel when the intercepted object is
+     * being activated.
+     * 
+     * @param input
+     *            the intercepted object
+     * @return the intercepted object, or a modification of this if the object
+     *         is to be replaced by the interceptor. The returned object must
+     *         not be null.
+     */
+    public E intercept(E input);
 }

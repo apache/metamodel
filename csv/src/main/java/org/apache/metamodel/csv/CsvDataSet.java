@@ -45,7 +45,7 @@ final class CsvDataSet extends AbstractDataSet {
     private volatile Row _row;
 
     public CsvDataSet(CSVReader reader, List<Column> columns, Integer maxRows, int columnsInTable,
-                      boolean failOnInconsistentRowLength) {
+            boolean failOnInconsistentRowLength) {
         super(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
         _reader = reader;
         _columnsInTable = columnsInTable;

@@ -28,17 +28,17 @@ import org.apache.metamodel.schema.Table;
 
 public abstract class SyntaxExamplesTest extends TestCase {
 
-	private UpdateableDataContext dc;
-	private Table table;
-	private Column col;
+    private UpdateableDataContext dc;
+    private Table table;
+    private Column col;
 
-	public void testInsertMultipleRows() throws Exception {
-		dc.executeUpdate(new UpdateScript() {
-			@Override
-			public void run(UpdateCallback cb) {
-				cb.insertInto(table).value(col, "foo").execute();
-				cb.insertInto(table).value(col, "bar").execute();
-			}
-		});
-	}
+    public void testInsertMultipleRows() throws Exception {
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback cb) {
+                cb.insertInto(table).value(col, "foo").execute();
+                cb.insertInto(table).value(col, "bar").execute();
+            }
+        });
+    }
 }

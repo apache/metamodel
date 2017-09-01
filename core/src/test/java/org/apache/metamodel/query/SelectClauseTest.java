@@ -27,15 +27,15 @@ import junit.framework.TestCase;
 
 public class SelectClauseTest extends TestCase {
 
-	public void testDistinctAddition() throws Exception {
-		Table table = new MutableTable("foo");
-		Column col = new MutableColumn("bar").setTable(table);
+    public void testDistinctAddition() throws Exception {
+        Table table = new MutableTable("foo");
+        Column col = new MutableColumn("bar").setTable(table);
 
-		Query q = new Query();
-		q.selectDistinct();
-		q.from(table);
-		q.select(col);
+        Query q = new Query();
+        q.selectDistinct();
+        q.from(table);
+        q.select(col);
 
-		assertEquals("SELECT DISTINCT foo.bar FROM foo", q.toSql());
-	}
+        assertEquals("SELECT DISTINCT foo.bar FROM foo", q.toSql());
+    }
 }

@@ -29,49 +29,49 @@ import org.apache.metamodel.schema.Column;
  */
 public class SelectClause extends AbstractQueryClause<SelectItem> {
 
-	private static final long serialVersionUID = -2458447191169901181L;
-	private boolean _distinct = false;
+    private static final long serialVersionUID = -2458447191169901181L;
+    private boolean _distinct = false;
 
-	public SelectClause(Query query) {
-		super(query, AbstractQueryClause.PREFIX_SELECT, AbstractQueryClause.DELIM_COMMA);
-	}
+    public SelectClause(Query query) {
+        super(query, AbstractQueryClause.PREFIX_SELECT, AbstractQueryClause.DELIM_COMMA);
+    }
 
-	public SelectItem getSelectItem(Column column) {
-		if (column != null) {
-			for (SelectItem item : getItems()) {
-				if (column.equals(item.getColumn())) {
-					return item;
-				}
-			}
-		}
-		return null;
-	}
+    public SelectItem getSelectItem(Column column) {
+        if (column != null) {
+            for (SelectItem item : getItems()) {
+                if (column.equals(item.getColumn())) {
+                    return item;
+                }
+            }
+        }
+        return null;
+    }
 
-	@Override
-	public String toSql(boolean includeSchemaInColumnPaths) {
-		if (getItems().size() == 0) {
-			return "";
-		}
+    @Override
+    public String toSql(boolean includeSchemaInColumnPaths) {
+        if (getItems().size() == 0) {
+            return "";
+        }
 
-		final String sql = super.toSql(includeSchemaInColumnPaths);
+        final String sql = super.toSql(includeSchemaInColumnPaths);
         StringBuilder sb = new StringBuilder(sql);
-		if (_distinct) {
-			sb.insert(AbstractQueryClause.PREFIX_SELECT.length(), "DISTINCT ");
-		}
-		return sb.toString();
-	}
+        if (_distinct) {
+            sb.insert(AbstractQueryClause.PREFIX_SELECT.length(), "DISTINCT ");
+        }
+        return sb.toString();
+    }
 
-	public boolean isDistinct() {
-		return _distinct;
-	}
+    public boolean isDistinct() {
+        return _distinct;
+    }
 
-	public void setDistinct(boolean distinct) {
-		_distinct = distinct;
-	}
+    public void setDistinct(boolean distinct) {
+        _distinct = distinct;
+    }
 
-	@Override
-	protected void decorateIdentity(List<Object> identifiers) {
-		super.decorateIdentity(identifiers);
-		identifiers.add(_distinct);
-	}
+    @Override
+    protected void decorateIdentity(List<Object> identifiers) {
+        super.decorateIdentity(identifiers);
+        identifiers.add(_distinct);
+    }
 }

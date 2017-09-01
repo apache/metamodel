@@ -37,113 +37,113 @@ import org.slf4j.LoggerFactory;
  */
 final class JdbcInsertBuilder extends AbstractRowInsertionBuilder<JdbcUpdateCallback> {
 
-	private static final Logger logger = LoggerFactory.getLogger(JdbcInsertBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(JdbcInsertBuilder.class);
 
-	private final boolean _inlineValues;
-	private final IQueryRewriter _queryRewriter;
+    private final boolean _inlineValues;
+    private final IQueryRewriter _queryRewriter;
 
-	public JdbcInsertBuilder(JdbcUpdateCallback updateCallback, Table table, IQueryRewriter queryRewriter) {
-		this(updateCallback, table, false, queryRewriter);
-	}
+    public JdbcInsertBuilder(JdbcUpdateCallback updateCallback, Table table, IQueryRewriter queryRewriter) {
+        this(updateCallback, table, false, queryRewriter);
+    }
 
-	public JdbcInsertBuilder(JdbcUpdateCallback updateCallback, Table table, boolean isInlineValues,
-			IQueryRewriter queryRewriter) {
-		super(updateCallback, table);
-		if (!(table instanceof JdbcTable)) {
-			throw new IllegalArgumentException("Not a valid JDBC table: " + table);
-		}
+    public JdbcInsertBuilder(JdbcUpdateCallback updateCallback, Table table, boolean isInlineValues,
+            IQueryRewriter queryRewriter) {
+        super(updateCallback, table);
+        if (!(table instanceof JdbcTable)) {
+            throw new IllegalArgumentException("Not a valid JDBC table: " + table);
+        }
 
-		_inlineValues = isInlineValues;
-		_queryRewriter = queryRewriter;
-	}
+        _inlineValues = isInlineValues;
+        _queryRewriter = queryRewriter;
+    }
 
-	@Override
-	public void execute() {
-		final String sql = createSqlStatement();
-		if (logger.isDebugEnabled()) {
-			logger.debug("Inserting: {}", Arrays.toString(getValues()));
-			logger.debug("Insert statement created: {}", sql);
-		}
-		final JdbcUpdateCallback updateCallback = getUpdateCallback();
-		final boolean reuseStatement = !_inlineValues;
-		final PreparedStatement st = updateCallback.getPreparedStatement(sql, reuseStatement, true);
-		try {
-			if (reuseStatement) {
-				Column[] columns = getColumns();
-				Object[] values = getValues();
-				boolean[] explicitNulls = getExplicitNulls();
-				int valueCounter = 1;
-				for (int i = 0; i < columns.length; i++) {
-					boolean explicitNull = explicitNulls[i];
-					if (values[i] != null || explicitNull) {
-					    _queryRewriter.setStatementParameter(st, valueCounter, columns[i], values[i]);
-						valueCounter++;
-					}
-				}
-			}
-			updateCallback.executeInsert(st, reuseStatement);
-		} catch (SQLException e) {
-			throw JdbcUtils.wrapException(e, "execute insert statement: " + sql);
-		} finally {
-			if (_inlineValues) {
-				FileHelper.safeClose(st);
-			}
-		}
-	}
-	
-	protected String createSqlStatement() {
-	    return createSqlStatement(_inlineValues);
-	}
+    @Override
+    public void execute() {
+        final String sql = createSqlStatement();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Inserting: {}", Arrays.toString(getValues()));
+            logger.debug("Insert statement created: {}", sql);
+        }
+        final JdbcUpdateCallback updateCallback = getUpdateCallback();
+        final boolean reuseStatement = !_inlineValues;
+        final PreparedStatement st = updateCallback.getPreparedStatement(sql, reuseStatement, true);
+        try {
+            if (reuseStatement) {
+                Column[] columns = getColumns();
+                Object[] values = getValues();
+                boolean[] explicitNulls = getExplicitNulls();
+                int valueCounter = 1;
+                for (int i = 0; i < columns.length; i++) {
+                    boolean explicitNull = explicitNulls[i];
+                    if (values[i] != null || explicitNull) {
+                        _queryRewriter.setStatementParameter(st, valueCounter, columns[i], values[i]);
+                        valueCounter++;
+                    }
+                }
+            }
+            updateCallback.executeInsert(st, reuseStatement);
+        } catch (SQLException e) {
+            throw JdbcUtils.wrapException(e, "execute insert statement: " + sql);
+        } finally {
+            if (_inlineValues) {
+                FileHelper.safeClose(st);
+            }
+        }
+    }
+    
+    protected String createSqlStatement() {
+        return createSqlStatement(_inlineValues);
+    }
 
-	private String createSqlStatement(boolean inlineValues) {
-		final Object[] values = getValues();
-		final Table table = getTable();
-		final StringBuilder sb = new StringBuilder();
+    private String createSqlStatement(boolean inlineValues) {
+        final Object[] values = getValues();
+        final Table table = getTable();
+        final StringBuilder sb = new StringBuilder();
 
-		final String tableLabel = _queryRewriter.rewriteFromItem(new FromItem(table));
+        final String tableLabel = _queryRewriter.rewriteFromItem(new FromItem(table));
 
-		sb.append("INSERT INTO ");
-		sb.append(tableLabel);
-		sb.append(" (");
-		Column[] columns = getColumns();
-		boolean[] explicitNulls = getExplicitNulls();
-		boolean firstValue = true;
-		for (int i = 0; i < columns.length; i++) {
-			if (values[i] != null || explicitNulls[i]) {
-				if (firstValue) {
-					firstValue = false;
-				} else {
-					sb.append(',');
-				}
-				String columnName = columns[i].getName();
-				columnName = getUpdateCallback().quoteIfNescesary(columnName);
-				sb.append(columnName);
-			}
-		}
+        sb.append("INSERT INTO ");
+        sb.append(tableLabel);
+        sb.append(" (");
+        Column[] columns = getColumns();
+        boolean[] explicitNulls = getExplicitNulls();
+        boolean firstValue = true;
+        for (int i = 0; i < columns.length; i++) {
+            if (values[i] != null || explicitNulls[i]) {
+                if (firstValue) {
+                    firstValue = false;
+                } else {
+                    sb.append(',');
+                }
+                String columnName = columns[i].getName();
+                columnName = getUpdateCallback().quoteIfNescesary(columnName);
+                sb.append(columnName);
+            }
+        }
 
-		sb.append(") VALUES (");
-		firstValue = true;
-		for (int i = 0; i < columns.length; i++) {
-			if (values[i] != null || explicitNulls[i]) {
-				if (firstValue) {
-					firstValue = false;
-				} else {
-					sb.append(',');
-				}
-				if (inlineValues) {
-					sb.append(JdbcUtils.getValueAsSql(columns[i], values[i], _queryRewriter));
-				} else {
-					sb.append('?');
-				}
-			}
-		}
-		sb.append(")");
-		String sql = sb.toString();
-		return sql;
-	}
+        sb.append(") VALUES (");
+        firstValue = true;
+        for (int i = 0; i < columns.length; i++) {
+            if (values[i] != null || explicitNulls[i]) {
+                if (firstValue) {
+                    firstValue = false;
+                } else {
+                    sb.append(',');
+                }
+                if (inlineValues) {
+                    sb.append(JdbcUtils.getValueAsSql(columns[i], values[i], _queryRewriter));
+                } else {
+                    sb.append('?');
+                }
+            }
+        }
+        sb.append(")");
+        String sql = sb.toString();
+        return sql;
+    }
 
-	@Override
-	public String toSql() {
-	    return createSqlStatement(true);
-	}
+    @Override
+    public String toSql() {
+        return createSqlStatement(true);
+    }
 }

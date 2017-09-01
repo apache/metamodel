@@ -27,11 +27,11 @@ import org.apache.metamodel.schema.Table;
  */
 public interface InitFromBuilder {
 
-	public TableFromBuilder from(Table table);
-	
-	public TableFromBuilder from(Schema schema, String tableName);
+    public TableFromBuilder from(Table table);
+    
+    public TableFromBuilder from(Schema schema, String tableName);
 
-	public TableFromBuilder from(String schemaName, String tableName);
+    public TableFromBuilder from(String schemaName, String tableName);
 
-	public TableFromBuilder from(String tableName);
+    public TableFromBuilder from(String tableName);
 }

@@ -35,30 +35,30 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 final class XlsxWorkbookToTablesHandler extends DefaultHandler {
 
-	private final MutableSchema _schema;
-	private final Map<String, String> _tableNamesToRelationshipIds;
+    private final MutableSchema _schema;
+    private final Map<String, String> _tableNamesToRelationshipIds;
 
-	public XlsxWorkbookToTablesHandler(MutableSchema schema,
-			Map<String, String> tableNamesToRelationshipIds) {
-		_schema = schema;
-		_tableNamesToRelationshipIds = tableNamesToRelationshipIds;
-	}
+    public XlsxWorkbookToTablesHandler(MutableSchema schema,
+            Map<String, String> tableNamesToRelationshipIds) {
+        _schema = schema;
+        _tableNamesToRelationshipIds = tableNamesToRelationshipIds;
+    }
 
-	@Override
-	public void startElement(String uri, String localName, String qName,
-			Attributes attributes) throws SAXException {
-		if ("sheet".equals(qName)) {
-			String name = attributes.getValue("name");
-			assert name != null;
-			String relationId = attributes.getValue("r:id");
-			assert relationId != null;
+    @Override
+    public void startElement(String uri, String localName, String qName,
+            Attributes attributes) throws SAXException {
+        if ("sheet".equals(qName)) {
+            String name = attributes.getValue("name");
+            assert name != null;
+            String relationId = attributes.getValue("r:id");
+            assert relationId != null;
 
-			if (_schema != null) {
-				MutableTable table = new MutableTable(name, TableType.TABLE,
-						_schema);
-				_schema.addTable(table);
-			}
-			_tableNamesToRelationshipIds.put(name, relationId);
-		}
-	}
+            if (_schema != null) {
+                MutableTable table = new MutableTable(name, TableType.TABLE,
+                        _schema);
+                _schema.addTable(table);
+            }
+            _tableNamesToRelationshipIds.put(name, relationId);
+        }
+    }
 }

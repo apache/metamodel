@@ -32,106 +32,106 @@ import org.slf4j.LoggerFactory;
  * relationsips use the <code>createRelationship</code> method.
  */
 public class MutableRelationship extends AbstractRelationship implements
-		Serializable, Relationship {
+        Serializable, Relationship {
 
-	private static final long serialVersionUID = 238786848828528822L;
-	private static final Logger logger = LoggerFactory
-			.getLogger(MutableRelationship.class);
+    private static final long serialVersionUID = 238786848828528822L;
+    private static final Logger logger = LoggerFactory
+            .getLogger(MutableRelationship.class);
 
-	private final List<Column> _primaryColumns;
-	private final List<Column> _foreignColumns;
+    private final List<Column> _primaryColumns;
+    private final List<Column> _foreignColumns;
 
-	/**
-	 * Factory method to create relations between two tables by specifying which
-	 * columns from the tables that enforce the relationship.
-	 * 
-	 * @param primaryColumns
-	 *            the columns from the primary key table
-	 * @param foreignColumns
-	 *            the columns from the foreign key table
-	 * @return the relation created
-	 */
-	public static Relationship createRelationship(List<Column> primaryColumns,
-			List<Column> foreignColumns) {
-		Table primaryTable = checkSameTable(primaryColumns);
-		Table foreignTable = checkSameTable(foreignColumns);
-		MutableRelationship relation = new MutableRelationship(primaryColumns,
-				foreignColumns);
+    /**
+     * Factory method to create relations between two tables by specifying which
+     * columns from the tables that enforce the relationship.
+     * 
+     * @param primaryColumns
+     *            the columns from the primary key table
+     * @param foreignColumns
+     *            the columns from the foreign key table
+     * @return the relation created
+     */
+    public static Relationship createRelationship(List<Column> primaryColumns,
+            List<Column> foreignColumns) {
+        Table primaryTable = checkSameTable(primaryColumns);
+        Table foreignTable = checkSameTable(foreignColumns);
+        MutableRelationship relation = new MutableRelationship(primaryColumns,
+                foreignColumns);
 
-		if (primaryTable instanceof MutableTable) {
-			try {
-				((MutableTable) primaryTable).addRelationship(relation);
-			} catch (UnsupportedOperationException e) {
-				// this is an allowed behaviour - not all tables need to support
-				// this method.
-				logger.debug(
-						"primary table ({}) threw exception when adding relationship",
-						primaryTable);
-			}
+        if (primaryTable instanceof MutableTable) {
+            try {
+                ((MutableTable) primaryTable).addRelationship(relation);
+            } catch (UnsupportedOperationException e) {
+                // this is an allowed behaviour - not all tables need to support
+                // this method.
+                logger.debug(
+                        "primary table ({}) threw exception when adding relationship",
+                        primaryTable);
+            }
 
-			// Ticket #144: Some tables have relations with them selves and then
-			// the
-			// relationship should only be added once.
-			if (foreignTable != primaryTable
-					&& foreignTable instanceof MutableTable) {
-				try {
-					((MutableTable) foreignTable).addRelationship(relation);
-				} catch (UnsupportedOperationException e) {
-					// this is an allowed behaviour - not all tables need to
-					// support this method.
-					logger.debug(
-							"foreign table ({}) threw exception when adding relationship",
-							foreignTable);
-				}
-			}
-		}
-		return relation;
-	}
+            // Ticket #144: Some tables have relations with them selves and then
+            // the
+            // relationship should only be added once.
+            if (foreignTable != primaryTable
+                    && foreignTable instanceof MutableTable) {
+                try {
+                    ((MutableTable) foreignTable).addRelationship(relation);
+                } catch (UnsupportedOperationException e) {
+                    // this is an allowed behaviour - not all tables need to
+                    // support this method.
+                    logger.debug(
+                            "foreign table ({}) threw exception when adding relationship",
+                            foreignTable);
+                }
+            }
+        }
+        return relation;
+    }
 
-	public void remove() {
-		Table primaryTable = getPrimaryTable();
-		if (primaryTable instanceof MutableTable) {
-			((MutableTable) primaryTable).removeRelationship(this);
-		}
-		Table foreignTable = getForeignTable();
-		if (foreignTable instanceof MutableTable) {
-			((MutableTable) foreignTable).removeRelationship(this);
-		}
-	}
+    public void remove() {
+        Table primaryTable = getPrimaryTable();
+        if (primaryTable instanceof MutableTable) {
+            ((MutableTable) primaryTable).removeRelationship(this);
+        }
+        Table foreignTable = getForeignTable();
+        if (foreignTable instanceof MutableTable) {
+            ((MutableTable) foreignTable).removeRelationship(this);
+        }
+    }
 
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-		remove();
-	}
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        remove();
+    }
 
-	public static Relationship createRelationship(Column primaryColumn,
-			Column foreignColumn) {
-		List<Column> pcols = new ArrayList<>();
-		pcols.add(primaryColumn);
-		List<Column> fcols = new ArrayList<>();
-		fcols.add(foreignColumn);
+    public static Relationship createRelationship(Column primaryColumn,
+            Column foreignColumn) {
+        List<Column> pcols = new ArrayList<>();
+        pcols.add(primaryColumn);
+        List<Column> fcols = new ArrayList<>();
+        fcols.add(foreignColumn);
 
 
-		return createRelationship(pcols, fcols);
-	}
+        return createRelationship(pcols, fcols);
+    }
 
-	/**
-	 * Prevent external instantiation
-	 */
-	private MutableRelationship(List<Column> primaryColumns, List<Column> foreignColumns) {
-		_primaryColumns = primaryColumns;
-		_foreignColumns = foreignColumns;
-	}
+    /**
+     * Prevent external instantiation
+     */
+    private MutableRelationship(List<Column> primaryColumns, List<Column> foreignColumns) {
+        _primaryColumns = primaryColumns;
+        _foreignColumns = foreignColumns;
+    }
 
-	@Override
-	public List<Column> getPrimaryColumns() {
-		return _primaryColumns;
-	}
+    @Override
+    public List<Column> getPrimaryColumns() {
+        return _primaryColumns;
+    }
 
-	@Override
-	public List<Column> getForeignColumns() {
-		return _foreignColumns;
-	}
+    @Override
+    public List<Column> getForeignColumns() {
+        return _foreignColumns;
+    }
 
 }

@@ -22,18 +22,18 @@ import junit.framework.TestCase;
 
 public class FixedWidthConfigurationTest extends TestCase {
 
-	public void testToString() throws Exception {
-		assertEquals(
-				"FixedWidthConfiguration[encoding=UTF8, fixedValueWidth=10, valueWidths=[], columnNameLineNumber=1, failOnInconsistentLineWidth=true]",
-				new FixedWidthConfiguration(1, "UTF8", 10, true).toString());
-	}
+    public void testToString() throws Exception {
+        assertEquals(
+                "FixedWidthConfiguration[encoding=UTF8, fixedValueWidth=10, valueWidths=[], columnNameLineNumber=1, failOnInconsistentLineWidth=true]",
+                new FixedWidthConfiguration(1, "UTF8", 10, true).toString());
+    }
 
-	public void testEquals() throws Exception {
-		FixedWidthConfiguration conf1 = new FixedWidthConfiguration(1, "UTF8", 10, true);
-		FixedWidthConfiguration conf2 = new FixedWidthConfiguration(1, "UTF8", 10, true);
-		assertEquals(conf1, conf2);
+    public void testEquals() throws Exception {
+        FixedWidthConfiguration conf1 = new FixedWidthConfiguration(1, "UTF8", 10, true);
+        FixedWidthConfiguration conf2 = new FixedWidthConfiguration(1, "UTF8", 10, true);
+        assertEquals(conf1, conf2);
 
-		FixedWidthConfiguration conf3 = new FixedWidthConfiguration(1, "UTF8", 10, false);
-		assertFalse(conf1.equals(conf3));
-	}
+        FixedWidthConfiguration conf3 = new FixedWidthConfiguration(1, "UTF8", 10, false);
+        assertFalse(conf1.equals(conf3));
+    }
 }

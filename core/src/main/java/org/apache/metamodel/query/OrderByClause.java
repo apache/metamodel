@@ -30,20 +30,20 @@ import java.util.List;
  */
 public class OrderByClause extends AbstractQueryClause<OrderByItem> {
 
-	private static final long serialVersionUID = 2441926135870143715L;
+    private static final long serialVersionUID = 2441926135870143715L;
 
-	public OrderByClause(Query query) {
-		super(query, AbstractQueryClause.PREFIX_ORDER_BY,
-				AbstractQueryClause.DELIM_COMMA);
-	}
+    public OrderByClause(Query query) {
+        super(query, AbstractQueryClause.PREFIX_ORDER_BY,
+                AbstractQueryClause.DELIM_COMMA);
+    }
 
-	public List<SelectItem> getEvaluatedSelectItems() {
-		final List<SelectItem> result = new ArrayList<SelectItem>();
-		final List<OrderByItem> items = getItems();
-		for (OrderByItem item : items) {
-			result.add(item.getSelectItem());
-		}
-		return result;
-	}
+    public List<SelectItem> getEvaluatedSelectItems() {
+        final List<SelectItem> result = new ArrayList<SelectItem>();
+        final List<OrderByItem> items = getItems();
+        for (OrderByItem item : items) {
+            result.add(item.getSelectItem());
+        }
+        return result;
+    }
 
 }

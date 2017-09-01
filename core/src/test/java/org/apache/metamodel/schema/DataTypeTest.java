@@ -22,7 +22,7 @@ import junit.framework.TestCase;
 
 public class DataTypeTest extends TestCase {
 
-	public void testIsLiteral() throws Exception {
-		assertTrue(ColumnType.NCHAR.isLiteral());
-	}
+    public void testIsLiteral() throws Exception {
+        assertTrue(ColumnType.NCHAR.isLiteral());
+    }
 }

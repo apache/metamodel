@@ -711,90 +711,90 @@ public class DataContextFactory {
         return new CassandraDataContext(cluster, keySpaceName);
     }
     
-	/**
-	 * Creates a new HBase datacontext.
-	 * 
-	 * @param configuration
-	 *            {@code HBaseConfiguration} object containing detailed HBase
-	 *            configuration properties.
-	 * 
-	 * @return a DataContext object that matches the request
-	 */
+    /**
+     * Creates a new HBase datacontext.
+     * 
+     * @param configuration
+     *            {@code HBaseConfiguration} object containing detailed HBase
+     *            configuration properties.
+     * 
+     * @return a DataContext object that matches the request
+     */
     public static DataContext createHBaseDataContext(HBaseConfiguration configuration){
-    	return new HBaseDataContext(configuration);
+        return new HBaseDataContext(configuration);
     }
     
-	/**
-	 * Creates a new HBase datacontext.
-	 * 
-	 * @param configuration
-	 *            {@code HBaseConfiguration} object containing detailed HBase
-	 *            configuration properties.
-	 * 
-	 * @param connection
-	 *            A cluster connection encapsulating lower level individual
-	 *            connections to actual servers and a connection to zookeeper.
-	 * 
-	 * @return a DataContext object that matches the request
-	 */
-	public static DataContext createHBaseDataContext(HBaseConfiguration configuration,org.apache.hadoop.hbase.client.Connection connection) {
-		return new HBaseDataContext(configuration, connection);
-	}
-	
-	/**
-	 * Creates a new POJO data context that is empty but can be populated at
-	 * will.
-	 * 
-	 * @return a DataContext object that matches the request
-	 * 
-	 */
-	public static DataContext createPojoDataContext() {
-		return new PojoDataContext();
-	}
+    /**
+     * Creates a new HBase datacontext.
+     * 
+     * @param configuration
+     *            {@code HBaseConfiguration} object containing detailed HBase
+     *            configuration properties.
+     * 
+     * @param connection
+     *            A cluster connection encapsulating lower level individual
+     *            connections to actual servers and a connection to zookeeper.
+     * 
+     * @return a DataContext object that matches the request
+     */
+    public static DataContext createHBaseDataContext(HBaseConfiguration configuration,org.apache.hadoop.hbase.client.Connection connection) {
+        return new HBaseDataContext(configuration, connection);
+    }
+    
+    /**
+     * Creates a new POJO data context that is empty but can be populated at
+     * will.
+     * 
+     * @return a DataContext object that matches the request
+     * 
+     */
+    public static DataContext createPojoDataContext() {
+        return new PojoDataContext();
+    }
 
-	/**
-	 * Creates a new POJO data context based on the provided
-	 * {@link TableDataProvider}s.
-	 * 
-	 * @param tables
-	 *            list of tables
-	 * 
-	 * @return DataContext object that matches the request
-	 */
-	public static DataContext createPojoDataContext(List<TableDataProvider<?>> tables) {
-		return new PojoDataContext(tables);
-	}
+    /**
+     * Creates a new POJO data context based on the provided
+     * {@link TableDataProvider}s.
+     * 
+     * @param tables
+     *            list of tables
+     * 
+     * @return DataContext object that matches the request
+     */
+    public static DataContext createPojoDataContext(List<TableDataProvider<?>> tables) {
+        return new PojoDataContext(tables);
+    }
 
-	/**
-	 * Creates a new POJO data context based on the provided
-	 * {@link TableDataProvider}s.
-	 * 
-	 * @param schemaName
-	 *            the name of the created schema
-	 * 
-	 * @param tables
-	 *            table information
-	 * 
-	 * @return DataContext object that matches the request
-	 * 
-	 */
-	public static DataContext createPojoDataContext(String schemaName,TableDataProvider<?>[] tables) {
-		return new PojoDataContext(schemaName, tables);
-	}
+    /**
+     * Creates a new POJO data context based on the provided
+     * {@link TableDataProvider}s.
+     * 
+     * @param schemaName
+     *            the name of the created schema
+     * 
+     * @param tables
+     *            table information
+     * 
+     * @return DataContext object that matches the request
+     * 
+     */
+    public static DataContext createPojoDataContext(String schemaName,TableDataProvider<?>[] tables) {
+        return new PojoDataContext(schemaName, tables);
+    }
 
-	/**
-	 * Creates a new POJO data context based on the provided
-	 * {@link TableDataProvider}s.
-	 * 
-	 * @param schemaName
-	 *            the name of the created schema
-	 * 
-	 * @param tables
-	 *            list of tables
-	 * 
-	 * @return DataContext object that matches the request
-	 */
-	public static DataContext createPojoDataContext(String schemaName,List<TableDataProvider<?>> tables) {
-		return new PojoDataContext(schemaName, tables);
-	}
+    /**
+     * Creates a new POJO data context based on the provided
+     * {@link TableDataProvider}s.
+     * 
+     * @param schemaName
+     *            the name of the created schema
+     * 
+     * @param tables
+     *            list of tables
+     * 
+     * @return DataContext object that matches the request
+     */
+    public static DataContext createPojoDataContext(String schemaName,List<TableDataProvider<?>> tables) {
+        return new PojoDataContext(schemaName, tables);
+    }
 }

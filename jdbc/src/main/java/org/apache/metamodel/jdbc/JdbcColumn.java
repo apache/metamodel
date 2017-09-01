@@ -27,27 +27,27 @@ import org.apache.metamodel.schema.Table;
  */
 final class JdbcColumn extends MutableColumn {
 
-	private static final long serialVersionUID = 389872697452157919L;
+    private static final long serialVersionUID = 389872697452157919L;
 
-	public JdbcColumn(String columnName, ColumnType columnType, JdbcTable table, int columnNumber, Boolean nullable) {
-		super(columnName, columnType, table, columnNumber, nullable);
-	}
+    public JdbcColumn(String columnName, ColumnType columnType, JdbcTable table, int columnNumber, Boolean nullable) {
+        super(columnName, columnType, table, columnNumber, nullable);
+    }
 
-	@Override
-	public boolean isIndexed() {
-		Table table = getTable();
-		if (table instanceof JdbcTable) {
-			((JdbcTable) table).loadIndexes();
-		}
-		return super.isIndexed();
-	}
+    @Override
+    public boolean isIndexed() {
+        Table table = getTable();
+        if (table instanceof JdbcTable) {
+            ((JdbcTable) table).loadIndexes();
+        }
+        return super.isIndexed();
+    }
 
-	@Override
-	public boolean isPrimaryKey() {
-		Table table = getTable();
-		if (table instanceof JdbcTable) {
-			((JdbcTable) table).loadPrimaryKeys();
-		}
-		return super.isPrimaryKey();
-	}
+    @Override
+    public boolean isPrimaryKey() {
+        Table table = getTable();
+        if (table instanceof JdbcTable) {
+            ((JdbcTable) table).loadPrimaryKeys();
+        }
+        return super.isPrimaryKey();
+    }
 }

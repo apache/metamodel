@@ -23,5 +23,5 @@ package org.apache.metamodel.util;
  */
 public interface HasName {
 
-	public String getName();
+    public String getName();
 }

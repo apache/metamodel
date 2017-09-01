@@ -27,42 +27,42 @@ package org.apache.metamodel.data;
  */
 public interface RowPublisher {
 
-	/**
-	 * Publishes a row
-	 * 
-	 * @param row
-	 *            the {@link Row} to publish.
-	 * @return a boolean indicating whether or not the consumer is still
-	 *         interested in more rows.
-	 */
-	public boolean publish(Row row);
+    /**
+     * Publishes a row
+     * 
+     * @param row
+     *            the {@link Row} to publish.
+     * @return a boolean indicating whether or not the consumer is still
+     *         interested in more rows.
+     */
+    public boolean publish(Row row);
 
-	/**
-	 * Publishes a row, represented by an array of values.
-	 * 
-	 * @param values
-	 *            the objects to convert to a row.
-	 * @return a boolean indicating whether or not the consumer is still
-	 *         interested in more rows.
-	 */
-	public boolean publish(Object[] values);
+    /**
+     * Publishes a row, represented by an array of values.
+     * 
+     * @param values
+     *            the objects to convert to a row.
+     * @return a boolean indicating whether or not the consumer is still
+     *         interested in more rows.
+     */
+    public boolean publish(Object[] values);
 
-	/**
-	 * Publishes a row, represented by an array of values and an array of
-	 * styles.
-	 * 
-	 * @param values
-	 *            the objects to convert to a row.
-	 * @param styles
-	 *            the styles that correspond to the values.
-	 * @return a boolean indicating whether or not the consumer is still
-	 *         interested in more rows.
-	 */
-	public boolean publish(Object[] values, Style[] styles);
+    /**
+     * Publishes a row, represented by an array of values and an array of
+     * styles.
+     * 
+     * @param values
+     *            the objects to convert to a row.
+     * @param styles
+     *            the styles that correspond to the values.
+     * @return a boolean indicating whether or not the consumer is still
+     *         interested in more rows.
+     */
+    public boolean publish(Object[] values, Style[] styles);
 
-	/**
-	 * Invoked to indicate to the consumer that no more rows will be published.
-	 */
-	public void finished();
+    /**
+     * Invoked to indicate to the consumer that no more rows will be published.
+     */
+    public void finished();
 
 }

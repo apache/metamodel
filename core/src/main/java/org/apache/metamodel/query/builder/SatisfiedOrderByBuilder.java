@@ -21,11 +21,11 @@ package org.apache.metamodel.query.builder;
 import org.apache.metamodel.schema.Column;
 
 public interface SatisfiedOrderByBuilder<B extends SatisfiedQueryBuilder<?>>
-		extends SatisfiedQueryBuilder<B> {
+        extends SatisfiedQueryBuilder<B> {
 
-	public B asc();
+    public B asc();
 
-	public B desc();
+    public B desc();
 
-	public SatisfiedOrderByBuilder<B> and(Column column);
+    public SatisfiedOrderByBuilder<B> and(Column column);
 }

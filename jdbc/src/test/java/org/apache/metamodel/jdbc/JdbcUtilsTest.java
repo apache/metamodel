@@ -29,21 +29,21 @@ import org.apache.metamodel.MetaModelException;
 
 public class JdbcUtilsTest extends TestCase {
 
-	public void testConvertToMetaModelException() throws Exception {
-		LogManager logManager = LogManager.getLogManager();
-		File logConfigFile = new File("src/test/resources/logconfig.txt");
-		assertTrue(logConfigFile.exists());
-		logManager.readConfiguration(new FileInputStream(logConfigFile));
+    public void testConvertToMetaModelException() throws Exception {
+        LogManager logManager = LogManager.getLogManager();
+        File logConfigFile = new File("src/test/resources/logconfig.txt");
+        assertTrue(logConfigFile.exists());
+        logManager.readConfiguration(new FileInputStream(logConfigFile));
 
-		assertTrue(JdbcUtils.wrapException(new SQLException("msg"), "foo") instanceof MetaModelException);
-		assertTrue(JdbcUtils.wrapException(
-				new SQLException("msg", "sql state"), "foo") instanceof MetaModelException);
-		assertTrue(JdbcUtils.wrapException(new SQLException("msg", "sql state",
-				40), "foo") instanceof MetaModelException);
+        assertTrue(JdbcUtils.wrapException(new SQLException("msg"), "foo") instanceof MetaModelException);
+        assertTrue(JdbcUtils.wrapException(
+                new SQLException("msg", "sql state"), "foo") instanceof MetaModelException);
+        assertTrue(JdbcUtils.wrapException(new SQLException("msg", "sql state",
+                40), "foo") instanceof MetaModelException);
 
-		SQLException exceptionWithNext = new SQLException("msg", "sql state",
-				41);
-		exceptionWithNext.setNextException(new SQLException("i am next"));
-		assertTrue(JdbcUtils.wrapException(exceptionWithNext, "foo") instanceof MetaModelException);
-	}
+        SQLException exceptionWithNext = new SQLException("msg", "sql state",
+                41);
+        exceptionWithNext.setNextException(new SQLException("i am next"));
+        assertTrue(JdbcUtils.wrapException(exceptionWithNext, "foo") instanceof MetaModelException);
+    }
 }

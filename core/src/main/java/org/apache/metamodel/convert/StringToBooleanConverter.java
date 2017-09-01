@@ -26,26 +26,26 @@ import org.apache.metamodel.util.BooleanComparator;
  */
 public class StringToBooleanConverter implements TypeConverter<String, Boolean> {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toPhysicalValue(Boolean virtualValue) {
-		if (virtualValue == null) {
-			return null;
-		}
-		return virtualValue.toString();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toPhysicalValue(Boolean virtualValue) {
+        if (virtualValue == null) {
+            return null;
+        }
+        return virtualValue.toString();
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Boolean toVirtualValue(String physicalValue) {
-		if (physicalValue == null || physicalValue.length() == 0) {
-			return null;
-		}
-		return BooleanComparator.parseBoolean(physicalValue);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Boolean toVirtualValue(String physicalValue) {
+        if (physicalValue == null || physicalValue.length() == 0) {
+            return null;
+        }
+        return BooleanComparator.parseBoolean(physicalValue);
+    }
 
 }

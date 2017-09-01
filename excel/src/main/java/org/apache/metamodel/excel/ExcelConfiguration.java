@@ -31,21 +31,21 @@ import org.apache.metamodel.util.BaseObject;
  * @see ExcelDataContext
  */
 public final class ExcelConfiguration extends BaseObject implements
-		Serializable {
+        Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public static final int NO_COLUMN_NAME_LINE = 0;
-	public static final int DEFAULT_COLUMN_NAME_LINE = 1;
+    public static final int NO_COLUMN_NAME_LINE = 0;
+    public static final int DEFAULT_COLUMN_NAME_LINE = 1;
 
-	private final int columnNameLineNumber;
-	private final ColumnNamingStrategy columnNamingStrategy;
-	private final boolean skipEmptyLines;
-	private final boolean skipEmptyColumns;
+    private final int columnNameLineNumber;
+    private final ColumnNamingStrategy columnNamingStrategy;
+    private final boolean skipEmptyLines;
+    private final boolean skipEmptyColumns;
 
-	public ExcelConfiguration() {
-		this(DEFAULT_COLUMN_NAME_LINE, true, false);
-	}
+    public ExcelConfiguration() {
+        this(DEFAULT_COLUMN_NAME_LINE, true, false);
+    }
 
     public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns) {
         this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns);
@@ -70,49 +70,49 @@ public final class ExcelConfiguration extends BaseObject implements
         return columnNamingStrategy;
     }
 
-	/**
-	 * The line number (1 based) from which to get the names of the columns.
-	 * Note that this line number is affected by the skipEmptyLines property! If
-	 * skipEmptyLines is set to true, the line numbers will begin from the first
-	 * non-empty line.
-	 * 
-	 * @return the line number of the column headers/names.
-	 */
-	public int getColumnNameLineNumber() {
-		return columnNameLineNumber;
-	}
+    /**
+     * The line number (1 based) from which to get the names of the columns.
+     * Note that this line number is affected by the skipEmptyLines property! If
+     * skipEmptyLines is set to true, the line numbers will begin from the first
+     * non-empty line.
+     * 
+     * @return the line number of the column headers/names.
+     */
+    public int getColumnNameLineNumber() {
+        return columnNameLineNumber;
+    }
 
-	/**
-	 * Defines if empty lines in the excel spreadsheet should be skipped while
-	 * reading the spreadsheet.
-	 * 
-	 * @return a boolean indicating whether or not to skip empty lines.
-	 */
-	public boolean isSkipEmptyLines() {
-		return skipEmptyLines;
-	}
+    /**
+     * Defines if empty lines in the excel spreadsheet should be skipped while
+     * reading the spreadsheet.
+     * 
+     * @return a boolean indicating whether or not to skip empty lines.
+     */
+    public boolean isSkipEmptyLines() {
+        return skipEmptyLines;
+    }
 
-	/**
-	 * Defines if empty columns in the excel spreadsheet should be skipped while
-	 * reading the spreadsheet.
-	 * 
-	 * @return a boolean indicating whether or not to skip empty columns.
-	 */
-	public boolean isSkipEmptyColumns() {
-		return skipEmptyColumns;
-	}
+    /**
+     * Defines if empty columns in the excel spreadsheet should be skipped while
+     * reading the spreadsheet.
+     * 
+     * @return a boolean indicating whether or not to skip empty columns.
+     */
+    public boolean isSkipEmptyColumns() {
+        return skipEmptyColumns;
+    }
 
-	@Override
-	protected void decorateIdentity(List<Object> identifiers) {
-		identifiers.add(columnNameLineNumber);
-		identifiers.add(skipEmptyLines);
-		identifiers.add(skipEmptyColumns);
-	}
+    @Override
+    protected void decorateIdentity(List<Object> identifiers) {
+        identifiers.add(columnNameLineNumber);
+        identifiers.add(skipEmptyLines);
+        identifiers.add(skipEmptyColumns);
+    }
 
-	@Override
-	public String toString() {
-		return "ExcelConfiguration[columnNameLineNumber="
-				+ columnNameLineNumber + ", skipEmptyLines=" + skipEmptyLines
-				+ ", skipEmptyColumns=" + skipEmptyColumns + "]";
-	}
+    @Override
+    public String toString() {
+        return "ExcelConfiguration[columnNameLineNumber="
+                + columnNameLineNumber + ", skipEmptyLines=" + skipEmptyLines
+                + ", skipEmptyColumns=" + skipEmptyColumns + "]";
+    }
 }

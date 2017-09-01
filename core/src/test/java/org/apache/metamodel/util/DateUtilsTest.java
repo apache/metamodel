@@ -25,17 +25,17 @@ import junit.framework.TestCase;
 
 public class DateUtilsTest extends TestCase {
 
-	public void testGet() throws Exception {
-		SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		
-		Date christmasDay = DateUtils.get(2010, Month.DECEMBER, 24);
-		assertEquals("2010-12-24 00:00:00", f.format(christmasDay));
-		assertEquals(Weekday.FRIDAY, DateUtils.getWeekday(christmasDay));
-		
-		Date date2 = DateUtils.get(christmasDay, 1);
-		assertEquals("2010-12-25 00:00:00", f.format(date2));
-		
-		Date date3 = DateUtils.get(christmasDay, 10);
-		assertEquals("2011-01-03 00:00:00", f.format(date3));
-	}
+    public void testGet() throws Exception {
+        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        
+        Date christmasDay = DateUtils.get(2010, Month.DECEMBER, 24);
+        assertEquals("2010-12-24 00:00:00", f.format(christmasDay));
+        assertEquals(Weekday.FRIDAY, DateUtils.getWeekday(christmasDay));
+        
+        Date date2 = DateUtils.get(christmasDay, 1);
+        assertEquals("2010-12-25 00:00:00", f.format(date2));
+        
+        Date date3 = DateUtils.get(christmasDay, 10);
+        assertEquals("2011-01-03 00:00:00", f.format(date3));
+    }
 }

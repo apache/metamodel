@@ -41,28 +41,28 @@ import org.apache.metamodel.schema.Table;
  * 
  * <pre>
  * &lt;root&gt;
- * 	&lt;organization type="company"&gt;
- * 		&lt;name&gt;Company A&lt;/name&gt;
- * 		&lt;employees&gt;
- * 			&lt;employee&gt;
- * 				&lt;name&gt;John Doe&lt;/name&gt;
- * 				&lt;gender&gt;M&lt;/gender&gt;
- * 			&lt;/employee&gt;
- * 			&lt;employee&gt;
- * 				&lt;name&gt;Jane Doe&lt;/name&gt;
- * 				&lt;gender&gt;F&lt;/gender&gt;
- * 			&lt;/employee&gt;
- * 		&lt;/employees&gt;
- * 	&lt;/organization&gt;
- * 	&lt;organization type="government"&gt;
- * 		&lt;name&gt;Company B&lt;/name&gt;
- * 		&lt;employees&gt;
- * 			&lt;employee&gt;
- * 				&lt;name&gt;Susan&lt;/name&gt;
- * 				&lt;gender&gt;F&lt;/gender&gt;
- * 			&lt;/employee&gt;
- * 		&lt;/employees&gt;
- * 	&lt;/organization&gt;
+ *  &lt;organization type="company"&gt;
+ *      &lt;name&gt;Company A&lt;/name&gt;
+ *      &lt;employees&gt;
+ *          &lt;employee&gt;
+ *              &lt;name&gt;John Doe&lt;/name&gt;
+ *              &lt;gender&gt;M&lt;/gender&gt;
+ *          &lt;/employee&gt;
+ *          &lt;employee&gt;
+ *              &lt;name&gt;Jane Doe&lt;/name&gt;
+ *              &lt;gender&gt;F&lt;/gender&gt;
+ *          &lt;/employee&gt;
+ *      &lt;/employees&gt;
+ *  &lt;/organization&gt;
+ *  &lt;organization type="government"&gt;
+ *      &lt;name&gt;Company B&lt;/name&gt;
+ *      &lt;employees&gt;
+ *          &lt;employee&gt;
+ *              &lt;name&gt;Susan&lt;/name&gt;
+ *              &lt;gender&gt;F&lt;/gender&gt;
+ *          &lt;/employee&gt;
+ *      &lt;/employees&gt;
+ *  &lt;/organization&gt;
  * &lt;/root&gt;
  * </pre>
  * 
@@ -84,64 +84,64 @@ import org.apache.metamodel.schema.Table;
  */
 public final class XmlSaxTableDef implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private final String _rowXpath;
-	private final String[] _valueXpaths;
+    private final String _rowXpath;
+    private final String[] _valueXpaths;
 
-	/**
-	 * Constructs a {@link XmlSaxTableDef} based on an xpath expression for the
-	 * row scope and an array of xpath expressions for the individual values
-	 * (columns) within a row.
-	 * 
-	 * @param rowXpath
-	 *            an xpath expression for the scope of a record, eg.
-	 *            /companies/company/employee
-	 * @param valueXpaths
-	 *            an array of xpath expressions for the individual values
-	 *            (columns) of a row. eg: [/companies/company/employee/name,
-	 *            /companies/company/employee/gender, index(/companies/company)]
-	 */
-	public XmlSaxTableDef(String rowXpath, String[] valueXpaths) {
-		_rowXpath = rowXpath;
-		_valueXpaths = valueXpaths;
-	}
+    /**
+     * Constructs a {@link XmlSaxTableDef} based on an xpath expression for the
+     * row scope and an array of xpath expressions for the individual values
+     * (columns) within a row.
+     * 
+     * @param rowXpath
+     *            an xpath expression for the scope of a record, eg.
+     *            /companies/company/employee
+     * @param valueXpaths
+     *            an array of xpath expressions for the individual values
+     *            (columns) of a row. eg: [/companies/company/employee/name,
+     *            /companies/company/employee/gender, index(/companies/company)]
+     */
+    public XmlSaxTableDef(String rowXpath, String[] valueXpaths) {
+        _rowXpath = rowXpath;
+        _valueXpaths = valueXpaths;
+    }
 
-	public String getRowXpath() {
-		return _rowXpath;
-	}
+    public String getRowXpath() {
+        return _rowXpath;
+    }
 
-	public String[] getValueXpaths() {
-		return _valueXpaths;
-	}
+    public String[] getValueXpaths() {
+        return _valueXpaths;
+    }
 
-	@Override
-	public int hashCode() {
-		return _rowXpath.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        return _rowXpath.hashCode();
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		XmlSaxTableDef other = (XmlSaxTableDef) obj;
-		if (_rowXpath == null) {
-			if (other._rowXpath != null)
-				return false;
-		} else if (!_rowXpath.equals(other._rowXpath))
-			return false;
-		if (!Arrays.equals(_valueXpaths, other._valueXpaths))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        XmlSaxTableDef other = (XmlSaxTableDef) obj;
+        if (_rowXpath == null) {
+            if (other._rowXpath != null)
+                return false;
+        } else if (!_rowXpath.equals(other._rowXpath))
+            return false;
+        if (!Arrays.equals(_valueXpaths, other._valueXpaths))
+            return false;
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "XmlSaxTableDef[rowXpath=" + _rowXpath + ",valueXpaths="
-				+ Arrays.toString(_valueXpaths) + "]";
-	}
+    @Override
+    public String toString() {
+        return "XmlSaxTableDef[rowXpath=" + _rowXpath + ",valueXpaths="
+                + Arrays.toString(_valueXpaths) + "]";
+    }
 }

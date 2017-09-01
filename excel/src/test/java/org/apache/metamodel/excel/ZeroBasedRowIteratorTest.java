@@ -30,46 +30,46 @@ import org.apache.metamodel.excel.ZeroBasedRowIterator;
 
 public class ZeroBasedRowIteratorTest extends TestCase {
 
-	public void testHasNext() throws Exception {
-		Workbook workbook = WorkbookFactory.create(new FileInputStream(
-				"src/test/resources/xls_single_cell_sheet.xls"));
-		Sheet sheet = workbook.getSheetAt(0);
+    public void testHasNext() throws Exception {
+        Workbook workbook = WorkbookFactory.create(new FileInputStream(
+                "src/test/resources/xls_single_cell_sheet.xls"));
+        Sheet sheet = workbook.getSheetAt(0);
 
-		// POI's row numbers are 0-based also - the last cell in the sheet is
-		// actually A6.
-		assertEquals(5, sheet.getLastRowNum());
+        // POI's row numbers are 0-based also - the last cell in the sheet is
+        // actually A6.
+        assertEquals(5, sheet.getLastRowNum());
 
-		ZeroBasedRowIterator it = new ZeroBasedRowIterator(sheet);
+        ZeroBasedRowIterator it = new ZeroBasedRowIterator(sheet);
 
-		assertTrue(it.hasNext());
-		assertNull(it.next());
+        assertTrue(it.hasNext());
+        assertNull(it.next());
 
-		assertTrue(it.hasNext());
-		assertNull(it.next());
+        assertTrue(it.hasNext());
+        assertNull(it.next());
 
-		assertTrue(it.hasNext());
-		assertNull(it.next());
+        assertTrue(it.hasNext());
+        assertNull(it.next());
 
-		assertTrue(it.hasNext());
-		assertNull(it.next());
+        assertTrue(it.hasNext());
+        assertNull(it.next());
 
-		assertTrue(it.hasNext());
-		assertNull(it.next());
+        assertTrue(it.hasNext());
+        assertNull(it.next());
 
-		assertTrue(it.hasNext());
-		assertNotNull(it.next());
+        assertTrue(it.hasNext());
+        assertNotNull(it.next());
 
-		assertFalse(it.hasNext());
-	}
-	
-	public void testUnsupportedRemove() throws Exception {
-		ZeroBasedRowIterator it = new ZeroBasedRowIterator(EasyMock.createMock(Sheet.class));
-		
-		try {
-			it.remove();
-			fail("Exception expected");
-		} catch (UnsupportedOperationException e) {
-			assertEquals("remove() is not supported", e.getMessage());
-		}
-	}
+        assertFalse(it.hasNext());
+    }
+    
+    public void testUnsupportedRemove() throws Exception {
+        ZeroBasedRowIterator it = new ZeroBasedRowIterator(EasyMock.createMock(Sheet.class));
+        
+        try {
+            it.remove();
+            fail("Exception expected");
+        } catch (UnsupportedOperationException e) {
+            assertEquals("remove() is not supported", e.getMessage());
+        }
+    }
 }

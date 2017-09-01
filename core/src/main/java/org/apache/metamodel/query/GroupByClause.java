@@ -28,20 +28,20 @@ import java.util.List;
  */
 public class GroupByClause extends AbstractQueryClause<GroupByItem> {
 
-	private static final long serialVersionUID = -3824934110331202101L;
+    private static final long serialVersionUID = -3824934110331202101L;
 
-	public GroupByClause(Query query) {
-		super(query, AbstractQueryClause.PREFIX_GROUP_BY,
-				AbstractQueryClause.DELIM_COMMA);
-	}
+    public GroupByClause(Query query) {
+        super(query, AbstractQueryClause.PREFIX_GROUP_BY,
+                AbstractQueryClause.DELIM_COMMA);
+    }
 
-	public List<SelectItem> getEvaluatedSelectItems() {
-		final List<SelectItem> result = new ArrayList<SelectItem>();
-		final List<GroupByItem> items = getItems();
-		for (GroupByItem item : items) {
-			result.add(item.getSelectItem());
-		}
-		return result;
-	}
+    public List<SelectItem> getEvaluatedSelectItems() {
+        final List<SelectItem> result = new ArrayList<SelectItem>();
+        final List<GroupByItem> items = getItems();
+        for (GroupByItem item : items) {
+            result.add(item.getSelectItem());
+        }
+        return result;
+    }
 
 }

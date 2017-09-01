@@ -25,27 +25,27 @@ import junit.framework.TestCase;
 
 public abstract class JdbcTestCase extends TestCase {
 
-	private Connection _connection;
+    private Connection _connection;
 
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		if (_connection != null) {
-			if (!_connection.isClosed()) {
-				_connection.close();
-			}
-			_connection = null;
-		}
-	}
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        if (_connection != null) {
+            if (!_connection.isClosed()) {
+                _connection.close();
+            }
+            _connection = null;
+        }
+    }
 
-	public Connection getTestDbConnection() throws Exception {
-		if (_connection == null || _connection.isClosed()) {
-			Class.forName("org.hsqldb.jdbcDriver");
-			_connection = DriverManager
-					.getConnection("jdbc:hsqldb:res:metamodel");
-			_connection.setReadOnly(true);
-		}
-		return _connection;
-	}
+    public Connection getTestDbConnection() throws Exception {
+        if (_connection == null || _connection.isClosed()) {
+            Class.forName("org.hsqldb.jdbcDriver");
+            _connection = DriverManager
+                    .getConnection("jdbc:hsqldb:res:metamodel");
+            _connection.setReadOnly(true);
+        }
+        return _connection;
+    }
 
 }

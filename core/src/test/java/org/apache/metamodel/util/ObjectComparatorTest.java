@@ -26,38 +26,38 @@ import junit.framework.TestCase;
 
 public class ObjectComparatorTest extends TestCase {
 
-	public void testString() throws Exception {
-		Comparator<Object> c = ObjectComparator.getComparator();
-		assertTrue(c.compare("aaaa", "bbbb") < 0);
+    public void testString() throws Exception {
+        Comparator<Object> c = ObjectComparator.getComparator();
+        assertTrue(c.compare("aaaa", "bbbb") < 0);
 
-		assertTrue(c.compare("w", "y") < 0);
-	}
+        assertTrue(c.compare("w", "y") < 0);
+    }
 
-	public void testComparable() throws Exception {
-		Comparable<Object> comparable = ObjectComparator.getComparable("aaaa");
-		assertEquals(-1, comparable.compareTo("bbbb"));
-	}
+    public void testComparable() throws Exception {
+        Comparable<Object> comparable = ObjectComparator.getComparable("aaaa");
+        assertEquals(-1, comparable.compareTo("bbbb"));
+    }
 
-	public void testNull() throws Exception {
-		Comparator<Object> comparator = ObjectComparator.getComparator();
-		assertEquals(0, comparator.compare(null, null));
-		assertEquals(1, comparator.compare("h", null));
-		assertEquals(-1, comparator.compare(null, "h"));
+    public void testNull() throws Exception {
+        Comparator<Object> comparator = ObjectComparator.getComparator();
+        assertEquals(0, comparator.compare(null, null));
+        assertEquals(1, comparator.compare("h", null));
+        assertEquals(-1, comparator.compare(null, "h"));
 
-		TreeSet<Object> set = new TreeSet<Object>(comparator);
-		set.add("Hello");
-		set.add(null);
-		set.add(null);
-		set.add(DateUtils.get(2010, Month.SEPTEMBER, 27));
-		set.add(DateUtils.get(2010, Month.SEPTEMBER, 28));
-		set.add(DateUtils.get(2010, Month.SEPTEMBER, 26));
+        TreeSet<Object> set = new TreeSet<Object>(comparator);
+        set.add("Hello");
+        set.add(null);
+        set.add(null);
+        set.add(DateUtils.get(2010, Month.SEPTEMBER, 27));
+        set.add(DateUtils.get(2010, Month.SEPTEMBER, 28));
+        set.add(DateUtils.get(2010, Month.SEPTEMBER, 26));
 
-		assertEquals(5, set.size());
-		Iterator<Object> it = set.iterator();
-		assertEquals(null, it.next());
-		assertEquals("Hello", it.next());
-		assertEquals(DateUtils.get(2010, Month.SEPTEMBER, 26), it.next());
-		assertEquals(DateUtils.get(2010, Month.SEPTEMBER, 27), it.next());
-		assertEquals(DateUtils.get(2010, Month.SEPTEMBER, 28), it.next());
-	}
+        assertEquals(5, set.size());
+        Iterator<Object> it = set.iterator();
+        assertEquals(null, it.next());
+        assertEquals("Hello", it.next());
+        assertEquals(DateUtils.get(2010, Month.SEPTEMBER, 26), it.next());
+        assertEquals(DateUtils.get(2010, Month.SEPTEMBER, 27), it.next());
+        assertEquals(DateUtils.get(2010, Month.SEPTEMBER, 28), it.next());
+    }
 }

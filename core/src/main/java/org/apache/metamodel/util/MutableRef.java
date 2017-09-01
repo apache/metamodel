@@ -27,22 +27,22 @@ import java.util.function.Supplier;
  */
 public final class MutableRef<E> implements Supplier<E> {
 
-	private E _object;
+    private E _object;
 
-	public MutableRef() {
-	}
+    public MutableRef() {
+    }
 
-	public MutableRef(E object) {
-		_object = object;
-	}
+    public MutableRef(E object) {
+        _object = object;
+    }
 
-	@Override
-	public E get() {
-		return _object;
-	}
+    @Override
+    public E get() {
+        return _object;
+    }
 
-	public void set(E object) {
-		_object = object;
-	}
+    public void set(E object) {
+        _object = object;
+    }
 
 }

@@ -30,32 +30,32 @@ import org.apache.metamodel.schema.Column;
 
 public class ConvertedRowInsertionInterceptorTest extends TestCase {
 
-	public void testConvertedInsert() throws Exception {
-		MockUpdateableDataContext source = new MockUpdateableDataContext();
-		Column fooColumn = source.getColumnByQualifiedLabel("schema.table.foo");
-		assertNotNull(fooColumn);
+    public void testConvertedInsert() throws Exception {
+        MockUpdateableDataContext source = new MockUpdateableDataContext();
+        Column fooColumn = source.getColumnByQualifiedLabel("schema.table.foo");
+        assertNotNull(fooColumn);
 
-		UpdateableDataContext intercepted = Converters.addTypeConverter(source,
-				fooColumn, new StringToIntegerConverter());
+        UpdateableDataContext intercepted = Converters.addTypeConverter(source,
+                fooColumn, new StringToIntegerConverter());
 
-		final List<Object[]> values = source.getValues();
+        final List<Object[]> values = source.getValues();
 
-		assertEquals(3, values.size());
+        assertEquals(3, values.size());
 
-		intercepted.executeUpdate(new UpdateScript() {
-			@Override
-			public void run(UpdateCallback callback) {
-				callback.insertInto("schema.table").value(0, 1).value(1, "2")
-						.execute();
-				callback.insertInto("schema.table").value(0, 3).value(1, "4")
-						.execute();
-			}
-		});
+        intercepted.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto("schema.table").value(0, 1).value(1, "2")
+                        .execute();
+                callback.insertInto("schema.table").value(0, 3).value(1, "4")
+                        .execute();
+            }
+        });
 
-		assertEquals(5, values.size());
-		assertEquals("1", values.get(3)[0]);
-		assertEquals("2", values.get(3)[1]);
-		assertEquals("3", values.get(4)[0]);
-		assertEquals("4", values.get(4)[1]);
-	}
+        assertEquals(5, values.size());
+        assertEquals("1", values.get(3)[0]);
+        assertEquals("2", values.get(3)[1]);
+        assertEquals("3", values.get(4)[0]);
+        assertEquals("4", values.get(4)[1]);
+    }
 }

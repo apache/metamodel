@@ -31,46 +31,46 @@ import org.apache.metamodel.query.FilterItem;
  */
 public final class WildcardPattern implements Serializable {
 
-	private static final long serialVersionUID = 857462137797209624L;
-	private final boolean _startsWithDelim;
-	private final boolean _endsWithDelim;
-	private String _pattern;
-	private char _wildcard;
+    private static final long serialVersionUID = 857462137797209624L;
+    private final boolean _startsWithDelim;
+    private final boolean _endsWithDelim;
+    private String _pattern;
+    private char _wildcard;
 
-	public WildcardPattern(String pattern, char wildcard) {
-		_pattern = pattern;
-		_wildcard = wildcard;
-		if(_pattern.isEmpty()){
-			_startsWithDelim = _endsWithDelim = false;
-		} else {
-			_startsWithDelim = _pattern.charAt(0) == _wildcard;
-			_endsWithDelim = _pattern.charAt(pattern.length() - 1) == _wildcard;
-		}
-	}
+    public WildcardPattern(String pattern, char wildcard) {
+        _pattern = pattern;
+        _wildcard = wildcard;
+        if(_pattern.isEmpty()){
+            _startsWithDelim = _endsWithDelim = false;
+        } else {
+            _startsWithDelim = _pattern.charAt(0) == _wildcard;
+            _endsWithDelim = _pattern.charAt(pattern.length() - 1) == _wildcard;
+        }
+    }
 
-	public boolean matches(String value) {
-		if (value == null) {
-			return false;
-		}
-		StringTokenizer st = new StringTokenizer(_pattern,
-				Character.toString(_wildcard));
-		int charIndex = 0;
-		while (st.hasMoreTokens()) {
-			int oldIndex = charIndex;
-			String token = st.nextToken();
-			charIndex = value.indexOf(token, charIndex);
-			if (charIndex == -1 || !_startsWithDelim && oldIndex == 0 && charIndex != 0) {
-				return false;
-			}
-			charIndex = charIndex + token.length();
-		}
-		if (!_endsWithDelim) {
-			// Unless the last char of the pattern is a wildcard, we need to
-			// have reached the end of the string
-			if (charIndex != value.length()) {
-				return false;
-			}
-		}
-		return true;
-	}
+    public boolean matches(String value) {
+        if (value == null) {
+            return false;
+        }
+        StringTokenizer st = new StringTokenizer(_pattern,
+                Character.toString(_wildcard));
+        int charIndex = 0;
+        while (st.hasMoreTokens()) {
+            int oldIndex = charIndex;
+            String token = st.nextToken();
+            charIndex = value.indexOf(token, charIndex);
+            if (charIndex == -1 || !_startsWithDelim && oldIndex == 0 && charIndex != 0) {
+                return false;
+            }
+            charIndex = charIndex + token.length();
+        }
+        if (!_endsWithDelim) {
+            // Unless the last char of the pattern is a wildcard, we need to
+            // have reached the end of the string
+            if (charIndex != value.length()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

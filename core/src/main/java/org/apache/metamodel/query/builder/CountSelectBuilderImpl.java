@@ -24,28 +24,28 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 
 final class CountSelectBuilderImpl extends SatisfiedSelectBuilderImpl implements
-		CountSelectBuilder<GroupedQueryBuilder> {
+        CountSelectBuilder<GroupedQueryBuilder> {
 
-	private SelectItem selectItem;
+    private SelectItem selectItem;
 
-	public CountSelectBuilderImpl(Query query, GroupedQueryBuilder queryBuilder) {
-		super(queryBuilder);
-		this.selectItem = SelectItem.getCountAllItem();
-		query.select(selectItem);
-	}
+    public CountSelectBuilderImpl(Query query, GroupedQueryBuilder queryBuilder) {
+        super(queryBuilder);
+        this.selectItem = SelectItem.getCountAllItem();
+        query.select(selectItem);
+    }
 
-	@Override
-	public GroupedQueryBuilder as(String alias) {
-		if (alias == null) {
-			throw new IllegalArgumentException("alias cannot be null");
-		}
-		selectItem.setAlias(alias);
-		return getQueryBuilder();
-	}
+    @Override
+    public GroupedQueryBuilder as(String alias) {
+        if (alias == null) {
+            throw new IllegalArgumentException("alias cannot be null");
+        }
+        selectItem.setAlias(alias);
+        return getQueryBuilder();
+    }
 
-	@Override
-	protected void decorateIdentity(List<Object> identifiers) {
-		super.decorateIdentity(identifiers);
-		identifiers.add(selectItem);
-	}
+    @Override
+    protected void decorateIdentity(List<Object> identifiers) {
+        super.decorateIdentity(identifiers);
+        identifiers.add(selectItem);
+    }
 }

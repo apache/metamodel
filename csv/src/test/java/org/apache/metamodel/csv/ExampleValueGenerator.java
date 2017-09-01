@@ -23,5 +23,5 @@ import org.junit.Ignore;
 @Ignore
 interface ExampleValueGenerator {
 
-	public String generate(int row, int col);
+    public String generate(int row, int col);
 }

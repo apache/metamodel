@@ -24,14 +24,14 @@ import junit.framework.TestCase;
 
 public class SimpleRefTest extends TestCase {
 
-	public void testGet() throws Exception {
-		Supplier<String> lazyRef = new ImmutableRef<String>("foo");
+    public void testGet() throws Exception {
+        Supplier<String> lazyRef = new ImmutableRef<String>("foo");
 
-		assertEquals("foo", lazyRef.get());
+        assertEquals("foo", lazyRef.get());
 
-		lazyRef = ImmutableRef.of("foo");
+        lazyRef = ImmutableRef.of("foo");
 
-		assertEquals("foo", lazyRef.get());
-		assertEquals("foo", lazyRef.get());
-	}
+        assertEquals("foo", lazyRef.get());
+        assertEquals("foo", lazyRef.get());
+    }
 }

@@ -23,18 +23,18 @@ import org.apache.metamodel.schema.Table;
 
 final class CsvInsertBuilder extends AbstractRowInsertionBuilder<CsvUpdateCallback> {
 
-	public CsvInsertBuilder(CsvUpdateCallback updateCallback, Table table) {
-		super(updateCallback, table);
-	}
+    public CsvInsertBuilder(CsvUpdateCallback updateCallback, Table table) {
+        super(updateCallback, table);
+    }
 
-	@Override
-	public void execute() {
-		Object[] values = getValues();
-		String[] stringValues = new String[values.length];
-		for (int i = 0; i < stringValues.length; i++) {
-			stringValues[i] = values[i] == null ? "" : values[i].toString();
-		}
-		getUpdateCallback().writeRow(stringValues, true);
-	}
+    @Override
+    public void execute() {
+        Object[] values = getValues();
+        String[] stringValues = new String[values.length];
+        for (int i = 0; i < stringValues.length; i++) {
+            stringValues[i] = values[i] == null ? "" : values[i].toString();
+        }
+        getUpdateCallback().writeRow(stringValues, true);
+    }
 
 }

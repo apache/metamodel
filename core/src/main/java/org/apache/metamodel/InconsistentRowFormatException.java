@@ -36,45 +36,45 @@ import org.apache.metamodel.data.Row;
  */
 public abstract class InconsistentRowFormatException extends MetaModelException {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private final Row _proposedRow;
-	private final int _rowNumber;
+    private final Row _proposedRow;
+    private final int _rowNumber;
 
-	public InconsistentRowFormatException(Row proposedRow, int rowNumber) {
-		super();
-		_proposedRow = proposedRow;
-		_rowNumber = rowNumber;
-	}
+    public InconsistentRowFormatException(Row proposedRow, int rowNumber) {
+        super();
+        _proposedRow = proposedRow;
+        _rowNumber = rowNumber;
+    }
 
-	public InconsistentRowFormatException(Row proposedRow, int rowNumber,
-			Exception cause) {
-		super(cause);
-		_proposedRow = proposedRow;
-		_rowNumber = rowNumber;
-	}
+    public InconsistentRowFormatException(Row proposedRow, int rowNumber,
+            Exception cause) {
+        super(cause);
+        _proposedRow = proposedRow;
+        _rowNumber = rowNumber;
+    }
 
-	/**
-	 * Gets the row as MetaModel would gracefully interpret it.
-	 * 
-	 * @return a row object which represents the {@link Row} as MetaModel would
-	 *         gracefully interpret it.
-	 */
-	public Row getProposedRow() {
-		return _proposedRow;
-	}
+    /**
+     * Gets the row as MetaModel would gracefully interpret it.
+     * 
+     * @return a row object which represents the {@link Row} as MetaModel would
+     *         gracefully interpret it.
+     */
+    public Row getProposedRow() {
+        return _proposedRow;
+    }
 
-	/**
-	 * Gets the row number (1-based).
-	 * 
-	 * @return the index of the row.
-	 */
-	public int getRowNumber() {
-		return _rowNumber;
-	}
+    /**
+     * Gets the row number (1-based).
+     * 
+     * @return the index of the row.
+     */
+    public int getRowNumber() {
+        return _rowNumber;
+    }
 
-	@Override
-	public String getMessage() {
-		return "Inconsistent row format of row no. " + getRowNumber() + ".";
-	}
+    @Override
+    public String getMessage() {
+        return "Inconsistent row format of row no. " + getRowNumber() + ".";
+    }
 }

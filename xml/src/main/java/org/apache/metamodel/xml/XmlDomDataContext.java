@@ -154,8 +154,8 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
 
     private static Supplier<InputSource> createInputSourceRef(final Resource resource) {
         return () -> {
-                final InputStream in = resource.read();
-                return new InputSource(in);
+            final InputStream in = resource.read();
+            return new InputSource(in);
         };
     }
 
@@ -507,7 +507,8 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
         // (if so we can't flatten as that would require id-rewriting of those
         // foreign tables as well)
         if (foreignTable.getPrimaryKeyRelationships().size() != 0) {
-            Relationship[] foreignPrimaryRelationships = foreignTable.getPrimaryKeyRelationships().toArray(new Relationship[0]);
+            Relationship[] foreignPrimaryRelationships = foreignTable.getPrimaryKeyRelationships()
+                    .toArray(new Relationship[0]);
             String[] foreignPrimaryNames = new String[foreignPrimaryRelationships.length];
             for (int i = 0; i < foreignPrimaryRelationships.length; i++) {
                 foreignPrimaryNames[i] = foreignPrimaryRelationships[i].getForeignTable().getName();
@@ -579,7 +580,8 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
             // flattened in a previous loop)
             if (_tableData.containsKey(table.getName())) {
                 // Find all tables that represent inner tags
-                Relationship[] foreignKeyRelationships = table.getForeignKeyRelationships().toArray(new Relationship[0]);
+                Relationship[] foreignKeyRelationships = table.getForeignKeyRelationships()
+                        .toArray(new Relationship[0]);
                 if (foreignKeyRelationships.length == 1 && table.getPrimaryKeyRelationships().size() == 0) {
                     Relationship foreignKeyRelationship = foreignKeyRelationships[0];
 

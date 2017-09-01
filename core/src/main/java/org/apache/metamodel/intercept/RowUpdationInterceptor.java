@@ -25,6 +25,6 @@ import org.apache.metamodel.update.RowUpdationBuilder;
  * interception of "update table" operations before they are executed.
  */
 public interface RowUpdationInterceptor extends
-		Interceptor<RowUpdationBuilder> {
+        Interceptor<RowUpdationBuilder> {
 
 }

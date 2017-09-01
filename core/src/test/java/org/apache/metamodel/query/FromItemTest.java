@@ -32,79 +32,79 @@ import java.util.List;
 
 public class FromItemTest extends MetaModelTestCase {
 
-	private Schema _schema = getExampleSchema();
+    private Schema _schema = getExampleSchema();
 
-	public void testExpressionBased() throws Exception {
-		FromItem fromItem = new FromItem("foobar");
-		assertEquals("foobar", fromItem.toString());
-		fromItem.setAlias("f");
-		assertEquals("foobar f", fromItem.toString());
+    public void testExpressionBased() throws Exception {
+        FromItem fromItem = new FromItem("foobar");
+        assertEquals("foobar", fromItem.toString());
+        fromItem.setAlias("f");
+        assertEquals("foobar f", fromItem.toString());
 
-		assertEquals("SELECT COUNT(*) FROM foobar", new Query().selectCount().from(
-				"foobar").toString());
-	}
+        assertEquals("SELECT COUNT(*) FROM foobar", new Query().selectCount().from(
+                "foobar").toString());
+    }
 
-	public void testRelationJoinToString() throws Exception {
-		Table contributorTable = _schema.getTableByName(TABLE_CONTRIBUTOR);
-		Table roleTable = _schema.getTableByName(TABLE_ROLE);
-		Collection<Relationship> relationships = roleTable
-				.getRelationships(contributorTable);
-		FromItem from = new FromItem(JoinType.INNER, relationships.iterator().next());
-		assertEquals(
-				"MetaModelSchema.contributor INNER JOIN MetaModelSchema.role ON contributor.contributor_id = role.contributor_id",
-				from.toString());
+    public void testRelationJoinToString() throws Exception {
+        Table contributorTable = _schema.getTableByName(TABLE_CONTRIBUTOR);
+        Table roleTable = _schema.getTableByName(TABLE_ROLE);
+        Collection<Relationship> relationships = roleTable
+                .getRelationships(contributorTable);
+        FromItem from = new FromItem(JoinType.INNER, relationships.iterator().next());
+        assertEquals(
+                "MetaModelSchema.contributor INNER JOIN MetaModelSchema.role ON contributor.contributor_id = role.contributor_id",
+                from.toString());
 
-		from.setAlias("myJoin");
-		assertEquals(
-				"(MetaModelSchema.contributor INNER JOIN MetaModelSchema.role ON contributor.contributor_id = role.contributor_id) myJoin",
-				from.toString());
+        from.setAlias("myJoin");
+        assertEquals(
+                "(MetaModelSchema.contributor INNER JOIN MetaModelSchema.role ON contributor.contributor_id = role.contributor_id) myJoin",
+                from.toString());
 
-		from.getLeftSide().setAlias("a");
-		assertEquals(
-				"(MetaModelSchema.contributor a INNER JOIN MetaModelSchema.role ON a.contributor_id = role.contributor_id) myJoin",
-				from.toString());
-	}
+        from.getLeftSide().setAlias("a");
+        assertEquals(
+                "(MetaModelSchema.contributor a INNER JOIN MetaModelSchema.role ON a.contributor_id = role.contributor_id) myJoin",
+                from.toString());
+    }
 
-	public void testSubQueryJoinToString() throws Exception {
-		Table projectTable = _schema.getTableByName(TABLE_PROJECT);
-		Table roleTable = _schema.getTableByName(TABLE_ROLE);
+    public void testSubQueryJoinToString() throws Exception {
+        Table projectTable = _schema.getTableByName(TABLE_PROJECT);
+        Table roleTable = _schema.getTableByName(TABLE_ROLE);
 
-		Column projectIdColumn = projectTable
-				.getColumnByName(COLUMN_PROJECT_PROJECT_ID);
+        Column projectIdColumn = projectTable
+                .getColumnByName(COLUMN_PROJECT_PROJECT_ID);
 
-		FromItem leftSide = new FromItem(projectTable);
-		leftSide.setAlias("a");
-		SelectItem[] leftOn = new SelectItem[] { new SelectItem(projectIdColumn) };
+        FromItem leftSide = new FromItem(projectTable);
+        leftSide.setAlias("a");
+        SelectItem[] leftOn = new SelectItem[] { new SelectItem(projectIdColumn) };
 
-		List<Column> columns = roleTable.getColumns();
+        List<Column> columns = roleTable.getColumns();
 
-		Query subQuery = new Query();
-		FromItem subQueryFrom = new FromItem(roleTable);
-		subQuery.from(subQueryFrom);
-		subQuery.select(columns);
-		SelectItem subQuerySelectItem = subQuery.getSelectClause().getItems()
-				.get(1);
-		FromItem rightSide = new FromItem(subQuery);
-		rightSide.setAlias("b");
-		SelectItem[] rightOn = new SelectItem[] { subQuerySelectItem };
-		FromItem from = new FromItem(JoinType.LEFT, leftSide, rightSide,
-				leftOn, rightOn);
+        Query subQuery = new Query();
+        FromItem subQueryFrom = new FromItem(roleTable);
+        subQuery.from(subQueryFrom);
+        subQuery.select(columns);
+        SelectItem subQuerySelectItem = subQuery.getSelectClause().getItems()
+                .get(1);
+        FromItem rightSide = new FromItem(subQuery);
+        rightSide.setAlias("b");
+        SelectItem[] rightOn = new SelectItem[] { subQuerySelectItem };
+        FromItem from = new FromItem(JoinType.LEFT, leftSide, rightSide,
+                leftOn, rightOn);
 
-		assertEquals(
-				"MetaModelSchema.project a LEFT JOIN (SELECT role.contributor_id, role.project_id, role.name FROM MetaModelSchema.role) b ON a.project_id = b.project_id",
-				from.toString());
+        assertEquals(
+                "MetaModelSchema.project a LEFT JOIN (SELECT role.contributor_id, role.project_id, role.name FROM MetaModelSchema.role) b ON a.project_id = b.project_id",
+                from.toString());
 
-		subQueryFrom.setAlias("c");
-		assertEquals(
-				"MetaModelSchema.project a LEFT JOIN (SELECT c.contributor_id, c.project_id, c.name FROM MetaModelSchema.role c) b ON a.project_id = b.project_id",
-				from.toString());
+        subQueryFrom.setAlias("c");
+        assertEquals(
+                "MetaModelSchema.project a LEFT JOIN (SELECT c.contributor_id, c.project_id, c.name FROM MetaModelSchema.role c) b ON a.project_id = b.project_id",
+                from.toString());
 
-		subQuerySelectItem.setAlias("foobar");
-		assertEquals(
-				"MetaModelSchema.project a LEFT JOIN (SELECT c.contributor_id, c.project_id AS foobar, c.name FROM MetaModelSchema.role c) b ON a.project_id = b.foobar",
-				from.toString());
-	}
-	
+        subQuerySelectItem.setAlias("foobar");
+        assertEquals(
+                "MetaModelSchema.project a LEFT JOIN (SELECT c.contributor_id, c.project_id AS foobar, c.name FROM MetaModelSchema.role c) b ON a.project_id = b.foobar",
+                from.toString());
+    }
+    
     public void testCompoundJoin() {
         final Schema schema = getExampleSchema();
    

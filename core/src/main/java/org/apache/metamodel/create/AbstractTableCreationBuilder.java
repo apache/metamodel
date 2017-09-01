@@ -140,7 +140,7 @@ public abstract class AbstractTableCreationBuilder<U extends UpdateCallback> imp
             }    
         }
         if(primaryKeyExists) {
-	        sb.append(")");
+            sb.append(")");
         }
         sb.append(")");
         return sb.toString();

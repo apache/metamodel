@@ -25,19 +25,19 @@ import org.apache.metamodel.util.AbstractNumberAggregateBuilder;
  */
 final class AverageAggregateBuilder extends AbstractNumberAggregateBuilder<Double> {
 
-	public double _average;
-	public int _numValues;
-	
-	@Override
-	protected void add(Number number) {
-		double total = _average * _numValues + number.doubleValue();
-		_numValues++;
-		_average = total / _numValues;
-	}
+    public double _average;
+    public int _numValues;
+    
+    @Override
+    protected void add(Number number) {
+        double total = _average * _numValues + number.doubleValue();
+        _numValues++;
+        _average = total / _numValues;
+    }
 
-	@Override
-	public Double getAggregate() {
-		return _average;
-	}
+    @Override
+    public Double getAggregate() {
+        return _average;
+    }
 
 }

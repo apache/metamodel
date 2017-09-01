@@ -25,41 +25,41 @@ import org.apache.metamodel.data.Row;
  * Exception thrown when inconsistent widths of a Fixed Width Value file
  */
 public final class InconsistentValueWidthException extends
-		InconsistentRowFormatException {
+        InconsistentRowFormatException {
 
-	private static final long serialVersionUID = 1L;
-	private final String[] _sourceResult;
-	private final String _sourceLine;
+    private static final long serialVersionUID = 1L;
+    private final String[] _sourceResult;
+    private final String _sourceLine;
 
-	public InconsistentValueWidthException(String[] result, String line,
-			int rowNumber) {
-		super(null, rowNumber);
-		_sourceResult = result;
-		_sourceLine = line;
-	}
+    public InconsistentValueWidthException(String[] result, String line,
+            int rowNumber) {
+        super(null, rowNumber);
+        _sourceResult = result;
+        _sourceLine = line;
+    }
 
-	public InconsistentValueWidthException(Row proposedRow,
-			InconsistentValueWidthException cause) {
-		super(proposedRow, cause.getRowNumber(), cause);
-		_sourceResult = cause.getSourceResult();
-		_sourceLine = cause.getSourceLine();
-	}
+    public InconsistentValueWidthException(Row proposedRow,
+            InconsistentValueWidthException cause) {
+        super(proposedRow, cause.getRowNumber(), cause);
+        _sourceResult = cause.getSourceResult();
+        _sourceLine = cause.getSourceLine();
+    }
 
-	/**
-	 * Gets the source line as represented in the Fixed Width file
-	 * 
-	 * @return the source line as a string
-	 */
-	public String getSourceLine() {
-		return _sourceLine;
-	}
+    /**
+     * Gets the source line as represented in the Fixed Width file
+     * 
+     * @return the source line as a string
+     */
+    public String getSourceLine() {
+        return _sourceLine;
+    }
 
-	/**
-	 * Gets the parsed result as read by the Fixed Width reader.
-	 * 
-	 * @return the gracefully parsed line
-	 */
-	public String[] getSourceResult() {
-		return _sourceResult;
-	}
+    /**
+     * Gets the parsed result as read by the Fixed Width reader.
+     * 
+     * @return the gracefully parsed line
+     */
+    public String[] getSourceResult() {
+        return _sourceResult;
+    }
 }

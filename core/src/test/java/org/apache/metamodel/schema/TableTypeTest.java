@@ -22,17 +22,17 @@ import junit.framework.TestCase;
 
 public class TableTypeTest extends TestCase {
 
-	public void testGetTableType() throws Exception {
-		assertSame(TableType.TABLE, TableType.getTableType("table"));
-		assertSame(TableType.VIEW, TableType.getTableType("view"));
-		assertSame(TableType.GLOBAL_TEMPORARY, TableType
-				.getTableType("GLOBAL_TEMPORARY"));
-		assertSame(TableType.SYSTEM_TABLE, TableType
-				.getTableType("system_table"));
-		assertSame(TableType.LOCAL_TEMPORARY, TableType
-				.getTableType("LOCAL_TEMPORARY"));
-		assertSame(TableType.ALIAS, TableType.getTableType("alIAs"));
-		assertSame(TableType.SYNONYM, TableType.getTableType("synonym"));
-		assertSame(TableType.OTHER, TableType.getTableType("foobar"));
-	}
+    public void testGetTableType() throws Exception {
+        assertSame(TableType.TABLE, TableType.getTableType("table"));
+        assertSame(TableType.VIEW, TableType.getTableType("view"));
+        assertSame(TableType.GLOBAL_TEMPORARY, TableType
+                .getTableType("GLOBAL_TEMPORARY"));
+        assertSame(TableType.SYSTEM_TABLE, TableType
+                .getTableType("system_table"));
+        assertSame(TableType.LOCAL_TEMPORARY, TableType
+                .getTableType("LOCAL_TEMPORARY"));
+        assertSame(TableType.ALIAS, TableType.getTableType("alIAs"));
+        assertSame(TableType.SYNONYM, TableType.getTableType("synonym"));
+        assertSame(TableType.OTHER, TableType.getTableType("foobar"));
+    }
 }

@@ -32,51 +32,51 @@ import org.apache.metamodel.schema.TableType;
  */
 final class JdbcTable extends MutableTable {
 
-	private static final long serialVersionUID = 5952310469458880330L;
+    private static final long serialVersionUID = 5952310469458880330L;
 
-	private final transient MetadataLoader _metadataLoader;
+    private final transient MetadataLoader _metadataLoader;
 
-	public JdbcTable(String name, TableType type, JdbcSchema schema, MetadataLoader metadataLoader) {
-		super(name, type, schema);
-		_metadataLoader = metadataLoader;
-	}
+    public JdbcTable(String name, TableType type, JdbcSchema schema, MetadataLoader metadataLoader) {
+        super(name, type, schema);
+        _metadataLoader = metadataLoader;
+    }
 
-	@Override
-	protected List<Column> getColumnsInternal() {
-		if (_metadataLoader != null) {
-			_metadataLoader.loadColumns(this);
-		}
-		return super.getColumnsInternal();
-	}
+    @Override
+    protected List<Column> getColumnsInternal() {
+        if (_metadataLoader != null) {
+            _metadataLoader.loadColumns(this);
+        }
+        return super.getColumnsInternal();
+    }
 
-	@Override
-	protected List<Relationship> getRelationshipsInternal() {
-		Schema schema = getSchema();
-		if (schema instanceof JdbcSchema) {
-			((JdbcSchema) schema).loadRelations();
-		}
-		return super.getRelationshipsInternal();
-	}
-	
-	protected void loadIndexes() {
-		if (_metadataLoader != null) {
-			_metadataLoader.loadIndexes(this);
-		}
-	}
+    @Override
+    protected List<Relationship> getRelationshipsInternal() {
+        Schema schema = getSchema();
+        if (schema instanceof JdbcSchema) {
+            ((JdbcSchema) schema).loadRelations();
+        }
+        return super.getRelationshipsInternal();
+    }
+    
+    protected void loadIndexes() {
+        if (_metadataLoader != null) {
+            _metadataLoader.loadIndexes(this);
+        }
+    }
 
-	/**
-	 * Called by the Java Serialization API to serialize the object.
-	 */
-	private Object writeReplace() throws ObjectStreamException {
-		getColumns();
-		loadIndexes();
-		loadPrimaryKeys();
-		return this;
-	}
+    /**
+     * Called by the Java Serialization API to serialize the object.
+     */
+    private Object writeReplace() throws ObjectStreamException {
+        getColumns();
+        loadIndexes();
+        loadPrimaryKeys();
+        return this;
+    }
 
-	public void loadPrimaryKeys() {
-		if (_metadataLoader != null) {
-			_metadataLoader.loadPrimaryKeys(this);
-		}
-	}
+    public void loadPrimaryKeys() {
+        if (_metadataLoader != null) {
+            _metadataLoader.loadPrimaryKeys(this);
+        }
+    }
 }

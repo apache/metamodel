@@ -23,26 +23,26 @@ import org.apache.metamodel.util.ObjectComparator;
 
 final class MaxAggregateBuilder implements AggregateBuilder<Object> {
 
-	private Object max;
+    private Object max;
 
-	@Override
-	public void add(Object o) {
-		if (o == null) {
-			return;
-		}
-		if (max == null) {
-			max = o;
-		} else {
-			Comparable<Object> comparable = ObjectComparator.getComparable(max);
-			if (comparable.compareTo(o) < 0) {
-				max = o;
-			}
-		}
-	}
+    @Override
+    public void add(Object o) {
+        if (o == null) {
+            return;
+        }
+        if (max == null) {
+            max = o;
+        } else {
+            Comparable<Object> comparable = ObjectComparator.getComparable(max);
+            if (comparable.compareTo(o) < 0) {
+                max = o;
+            }
+        }
+    }
 
-	@Override
-	public Object getAggregate() {
+    @Override
+    public Object getAggregate() {
         return max;
-	}
+    }
 
 }

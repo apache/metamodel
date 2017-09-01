@@ -27,11 +27,11 @@ package org.apache.metamodel.data;
  */
 public interface IRowFilter {
 
-	/**
-	 * Filters a row
-	 * 
-	 * @param row
-	 * @return true if the row is valid according to the filter
-	 */
-	public boolean accept(Row row);
+    /**
+     * Filters a row
+     * 
+     * @param row
+     * @return true if the row is valid according to the filter
+     */
+    public boolean accept(Row row);
 }

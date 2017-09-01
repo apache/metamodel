@@ -28,45 +28,45 @@ import java.util.List;
  * An immutable implementation of the {@link Schema} interface.
  */
 public final class ImmutableSchema extends AbstractSchema implements
-		Serializable {
+        Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private final List<ImmutableTable> tables = new ArrayList<ImmutableTable>();
-	private String name;
-	private String quote;
+    private final List<ImmutableTable> tables = new ArrayList<ImmutableTable>();
+    private String name;
+    private String quote;
 
-	private ImmutableSchema(String name, String quote) {
-		super();
-		this.name = name;
-		this.quote = quote;
-	}
+    private ImmutableSchema(String name, String quote) {
+        super();
+        this.name = name;
+        this.quote = quote;
+    }
 
-	public ImmutableSchema(Schema schema) {
-		this(schema.getName(), schema.getQuote());
-		List<Table> origTables = schema.getTables();
-		for (Table table : origTables) {
-			tables.add(new ImmutableTable(table, this));
-		}
+    public ImmutableSchema(Schema schema) {
+        this(schema.getName(), schema.getQuote());
+        List<Table> origTables = schema.getTables();
+        for (Table table : origTables) {
+            tables.add(new ImmutableTable(table, this));
+        }
 
-		Collection<Relationship> origRelationships = schema.getRelationships();
-		for (Relationship relationship : origRelationships) {
-			ImmutableRelationship.create(relationship, this);
-		}
-	}
+        Collection<Relationship> origRelationships = schema.getRelationships();
+        for (Relationship relationship : origRelationships) {
+            ImmutableRelationship.create(relationship, this);
+        }
+    }
 
-	@Override
-	public List<Table> getTables() {
-		return Collections.unmodifiableList(tables);
-	}
+    @Override
+    public List<Table> getTables() {
+        return Collections.unmodifiableList(tables);
+    }
 
-	@Override
-	public String getName() {
-		return name;
-	}
+    @Override
+    public String getName() {
+        return name;
+    }
 
-	@Override
-	public String getQuote() {
-		return quote;
-	}
+    @Override
+    public String getQuote() {
+        return quote;
+    }
 }

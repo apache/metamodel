@@ -34,70 +34,70 @@ import org.apache.metamodel.schema.Table;
 
 public class ExcelUpdateCallbackTest extends TestCase {
 
-	public void testStreamingAPI() throws Exception {
-		File file = new File("target/streaming-api-test.xlsx");
-		if (file.exists()) {
-			file.delete();
-		}
+    public void testStreamingAPI() throws Exception {
+        File file = new File("target/streaming-api-test.xlsx");
+        if (file.exists()) {
+            file.delete();
+        }
 
-		assertFalse(file.exists());
+        assertFalse(file.exists());
 
-		// write using streaming writer
-		{
-			ExcelDataContext dc = new ExcelDataContext(file);
-			ExcelUpdateCallback callback = new ExcelUpdateCallback(dc);
+        // write using streaming writer
+        {
+            ExcelDataContext dc = new ExcelDataContext(file);
+            ExcelUpdateCallback callback = new ExcelUpdateCallback(dc);
 
-			SXSSFSheet sheet = (SXSSFSheet) callback.createSheet("foobar");
+            SXSSFSheet sheet = (SXSSFSheet) callback.createSheet("foobar");
 
-			Field windowSizeField = SXSSFSheet.class
-					.getDeclaredField("_randomAccessWindowSize");
-			windowSizeField.setAccessible(true);
-			int windowSize = windowSizeField.getInt(sheet);
-			assertEquals(1000, windowSize);
+            Field windowSizeField = SXSSFSheet.class
+                    .getDeclaredField("_randomAccessWindowSize");
+            windowSizeField.setAccessible(true);
+            int windowSize = windowSizeField.getInt(sheet);
+            assertEquals(1000, windowSize);
 
-			Field rowsField = SXSSFSheet.class.getDeclaredField("_rows");
-			rowsField.setAccessible(true);
-			@SuppressWarnings("unchecked")
-			Map<Integer, SXSSFRow> rows = (Map<Integer, SXSSFRow>) rowsField
-					.get(sheet);
-			assertEquals(0, rows.size());
+            Field rowsField = SXSSFSheet.class.getDeclaredField("_rows");
+            rowsField.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<Integer, SXSSFRow> rows = (Map<Integer, SXSSFRow>) rowsField
+                    .get(sheet);
+            assertEquals(0, rows.size());
 
-			// create 5x the amound of rows as the streaming sheet will hold in
-			// memory
-			for (int i = 0; i < windowSize * 5; i++) {
-				Row row = sheet.createRow(i);
-				Cell cell = row.createCell(0);
-				cell.setCellValue("value" + i);
+            // create 5x the amound of rows as the streaming sheet will hold in
+            // memory
+            for (int i = 0; i < windowSize * 5; i++) {
+                Row row = sheet.createRow(i);
+                Cell cell = row.createCell(0);
+                cell.setCellValue("value" + i);
 
-				assertTrue(rows.size() <= 1000);
-			}
+                assertTrue(rows.size() <= 1000);
+            }
 
-			assertEquals(1000, rows.size());
+            assertEquals(1000, rows.size());
 
-			ExcelUtils.writeAndCloseWorkbook(dc, sheet.getWorkbook());
-		}
+            ExcelUtils.writeAndCloseWorkbook(dc, sheet.getWorkbook());
+        }
 
-		assertTrue("Usually the file size will be circa 42000, but it was: "
-				+ file.length(), file.length() > 40000 && file.length() < 45000);
+        assertTrue("Usually the file size will be circa 42000, but it was: "
+                + file.length(), file.length() > 40000 && file.length() < 45000);
 
-		// read to check results
-		{
-			ExcelDataContext dc = new ExcelDataContext(file);
-			assertEquals("[foobar]",
-					Arrays.toString(dc.getDefaultSchema().getTableNames().toArray()));
+        // read to check results
+        {
+            ExcelDataContext dc = new ExcelDataContext(file);
+            assertEquals("[foobar]",
+                    Arrays.toString(dc.getDefaultSchema().getTableNames().toArray()));
 
-			Table table = dc.getDefaultSchema().getTableByName("foobar");
+            Table table = dc.getDefaultSchema().getTableByName("foobar");
 
-			assertEquals("[value0]", Arrays.toString(table.getColumnNames().toArray()));
+            assertEquals("[value0]", Arrays.toString(table.getColumnNames().toArray()));
 
-			DataSet ds = dc.query().from(table).select("value0").execute();
-			int recordNo = 1;
-			while (ds.next()) {
-				assertEquals("value" + recordNo, ds.getRow().getValue(0));
-				recordNo++;
-			}
+            DataSet ds = dc.query().from(table).select("value0").execute();
+            int recordNo = 1;
+            while (ds.next()) {
+                assertEquals("value" + recordNo, ds.getRow().getValue(0));
+                recordNo++;
+            }
 
-			assertEquals(5000, recordNo);
-		}
-	}
+            assertEquals(5000, recordNo);
+        }
+    }
 }

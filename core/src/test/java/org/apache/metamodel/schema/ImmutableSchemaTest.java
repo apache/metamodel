@@ -22,14 +22,14 @@ import org.apache.metamodel.MetaModelTestCase;
 
 public class ImmutableSchemaTest extends MetaModelTestCase {
 
-	public void testConstructor() throws Exception {
-		Schema mutableSchema = getExampleSchema();
-		assertTrue(mutableSchema instanceof MutableSchema);
+    public void testConstructor() throws Exception {
+        Schema mutableSchema = getExampleSchema();
+        assertTrue(mutableSchema instanceof MutableSchema);
 
-		ImmutableSchema immutableSchema = new ImmutableSchema(mutableSchema);
-		
-		assertEquals(mutableSchema.getRelationshipCount(), immutableSchema.getRelationshipCount());
-		
-		assertEquals(immutableSchema, mutableSchema);
-	}
+        ImmutableSchema immutableSchema = new ImmutableSchema(mutableSchema);
+        
+        assertEquals(mutableSchema.getRelationshipCount(), immutableSchema.getRelationshipCount());
+        
+        assertEquals(immutableSchema, mutableSchema);
+    }
 }

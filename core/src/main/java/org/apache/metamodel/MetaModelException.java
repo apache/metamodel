@@ -27,21 +27,21 @@ package org.apache.metamodel;
  */
 public class MetaModelException extends RuntimeException {
 
-	private static final long serialVersionUID = 5455738384633428319L;
+    private static final long serialVersionUID = 5455738384633428319L;
 
-	public MetaModelException(String message, Exception cause) {
-		super(message, cause);
-	}
+    public MetaModelException(String message, Exception cause) {
+        super(message, cause);
+    }
 
-	public MetaModelException(String message) {
-		super(message);
-	}
+    public MetaModelException(String message) {
+        super(message);
+    }
 
-	public MetaModelException(Exception cause) {
-		super(cause);
-	}
+    public MetaModelException(Exception cause) {
+        super(cause);
+    }
 
-	public MetaModelException() {
-		super();
-	}
+    public MetaModelException() {
+        super();
+    }
 }

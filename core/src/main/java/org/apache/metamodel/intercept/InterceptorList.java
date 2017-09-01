@@ -31,42 +31,42 @@ import java.util.List;
  */
 public final class InterceptorList<E> {
 
-	private final List<Interceptor<E>> _interceptors = new ArrayList<Interceptor<E>>();
+    private final List<Interceptor<E>> _interceptors = new ArrayList<Interceptor<E>>();
 
-	public void add(Interceptor<E> interceptor) {
-		_interceptors.add(interceptor);
-	}
+    public void add(Interceptor<E> interceptor) {
+        _interceptors.add(interceptor);
+    }
 
-	public void remove(Interceptor<E> interceptor) {
-		_interceptors.remove(interceptor);
-	}
+    public void remove(Interceptor<E> interceptor) {
+        _interceptors.remove(interceptor);
+    }
 
-	/**
-	 * Gets the first (if any) interceptor of a specific type.
-	 * 
-	 * @param interceptorClazz
-	 * @return
-	 */
-	public <I extends Interceptor<E>> I getInterceptorOfType(
-			Class<I> interceptorClazz) {
-		for (Interceptor<?> interceptor : _interceptors) {
-			if (interceptorClazz.isAssignableFrom(interceptor.getClass())) {
-				@SuppressWarnings("unchecked")
-				I result = (I) interceptor;
-				return result;
-			}
-		}
-		return null;
-	}
+    /**
+     * Gets the first (if any) interceptor of a specific type.
+     * 
+     * @param interceptorClazz
+     * @return
+     */
+    public <I extends Interceptor<E>> I getInterceptorOfType(
+            Class<I> interceptorClazz) {
+        for (Interceptor<?> interceptor : _interceptors) {
+            if (interceptorClazz.isAssignableFrom(interceptor.getClass())) {
+                @SuppressWarnings("unchecked")
+                I result = (I) interceptor;
+                return result;
+            }
+        }
+        return null;
+    }
 
-	public boolean isEmpty() {
-		return _interceptors.isEmpty();
-	}
+    public boolean isEmpty() {
+        return _interceptors.isEmpty();
+    }
 
-	protected E interceptAll(E input) {
-		for (Interceptor<E> interceptor : _interceptors) {
-			input = interceptor.intercept(input);
-		}
-		return input;
-	}
+    protected E interceptAll(E input) {
+        for (Interceptor<E> interceptor : _interceptors) {
+            input = interceptor.intercept(input);
+        }
+        return input;
+    }
 }

@@ -22,6 +22,10 @@ under the License.
         "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 
 <module name="Checker">
+
+    <property name='localeCountry' value='' />
+    <property name='localeLanguage' value='' />
+
     <module name="SuppressionFilter">
         <property name="file" value="style/checkstyle_suppressions.xml"/>
     </module>

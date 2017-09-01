@@ -27,7 +27,7 @@ package org.apache.metamodel.util;
  */
 public interface AggregateBuilder<E> {
 
-	public void add(Object o);
+    public void add(Object o);
 
-	public E getAggregate();
+    public E getAggregate();
 }

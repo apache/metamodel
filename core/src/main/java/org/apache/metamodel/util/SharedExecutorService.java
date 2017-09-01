@@ -32,45 +32,45 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class SharedExecutorService {
 
-	/**
-	 * A custom thread factory that creates daemon threads.
-	 */
-	private static final class ThreadFactoryImpl implements ThreadFactory {
+    /**
+     * A custom thread factory that creates daemon threads.
+     */
+    private static final class ThreadFactoryImpl implements ThreadFactory {
 
-		private static final AtomicInteger counter = new AtomicInteger(0);
+        private static final AtomicInteger counter = new AtomicInteger(0);
 
-		private final ThreadGroup _threadGroup;
+        private final ThreadGroup _threadGroup;
 
-		public ThreadFactoryImpl() {
-			SecurityManager s = System.getSecurityManager();
-			_threadGroup = (s != null) ? s.getThreadGroup() : Thread
-					.currentThread().getThreadGroup();
-		}
+        public ThreadFactoryImpl() {
+            SecurityManager s = System.getSecurityManager();
+            _threadGroup = (s != null) ? s.getThreadGroup() : Thread
+                    .currentThread().getThreadGroup();
+        }
 
-		@Override
-		public Thread newThread(Runnable r) {
-			Thread thread = new Thread(_threadGroup, r,
-					"MetaModel.SharedExecutorService.Thread."
-							+ counter.incrementAndGet());
-			thread.setDaemon(true);
-			thread.setPriority(Thread.NORM_PRIORITY);
-			return thread;
-		}
-	}
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread thread = new Thread(_threadGroup, r,
+                    "MetaModel.SharedExecutorService.Thread."
+                            + counter.incrementAndGet());
+            thread.setDaemon(true);
+            thread.setPriority(Thread.NORM_PRIORITY);
+            return thread;
+        }
+    }
 
-	private static final ExecutorService executor = Executors
-			.newCachedThreadPool(new ThreadFactoryImpl());
+    private static final ExecutorService executor = Executors
+            .newCachedThreadPool(new ThreadFactoryImpl());
 
-	private SharedExecutorService() {
-		// prevent instantiation
-	}
+    private SharedExecutorService() {
+        // prevent instantiation
+    }
 
-	/**
-	 * Gets the shared {@link ExecutorService}.
-	 * 
-	 * @return an {@link ExecutorService} for shared usage.
-	 */
-	public static final ExecutorService get() {
-		return executor;
-	}
+    /**
+     * Gets the shared {@link ExecutorService}.
+     * 
+     * @return an {@link ExecutorService} for shared usage.
+     */
+    public static final ExecutorService get() {
+        return executor;
+    }
 }

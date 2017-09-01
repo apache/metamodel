@@ -25,37 +25,37 @@ import org.apache.metamodel.util.HasName;
  */
 public interface NamedStructure extends HasName {
 
-	/**
-	 * Gets the name of this structure.
-	 * 
-	 * @return The name of the structure
-	 */
-	public String getName();
+    /**
+     * Gets the name of this structure.
+     * 
+     * @return The name of the structure
+     */
+    public String getName();
 
-	/**
-	 * Gets an optional quote string that is used to enclose the name of this
-	 * structure.
-	 * 
-	 * @return A quote string used to enclose the name or null if none exists.
-	 */
-	public String getQuote();
+    /**
+     * Gets an optional quote string that is used to enclose the name of this
+     * structure.
+     * 
+     * @return A quote string used to enclose the name or null if none exists.
+     */
+    public String getQuote();
 
-	/**
-	 * Gets the name, including optional quotes, of this structure.
-	 * 
-	 * @return The name of the structure with added quote strings.
-	 */
-	public String getQuotedName();
+    /**
+     * Gets the name, including optional quotes, of this structure.
+     * 
+     * @return The name of the structure with added quote strings.
+     */
+    public String getQuotedName();
 
-	/**
-	 * Gets a qualified label for later lookup. Typically this qualified label
-	 * is formatted with a simple dot separator. For example, for a column a
-	 * typical qualified label would be: "MY_SCHEMA.MY_TABLE.MY_COLUMN".
-	 * 
-	 * The qualified label can be used as a unique identifier for the structure
-	 * but is not necessarily directly transferable to SQL syntax.
-	 * 
-	 * @return a qualified label
-	 */
-	public String getQualifiedLabel();
+    /**
+     * Gets a qualified label for later lookup. Typically this qualified label
+     * is formatted with a simple dot separator. For example, for a column a
+     * typical qualified label would be: "MY_SCHEMA.MY_TABLE.MY_COLUMN".
+     * 
+     * The qualified label can be used as a unique identifier for the structure
+     * but is not necessarily directly transferable to SQL syntax.
+     * 
+     * @return a qualified label
+     */
+    public String getQualifiedLabel();
 }

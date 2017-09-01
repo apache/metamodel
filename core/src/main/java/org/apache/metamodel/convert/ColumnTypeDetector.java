@@ -27,56 +27,56 @@ import org.apache.metamodel.util.TimeComparator;
  */
 final class ColumnTypeDetector {
 
-	private boolean _booleanPossible = true;
-	private boolean _integerPossible = true;
-	private boolean _doublePossible = true;
-	private boolean _datePossible = true;
+    private boolean _booleanPossible = true;
+    private boolean _integerPossible = true;
+    private boolean _doublePossible = true;
+    private boolean _datePossible = true;
 
-	public void registerValue(String stringValue) {
-		if (stringValue == null || stringValue.length() == 0) {
-			return;
-		}
-		if (_booleanPossible) {
-			try {
-				BooleanComparator.parseBoolean(stringValue);
-			} catch (IllegalArgumentException e) {
-				_booleanPossible = false;
-			}
-		}
-		if (_doublePossible) {
-			try {
-				Double.parseDouble(stringValue);
-			} catch (NumberFormatException e) {
-				_doublePossible = false;
-				_integerPossible = false;
-			}
-			// If integer is possible, double will always also be possible,
-			// but not nescesarily the other way around
-			if (_integerPossible) {
-				try {
-					Integer.parseInt(stringValue);
-				} catch (NumberFormatException e) {
-					_integerPossible = false;
-				}
-			}
-		}
-		if (_datePossible) {
-			if (TimeComparator.toDate(stringValue) == null) {
-				_datePossible = false;
-			}
-		}
-	}
+    public void registerValue(String stringValue) {
+        if (stringValue == null || stringValue.length() == 0) {
+            return;
+        }
+        if (_booleanPossible) {
+            try {
+                BooleanComparator.parseBoolean(stringValue);
+            } catch (IllegalArgumentException e) {
+                _booleanPossible = false;
+            }
+        }
+        if (_doublePossible) {
+            try {
+                Double.parseDouble(stringValue);
+            } catch (NumberFormatException e) {
+                _doublePossible = false;
+                _integerPossible = false;
+            }
+            // If integer is possible, double will always also be possible,
+            // but not nescesarily the other way around
+            if (_integerPossible) {
+                try {
+                    Integer.parseInt(stringValue);
+                } catch (NumberFormatException e) {
+                    _integerPossible = false;
+                }
+            }
+        }
+        if (_datePossible) {
+            if (TimeComparator.toDate(stringValue) == null) {
+                _datePossible = false;
+            }
+        }
+    }
 
-	public TypeConverter<?, ?> createConverter() {
-		if (_booleanPossible) {
-			return new StringToBooleanConverter();
-		} else if (_integerPossible) {
-			return new StringToIntegerConverter();
-		} else if (_doublePossible) {
-			return new StringToDoubleConverter();
-		} else if (_datePossible) {
-			return new StringToDateConverter();
-		}
-		return null;
-	}
+    public TypeConverter<?, ?> createConverter() {
+        if (_booleanPossible) {
+            return new StringToBooleanConverter();
+        } else if (_integerPossible) {
+            return new StringToIntegerConverter();
+        } else if (_doublePossible) {
+            return new StringToDoubleConverter();
+        } else if (_datePossible) {
+            return new StringToDateConverter();
+        }
+        return null;
+    }
 }

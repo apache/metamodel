@@ -28,30 +28,30 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
 final class MongoDbTableCreationBuilder extends
-		AbstractTableCreationBuilder<MongoDbUpdateCallback> implements
-		TableCreationBuilder {
+        AbstractTableCreationBuilder<MongoDbUpdateCallback> implements
+        TableCreationBuilder {
 
-	public MongoDbTableCreationBuilder(MongoDbUpdateCallback updateCallback,
-			Schema schema, String name) {
-		super(updateCallback, schema, name);
-	}
+    public MongoDbTableCreationBuilder(MongoDbUpdateCallback updateCallback,
+            Schema schema, String name) {
+        super(updateCallback, schema, name);
+    }
 
-	@Override
-	public Table execute() throws MetaModelException {
-		final MongoDbDataContext dataContext = getUpdateCallback()
-				.getDataContext();
-		final Schema schema = dataContext.getDefaultSchema();
-		final MutableTable table = getTable();
-		if (table.getColumnByName("_id") == null) {
-			// all mongo db collections have an _id field as the first field.
-			ImmutableColumn idColumn = new ImmutableColumn("_id",
-					ColumnType.ROWID, table, table.getColumnCount(), null,
-					null, null, null, true, null, true);
-			table.addColumn(idColumn);
-		}
-		table.setSchema(schema);
-		getUpdateCallback().createCollection(table.getName());
-		dataContext.addTable(table);
-		return table;
-	}
+    @Override
+    public Table execute() throws MetaModelException {
+        final MongoDbDataContext dataContext = getUpdateCallback()
+                .getDataContext();
+        final Schema schema = dataContext.getDefaultSchema();
+        final MutableTable table = getTable();
+        if (table.getColumnByName("_id") == null) {
+            // all mongo db collections have an _id field as the first field.
+            ImmutableColumn idColumn = new ImmutableColumn("_id",
+                    ColumnType.ROWID, table, table.getColumnCount(), null,
+                    null, null, null, true, null, true);
+            table.addColumn(idColumn);
+        }
+        table.setSchema(schema);
+        getUpdateCallback().createCollection(table.getName());
+        dataContext.addTable(table);
+        return table;
+    }
 }

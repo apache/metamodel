@@ -27,5 +27,5 @@ import org.apache.metamodel.data.Style;
  */
 interface XlsxRowCallback {
 
-	public boolean row(int rowNumber, List<String> values, List<Style> styles);
+    public boolean row(int rowNumber, List<String> values, List<Style> styles);
 }

@@ -22,16 +22,16 @@ import junit.framework.TestCase;
 
 public class StringToIntegerConverterTest extends TestCase {
 
-	private StringToIntegerConverter conv = new StringToIntegerConverter();
+    private StringToIntegerConverter conv = new StringToIntegerConverter();
 
-	public void testToVirtual() throws Exception {
-		assertNull(conv.toVirtualValue(null));
-		assertNull(conv.toVirtualValue(""));
-		assertEquals(123, conv.toVirtualValue("123").intValue());
-	}
+    public void testToVirtual() throws Exception {
+        assertNull(conv.toVirtualValue(null));
+        assertNull(conv.toVirtualValue(""));
+        assertEquals(123, conv.toVirtualValue("123").intValue());
+    }
 
-	public void testToPhysical() throws Exception {
-		assertNull(conv.toPhysicalValue(null));
-		assertEquals("123", conv.toPhysicalValue(123));
-	}
+    public void testToPhysical() throws Exception {
+        assertNull(conv.toPhysicalValue(null));
+        assertEquals("123", conv.toPhysicalValue(123));
+    }
 }
