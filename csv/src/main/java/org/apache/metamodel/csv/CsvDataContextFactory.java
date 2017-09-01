@@ -19,19 +19,20 @@
 package org.apache.metamodel.csv;
 
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.factory.DataContextFactory;
+import org.apache.metamodel.factory.AbstractDataContextFactory;
 import org.apache.metamodel.factory.DataContextProperties;
 import org.apache.metamodel.factory.ResourceFactoryRegistry;
+import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
+import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.Resource;
+import org.apache.metamodel.util.SimpleTableDef;
 
-public class CsvDataContextFactory implements DataContextFactory {
-
-    public static final String PROPERTY_TYPE = "csv";
+public class CsvDataContextFactory extends AbstractDataContextFactory {
 
     @Override
-    public boolean accepts(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry) {
-        return PROPERTY_TYPE.equals(properties.getDataContextType());
+    protected String getType() {
+        return "csv";
     }
 
     @Override
@@ -40,8 +41,8 @@ public class CsvDataContextFactory implements DataContextFactory {
 
         final Resource resource = resourceFactoryRegistry.createResource(properties.getResourceProperties());
 
-        final int columnNameLineNumber = getInt(properties.getColumnNameLineNumber(),
-                CsvConfiguration.DEFAULT_COLUMN_NAME_LINE);
+        final int columnNameLineNumber =
+                getInt(properties.getColumnNameLineNumber(), CsvConfiguration.DEFAULT_COLUMN_NAME_LINE);
         final String encoding = getString(properties.getEncoding(), FileHelper.DEFAULT_ENCODING);
         final char separatorChar = getChar(properties.getSeparatorChar(), CsvConfiguration.DEFAULT_SEPARATOR_CHAR);
         final char quoteChar = getChar(properties.getQuoteChar(), CsvConfiguration.DEFAULT_QUOTE_CHAR);
@@ -49,25 +50,17 @@ public class CsvDataContextFactory implements DataContextFactory {
         final boolean failOnInconsistentRowLength = getBoolean(properties.isFailOnInconsistentRowLength(), false);
         final boolean multilineValuesEnabled = getBoolean(properties.isMultilineValuesEnabled(), true);
 
-        final CsvConfiguration configuration = new CsvConfiguration(columnNameLineNumber, encoding, separatorChar,
-                quoteChar, escapeChar, failOnInconsistentRowLength, multilineValuesEnabled);
+        final ColumnNamingStrategy columnNamingStrategy;
+        if (properties.getTableDefs() == null) {
+            columnNamingStrategy = null;
+        } else {
+            final SimpleTableDef firstTable = properties.getTableDefs()[0];
+            final String[] columnNames = firstTable.getColumnNames();
+            columnNamingStrategy = new CustomColumnNamingStrategy(columnNames);
+        }
+
+        final CsvConfiguration configuration = new CsvConfiguration(columnNameLineNumber, columnNamingStrategy,
+                encoding, separatorChar, quoteChar, escapeChar, failOnInconsistentRowLength, multilineValuesEnabled);
         return new CsvDataContext(resource, configuration);
     }
-
-    private String getString(String value, String ifNull) {
-        return value == null ? ifNull : value;
-    }
-
-    private int getInt(Integer value, int ifNull) {
-        return value == null ? ifNull : value;
-    }
-
-    private boolean getBoolean(Boolean value, boolean ifNull) {
-        return value == null ? ifNull : value;
-    }
-
-    private char getChar(Character value, char ifNull) {
-        return value == null ? ifNull : value;
-    }
-
 }

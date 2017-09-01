@@ -20,6 +20,8 @@ package org.apache.metamodel.xml;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,8 +73,8 @@ public class XmlSaxDataContext extends QueryPostprocessDataContext {
     private final Supplier<InputSource> _inputSourceRef;
     private final Map<XmlSaxTableDef, Map<String, String>> _valueXpaths;
     private String _schemaName;
-    private XmlSaxTableDef[] _tableDefs;
-
+    private Collection<XmlSaxTableDef> _tableDefs;
+    
     /**
      * Constructs an XML DataContext based on SAX parsing.
      * 
@@ -80,12 +82,12 @@ public class XmlSaxDataContext extends QueryPostprocessDataContext {
      *            a factory reference for the input source to read the XML from.
      *            The ref will be repeatedly called for each access to the file!
      * @param tableDefs
-     *            an array of table definitions, which provide instructions as
+     *            a collection of table definitions, which provide instructions as
      *            to the xpaths to apply to the document.
      * 
      * @see XmlSaxTableDef
      */
-    public XmlSaxDataContext(Supplier<InputSource> inputSourceRef, XmlSaxTableDef... tableDefs) {
+    public XmlSaxDataContext(Supplier<InputSource> inputSourceRef, Collection<XmlSaxTableDef> tableDefs) {
         _inputSourceRef = inputSourceRef;
         _tableDefs = tableDefs;
         _valueXpaths = new HashMap<XmlSaxTableDef, Map<String, String>>();
@@ -100,8 +102,16 @@ public class XmlSaxDataContext extends QueryPostprocessDataContext {
             }
         }
     }
+    
+    public XmlSaxDataContext(Supplier<InputSource> inputSourceRef, XmlSaxTableDef... tableDefs) {
+        this(inputSourceRef, Arrays.asList(tableDefs));
+    }
 
     public XmlSaxDataContext(final Resource resource, XmlSaxTableDef... tableDefs) {
+        this(resource, Arrays.asList(tableDefs));
+    }
+    
+    public XmlSaxDataContext(final Resource resource, Collection<XmlSaxTableDef> tableDefs) {
         this(createInputSourceRef(resource), tableDefs);
     }
 

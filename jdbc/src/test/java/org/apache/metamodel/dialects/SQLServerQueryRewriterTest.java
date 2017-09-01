@@ -33,6 +33,7 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.util.TimeComparator;
 import org.easymock.EasyMock;
+import org.junit.Assert;
 
 import junit.framework.TestCase;
 
@@ -84,6 +85,31 @@ public class SQLServerQueryRewriterTest extends TestCase {
         Query q = new Query().from(table).select(column).setMaxRows(20);
 
         assertEquals("SELECT TOP 20 MY_SCHEMA.\"foo\".\"bar\" FROM MY_SCHEMA.\"foo\"", qr.rewriteQuery(q));
+    }
+
+    public void testOffsetFetchConstruct() {
+        final int offset = 1000;
+        final int rows = 100;
+
+        final String baseQuery = "SELECT MY_SCHEMA.\"foo\".\"bar\" FROM MY_SCHEMA.\"foo\" ORDER BY id ASC";
+        final String baseQueryWithTop =
+                "SELECT TOP " + rows + " MY_SCHEMA.\"foo\".\"bar\" FROM MY_SCHEMA.\"foo\" ORDER BY id ASC";
+        final String offsetClause = " OFFSET " + (offset - 1) + " ROWS";
+        final String fetchClause = " FETCH NEXT " + rows + " ROWS ONLY";
+
+        Query query = new Query();
+        query.from(table).select(column).orderBy("id");
+        Assert.assertEquals("There shouldn't be OFFSET-FETCH clause.", baseQuery, qr.rewriteQuery(query));
+
+        query.setFirstRow(offset);
+        Assert.assertEquals("Wrong or missing OFFSET clause.", baseQuery + offsetClause, qr.rewriteQuery(query));
+
+        query.setMaxRows(rows);
+        Assert.assertEquals("Wrong or missing OFFSET and FETCH clauses.", baseQuery + offsetClause + fetchClause,
+                qr.rewriteQuery(query));
+
+        query.setFirstRow(null);
+        Assert.assertEquals("Using FETCH clause instead of TOP clause.", baseQueryWithTop, qr.rewriteQuery(query));
     }
 
     public void testRewriteFilterItem() {

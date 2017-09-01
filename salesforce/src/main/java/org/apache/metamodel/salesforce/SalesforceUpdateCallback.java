@@ -63,8 +63,8 @@ final class SalesforceUpdateCallback extends AbstractUpdateCallback implements C
     }
 
     @Override
-    public TableCreationBuilder createTable(Schema schema, String name) throws IllegalArgumentException,
-            IllegalStateException {
+    public TableCreationBuilder createTable(Schema schema, String name)
+            throws IllegalArgumentException, IllegalStateException {
         throw new UnsupportedOperationException("Table creation not supported for Salesforce.com.");
     }
 
@@ -79,14 +79,14 @@ final class SalesforceUpdateCallback extends AbstractUpdateCallback implements C
     }
 
     @Override
-    public TableDropBuilder dropTable(Table table) throws IllegalArgumentException, IllegalStateException,
-            UnsupportedOperationException {
+    public TableDropBuilder dropTable(Table table)
+            throws IllegalArgumentException, IllegalStateException, UnsupportedOperationException {
         throw new UnsupportedOperationException("Table dropping not supported for Salesforce.com.");
     }
 
     @Override
-    public RowInsertionBuilder insertInto(Table table) throws IllegalArgumentException, IllegalStateException,
-            UnsupportedOperationException {
+    public RowInsertionBuilder insertInto(Table table)
+            throws IllegalArgumentException, IllegalStateException, UnsupportedOperationException {
         return new SalesforceInsertBuilder(this, table);
     }
 
@@ -96,8 +96,8 @@ final class SalesforceUpdateCallback extends AbstractUpdateCallback implements C
     }
 
     @Override
-    public RowDeletionBuilder deleteFrom(Table table) throws IllegalArgumentException, IllegalStateException,
-            UnsupportedOperationException {
+    public RowDeletionBuilder deleteFrom(Table table)
+            throws IllegalArgumentException, IllegalStateException, UnsupportedOperationException {
         return new SalesforceDeleteBuilder(this, table);
     }
 
@@ -147,12 +147,12 @@ final class SalesforceUpdateCallback extends AbstractUpdateCallback implements C
                             break;
                         }
                     }
-                    
+
                     if (onlyMalformedId) {
                         return;
                     }
                 }
-                
+
                 errors++;
 
                 for (com.sforce.soap.partner.Error error : errorArray) {
@@ -180,8 +180,8 @@ final class SalesforceUpdateCallback extends AbstractUpdateCallback implements C
     }
 
     @Override
-    public RowUpdationBuilder update(Table table) throws IllegalArgumentException, IllegalStateException,
-            UnsupportedOperationException {
+    public RowUpdationBuilder update(Table table)
+            throws IllegalArgumentException, IllegalStateException, UnsupportedOperationException {
         return new SalesforceUpdateBuilder(this, table);
     }
 
@@ -208,9 +208,8 @@ final class SalesforceUpdateCallback extends AbstractUpdateCallback implements C
     }
 
     /**
-     * Validates and builds a list of ID's referenced in a (potentially
-     * composite) filter item. This is useful for both UPDATE and DELETE
-     * operations in Salesforce, which are only supported by-id.
+     * Validates and builds a list of ID's referenced in a (potentially composite) filter item. This is useful for both
+     * UPDATE and DELETE operations in Salesforce, which are only supported by-id.
      * 
      * @param idList
      * @param whereItem

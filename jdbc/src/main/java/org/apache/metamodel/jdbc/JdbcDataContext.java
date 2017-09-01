@@ -392,7 +392,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         final Integer firstRow = query.getFirstRow();
         boolean postProcessFirstRow = false;
         if (firstRow != null) {
-            if (_queryRewriter.isFirstRowSupported()) {
+            if (_queryRewriter.isFirstRowSupported(query)) {
                 logger.debug("First row property will be treated by query rewriter");
             } else {
                 postProcessFirstRow = true;
