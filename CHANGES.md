@@ -14,6 +14,7 @@
  * [METAMODEL-1151] - Added DataContextFactory classes for instantiating DataContexts of many types based on properties.
  * [METAMODEL-1160] - Fixed bug when deserializing v4.x CsvTable objects
  * [METAMODEL-1163] - Fixed bug when deserializing v4.x MutableRelationship and ImmutableRelationship objects
+ * [METAMODEL-1165] - Added support for querying by table index instead of name, ie. "FROM tables[0]".
 
 ### Apache MetaModel 4.6.0
 

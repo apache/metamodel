@@ -70,6 +70,19 @@ public class QueryParserTest extends TestCase {
                 q.toSql());
     }
 
+    public void testQueryTablesArray() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc, "select * from tables[0] t");
+        assertEquals("SELECT t.foo, t.bar, t.baz FROM sch.tbl t", q.toSql());
+    }
+    
+    public void testQuerySchemaQualifiedTablesArray() throws Exception {
+        Query q = MetaModelHelper.parseQuery(dc, "select name from information_schema.tables[0] t");
+        assertEquals("SELECT t.name FROM information_schema.tables t", q.toSql());
+        
+        q = MetaModelHelper.parseQuery(dc, "select name from information_schema.tables[1] t");
+        assertEquals("SELECT t.name FROM information_schema.columns t", q.toSql());
+    }
+    
     public void testParseScalarFunctions() throws Exception {
         Query q = MetaModelHelper.parseQuery(dc, "select TO_NUM(a.foo) from sch.tbl a WHERE BOOLEAN(a.bar) = false");
         assertEquals("SELECT TO_NUMBER(a.foo) FROM sch.tbl a WHERE TO_BOOLEAN(a.bar) = FALSE", q.toSql());

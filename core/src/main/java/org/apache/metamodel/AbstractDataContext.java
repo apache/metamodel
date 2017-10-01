@@ -387,7 +387,7 @@ public abstract class AbstractDataContext implements DataContext {
         if (tableName == null) {
             return null;
         }
-
+        
         final String[] tokens = tokenizePath(tableName, 2);
         if (tokens != null) {
             Schema schema = getSchemaByToken(tokens[0]);

@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.metamodel.util.EqualsBuilder;
@@ -37,6 +39,8 @@ public abstract class AbstractSchema implements Schema {
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractSchema.class);
+
+    private static final Pattern TABLE_ARRAY_TOKEN_PATTERN = Pattern.compile("^tables\\[(\\d+)\\]$");
 
     @Override
     public final String getQuotedName() {
@@ -90,6 +94,12 @@ public abstract class AbstractSchema implements Schema {
     public final Table getTableByName(String tableName) {
         if (tableName == null) {
             return null;
+        }
+        
+        final Matcher tableArrayTokenMatcher = TABLE_ARRAY_TOKEN_PATTERN.matcher(tableName);
+        if (tableArrayTokenMatcher.matches()) {
+            final String indexAsString = tableArrayTokenMatcher.group(1);
+            return getTable(Integer.parseInt(indexAsString));
         }
 
         final List<Table> foundTables = new ArrayList<Table>(1);
