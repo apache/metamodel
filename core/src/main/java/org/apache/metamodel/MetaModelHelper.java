@@ -46,6 +46,7 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.ScalarFunction;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.query.parser.QueryParser;
+import org.apache.metamodel.schema.AliasTable;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
@@ -887,5 +888,13 @@ public final class MetaModelHelper {
         }
 
         return false;
+    }
+
+    public static Table resolveTable(FromItem fromItem) {
+        Table table = fromItem.getTable();
+        while (table instanceof AliasTable) {
+            table = ((AliasTable) table).getAliasedTable();
+        }
+        return table;
     }
 }

@@ -18,7 +18,7 @@
  */
 package org.apache.metamodel;
 
-import org.apache.metamodel.schema.Schema;
+import org.apache.metamodel.schema.MutableSchema;
 
 /**
  * A simple subclass of {@link QueryPostprocessDataContext} which provides less
@@ -35,7 +35,7 @@ public abstract class QueryPostprocessDelegate extends
 	}
 
 	@Override
-	protected Schema getMainSchema() throws MetaModelException {
+	protected MutableSchema getMainSchema() throws MetaModelException {
 		throw new UnsupportedOperationException(
 				"QueryPostprocessDelegate cannot perform schema exploration");
 	}
