@@ -26,8 +26,6 @@ import java.util.Map;
 
 import javax.swing.table.TableModel;
 
-import junit.framework.TestCase;
-
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateCallback;
@@ -51,6 +49,8 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.MutableRef;
+
+import junit.framework.TestCase;
 
 public class CsvDataContextTest extends TestCase {
 
@@ -625,7 +625,6 @@ public class CsvDataContextTest extends TestCase {
             public void run(UpdateCallback cb) {
                 Table table = cb.createTable(schema, "foobar").withColumn("foo").withColumn("bar").execute();
                 tableRef.set(table);
-                assertEquals(schema, table.getSchema());
                 assertEquals(schema.getTables().get(0), table);
                 assertTrue(file.exists());
 

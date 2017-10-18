@@ -25,28 +25,14 @@ import java.util.List;
  * A special purpose {@link Schema} wrapper which exposes an {@link AliasTable} "default_table" for convenience when the
  * table count is 1.
  */
-public class DefaultTableAliasedSchema extends AbstractSchema {
+public class DefaultTableAliasedSchema extends AbstractSchema implements WrappingSchema {
 
     private static final long serialVersionUID = 1L;
 
     public static final String DEFAULT_TABLE_NAME = "default_table";
 
     public static Schema wrapIfAppropriate(Schema schema) {
-        List<Table> tables = schema.getTables();
-
-        // ensure table size is 1
-        if (tables.size() != 1) {
-            return schema;
-        }
-
-        // ensure no name clashes
-        if (DEFAULT_TABLE_NAME.equals(tables.get(0).getName())) {
-            return schema;
-        }
-
-        if (schema instanceof MutableSchema) {
-            final MutableSchema mutableSchema = (MutableSchema) schema;
-            mutableSchema.addTable(createTable(schema, schema.getTable(0)));
+        if (schema.getTableCount() > 1) {
             return schema;
         } else {
             return new DefaultTableAliasedSchema(schema);
@@ -57,24 +43,36 @@ public class DefaultTableAliasedSchema extends AbstractSchema {
         return new AliasTable(DEFAULT_TABLE_NAME, schema, delegateTable);
     }
 
-    private final Schema delegateSchema;
+    private final Schema wrappedSchema;
 
-    private DefaultTableAliasedSchema(Schema delegateSchema) {
-        this.delegateSchema = delegateSchema;
+    private DefaultTableAliasedSchema(Schema wrappedSchema) {
+        this.wrappedSchema = wrappedSchema;
     }
 
-    public Schema getDelegateSchema() {
-        return delegateSchema;
+    @Override
+    public Schema getWrappedSchema() {
+        return wrappedSchema;
     }
 
     @Override
     public String getName() {
-        return delegateSchema.getName();
+        return wrappedSchema.getName();
     }
 
     @Override
     public List<Table> getTables() {
-        List<Table> tables = delegateSchema.getTables();
+        List<Table> tables = wrappedSchema.getTables();
+
+        // ensure table size is 1
+        if (tables.size() != 1) {
+            return tables;
+        }
+
+        // ensure no name clashes
+        if (DEFAULT_TABLE_NAME.equals(tables.get(0).getName())) {
+            return tables;
+        }
+
         // ensure mutability
         if (!(tables instanceof ArrayList)) {
             tables = new ArrayList<>(tables);
@@ -86,6 +84,6 @@ public class DefaultTableAliasedSchema extends AbstractSchema {
 
     @Override
     public String getQuote() {
-        return delegateSchema.getQuote();
+        return wrappedSchema.getQuote();
     }
 }

@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Represents a virtual table that acts as an alias for another table.
  */
-public class AliasTable extends AbstractTable {
+public class AliasTable extends AbstractTable implements WrappingTable {
 
     private static final long serialVersionUID = 1L;
 
@@ -39,7 +39,8 @@ public class AliasTable extends AbstractTable {
         this.aliasedTable = aliasedTable;
     }
     
-    public Table getAliasedTable() {
+    @Override
+    public Table getWrappedTable() {
         return aliasedTable;
     }
 
