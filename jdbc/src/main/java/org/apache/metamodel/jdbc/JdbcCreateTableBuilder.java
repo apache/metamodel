@@ -75,7 +75,7 @@ final class JdbcCreateTableBuilder extends AbstractTableCreationBuilder<JdbcUpda
     }
 
     private String createSqlStatement(Table table) {
-        final IQueryRewriter queryRewriter = getUpdateCallback().getDataContext().getQueryRewriter();
+        final IQueryRewriter queryRewriter = getUpdateCallback().getJdbcDataContext().getQueryRewriter();
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE TABLE ");
         final Schema schema = getSchema();

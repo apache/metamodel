@@ -497,8 +497,11 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     }
 
     public DataSet executeQuery(Query query) throws MetaModelException {
-
         final Connection connection = getConnection();
+        return executeQuery(connection, query);
+    }
+
+    protected DataSet executeQuery(Connection connection, Query query) {
         final Statement statement;
         try {
             statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
