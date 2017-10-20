@@ -27,6 +27,10 @@ import org.apache.metamodel.schema.MutableSchema;
  */
 public abstract class QueryPostprocessDelegate extends
 		QueryPostprocessDataContext {
+    
+    public QueryPostprocessDelegate() {
+        super(false);
+    }
 
 	@Override
 	protected String getMainSchemaName() throws MetaModelException {

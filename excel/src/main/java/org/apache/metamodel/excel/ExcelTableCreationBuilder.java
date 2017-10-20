@@ -54,7 +54,7 @@ final class ExcelTableCreationBuilder extends AbstractTableCreationBuilder<Excel
             }
         }
 
-        final MutableSchema schema = (MutableSchema) table.getSchema();
+        final MutableSchema schema = (MutableSchema) getSchema();
         schema.addTable((MutableTable) table);
         return table;
     }

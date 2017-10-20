@@ -81,16 +81,19 @@ public class CouchDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     public CouchDbDataContext(CouchDbInstance couchDbInstance) {
+        super(false);
         _couchDbInstance = couchDbInstance;
         _schemaBuilder = new CouchDbInferentialSchemaBuilder();
     }
 
     public CouchDbDataContext(CouchDbInstance couchDbInstance, String... databaseNames) {
+        super(false);
         _couchDbInstance = couchDbInstance;
         _schemaBuilder = new CouchDbInferentialSchemaBuilder(databaseNames);
     }
 
     public CouchDbDataContext(CouchDbInstance couchDbInstance, SimpleTableDef... tableDefs) {
+        super(false);
         _couchDbInstance = couchDbInstance;
         _schemaBuilder = new CouchDbSimpleTableDefSchemaBuilder(tableDefs);
     }

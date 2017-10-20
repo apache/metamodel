@@ -35,7 +35,7 @@ public class FixedWidthDataContextTest extends TestCase {
     public void testEmptyFile() throws Exception {
         DataContext dc = new FixedWidthDataContext(new File("src/test/resources/empty_file.txt"),
                 new FixedWidthConfiguration(10));
-        assertEquals(1, dc.getDefaultSchema().getTableCount());
+        assertEquals(2, dc.getDefaultSchema().getTableCount());
 
         Table table = dc.getDefaultSchema().getTables().get(0);
         assertEquals("empty_file.txt", table.getName());
@@ -45,7 +45,7 @@ public class FixedWidthDataContextTest extends TestCase {
     public void testEmptyFileNoHeaderLine() throws Exception {
         DataContext dc = new FixedWidthDataContext(new File("src/test/resources/empty_file.txt"),
                 new FixedWidthConfiguration(FixedWidthConfiguration.NO_COLUMN_NAME_LINE, "UTF8", 10));
-        assertEquals(1, dc.getDefaultSchema().getTableCount());
+        assertEquals(2, dc.getDefaultSchema().getTableCount());
 
         Table table = dc.getDefaultSchema().getTables().get(0);
         assertEquals("empty_file.txt", table.getName());
@@ -55,7 +55,7 @@ public class FixedWidthDataContextTest extends TestCase {
     public void testUnexistingHeaderLine() throws Exception {
         DataContext dc = new FixedWidthDataContext(new File("src/test/resources/example_simple1.txt"),
                 new FixedWidthConfiguration(20, "UTF8", 10));
-        assertEquals(1, dc.getDefaultSchema().getTableCount());
+        assertEquals(2, dc.getDefaultSchema().getTableCount());
 
         Table table = dc.getDefaultSchema().getTables().get(0);
         assertEquals("example_simple1.txt", table.getName());
@@ -73,7 +73,7 @@ public class FixedWidthDataContextTest extends TestCase {
         Schema schema = dc.getDefaultSchema();
         assertEquals("Schema[name=resources]", schema.toString());
 
-        assertEquals(1, schema.getTableCount());
+        assertEquals(2, schema.getTableCount());
 
         Table table = schema.getTableByName("example_simple1.txt");
         assertEquals("Table[name=example_simple1.txt,type=TABLE,remarks=null]", table.toString());
@@ -106,7 +106,7 @@ public class FixedWidthDataContextTest extends TestCase {
         Schema schema = dc.getDefaultSchema();
         assertEquals("Schema[name=resources]", schema.toString());
 
-        assertEquals(1, schema.getTableCount());
+        assertEquals(2, schema.getTableCount());
 
         Table table = schema.getTableByName("example_simple1.txt");
         assertEquals("Table[name=example_simple1.txt,type=TABLE,remarks=null]", table.toString());

@@ -53,6 +53,7 @@ public class MockUpdateableDataContext extends QueryPostprocessDataContext imple
     private final MutableSchema _schema;
 
     public MockUpdateableDataContext() {
+        super(true);
         _values.add(new Object[] { "1", "hello" });
         _values.add(new Object[] { "2", "there" });
         _values.add(new Object[] { "3", "world" });

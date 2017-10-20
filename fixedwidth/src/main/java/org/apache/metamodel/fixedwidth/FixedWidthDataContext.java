@@ -51,11 +51,13 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
     private final FixedWidthConfiguration _configuration;
 
     public FixedWidthDataContext(File file, FixedWidthConfiguration configuration) {
+        super(true);
         _resource = new FileResource(file);
         _configuration = configuration;
     }
 
     public FixedWidthDataContext(Resource resource, FixedWidthConfiguration configuration) {
+        super(true);
         _resource = resource;
         _configuration = configuration;
     }

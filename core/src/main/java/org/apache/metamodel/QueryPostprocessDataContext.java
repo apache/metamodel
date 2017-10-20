@@ -76,11 +76,17 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
     public static final String SYSTEM_PROPERTY_CREATE_DEFAULT_TABLE_ALIAS = "metamodel.alias.default.table";
     public static final String INFORMATION_SCHEMA_NAME = "information_schema";
 
-    private final Map<Column, TypeConverter<?, ?>> _converters;
+    private final Map<Column, TypeConverter<?, ?>> converters;
+    private final boolean defaultTableEnabled;
 
     public QueryPostprocessDataContext() {
+        this(true);
+    }
+
+    public QueryPostprocessDataContext(boolean defaultTableEnabled) {
         super();
-        _converters = new HashMap<Column, TypeConverter<?, ?>>();
+        this.defaultTableEnabled = defaultTableEnabled;
+        this.converters = new HashMap<Column, TypeConverter<?, ?>>();
     }
 
     @Override
@@ -385,7 +391,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
 
             // conversion is done at materialization time, since it enables
             // the refined types to be used also in eg. where clauses.
-            dataSet = new ConvertedDataSetInterceptor(_converters).intercept(tableDataSet);
+            dataSet = new ConvertedDataSetInterceptor(converters).intercept(tableDataSet);
         }
 
         return dataSet;
@@ -451,8 +457,8 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
 
         if (name == null || name.equalsIgnoreCase(mainSchemaName)) {
             final Schema mainSchema = getMainSchema();
-            final boolean createAliasTable =
-                    Boolean.parseBoolean(System.getProperty(SYSTEM_PROPERTY_CREATE_DEFAULT_TABLE_ALIAS, "true"));
+            final boolean createAliasTable = defaultTableEnabled
+                    && Boolean.parseBoolean(System.getProperty(SYSTEM_PROPERTY_CREATE_DEFAULT_TABLE_ALIAS, "true"));
             if (createAliasTable) {
                 return DefaultTableAliasedSchema.wrapIfAppropriate(mainSchema);
             }
@@ -587,7 +593,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
      */
     @Override
     public void addConverter(Column column, TypeConverter<?, ?> converter) {
-        _converters.put(column, converter);
+        converters.put(column, converter);
     }
 
     /**
