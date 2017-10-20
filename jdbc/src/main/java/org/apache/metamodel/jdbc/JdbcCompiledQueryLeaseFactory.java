@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.apache.commons.pool.PoolableObjectFactory;
+import org.apache.metamodel.jdbc.JdbcUtils.JdbcActionType;
 import org.apache.metamodel.util.FileHelper;
 
 /**
@@ -47,7 +48,7 @@ final class JdbcCompiledQueryLeaseFactory implements PoolableObjectFactory<JdbcC
             final JdbcCompiledQueryLease lease = new JdbcCompiledQueryLease(connection, statement);
             return lease;
         } catch (SQLException e) {
-            throw JdbcUtils.wrapException(e, "preparing statement");
+            throw JdbcUtils.wrapException(e, "preparing statement", JdbcActionType.OTHER);
         }
     }
 

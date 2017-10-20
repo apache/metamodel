@@ -24,6 +24,7 @@ import java.sql.Statement;
 import java.util.List;
 
 import org.apache.metamodel.create.AbstractTableCreationBuilder;
+import org.apache.metamodel.jdbc.JdbcUtils.JdbcActionType;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
@@ -60,7 +61,7 @@ final class JdbcCreateTableBuilder extends AbstractTableCreationBuilder<JdbcUpda
             final int rowsAffected = st.executeUpdate(sql);
             logger.debug("Create table statement executed, {} rows affected", rowsAffected);
         } catch (SQLException e) {
-            throw JdbcUtils.wrapException(e, "execute create table statement: " + sql);
+            throw JdbcUtils.wrapException(e, "execute create table statement: " + sql, JdbcActionType.UPDATE);
         } finally {
             FileHelper.safeClose(st);
         }

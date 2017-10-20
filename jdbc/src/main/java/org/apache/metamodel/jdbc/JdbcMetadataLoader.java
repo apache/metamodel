@@ -33,6 +33,7 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.jdbc.JdbcUtils.JdbcActionType;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
@@ -93,7 +94,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
             final String[] types = JdbcUtils.getTableTypesAsStrings(_dataContext.getTableTypes());
             loadTables(schema, metaData, types);
         } catch (SQLException e) {
-            throw JdbcUtils.wrapException(e, "retrieve table metadata for " + schema.getName());
+            throw JdbcUtils.wrapException(e, "retrieve table metadata for " + schema.getName(), JdbcActionType.METADATA);
         }
     }
 
@@ -149,7 +150,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
             }
 
         } catch (SQLException e) {
-            throw JdbcUtils.wrapException(e, "retrieve table metadata for " + schema.getName());
+            throw JdbcUtils.wrapException(e, "retrieve table metadata for " + schema.getName(), JdbcActionType.METADATA);
         }
     }
 
@@ -184,7 +185,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 loadIndexes(table, metaData);
                 _loadedIndexes.add(identity);
             } catch (SQLException e) {
-                throw JdbcUtils.wrapException(e, "load indexes");
+                throw JdbcUtils.wrapException(e, "load indexes", JdbcActionType.METADATA);
             }
         }
     }
@@ -219,7 +220,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 loadPrimaryKeys(table, metaData);
                 _loadedPrimaryKeys.add(identity);
             } catch (SQLException e) {
-                throw JdbcUtils.wrapException(e, "load primary keys");
+                throw JdbcUtils.wrapException(e, "load primary keys", JdbcActionType.METADATA);
             }
         }
     }
@@ -240,7 +241,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 }
             }
         } catch (SQLException e) {
-            throw JdbcUtils.wrapException(e, "retrieve primary keys for " + table.getName());
+            throw JdbcUtils.wrapException(e, "retrieve primary keys for " + table.getName(), JdbcActionType.METADATA);
         }
     }
 
@@ -263,7 +264,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 }
             }
         } catch (SQLException e) {
-            throw JdbcUtils.wrapException(e, "retrieve index information for " + table.getName());
+            throw JdbcUtils.wrapException(e, "retrieve index information for " + table.getName(), JdbcActionType.METADATA);
         }
     }
 
@@ -378,7 +379,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
                         .getName(), schema.getName());
             }
         } catch (SQLException e) {
-            throw JdbcUtils.wrapException(e, "retrieve table metadata for " + table.getName());
+            throw JdbcUtils.wrapException(e, "retrieve table metadata for " + table.getName(), JdbcActionType.METADATA);
         }
     }
 
@@ -424,7 +425,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
                 .getName())) {
             loadRelations(rs, schema);
         } catch (SQLException e) {
-            throw JdbcUtils.wrapException(e, "retrieve imported keys for " + table.getName());
+            throw JdbcUtils.wrapException(e, "retrieve imported keys for " + table.getName(), JdbcActionType.METADATA);
         }
     }
 

@@ -34,6 +34,7 @@ import org.apache.metamodel.create.TableCreationBuilder;
 import org.apache.metamodel.delete.RowDeletionBuilder;
 import org.apache.metamodel.drop.TableDropBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.jdbc.JdbcUtils.JdbcActionType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.RowUpdationBuilder;
@@ -102,7 +103,7 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
                 try {
                     _connection.setAutoCommit(false);
                 } catch (SQLException e) {
-                    throw JdbcUtils.wrapException(e, "disable auto-commit");
+                    throw JdbcUtils.wrapException(e, "disable auto-commit", JdbcActionType.OTHER);
                 }
             }
         }
@@ -123,7 +124,7 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
                         try {
                             getConnection().setAutoCommit(true);
                         } catch (SQLException e) {
-                            throw JdbcUtils.wrapException(e, "enable auto-commit");
+                            throw JdbcUtils.wrapException(e, "enable auto-commit", JdbcActionType.OTHER);
                         }
                     }
                 } finally {
@@ -138,13 +139,13 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
             try {
                 getConnection().commit();
             } catch (SQLException e) {
-                throw JdbcUtils.wrapException(e, "commit transaction");
+                throw JdbcUtils.wrapException(e, "commit transaction", JdbcActionType.COMMIT_ROLLBACK);
             }
         } else {
             try {
                 getConnection().rollback();
             } catch (SQLException e) {
-                throw JdbcUtils.wrapException(e, "rollback transaction");
+                throw JdbcUtils.wrapException(e, "rollback transaction", JdbcActionType.COMMIT_ROLLBACK);
             }
         }
     }
@@ -230,7 +231,7 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
                 // not all databases support the RETURN_GENERATED_KEYS flag, so retry without
                 return createPreparedStatement(sql, false);
             }
-            throw JdbcUtils.wrapException(e, "create prepared statement for: " + sql);
+            throw JdbcUtils.wrapException(e, "create prepared statement for: " + sql, JdbcActionType.OTHER);
         }
     }
 

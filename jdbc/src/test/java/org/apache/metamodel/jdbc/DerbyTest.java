@@ -47,19 +47,21 @@ import org.apache.metamodel.util.MutableRef;
  * http://pentaho.sourceforge.net.
  */
 public class DerbyTest extends TestCase {
+    
+    public static void initDerbySettings() throws Exception {
+        System.setProperty("derby.storage.tempDirector", FileHelper.getTempDir().getAbsolutePath());
+        System.setProperty("derby.stream.error.file", File.createTempFile("metamodel-derby", ".log").getAbsolutePath());
+        Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+    }
 
     private Connection _connection;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
-        System.setProperty("derby.storage.tempDirector", FileHelper.getTempDir().getAbsolutePath());
-        System.setProperty("derby.stream.error.file", File.createTempFile("metamodel-derby", ".log").getAbsolutePath());
-
+        initDerbySettings();
         File dbFile = new File("src/test/resources/derby_testdb.jar");
         assertTrue(dbFile.exists());
-        Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
         _connection = DriverManager
                 .getConnection("jdbc:derby:jar:(" + dbFile.getAbsolutePath() + ")derby_testdb;territory=en");
     }

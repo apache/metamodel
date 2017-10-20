@@ -49,7 +49,7 @@ final class JdbcUpdateCallbackDataContext implements DataContext {
     @Override
     public DataSet executeQuery(Query query) throws MetaModelException {
         // use the overloaded method that defines the query connection
-        return delegate.executeQuery(connection, query);
+        return delegate.executeQuery(connection, query, false);
     }
 
     @Override
