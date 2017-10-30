@@ -313,12 +313,7 @@ public final class MetaModelHelper {
         return getSelection(Arrays.asList(selectItems), dataSet);
     }
 
-    public static DataSet getGrouped(List<SelectItem> selectItems, DataSet dataSet,
-            Collection<GroupByItem> groupByItems) {
-        return getGrouped(selectItems, dataSet, groupByItems);
-    }
-
-    public static DataSet getGrouped(List<SelectItem> selectItems, DataSet dataSet, List<GroupByItem> groupByItems) {
+    public static DataSet getGrouped(List<SelectItem> selectItems, DataSet dataSet, Collection<GroupByItem> groupByItems) {
         DataSet result = dataSet;
         if (groupByItems != null && groupByItems.size() > 0) {
             Map<Row, Map<SelectItem, List<Object>>> uniqueRows = new HashMap<Row, Map<SelectItem, List<Object>>>();
