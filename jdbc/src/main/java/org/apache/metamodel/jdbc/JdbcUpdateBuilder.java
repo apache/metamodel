@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.jdbc.JdbcUtils.JdbcActionType;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
@@ -92,7 +93,7 @@ final class JdbcUpdateBuilder extends AbstractRowUpdationBuilder {
             }
             _updateCallback.executeUpdate(st, reuseStatement);
         } catch (SQLException e) {
-            throw JdbcUtils.wrapException(e, "execute update statement: " + sql);
+            throw JdbcUtils.wrapException(e, "execute update statement: " + sql, JdbcActionType.UPDATE);
         } finally {
             if (_inlineValues) {
                 FileHelper.safeClose(st);

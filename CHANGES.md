@@ -14,6 +14,7 @@
  * [METAMODEL-1151] - Added DataContextFactory classes for instantiating DataContexts of many types based on properties.
  * [METAMODEL-1160] - Fixed bug when deserializing v4.x CsvTable objects
  * [METAMODEL-1163] - Fixed bug when deserializing v4.x MutableRelationship and ImmutableRelationship objects
+ * [METAMODEL-86] - Made queries inside of a JDBC UpdateCallback pertain to the running transaction.
 
 ### Apache MetaModel 4.6.0
 

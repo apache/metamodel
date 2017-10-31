@@ -61,7 +61,7 @@ final class JdbcBatchUpdateCallback extends JdbcUpdateCallback {
                 }
             }
         } catch (SQLException e) {
-            throw JdbcUtils.wrapException(e, "execute batch: " + preparedStatement);
+            throw JdbcUtils.wrapException(e, "execute batch: " + preparedStatement, JdbcUtils.JdbcActionType.UPDATE);
         } finally {
             FileHelper.safeClose(preparedStatement);
         }

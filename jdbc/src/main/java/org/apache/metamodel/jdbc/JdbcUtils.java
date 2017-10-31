@@ -42,7 +42,16 @@ public final class JdbcUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JdbcUtils.class);
 
-    public static MetaModelException wrapException(SQLException e, String actionDescription) throws MetaModelException {
+    public static enum JdbcActionType {
+        QUERY,
+        UPDATE,
+        METADATA,
+        COMMIT_ROLLBACK,
+        OTHER
+    }
+
+    public static MetaModelException wrapException(SQLException e, String actionDescription, JdbcActionType actionType)
+            throws MetaModelException {
         String message = e.getMessage();
         if (message == null || message.isEmpty()) {
             message = "Could not " + actionDescription;
@@ -50,15 +59,22 @@ public final class JdbcUtils {
             message = "Could not " + actionDescription + ": " + message;
         }
 
-        logger.error(message, e);
-        logger.error("Error code={}, SQL state={}", e.getErrorCode(), e.getSQLState());
+        logger.error(message + ", Error code={}, SQL state={}", e.getErrorCode(), e.getSQLState(), e);
 
         final SQLException nextException = e.getNextException();
         if (nextException != null) {
             logger.error("Next SQL exception: " + nextException.getMessage(), nextException);
         }
 
-        return new MetaModelException(message, e);
+        switch (actionType) {
+        case QUERY:
+        case UPDATE:
+            return new UncheckedSQLException(e);
+        case COMMIT_ROLLBACK:
+        case METADATA:
+        default:
+            return new MetaModelException(message, e);
+        }
     }
 
     /**
@@ -99,8 +115,8 @@ public final class JdbcUtils {
             if (!inlineValues) {
                 if (isPreparedParameterCandidate(whereItem)) {
                     // replace operator with parameter
-                    whereItem = new FilterItem(whereItem.getSelectItem(), whereItem.getOperator(),
-                            new QueryParameter());
+                    whereItem =
+                            new FilterItem(whereItem.getSelectItem(), whereItem.getOperator(), new QueryParameter());
                 }
             }
             final String whereItemLabel = queryRewriter.rewriteFilterItem(whereItem);
@@ -110,9 +126,8 @@ public final class JdbcUtils {
     }
 
     /**
-     * Determines if a particular {@link FilterItem} will have it's parameter
-     * (operand) replaced during SQL generation. Such filter items should
-     * succesively have their parameters set at execution time.
+     * Determines if a particular {@link FilterItem} will have it's parameter (operand) replaced during SQL generation.
+     * Such filter items should succesively have their parameters set at execution time.
      * 
      * @param whereItem
      * @return
