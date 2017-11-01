@@ -77,15 +77,23 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
     public static final String INFORMATION_SCHEMA_NAME = "information_schema";
 
     private final Map<Column, TypeConverter<?, ?>> converters;
-    private final boolean defaultTableEnabled;
+    private final boolean singleTableDatastore;
 
     public QueryPostprocessDataContext() {
         this(true);
     }
 
-    public QueryPostprocessDataContext(boolean defaultTableEnabled) {
+    /**
+     * 
+     * @param singleTableDatastore a flag that, if set to true, indicates that this DataContext contains just a single
+     *            table. This information will be used to optimize and provide convenience for the implementation. An
+     *            additional {@link Table} of type {@link TableType#ALIAS} with the name "default_table" will be
+     *            automatically added in addition to the single table. That again makes for convenient querying of the
+     *            single table using a predictable name/alias.
+     */
+    public QueryPostprocessDataContext(boolean singleTableDatastore) {
         super();
-        this.defaultTableEnabled = defaultTableEnabled;
+        this.singleTableDatastore = singleTableDatastore;
         this.converters = new HashMap<Column, TypeConverter<?, ?>>();
     }
 
@@ -457,7 +465,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
 
         if (name == null || name.equalsIgnoreCase(mainSchemaName)) {
             final Schema mainSchema = getMainSchema();
-            final boolean createAliasTable = defaultTableEnabled
+            final boolean createAliasTable = singleTableDatastore
                     && Boolean.parseBoolean(System.getProperty(SYSTEM_PROPERTY_CREATE_DEFAULT_TABLE_ALIAS, "true"));
             if (createAliasTable) {
                 return DefaultTableAliasedSchema.wrapIfAppropriate(mainSchema);
