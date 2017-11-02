@@ -112,6 +112,7 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
      * @param autoFlattenTables
      */
     public XmlDomDataContext(String schemaName, Document document, boolean autoFlattenTables) {
+        super(false);
         _autoFlattenTables = autoFlattenTables;
         _schemaName = schemaName;
         _schema = new MutableSchema(_schemaName);
@@ -133,6 +134,7 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
      *             if the file does not exist
      */
     public XmlDomDataContext(Resource resource, boolean autoFlattenTables) throws IllegalArgumentException {
+        super(false);
         _inputSourceRef = createInputSourceRef(resource);
         _schemaName = resource.getName();
         _autoFlattenTables = autoFlattenTables;
@@ -143,6 +145,7 @@ public class XmlDomDataContext extends QueryPostprocessDataContext {
     }
 
     public XmlDomDataContext(InputSource inputSource, String schemaName, boolean autoFlattenTables) {
+        super(false);
         _inputSourceRef = new ImmutableRef<InputSource>(inputSource);
         _schemaName = schemaName;
         _autoFlattenTables = autoFlattenTables;

@@ -70,6 +70,7 @@ public class JsonDataContext extends QueryPostprocessDataContext implements Docu
     }
 
     public JsonDataContext(Resource resource, SchemaBuilder schemaBuilder) {
+        super(false);
         _resource = resource;
         _schemaBuilder = schemaBuilder;
     }

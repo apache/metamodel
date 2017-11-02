@@ -88,6 +88,7 @@ public class XmlSaxDataContext extends QueryPostprocessDataContext {
      * @see XmlSaxTableDef
      */
     public XmlSaxDataContext(Supplier<InputSource> inputSourceRef, Collection<XmlSaxTableDef> tableDefs) {
+        super(false);
         _inputSourceRef = inputSourceRef;
         _tableDefs = tableDefs;
         _valueXpaths = new HashMap<XmlSaxTableDef, Map<String, String>>();

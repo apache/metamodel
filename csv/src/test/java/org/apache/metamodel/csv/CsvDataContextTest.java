@@ -26,8 +26,6 @@ import java.util.Map;
 
 import javax.swing.table.TableModel;
 
-import junit.framework.TestCase;
-
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateCallback;
@@ -52,6 +50,8 @@ import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.MutableRef;
 
+import junit.framework.TestCase;
+
 public class CsvDataContextTest extends TestCase {
 
     private final CsvConfiguration semicolonConfiguration = new CsvConfiguration(
@@ -65,7 +65,7 @@ public class CsvDataContextTest extends TestCase {
                 FileHelper.DEFAULT_ENCODING, CsvConfiguration.DEFAULT_SEPARATOR_CHAR, CsvConfiguration.NOT_A_CHAR,
                 CsvConfiguration.DEFAULT_ESCAPE_CHAR);
         final CsvDataContext dc = new CsvDataContext(file, csvConfiguration);
-        assertEquals(1, dc.getDefaultSchema().getTableCount());
+        assertEquals(2, dc.getDefaultSchema().getTableCount());
 
         dc.executeUpdate(new UpdateScript() {
 
@@ -80,7 +80,7 @@ public class CsvDataContextTest extends TestCase {
         CsvDataContext dc1 = new CsvDataContext(file, csvConfiguration);
 
         List<Table> tables = dc1.getDefaultSchema().getTables();
-        assertEquals(1, tables.size());
+        assertEquals(2, tables.size());
         
         Table table = tables.get(0);
         assertEquals("testEmptyFileNoColumnHeaderLine.csv", table.getName());
@@ -98,7 +98,7 @@ public class CsvDataContextTest extends TestCase {
         FileHelper.copy(new File("src/test/resources/empty_file.csv"), file);
 
         final CsvDataContext dc = new CsvDataContext(file);
-        assertEquals(1, dc.getDefaultSchema().getTableCount());
+        assertEquals(2, dc.getDefaultSchema().getTableCount());
 
         final Table table1 = dc.getDefaultSchema().getTables().get(0);
         assertEquals("testEmptyFileNoColumnHeaderLine.csv", table1.getName());
@@ -125,8 +125,8 @@ public class CsvDataContextTest extends TestCase {
 
         assertEquals("\"bar\",\"baz\"", FileHelper.readFileAsString(file));
 
-        // still the table count should only be 1
-        assertEquals(1, dc.getDefaultSchema().getTableCount());
+        // still the table count should only be 2
+        assertEquals(2, dc.getDefaultSchema().getTableCount());
     }
 
     public void testAppendToFileWithoutLineBreak() throws Exception {
@@ -179,7 +179,7 @@ public class CsvDataContextTest extends TestCase {
     public void testEmptyFileNoHeaderLine() throws Exception {
         DataContext dc = new CsvDataContext(new File("src/test/resources/empty_file.csv"), new CsvConfiguration(
                 CsvConfiguration.NO_COLUMN_NAME_LINE));
-        assertEquals(1, dc.getDefaultSchema().getTableCount());
+        assertEquals(2, dc.getDefaultSchema().getTableCount());
 
         Table table = dc.getDefaultSchema().getTables().get(0);
         assertEquals("empty_file.csv", table.getName());
@@ -188,7 +188,7 @@ public class CsvDataContextTest extends TestCase {
 
     public void testUnexistingHeaderLine() throws Exception {
         DataContext dc = new CsvDataContext(new File("src/test/resources/csv_people.csv"), new CsvConfiguration(20));
-        assertEquals(1, dc.getDefaultSchema().getTableCount());
+        assertEquals(2, dc.getDefaultSchema().getTableCount());
 
         Table table = dc.getDefaultSchema().getTables().get(0);
         assertEquals("csv_people.csv", table.getName());
@@ -322,7 +322,7 @@ public class CsvDataContextTest extends TestCase {
         assertEquals(2, dc.getSchemas().size());
         Schema schema = dc.getDefaultSchema();
         assertEquals("resources", schema.getName());
-        assertEquals(1, schema.getTableCount());
+        assertEquals(2, schema.getTableCount());
         Table table = schema.getTables().get(0);
         assertEquals("csv_people.csv", table.getName());
 
@@ -353,7 +353,7 @@ public class CsvDataContextTest extends TestCase {
         assertEquals(2, dc.getSchemas().size());
         Schema schema = dc.getDefaultSchema();
         assertEquals("resources", schema.getName());
-        assertEquals(1, schema.getTableCount());
+        assertEquals(2, schema.getTableCount());
         Table table = schema.getTables().get(0);
         assertEquals("csv_people.csv", table.getName());
 
@@ -383,7 +383,7 @@ public class CsvDataContextTest extends TestCase {
         assertEquals(2, dc.getSchemas().size());
         Schema schema = dc.getDefaultSchema();
         assertEquals("resources", schema.getName());
-        assertEquals(1, schema.getTableCount());
+        assertEquals(2, schema.getTableCount());
         Table table = schema.getTables().get(0);
         assertEquals("csv_people.csv", table.getName());
 
@@ -625,7 +625,6 @@ public class CsvDataContextTest extends TestCase {
             public void run(UpdateCallback cb) {
                 Table table = cb.createTable(schema, "foobar").withColumn("foo").withColumn("bar").execute();
                 tableRef.set(table);
-                assertEquals(schema, table.getSchema());
                 assertEquals(schema.getTables().get(0), table);
                 assertTrue(file.exists());
 

@@ -67,7 +67,7 @@ public class InterceptionCsvIntegrationTest extends TestCase {
 			}
 		});
 
-		assertEquals("[table]",
+		assertEquals("[table, default_table]",
 				Arrays.toString(dc.getDefaultSchema().getTableNames().toArray()));
 		Table table = dc.getDefaultSchema().getTables().get(0);
 		assertEquals("[col1, col2, foobar]",

@@ -104,6 +104,7 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
     }
 
     private DynamoDbDataContext(AmazonDynamoDB client, SimpleTableDef[] tableDefs, boolean shutdownOnClose) {
+        super(false);
         _dynamoDb = client;
         _tableDefs = (tableDefs == null ? new SimpleTableDef[0] : tableDefs);
         _shutdownOnClose = shutdownOnClose;

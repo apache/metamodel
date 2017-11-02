@@ -94,6 +94,7 @@ public class PojoDataContext extends QueryPostprocessDataContext implements Upda
      * @param tables
      */
     public PojoDataContext(String schemaName, List<TableDataProvider<?>> tables) {
+        super(true);
         if (schemaName == null) {
             throw new IllegalArgumentException("Schema name cannot be null");
         }

@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.create;
 
+import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
@@ -50,7 +51,7 @@ public abstract class AbstractTableCreationBuilder<U extends UpdateCallback> imp
                     + schema);
         }
         _updateCallback = updateCallback;
-        _schema = schema;
+        _schema = MetaModelHelper.resolveUnderlyingSchema(schema);
         _table = new MutableTable(name, TableType.TABLE, schema);
     }
 

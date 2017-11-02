@@ -80,7 +80,7 @@ public class ExcelDataContextTest extends TestCase {
         ExcelDataContext dc = new ExcelDataContext(file);
 
         assertNull(dc.getSpreadsheetReaderDelegateClass());
-        assertEquals(1, dc.getDefaultSchema().getTableCount());
+        assertEquals(2, dc.getDefaultSchema().getTableCount());
 
         Table table = dc.getDefaultSchema().getTables().get(0);
         assertEquals("sheet", table.getName());
@@ -92,7 +92,7 @@ public class ExcelDataContextTest extends TestCase {
     public void testEmptyFileNoHeaderLine() throws Exception {
         DataContext dc = new ExcelDataContext(copyOf("src/test/resources/empty_file.xls"), new ExcelConfiguration(
                 ExcelConfiguration.NO_COLUMN_NAME_LINE, false, false));
-        assertEquals(1, dc.getDefaultSchema().getTableCount());
+        assertEquals(2, dc.getDefaultSchema().getTableCount());
 
         Table table = dc.getDefaultSchema().getTables().get(0);
         assertEquals("sheet", table.getName());
@@ -102,7 +102,7 @@ public class ExcelDataContextTest extends TestCase {
     public void testUnexistingHeaderLine() throws Exception {
         DataContext dc = new ExcelDataContext(copyOf("src/test/resources/xls_people.xls"), new ExcelConfiguration(20,
                 true, false));
-        assertEquals(1, dc.getDefaultSchema().getTableCount());
+        assertEquals(2, dc.getDefaultSchema().getTableCount());
 
         Table table = dc.getDefaultSchema().getTables().get(0);
         assertEquals("xls_people", table.getName());
@@ -359,7 +359,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(2, schemas.length);
         Schema schema = schemas[1];
         assertEquals("testGetSchemas-xls_people.xls", schema.getName());
-        assertEquals(1, schema.getTableCount());
+        assertEquals(2, schema.getTableCount());
         Table table = schema.getTables().get(0);
         assertEquals("xls_people", table.getName());
 
@@ -399,7 +399,7 @@ public class ExcelDataContextTest extends TestCase {
         File file = copyOf("src/test/resources/xls_missing_values.xls");
         DataContext dc = new ExcelDataContext(file);
         Schema schema = dc.getDefaultSchema();
-        assertEquals(1, schema.getTableCount());
+        assertEquals(2, schema.getTableCount());
 
         Table table = schema.getTables().get(0);
         assertEquals("[Column[name=a,columnNumber=0,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
@@ -423,7 +423,7 @@ public class ExcelDataContextTest extends TestCase {
         File file = copyOf("src/test/resources/xls_missing_column_header.xls");
         DataContext dc = new ExcelDataContext(file);
         Schema schema = dc.getDefaultSchema();
-        assertEquals(1, schema.getTableCount());
+        assertEquals(2, schema.getTableCount());
 
         Table table = schema.getTables().get(0);
         assertEquals("[Column[name=a,columnNumber=0,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
@@ -447,7 +447,7 @@ public class ExcelDataContextTest extends TestCase {
         File file = copyOf("src/test/resources/formulas.xlsx");
         ExcelDataContext dc = new ExcelDataContext(file);
 
-        assertEquals("[sh1]", Arrays.toString(dc.getDefaultSchema().getTableNames().toArray()));
+        assertEquals("[sh1, default_table]", Arrays.toString(dc.getDefaultSchema().getTableNames().toArray()));
         assertEquals(XlsxSpreadsheetReaderDelegate.class, dc.getSpreadsheetReaderDelegateClass());
 
         Table table = dc.getDefaultSchema().getTableByName("sh1");
@@ -618,7 +618,7 @@ public class ExcelDataContextTest extends TestCase {
                 Table table1 = cb.createTable(schema, "my_table_1").withColumn("foo").withColumn("bar")
                         .withColumn("baz").execute();
 
-                assertEquals(1, schema.getTableCount());
+                assertEquals(2, schema.getTableCount());
                 assertSame(table1.getSchema(), schema);
                 assertSame(table1, schema.getTables().get(0));
 
@@ -689,12 +689,12 @@ public class ExcelDataContextTest extends TestCase {
             }
         });
 
-        assertEquals("[my_table_2]", Arrays.toString(schema.getTableNames().toArray()));
+        assertEquals("[my_table_2]", schema.getTableNames().toString());
 
         dc.refreshSchemas();
 
-        assertEquals("[my_table_2]", Arrays.toString(dc.getDefaultSchema().getTableNames().toArray()));
-        assertEquals(1, dc.getDefaultSchema().getTableCount());
+        assertEquals("[my_table_2, default_table]", dc.getDefaultSchema().getTableNames().toString());
+        assertEquals(2, dc.getDefaultSchema().getTableCount());
     }
 
     public void testGetStyles() throws Exception {

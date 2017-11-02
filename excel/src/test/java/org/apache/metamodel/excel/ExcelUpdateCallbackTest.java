@@ -83,7 +83,7 @@ public class ExcelUpdateCallbackTest extends TestCase {
 		// read to check results
 		{
 			ExcelDataContext dc = new ExcelDataContext(file);
-			assertEquals("[foobar]",
+			assertEquals("[foobar, default_table]",
 					Arrays.toString(dc.getDefaultSchema().getTableNames().toArray()));
 
 			Table table = dc.getDefaultSchema().getTableByName("foobar");
