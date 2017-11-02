@@ -67,6 +67,27 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         assertEquals("table", column.getTable().getName());
     }
     
+    public void testNoAliasTableWhenSystemPropertySet() {
+        System.setProperty(QueryPostprocessDataContext.SYSTEM_PROPERTY_CREATE_DEFAULT_TABLE_ALIAS, "false");
+        try {
+            final MockUpdateableDataContext dc = new MockUpdateableDataContext();
+            final List<Table> tables = dc.getDefaultSchema().getTables();
+            assertEquals(1, tables.size());
+            
+            assertEquals("table", tables.get(0).getName());
+        } finally {
+            System.clearProperty(QueryPostprocessDataContext.SYSTEM_PROPERTY_CREATE_DEFAULT_TABLE_ALIAS);
+        }
+    }
+
+    public void testNoAliasTableWhenConstructorArgSet() {
+        final MockUpdateableDataContext dc = new MockUpdateableDataContext(false);
+        final List<Table> tables = dc.getDefaultSchema().getTables();
+        assertEquals(1, tables.size());
+
+        assertEquals("table", tables.get(0).getName());
+    }
+    
     public void testAliasTableQueries() {
         final MockUpdateableDataContext dc = new MockUpdateableDataContext();
         final List<Table> tables = dc.getDefaultSchema().getTables();

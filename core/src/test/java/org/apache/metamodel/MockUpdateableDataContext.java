@@ -51,9 +51,13 @@ public class MockUpdateableDataContext extends QueryPostprocessDataContext imple
 
     private final MutableTable _table;
     private final MutableSchema _schema;
-
+    
     public MockUpdateableDataContext() {
-        super(true);
+        this(true);
+    }
+
+    public MockUpdateableDataContext(boolean addDefaultTableAlias) {
+        super(addDefaultTableAlias);
         _values.add(new Object[] { "1", "hello" });
         _values.add(new Object[] { "2", "there" });
         _values.add(new Object[] { "3", "world" });
