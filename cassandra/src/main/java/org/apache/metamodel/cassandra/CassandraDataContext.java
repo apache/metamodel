@@ -87,6 +87,7 @@ public class CassandraDataContext extends QueryPostprocessDataContext implements
      *            and column model of the ElasticSearch index.
      */
     public CassandraDataContext(Cluster cluster, String keySpace, SimpleTableDef... tableDefs) {
+        super(false);
         this.cassandraCluster = cluster;
         this.keySpaceName = keySpace;
         this.tableDefs = tableDefs;

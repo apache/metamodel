@@ -9,6 +9,7 @@
  * [METAMODEL-1139] - Employed Java 8 functional types (java.util.function) in favor of (now deprecated) Ref, Action, Func. 
  * [METAMODEL-1140] - Allowed SalesforceDataContext without a security token.
  * [METAMODEL-1141] - Added RFC 4180 compliant CSV parsing.
+ * [METAMODEL-1165] - Added a convenient alias table "default_table" for single-table data stores.
  * [METAMODEL-1144] - Optimized evaluation of conditional client-side JOIN statements.
  * [METAMODEL-1145] - Fixed bug with modelling JDBC table relationships when there are multiple keys involved in the relationship.
  * [METAMODEL-1151] - Added DataContextFactory classes for instantiating DataContexts of many types based on properties.

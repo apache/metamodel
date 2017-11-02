@@ -45,6 +45,7 @@ public class MockDataContext extends QueryPostprocessDataContext {
     private final String _value;
 
     public MockDataContext(String schemaName, String tableName, String value) {
+        super(true);
         _schemaName = schemaName;
         _tableName = tableName;
         _value = value;

@@ -56,7 +56,7 @@ final class CsvSchema extends AbstractSchema {
 	public String getQuote() {
 		return null;
 	}
-
+	
 	@Override
 	public List<Table> getTables() {
 		if (_table == null) {

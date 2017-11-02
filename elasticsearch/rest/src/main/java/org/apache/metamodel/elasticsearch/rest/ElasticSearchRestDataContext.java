@@ -123,6 +123,7 @@ public class ElasticSearchRestDataContext extends QueryPostprocessDataContext im
      *            and column model of the ElasticSearch index.
      */
     public ElasticSearchRestDataContext(JestClient client, String indexName, SimpleTableDef... tableDefinitions) {
+        super(false);
         if (client == null) {
             throw new IllegalArgumentException("ElasticSearch Client cannot be null");
         }

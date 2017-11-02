@@ -79,6 +79,7 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
      * @param configuration
      */
     public ExcelDataContext(File file, ExcelConfiguration configuration) {
+        super(true);
         if (file == null) {
             throw new IllegalArgumentException("File cannot be null");
         }
@@ -93,6 +94,7 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
     }
 
     public ExcelDataContext(Resource resource, ExcelConfiguration configuration) {
+        super(true);
         if (resource == null) {
             throw new IllegalArgumentException("Resource cannot be null");
         }

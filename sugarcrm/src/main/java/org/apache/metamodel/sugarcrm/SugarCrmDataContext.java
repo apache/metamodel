@@ -72,6 +72,7 @@ public class SugarCrmDataContext extends QueryPostprocessDataContext implements 
      */
     public SugarCrmDataContext(String sugarCrmBaseUrl, final String username, String password,
             final String applicationName) {
+        super(false);
         if (sugarCrmBaseUrl.endsWith("/")) {
             // remove trailing slashes
             sugarCrmBaseUrl = sugarCrmBaseUrl.substring(0, sugarCrmBaseUrl.length() - 1);

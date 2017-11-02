@@ -99,6 +99,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
      *            ).
      */
     public MongoDbDataContext(MongoDatabase mongoDb, SimpleTableDef... tableDefs) {
+        super(false);
         _mongoDb = mongoDb;
         _tableDefs = tableDefs;
         _schema = null;

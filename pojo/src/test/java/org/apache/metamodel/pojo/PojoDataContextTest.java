@@ -113,7 +113,7 @@ public class PojoDataContextTest extends TestCase {
         final PojoDataContext dc = new PojoDataContext("foo", tableDataProvider);
 
         final Schema schema = dc.getDefaultSchema();
-        assertEquals(1, schema.getTableCount());
+        assertEquals(2, schema.getTableCount());
         final Table table = schema.getTable(0);
         assertEquals("foo.bar", table.getQualifiedLabel());
 
@@ -200,7 +200,7 @@ public class PojoDataContextTest extends TestCase {
             }
         });
 
-        assertEquals(1, schema.getTableCount());
+        assertEquals(2, schema.getTableCount());
 
         ds = dc.query().from("yo!").select("foo", "bar").execute();
         assertTrue(ds.next());

@@ -29,6 +29,7 @@ import java.nio.charset.Charset;
 
 import org.apache.metamodel.AbstractUpdateCallback;
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.create.TableCreationBuilder;
 import org.apache.metamodel.delete.RowDeletionBuilder;
@@ -62,7 +63,7 @@ final class CsvUpdateCallback extends AbstractUpdateCallback implements UpdateCa
     @Override
     public TableCreationBuilder createTable(Schema schema, String name) throws IllegalArgumentException,
             IllegalStateException {
-        return new CsvCreateTableBuilder(this, schema, name);
+        return new CsvCreateTableBuilder(this, MetaModelHelper.resolveUnderlyingSchema(schema), name);
     }
 
     @Override
