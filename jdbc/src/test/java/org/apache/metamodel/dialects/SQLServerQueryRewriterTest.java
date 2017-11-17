@@ -122,10 +122,10 @@ public class SQLServerQueryRewriterTest extends TestCase {
                 .select(column)
                 .select(timestampColumn)
                 .where(new FilterItem(new SelectItem(timestampColumn), OperatorType.LESS_THAN, TimeComparator
-                        .toDate("2014-06-28 14:06:00")));
+                        .toDate("2014-06-28 14:06:00.123")));
 
         assertEquals(
-                "SELECT MY_SCHEMA.\"foo\".\"bar\", timestamp FROM MY_SCHEMA.\"foo\" WHERE timestamp < CAST('20140628 14:06:00' AS DATETIME)",
+                "SELECT MY_SCHEMA.\"foo\".\"bar\", timestamp FROM MY_SCHEMA.\"foo\" WHERE timestamp < CAST('20140628 14:06:00.123' AS DATETIME)",
                 qr.rewriteQuery(q));
     }
 
