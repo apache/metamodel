@@ -42,11 +42,11 @@ under the License.
 		<url>https://github.com/JoosjeBoon/metamodel.git</url>
 		<connection>scm:git:http://github.com/JoosjeBoon/metamodel.git</connection>
 		<developerConnection>scm:git:https://github.com/JoosjeBoon/metamodel.git</developerConnection>
-		<tag>MetaModel-4.6.1-HI-PRIVATE</tag>
+		<tag>HEAD</tag>
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
 	<artifactId>MetaModel</artifactId>
-	<version>4.6.1-HI-PRIVATE</version>
+	<version>4.6.1-SNAPSHOT</version>
 	<name>MetaModel</name>
 	<description>MetaModel is a library that encapsulates the differences and enhances 
 		the capabilities of different datastores. Rich querying abilities are
