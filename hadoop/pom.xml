@@ -13,7 +13,7 @@
 	<parent>
 		<artifactId>MetaModel</artifactId>
 		<groupId>org.apache.metamodel</groupId>
-		<version>4.6.1</version>
+		<version>4.6.2-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>MetaModel-hadoop</artifactId>
