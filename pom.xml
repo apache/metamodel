@@ -205,6 +205,15 @@ under the License.
 
 	<build>
 		<plugins>
+			<!--NEEDED FOR PRIVATE RELEASE-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<!-- Ensures java 7 compatibility -->
 				<groupId>org.apache.maven.plugins</groupId>
