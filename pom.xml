@@ -151,6 +151,24 @@ under the License.
 		<!--</snapshotRepository>-->
 	<!--</distributionManagement>-->
 
+	<distributionManagement>
+		<site>
+			<id>hi-site</id>
+			<url>file:///${java.io.tmpdir}/maven/sites</url>
+		</site>
+		<repository>
+			<id>releases</id>
+			<name>internal releases</name>
+			<url>http://repo.humaninference.com/content/repositories/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>internal snapshots</name>
+			<url>http://repo.humaninference.com/content/repositories/snapshots</url>
+			<uniqueVersion>false</uniqueVersion>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<!--<repositories>-->
 		<!--<repository>-->
 			<!--<id>apache.snapshots</id>-->
