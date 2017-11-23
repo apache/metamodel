@@ -1,3 +1,5 @@
+ * [METAMODEL-1169] - Fixed issue with SQL Server milliseconds precision in WHERE
+
 ### Apache MetaModel 5.0
 
  * [METAMODEL-1161] - Fixed issue with maxRows being ignored on Oracle 
