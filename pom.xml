@@ -39,9 +39,9 @@ under the License.
 		<version>16</version>
 	</parent>
 	<scm>
-		<url>https://git-wip-us.apache.org/repos/asf?p=metamodel.git</url>
-		<connection>scm:git:http://git-wip-us.apache.org/repos/asf/metamodel.git</connection>
-		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/metamodel.git</developerConnection>
+		<url>https://github.com/JoosjeBoon/metamodel.git</url>
+		<connection>scm:git:http://github.com/JoosjeBoon/metamodel.git</connection>
+		<developerConnection>scm:git:https://github.com/JoosjeBoon/metamodel.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
@@ -137,32 +137,71 @@ under the License.
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
-	<distributionManagement>
-		<repository>
-			<id>apache.releases.https</id>
-			<name>Apache Release Distribution Repository</name>
-			<url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
-		</repository>
-		<snapshotRepository>
-			<id>apache.snapshots.https</id>
-			<name>Apache Development Snapshot Repository</name>
-			<url>https://repository.apache.org/content/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
+
+	<!--<distributionManagement>-->
+		<!--<repository>-->
+			<!--<id>apache.releases.https</id>-->
+			<!--<name>Apache Release Distribution Repository</name>-->
+			<!--<url>https://repository.apache.org/service/local/staging/deploy/maven2</url>-->
+		<!--</repository>-->
+		<!--<snapshotRepository>-->
+			<!--<id>apache.snapshots.https</id>-->
+			<!--<name>Apache Development Snapshot Repository</name>-->
+			<!--<url>https://repository.apache.org/content/repositories/snapshots</url>-->
+		<!--</snapshotRepository>-->
+	<!--</distributionManagement>-->
+
+	<!--<repositories>-->
+		<!--<repository>-->
+			<!--<id>apache.snapshots</id>-->
+			<!--<url>http://repository.apache.org/snapshots/</url>-->
+			<!--<name>Apache Snapshot Repo</name>-->
+			<!--<snapshots>-->
+				<!--<enabled>true</enabled>-->
+			<!--</snapshots>-->
+			<!--<releases>-->
+				<!--<enabled>false</enabled>-->
+			<!--</releases>-->
+		<!--</repository>-->
+	<!--</repositories>-->
+
 
 	<repositories>
 		<repository>
-			<id>apache.snapshots</id>
-			<url>http://repository.apache.org/snapshots/</url>
-			<name>Apache Snapshot Repo</name>
+			<id>nexus</id>
+			<name>Nexus maven repo at HI</name>
+			<url>http://repo.humaninference.com/content/groups/public</url>
+			<releases>
+				<enabled>true</enabled>
+				<checksumPolicy>fail</checksumPolicy>
+			</releases>
 			<snapshots>
 				<enabled>true</enabled>
+				<checksumPolicy>fail</checksumPolicy>
+				<updatePolicy>never</updatePolicy>
 			</snapshots>
+		</repository>
+
+		<repository>
+			<id>thirdparty</id>
+			<name>Nexus maven repo at HI</name>
+			<url>http://repo.humaninference.com/content/repositories/thirdparty</url>
 			<releases>
-				<enabled>false</enabled>
+				<checksumPolicy>fail</checksumPolicy>
 			</releases>
+			<snapshots>
+				<checksumPolicy>fail</checksumPolicy>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>maven-restlet</id>
+			<name>Public online Restlet repository</name>
+			<url>http://maven.restlet.org</url>
 		</repository>
 	</repositories>
+
+
 
 	<build>
 		<plugins>
