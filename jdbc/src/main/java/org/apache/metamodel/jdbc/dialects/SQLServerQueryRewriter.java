@@ -114,7 +114,7 @@ public class SQLServerQueryRewriter extends OffsetFetchQueryRewriter {
 
                 final Date date = (Date) operand;
 
-                final DateFormat format = DateUtils.createDateFormat("yyyyMMdd HH:mm:ss");
+                final DateFormat format = DateUtils.createDateFormat("yyyyMMdd HH:mm:ss.SSS");
                 final String dateTimeValue = "CAST('" + format.format(date) + "' AS DATETIME)";
 
                 sb.append(dateTimeValue);
