@@ -1,6 +1,9 @@
+### Apache MetaModel 4.6.1
+
  * [METAMODEL-1161] - Fixed issue with maxRows being ignored on Oracle
  * [METAMODEL-1140] - Allowed SalesforceDataContext without a security token.
  * [METAMODEL-1141] - Added RFC 4180 compliant CSV parsing.
+ * [METAMODEL-1169] - Preserve milliseconds when rewriting query with Date operand
 
 ### Apache MetaModel 4.6.0
 
