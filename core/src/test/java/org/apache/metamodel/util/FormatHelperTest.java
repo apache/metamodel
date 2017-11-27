@@ -20,6 +20,10 @@ package org.apache.metamodel.util;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.apache.metamodel.schema.ColumnType;
 
@@ -59,4 +63,104 @@ public class FormatHelperTest extends TestCase {
 				FormatHelper.formatSqlValue(null, new Object[] { "foo", 1,
 						"bar", 0.1234 }));
 	}
+
+	public void testParseTimeSqlValue() throws Exception {
+		Calendar c = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
+
+		c.setTimeInMillis(0);
+		c.set(Calendar.YEAR, 2011);
+		c.set(Calendar.MONTH, Month.JULY.getCalendarConstant());
+		c.set(Calendar.DAY_OF_MONTH, 24);
+		c.set(Calendar.HOUR_OF_DAY, 17);
+		c.set(Calendar.MINUTE, 34);
+		c.set(Calendar.SECOND, 56);
+		Date timestampFullSeconds = c.getTime();
+		c.set(Calendar.MILLISECOND, 413);
+		Date timestampFullMillis = c.getTime();
+
+		c.setTimeInMillis(0);
+		c.set(Calendar.YEAR, 2011);
+		c.set(Calendar.MONTH, Month.JULY.getCalendarConstant());
+		c.set(Calendar.DAY_OF_MONTH, 24);
+		c.set(Calendar.HOUR_OF_DAY, 0);
+		c.set(Calendar.MINUTE, 0);
+		c.set(Calendar.SECOND, 0);
+		Date dateOnly = c.getTime();
+
+		c.setTimeInMillis(0);
+		c.set(Calendar.HOUR_OF_DAY, 17);
+		c.set(Calendar.MINUTE, 34);
+		c.set(Calendar.SECOND, 56);
+		Date timeOnlySeconds = c.getTime();
+		c.set(Calendar.MILLISECOND, 413);
+		Date timeOnlyMillis = c.getTime();
+
+		// Test parsing of formatted date/time values
+		String dateStr = FormatHelper.formatSqlValue(ColumnType.DATE, timestampFullSeconds);
+		final Date parsedOnlyDate = FormatHelper.parseSqlTime(ColumnType.DATE, dateStr);
+		assertEquals(dateOnly, parsedOnlyDate);
+
+		String timeStr= FormatHelper.formatSqlValue(ColumnType.TIME, timestampFullSeconds);
+		assertEquals(timeOnlySeconds, FormatHelper.parseSqlTime(ColumnType.TIME, timeStr));
+
+		String timestampStr= FormatHelper.formatSqlValue(ColumnType.TIMESTAMP, timestampFullSeconds);
+		assertEquals(timestampFullSeconds, FormatHelper.parseSqlTime(ColumnType.TIMESTAMP, timestampStr));
+
+		// Now tests some specific cases
+		assertEquals(dateOnly, FormatHelper.parseSqlTime(ColumnType.DATE, "DATE '2011-07-24'"));
+		assertEquals(dateOnly, FormatHelper.parseSqlTime(ColumnType.DATE, "DATE'2011-07-24'"));
+		assertEquals(dateOnly, FormatHelper.parseSqlTime(ColumnType.DATE, "DATE \"2011-07-24\""));
+		assertEquals(dateOnly, FormatHelper.parseSqlTime(ColumnType.DATE, "DATE\"2011-07-24\""));
+		assertEquals(dateOnly, FormatHelper.parseSqlTime(ColumnType.DATE, "DATE (2011-07-24)"));
+		assertEquals(dateOnly, FormatHelper.parseSqlTime(ColumnType.DATE, "DATE(2011-07-24)"));
+		assertEquals(dateOnly, FormatHelper.parseSqlTime(ColumnType.DATE, "2011-07-24"));
+		assertEquals(dateOnly, FormatHelper.parseSqlTime(ColumnType.DATE, "'2011-07-24'"));
+		assertEquals(dateOnly, FormatHelper.parseSqlTime(ColumnType.DATE, "\"2011-07-24\""));
+
+		assertEquals(timeOnlySeconds, FormatHelper.parseSqlTime(ColumnType.TIME, "TIME '17:34:56'"));
+		assertEquals(timeOnlySeconds, FormatHelper.parseSqlTime(ColumnType.TIME, "TIME'17:34:56'"));
+		assertEquals(timeOnlySeconds, FormatHelper.parseSqlTime(ColumnType.TIME, "TIME \"17:34:56\""));
+		assertEquals(timeOnlySeconds, FormatHelper.parseSqlTime(ColumnType.TIME, "TIME\"17:34:56\""));
+		assertEquals(timeOnlySeconds, FormatHelper.parseSqlTime(ColumnType.TIME, "TIME (17:34:56)"));
+		assertEquals(timeOnlySeconds, FormatHelper.parseSqlTime(ColumnType.TIME, "TIME(17:34:56)"));
+		assertEquals(timeOnlySeconds, FormatHelper.parseSqlTime(ColumnType.TIME, "'17:34:56'"));
+		assertEquals(timeOnlySeconds, FormatHelper.parseSqlTime(ColumnType.TIME, "\"17:34:56\""));
+		assertEquals(timeOnlySeconds, FormatHelper.parseSqlTime(ColumnType.TIME, "17:34:56"));
+		assertEquals(timeOnlyMillis, FormatHelper.parseSqlTime(ColumnType.TIME, "TIME '17:34:56.413'"));
+
+		assertEquals(timestampFullSeconds, FormatHelper.parseSqlTime(ColumnType.TIMESTAMP, "TIMESTAMP '2011-07-24 17:34:56'"));
+		assertEquals(timestampFullSeconds, FormatHelper.parseSqlTime(ColumnType.TIMESTAMP, "TIMESTAMP'2011-07-24 17:34:56'"));
+		assertEquals(timestampFullSeconds, FormatHelper.parseSqlTime(ColumnType.TIMESTAMP, "TIMESTAMP \"2011-07-24 17:34:56\""));
+		assertEquals(timestampFullSeconds, FormatHelper.parseSqlTime(ColumnType.TIMESTAMP, "TIMESTAMP\"2011-07-24 17:34:56\""));
+		assertEquals(timestampFullSeconds, FormatHelper.parseSqlTime(ColumnType.TIMESTAMP, "TIMESTAMP (2011-07-24 17:34:56)"));
+		assertEquals(timestampFullSeconds, FormatHelper.parseSqlTime(ColumnType.TIMESTAMP, "TIMESTAMP(2011-07-24 17:34:56)"));
+		assertEquals(timestampFullSeconds, FormatHelper.parseSqlTime(ColumnType.TIMESTAMP, "'2011-07-24 17:34:56'"));
+		assertEquals(timestampFullSeconds, FormatHelper.parseSqlTime(ColumnType.TIMESTAMP, "\"2011-07-24 17:34:56\""));
+		assertEquals(timestampFullSeconds, FormatHelper.parseSqlTime(ColumnType.TIMESTAMP, "2011-07-24 17:34:56"));
+		assertEquals(timestampFullMillis, FormatHelper.parseSqlTime(ColumnType.TIMESTAMP, "TIMESTAMP '2011-07-24 17:34:56.413'"));
+		assertEquals(dateOnly, FormatHelper.parseSqlTime(ColumnType.TIMESTAMP, "2011-07-24"));
+
+		try {
+			FormatHelper.parseSqlTime(ColumnType.DATE, "XXX '2011-07-24'");
+			fail("should fail");
+		} catch(IllegalArgumentException e) {
+			// OK
+		}
+
+		try {
+			assertEquals(dateOnly, FormatHelper.parseSqlTime(ColumnType.DATE, "TIME '2011-07-24'"));
+			fail("should fail");
+		} catch(IllegalArgumentException e) {
+			// OK
+		}
+
+		try {
+			assertEquals(timestampFullSeconds, FormatHelper.parseSqlTime(ColumnType.TIME, "TIMESTAMP '2011-07-24 17:34:56'"));
+			fail("should fail");
+		} catch(IllegalArgumentException e) {
+			// OK
+		}
+	}
+
+
 }
