@@ -252,7 +252,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
             return _expression;
         }
 
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         if (_childItems == null) {
             sb.append(_selectItem.getSameQueryAlias(includeSchemaInColumnPaths));
 
@@ -268,7 +268,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
                             .getSameQueryAlias(includeSchemaInColumnPaths);
                     sb.append(selectItemString);
                 } else {
-                    ColumnType columnType = _selectItem.getExpectedColumnType();
+                    final ColumnType columnType = _selectItem.getExpectedColumnType();
                     final String sqlValue = FormatHelper.formatSqlValue(columnType, operand);
                     sb.append(sqlValue);
                 }
@@ -310,10 +310,16 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
 
         if (_childItems == null) {
             // Evaluate a single constraint
-            Object selectItemValue = row.getValue(_selectItem);
+            final Object selectItemValue;
+            final ScalarFunction scalarFunction = _selectItem.getScalarFunction();
+            if (scalarFunction == null) {
+                selectItemValue = row.getValue(_selectItem);
+            } else {
+                selectItemValue = scalarFunction.evaluate(row, _selectItem.getFunctionParameters(), _selectItem);
+            }
             Object operandValue = _operand;
             if (_operand instanceof SelectItem) {
-                SelectItem selectItem = (SelectItem) _operand;
+                final SelectItem selectItem = (SelectItem) _operand;
                 operandValue = row.getValue(selectItem);
             }
             if (operandValue == null) {
@@ -339,7 +345,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
             if (_logicalOperator == LogicalOperator.AND) {
                 // require all results to be true
                 for (FilterItem item : _childItems) {
-                    boolean result = item.evaluate(row);
+                    final boolean result = item.evaluate(row);
                     if (!result) {
                         return false;
                     }
@@ -348,7 +354,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
             } else {
                 // require at least one result to be true
                 for (FilterItem item : _childItems) {
-                    boolean result = item.evaluate(row);
+                    final boolean result = item.evaluate(row);
                     if (result) {
                         return true;
                     }

@@ -1,4 +1,5 @@
- * [METAMODEL-1169] - Fixed issue with SQL Server milliseconds precision in WHERE
+ * [METAMODEL-1169] - Fixed issue with SQL Server milliseconds precision in WHERE.
+ * [METAMODEL-1173] - Fixed parsing and handling of scalar functions in WHERE clause.
 
 ### Apache MetaModel 5.0
 

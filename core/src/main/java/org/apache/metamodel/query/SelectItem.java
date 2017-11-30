@@ -351,21 +351,12 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             return _alias;
         } else if (_column != null) {
             final StringBuilder sb = new StringBuilder();
-            if (_function != null) {
-                if (_functionApproximationAllowed) {
-                    sb.append(FUNCTION_APPROXIMATION_PREFIX);
-                }
-                sb.append(_function.getFunctionName());
-                sb.append('(');
-            }
             if (includeQuotes) {
                 sb.append(_column.getQuotedName());
             } else {
                 sb.append(_column.getName());
             }
-            if (_function != null) {
-                sb.append(')');
-            }
+            appendFunctionSql(sb);
             return sb.toString();
         } else {
             logger.debug("Could not resolve a reasonable super-query alias for SelectItem: {}", toSql());
@@ -382,24 +373,18 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      */
     public String getSameQueryAlias(boolean includeSchemaInColumnPath) {
         if (_column != null) {
-            StringBuilder sb = new StringBuilder();
-            String columnPrefix = getToStringColumnPrefix(includeSchemaInColumnPath);
+            final StringBuilder sb = new StringBuilder();
+            final String columnPrefix = getToStringColumnPrefix(includeSchemaInColumnPath);
             sb.append(columnPrefix);
             sb.append(_column.getQuotedName());
-            if (_function != null) {
-                if (_functionApproximationAllowed) {
-                    sb.insert(0, FUNCTION_APPROXIMATION_PREFIX + _function.getFunctionName() + "(");
-                } else {
-                    sb.insert(0, _function.getFunctionName() + "(");
-                }
-                sb.append(")");
-            }
+            appendFunctionSql(sb);
             return sb.toString();
         }
-        String alias = getAlias();
+        final String alias = getAlias();
         if (alias == null) {
-            alias = toStringNoAlias(includeSchemaInColumnPath).toString();
-            logger.debug("Could not resolve a reasonable same-query alias for SelectItem: {}", toSql());
+            final String result = toStringNoAlias(includeSchemaInColumnPath).toString();
+            logger.debug("Could not resolve a reasonable same-query alias for SelectItem: {}", result);
+            return result;
         }
         return alias;
     }
@@ -438,27 +423,32 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             }
             sb.append(_subQuerySelectItem.getSuperQueryAlias());
         }
-        if (_function != null) {
-            final StringBuilder functionBeginning = new StringBuilder();
-            if (_functionApproximationAllowed) {
-                functionBeginning.append(FUNCTION_APPROXIMATION_PREFIX);
-            }
-
-            functionBeginning.append(_function.getFunctionName());
-            functionBeginning.append('(');
-            final Object[] functionParameters = getFunctionParameters();
-            if (functionParameters != null && functionParameters.length != 0) {
-                for (int i = 0; i < functionParameters.length; i++) {
-                    functionBeginning.append('\'');
-                    functionBeginning.append(functionParameters[i]);
-                    functionBeginning.append('\'');
-                    functionBeginning.append(',');
-                }
-            }
-            sb.insert(0, functionBeginning.toString());
-            sb.append(")");
-        }
+        appendFunctionSql(sb);
         return sb;
+    }
+
+    private void appendFunctionSql(StringBuilder sb) {
+        if (_function == null) {
+            return;
+        }
+        final StringBuilder functionBeginning = new StringBuilder();
+        if (_functionApproximationAllowed) {
+            functionBeginning.append(FUNCTION_APPROXIMATION_PREFIX);
+        }
+
+        functionBeginning.append(_function.getFunctionName());
+        functionBeginning.append('(');
+        sb.insert(0, functionBeginning.toString());
+        final Object[] functionParameters = getFunctionParameters();
+        if (functionParameters != null && functionParameters.length != 0) {
+            for (int i = 0; i < functionParameters.length; i++) {
+                sb.append(',');
+                sb.append('\'');
+                sb.append(functionParameters[i]);
+                sb.append('\'');
+            }
+        }
+        sb.append(")");
     }
 
     private String getToStringColumnPrefix(boolean includeSchemaInColumnPath) {

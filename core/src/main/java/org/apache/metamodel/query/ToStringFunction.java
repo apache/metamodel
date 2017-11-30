@@ -18,8 +18,15 @@
  */
 package org.apache.metamodel.query;
 
+import java.io.Reader;
+import java.sql.Clob;
+import java.sql.SQLException;
+
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.util.FileHelper;
+
+import com.google.common.base.Throwables;
 
 public class ToStringFunction extends DefaultScalarFunction {
     
@@ -43,6 +50,16 @@ public class ToStringFunction extends DefaultScalarFunction {
         final Object value = row.getValue(item);
         if (value == null || value instanceof String) {
             return value;
+        }
+        if (value instanceof Clob) {
+            final Clob clob = (Clob) value;
+            try {
+                final Reader reader = clob.getCharacterStream();
+                final String result = FileHelper.readAsString(reader);
+                return result;
+            } catch (SQLException e) {
+                throw Throwables.propagate(e);
+            }
         }
         return String.valueOf(value);
     }
