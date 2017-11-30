@@ -22,11 +22,10 @@ import java.io.Reader;
 import java.sql.Clob;
 import java.sql.SQLException;
 
+import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.FileHelper;
-
-import com.google.common.base.Throwables;
 
 public class ToStringFunction extends DefaultScalarFunction {
     
@@ -58,7 +57,7 @@ public class ToStringFunction extends DefaultScalarFunction {
                 final String result = FileHelper.readAsString(reader);
                 return result;
             } catch (SQLException e) {
-                throw Throwables.propagate(e);
+                throw new MetaModelException("Failed to read CLOB to String", e);
             }
         }
         return String.valueOf(value);

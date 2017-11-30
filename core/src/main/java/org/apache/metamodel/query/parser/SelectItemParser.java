@@ -18,7 +18,7 @@
  */
 package org.apache.metamodel.query.parser;
 
-import java.util.List;
+import java.util.Arrays;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
@@ -29,8 +29,6 @@ import org.apache.metamodel.query.FunctionTypeFactory;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
-
-import com.google.common.base.Splitter;
 
 public final class SelectItemParser implements QueryPartProcessor {
 
@@ -132,12 +130,11 @@ public final class SelectItemParser implements QueryPartProcessor {
                     selectItem.setFunctionApproximationAllowed(functionApproximation);
                     return selectItem;
                 } else {
-                    final List<String> expressionSplit =
-                            Splitter.on(',').omitEmptyStrings().trimResults().splitToList(expression);
-                    if (expressionSplit.size() > 1) {
+                    final String[] expressionSplit = expression.split(",");
+                    if (expressionSplit.length > 1) {
                         // there are multiple parameters to the function
-                        expression = expressionSplit.get(0);
-                        functionParameters = expressionSplit.subList(1, expressionSplit.size()).toArray();
+                        expression = expressionSplit[0].trim();
+                        functionParameters = Arrays.copyOfRange(expressionSplit, 1, expressionSplit.length - 1, String[].class);
                     }
                 }
             }
