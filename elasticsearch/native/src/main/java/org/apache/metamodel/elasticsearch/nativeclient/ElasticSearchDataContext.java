@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -50,7 +50,6 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.elasticsearch.Version;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateRequestBuilder;
-import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -59,13 +58,16 @@ import org.elasticsearch.cluster.ClusterState;
 import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
-import org.elasticsearch.common.hppc.ObjectLookupContainer;
-import org.elasticsearch.common.hppc.cursors.ObjectCursor;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermQueryBuilder;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.carrotsearch.hppc.ObjectLookupContainer;
+import com.carrotsearch.hppc.cursors.ObjectCursor;
 
 /**
  * DataContext implementation for ElasticSearch analytics engine.
@@ -183,9 +185,8 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         } else {
             final ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
             final ObjectLookupContainer<String> documentTypes = mappings.keys();
-
-            for (final Object documentTypeCursor : documentTypes) {
-                final String documentType = ((ObjectCursor<?>) documentTypeCursor).value.toString();
+            for (final ObjectCursor<?> documentTypeCursor : documentTypes) {
+                final String documentType = documentTypeCursor.value.toString();
                 try {
                     final SimpleTableDef table = detectTable(cs, indexName, documentType);
                     result.add(table);
@@ -225,7 +226,9 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
             // index does not exist
             throw new IllegalArgumentException("No such index: " + indexName);
         }
-        final MappingMetaData mappingMetaData = imd.mapping(documentType);
+        final ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
+        final MappingMetaData mappingMetaData = mappings.get(documentType);
+        //final MappingMetaData mappingMetaData = imd.mapping(documentType);
         if (mappingMetaData == null) {
             throw new IllegalArgumentException("No such document type in index '" + indexName + "': " + documentType);
         }
@@ -353,9 +356,11 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
             return null;
         }
         final String documentType = table.getName();
-        final CountResponse response = elasticSearchClient.prepareCount(indexName)
-                .setQuery(QueryBuilders.termQuery("_type", documentType)).execute().actionGet();
-        return response.getCount();
+        final TermQueryBuilder query = QueryBuilders.termQuery("_type", documentType);
+        final SearchResponse searchResponse =
+                elasticSearchClient.prepareSearch(indexName).setSource(new SearchSourceBuilder().size(0).query(query))
+                        .get();
+        return searchResponse.getHits().getTotalHits();
     }
 
     private boolean limitMaxRowsIsSet(int maxRows) {

@@ -26,6 +26,7 @@ import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
+import org.elasticsearch.action.search.ClearScrollAction;
 import org.elasticsearch.action.search.ClearScrollRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -61,7 +62,8 @@ final class ElasticSearchDataSet extends AbstractDataSet {
         super.close();
         boolean closeNow = _closed.compareAndSet(true, false);
         if (closeNow) {
-            ClearScrollRequestBuilder scrollRequestBuilder = new ClearScrollRequestBuilder(_client)
+            ClearScrollRequestBuilder scrollRequestBuilder = new ClearScrollRequestBuilder(_client,
+                    ClearScrollAction.INSTANCE)
                     .addScrollId(_searchResponse.getScrollId());
             scrollRequestBuilder.execute();
         }

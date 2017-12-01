@@ -27,9 +27,11 @@ import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.LogicalOperator;
 import org.apache.metamodel.schema.Table;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.DeleteByQueryAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,10 +59,6 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
         final Client client = dataContext.getElasticSearchClient();
         final String indexName = dataContext.getIndexName();
 
-        final DeleteByQueryRequestBuilder deleteByQueryRequestBuilder = new DeleteByQueryRequestBuilder(client);
-        deleteByQueryRequestBuilder.setIndices(indexName);
-        deleteByQueryRequestBuilder.setTypes(documentType);
-
         final List<FilterItem> whereItems = getWhereItems();
 
         // delete by query - note that creteQueryBuilderForSimpleWhere may
@@ -74,9 +72,14 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
             throw new UnsupportedOperationException("Could not push down WHERE items to delete by query request: "
                     + whereItems);
         }
-        deleteByQueryRequestBuilder.setQuery(queryBuilder);
-        deleteByQueryRequestBuilder.execute().actionGet();
 
-        logger.debug("Deleted documents by query.");
+        final BulkByScrollResponse response =
+                DeleteByQueryAction.INSTANCE.newRequestBuilder(client)
+                        .filter(QueryBuilders.typeQuery(documentType))
+                        .filter(queryBuilder)
+                        .source(indexName)
+                        .get();
+
+        logger.debug("Deleted documents by query." + response.getDeleted());
     }
 }

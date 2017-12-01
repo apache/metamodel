@@ -34,9 +34,8 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.util.CollectionUtils;
-import org.elasticsearch.common.base.Strings;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.ExistsQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.slf4j.Logger;
@@ -49,41 +48,12 @@ public class ElasticSearchUtils {
     public static final String FIELD_ID = "_id";
     public static final String SYSTEM_PROPERTY_STRIP_INVALID_FIELD_CHARS = "metamodel.elasticsearch.strip_invalid_field_chars";
 
-    /**
-     * Gets a "filter" query which is both 1.x and 2.x compatible.
-     */
-    private static QueryBuilder getFilteredQuery(String prefix, String fieldName) {
-        // 1.x: itemQueryBuilder = QueryBuilders.filteredQuery(null,
-        // FilterBuilders.missingFilter(fieldName));
-        // 2.x: itemQueryBuilder =
-        // QueryBuilders.boolQuery().must(QueryBuilders.missingQuery(fieldName));
-        try {
-            try {
-                Method method = QueryBuilders.class.getDeclaredMethod(prefix + "Query", String.class);
-                method.setAccessible(true);
-                return QueryBuilders.boolQuery().must((QueryBuilder) method.invoke(null, fieldName));
-            } catch (NoSuchMethodException e) {
-                Class<?> clazz = ElasticSearchUtils.class.getClassLoader().loadClass(
-                        "org.elasticsearch.index.query.FilterBuilders");
-                Method filterBuilderMethod = clazz.getDeclaredMethod(prefix + "Filter", String.class);
-                filterBuilderMethod.setAccessible(true);
-                Method queryBuildersFilteredQueryMethod = QueryBuilders.class.getDeclaredMethod("filteredQuery",
-                        QueryBuilder.class, FilterBuilder.class);
-                return (QueryBuilder) queryBuildersFilteredQueryMethod.invoke(null, null, filterBuilderMethod.invoke(
-                        null, fieldName));
-            }
-        } catch (Exception e) {
-            logger.error("Failed to resolve/invoke filtering method", e);
-            throw new IllegalStateException("Failed to resolve filtering method", e);
-        }
-    }
-
     public static QueryBuilder getMissingQuery(String fieldName) {
-        return getFilteredQuery("missing", fieldName);
+        return new BoolQueryBuilder().mustNot(new ExistsQueryBuilder(fieldName));
     }
 
     public static QueryBuilder getExistsQuery(String fieldName) {
-        return getFilteredQuery("exists", fieldName);
+        return new ExistsQueryBuilder(fieldName);
     }
 
     public static Map<String, ?> getMappingSource(final MutableTable table) {
@@ -159,7 +129,7 @@ public class ElasticSearchUtils {
      */
     private static String getType(Column column) {
         String nativeType = column.getNativeType();
-        if (!Strings.isNullOrEmpty(nativeType)) {
+        if (nativeType != null && !nativeType.isEmpty()) {
             return nativeType;
         }
 
