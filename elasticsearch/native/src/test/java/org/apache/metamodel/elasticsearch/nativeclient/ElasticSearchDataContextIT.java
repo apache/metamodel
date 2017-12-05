@@ -132,7 +132,7 @@ public class ElasticSearchDataContextIT {
         try (DataSet ds = dataContext.query().from(indexType1).select("_id").execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
             assertTrue(ds.next());
-            assertEquals("tweet_tweet1_1",ds.getRow().toString());
+            assertEquals("Row[values=[tweet_tweet1_1]]",ds.getRow().toString());
         }
 
         assertEquals("[_id, message, postDate, user]", Arrays.toString(table.getColumnNames().toArray()));
@@ -280,7 +280,7 @@ public class ElasticSearchDataContextIT {
         final Schema schema = dataContext.getDefaultSchema();
         final CreateTable createTable = new CreateTable(schema, "testCreateTable");
         createTable.withColumn("foo").ofType(ColumnType.STRING);
-        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
+        createTable.withColumn("bar").ofType(ColumnType.INTEGER);
         if (schema.getTableByName("testCreateTable") == null) {
             dataContext.executeUpdate(createTable);
         }

@@ -18,7 +18,6 @@
  */
 package org.apache.metamodel.elasticsearch.common;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -64,25 +63,25 @@ public class ElasticSearchUtils {
         }
 
         final Map<String, Map<String, String>> propertiesMap = new LinkedHashMap<>();
-        
+
         for (Column column : table.getColumns()) {
             final String columnName = column.getName();
             if (FIELD_ID.equals(columnName)) {
                 // do nothing - the ID is a client-side construct
                 continue;
             }
-            
+
             final String fieldName = getValidatedFieldName(columnName);
             final Map<String, String> propertyMap = new HashMap<>();
             final String type = getType(column);
             propertyMap.put("type", type);
-            
+
             propertiesMap.put(fieldName, propertyMap);
         }
 
         HashMap<String, Map<String, Map<String, String>>> docTypeMap = new HashMap<>();
         docTypeMap.put("properties", propertiesMap);
-        
+
         final Map<String, Map<String, Map<String, Map<String, String>>>> mapping = new HashMap<>();
         mapping.put(table.getName(), docTypeMap);
         return mapping;
@@ -140,7 +139,7 @@ public class ElasticSearchUtils {
         }
 
         if (type.isLiteral()) {
-            return "string";
+            return "text";
         } else if (type == ColumnType.FLOAT) {
             return "float";
         } else if (type == ColumnType.DOUBLE || type == ColumnType.NUMERIC || type == ColumnType.NUMBER) {
