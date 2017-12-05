@@ -18,15 +18,18 @@
  */
 package org.apache.metamodel.elasticsearch.nativeclient;
 
+import java.util.Iterator;
+
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.drop.AbstractTableDropBuilder;
 import org.apache.metamodel.drop.TableDropBuilder;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Table;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.index.reindex.DeleteByQueryAction;
+import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,11 +57,17 @@ final class ElasticSearchDropTableBuilder extends AbstractTableDropBuilder {
         final Client client = dataContext.getElasticSearchClient();
         final String indexName = dataContext.getIndexName();
 
-        final BulkByScrollResponse bulkByScrollResponse =
-                DeleteByQueryAction.INSTANCE.newRequestBuilder(client).source(indexName)
-                        .filter(QueryBuilders.typeQuery(documentType)).execute().actionGet();
-
-        logger.debug("Delete mapping response: acknowledged={}", bulkByScrollResponse.getDeleted());
+        final SearchResponse response =
+                client.prepareSearch(indexName).setQuery(QueryBuilders.termQuery("_type", documentType)).execute()
+                        .actionGet();
+        final Iterator<SearchHit> iterator = response.getHits().iterator();
+        while (iterator.hasNext()) {
+            final SearchHit hit = iterator.next();
+            final String typeId = hit.getId();
+            final DeleteResponse deleteResponse =
+                    client.prepareDelete().setIndex(indexName).setType(documentType).setId(typeId).execute().actionGet();
+            logger.debug("Delete mapping response: acknowledged={}", deleteResponse.getResult());
+        }
 
         final MutableSchema schema = (MutableSchema) table.getSchema();
         schema.removeTable(table);

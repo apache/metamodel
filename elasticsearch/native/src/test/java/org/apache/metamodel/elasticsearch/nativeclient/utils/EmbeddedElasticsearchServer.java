@@ -18,18 +18,9 @@
  */
 package org.apache.metamodel.elasticsearch.nativeclient.utils;
 
-import org.apache.commons.io.FileUtils;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.node.Node;
-
-import java.io.File;
-import java.io.IOException;
-
-import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
-
 public class EmbeddedElasticsearchServer {
 
+    /*
     private static final String DEFAULT_DATA_DIRECTORY = "target/elasticsearch-data";
 
     private final Node node;
@@ -67,5 +58,5 @@ public class EmbeddedElasticsearchServer {
         } catch (IOException e) {
             throw new RuntimeException("Could not delete data directory of embedded elasticsearch server", e);
         }
-    }
+    } */
 }

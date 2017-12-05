@@ -94,6 +94,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
 
     private final Client elasticSearchClient;
     private final String indexName;
+    private String id;
     // Table definitions that are set from the beginning, not supposed to be
     // changed.
     private final List<SimpleTableDef> staticTableDefinitions;
@@ -183,6 +184,9 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
             // index does not exist
             logger.warn("No metadata returned for index name '{}' - no tables will be detected.");
         } else {
+            // id of the index, required for delete operations
+            final String indexUUID = imd.getIndexUUID();
+            setId(indexUUID);
             final ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
             final ObjectLookupContainer<String> documentTypes = mappings.keys();
             for (final ObjectCursor<?> documentTypeCursor : documentTypes) {
@@ -238,6 +242,9 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
             @SuppressWarnings("unchecked")
             final Map<String, ?> metadataPropertiesMap = (Map<String, ?>) metadataProperties;
             final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(metadataPropertiesMap);
+
+
+
             final SimpleTableDef std = new SimpleTableDef(documentType, metaData.getColumnNames(),
                     metaData.getColumnTypes());
             return std;
@@ -391,5 +398,13 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
      */
     public String getIndexName() {
         return indexName;
+    }
+
+    public void setId(final String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
     }
 }

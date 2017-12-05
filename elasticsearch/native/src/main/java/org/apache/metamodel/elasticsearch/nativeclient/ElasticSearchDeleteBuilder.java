@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.elasticsearch.nativeclient;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.metamodel.MetaModelException;
@@ -27,11 +28,12 @@ import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.LogicalOperator;
 import org.apache.metamodel.schema.Table;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.index.reindex.DeleteByQueryAction;
+import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,13 +75,18 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
                     + whereItems);
         }
 
-        final BulkByScrollResponse response =
-                DeleteByQueryAction.INSTANCE.newRequestBuilder(client)
-                        .filter(QueryBuilders.typeQuery(documentType))
-                        .filter(queryBuilder)
-                        .source(indexName)
-                        .get();
+        final SearchResponse response =
+                client.prepareSearch(indexName).setQuery(QueryBuilders.termQuery("_type", documentType)).execute()
+                        .actionGet();
 
-        logger.debug("Deleted documents by query." + response.getDeleted());
+        final Iterator<SearchHit> iterator = response.getHits().iterator();
+        while (iterator.hasNext()) {
+            final SearchHit hit = iterator.next();
+            final String typeId = hit.getId();
+            final DeleteResponse deleteResponse =
+                    client.prepareDelete().setIndex(indexName).setType(documentType).setId(typeId).get();
+
+            logger.debug("Deleted documents by query." + deleteResponse.getResult());
+        }
     }
 }

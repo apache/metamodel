@@ -27,19 +27,21 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingAction;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-import org.elasticsearch.client.IndicesAdminClient;
+import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder<ElasticSearchUpdateCallback> {
 
+
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchCreateTableBuilder.class);
+
+    //private final String tableId;
 
     public ElasticSearchCreateTableBuilder(ElasticSearchUpdateCallback updateCallback, Schema schema, String name) {
         super(updateCallback, schema, name);
+        //tableId = id;
+
     }
 
     @Override
@@ -48,15 +50,10 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
         final Map<String, ?> source = ElasticSearchUtils.getMappingSource(table);
 
         final ElasticSearchDataContext dataContext = getUpdateCallback().getDataContext();
-        final IndicesAdminClient indicesAdmin = dataContext.getElasticSearchClient().admin().indices();
+        final Client elasticSearchClient = dataContext.getElasticSearchClient();
         final String indexName = dataContext.getIndexName();
 
-        final PutMappingRequestBuilder requestBuilder = new PutMappingRequestBuilder(indicesAdmin, PutMappingAction.INSTANCE).setIndices(indexName)
-                .setType(table.getName());
-        requestBuilder.setSource(source);
-        final PutMappingResponse result = requestBuilder.execute().actionGet();
-
-        logger.debug("PutMapping response: acknowledged={}", result.isAcknowledged());
+        elasticSearchClient.prepareIndex(indexName, table.getName(), table.getName()).setSource(source).execute().actionGet();
 
         final MutableSchema schema = (MutableSchema) getSchema();
         schema.addTable(table);
