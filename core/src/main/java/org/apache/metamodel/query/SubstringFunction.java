@@ -52,7 +52,7 @@ public class SubstringFunction implements ScalarFunction {
         default:
             final int from = toInt(parameters[0]);
             final int to = toInt(parameters[1]);
-            if (from >= str.length()) {
+            if (from >= str.length() || from > to) {
                 return "";
             }
             if (to >= str.length()) {
@@ -67,7 +67,7 @@ public class SubstringFunction implements ScalarFunction {
         if (number == null) {
             throw new IllegalArgumentException("Not a valid substring parameter: " + parameter);
         }
-        return number.intValue();
+        return Math.max(0, number.intValue());
     }
 
 }
