@@ -27,12 +27,12 @@ import org.apache.metamodel.delete.RowDeletionBuilder;
 import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.LogicalOperator;
+import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +76,7 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
         }
 
         final SearchResponse response =
-                client.prepareSearch(indexName).setQuery(QueryBuilders.termQuery("_type", documentType)).execute()
+                client.prepareSearch(indexName).setQuery(queryBuilder).execute()
                         .actionGet();
 
         final Iterator<SearchHit> iterator = response.getHits().iterator();
@@ -87,6 +87,11 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
                     client.prepareDelete().setIndex(indexName).setType(documentType).setId(typeId).get();
 
             logger.debug("Deleted documents by query." + deleteResponse.getResult());
+            final MutableSchema schema = (MutableSchema) table.getSchema();
+            schema.removeTable(table);
         }
+
+
+        client.admin().indices().prepareRefresh(indexName).get();
     }
 }

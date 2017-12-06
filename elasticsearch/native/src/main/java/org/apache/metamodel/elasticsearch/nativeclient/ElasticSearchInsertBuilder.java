@@ -49,7 +49,7 @@ final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<Elast
         final Object[] values = getValues();
         for (int i = 0; i < columns.length; i++) {
             if (isSet(columns[i])) {
-                final String name = columns[i].getName();
+                final String  name = columns[i].getName();
                 final Object value = values[i];
                 if (ElasticSearchUtils.FIELD_ID.equals(name)) {
                     if (value != null) {
@@ -68,6 +68,8 @@ final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<Elast
         final IndexResponse result = requestBuilder.execute().actionGet();
 
         logger.debug("Inserted document: id={}", result.getId());
+
+        client.admin().indices().prepareRefresh(indexName).execute().actionGet();
     }
 
 }

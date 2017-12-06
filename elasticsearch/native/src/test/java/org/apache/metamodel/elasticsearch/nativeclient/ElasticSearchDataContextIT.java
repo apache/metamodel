@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,14 +56,20 @@ import org.apache.metamodel.update.Update;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingAction;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -213,9 +220,7 @@ public class ElasticSearchDataContextIT {
         final CreateTable createTable = new CreateTable(schema, "testCreateTable");
         createTable.withColumn("foo").ofType(ColumnType.STRING);
         createTable.withColumn("bar").ofType(ColumnType.NUMBER);
-        if (schema.getTableByName("testCreateTable") == null) {
-            dataContext.executeUpdate(createTable);
-        }
+        dataContext.executeUpdate(createTable);
 
         final Table table = schema.getTableByName("testCreateTable");
         assertEquals("[" + ElasticSearchUtils.FIELD_ID + ", foo, bar]", Arrays.toString(table.getColumnNames().toArray()));
@@ -252,7 +257,7 @@ public class ElasticSearchDataContextIT {
         assertNull(dataContext.getTableByQualifiedLabel(table.getName()));
     }
 
-    /*
+
     @Test
     public void testDetectOutsideChanges() throws Exception {
         ElasticSearchDataContext elasticSearchDataContext = (ElasticSearchDataContext) dataContext;
@@ -261,31 +266,47 @@ public class ElasticSearchDataContextIT {
         final IndicesAdminClient indicesAdmin = elasticSearchDataContext.getElasticSearchClient().admin().indices();
         final String tableType = "outsideTable";
 
-        Object[] sourceProperties = { "testA", "type=string, store=true", "testB", "type=string, store=true" };
+        Object[] sourceProperties = { "testA", "type=text", "testB", "type=integer" };
 
-        new PutMappingRequestBuilder(indicesAdmin).setIndices(indexName).setType(tableType).setSource(sourceProperties)
-                .execute().actionGet();
+        final PutMappingResponse putMappingResponse =
+                new PutMappingRequestBuilder(indicesAdmin, PutMappingAction.INSTANCE).setIndices(indexName)
+                        .setType(tableType).setSource(sourceProperties).execute().actionGet();
+
 
         dataContext.refreshSchemas();
 
-        assertNotNull(dataContext.getDefaultSchema().getTableByName(tableType));
+        final String tableByName = dataContext.getDefaultSchema().getTableByName(tableType).getName();
+        assertNotNull(tableByName);
 
-        new DeleteMappingRequestBuilder(indicesAdmin).setIndices(indexName).setType(tableType).execute().actionGet();
+        final SearchResponse response =
+                client.prepareSearch(indexName).setQuery(QueryBuilders.termQuery("_type", tableType)).execute()
+                        .actionGet();
+        final Iterator<SearchHit> iterator = response.getHits().iterator();
+        while (iterator.hasNext()) {
+            final SearchHit hit = iterator.next();
+            final String typeId = hit.getId();
+           /* new DeleteRequestBuilder(indicesAdmin, DeleteAction.INSTANCE).setType(tableType).setIndex(indexName)
+                    .setId(typeId).get();*/
+
+            client.prepareDelete().setIndex(indexName).setType(tableType).setId(typeId).get();
+
+        }
+        client.admin().indices().prepareRefresh(indexName).get();
+
         dataContext.refreshSchemas();
         assertNull(dataContext.getTableByQualifiedLabel(tableType));
     }
-   */
+
     @Test
     public void testDeleteAll() throws Exception {
         final Schema schema = dataContext.getDefaultSchema();
-        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        final String tableName = "testCreateTable1";
+        final CreateTable createTable = new CreateTable(schema, tableName);
         createTable.withColumn("foo").ofType(ColumnType.STRING);
-        createTable.withColumn("bar").ofType(ColumnType.INTEGER);
-        if (schema.getTableByName("testCreateTable") == null) {
-            dataContext.executeUpdate(createTable);
-        }
+        createTable.withColumn("bar").ofType(ColumnType.DOUBLE);
+        dataContext.executeUpdate(createTable);
 
-        final Table table = schema.getTableByName("testCreateTable");
+        final Table table = schema.getTableByName(tableName);
 
         dataContext.executeUpdate(new UpdateScript() {
             @Override
@@ -307,14 +328,13 @@ public class ElasticSearchDataContextIT {
     @Test
     public void testDeleteByQuery() throws Exception {
         final Schema schema = dataContext.getDefaultSchema();
-        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        final String tableName = "testCreateTable2";
+        final CreateTable createTable = new CreateTable(schema, tableName);
         createTable.withColumn("foo").ofType(ColumnType.STRING);
         createTable.withColumn("bar").ofType(ColumnType.NUMBER);
-        if (schema.getTableByName("testCreateTable") == null) {
-            dataContext.executeUpdate(createTable);
-        }
+        dataContext.executeUpdate(createTable);
 
-        final Table table = schema.getTableByName("testCreateTable");
+        final Table table = schema.getTableByName(tableName);
 
         dataContext.executeUpdate(new UpdateScript() {
             @Override
@@ -336,12 +356,13 @@ public class ElasticSearchDataContextIT {
     @Test
     public void testDeleteUnsupportedQueryType() throws Exception {
         final Schema schema = dataContext.getDefaultSchema();
-        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        final String tableName = "testCreateTable3";
+        final CreateTable createTable = new CreateTable(schema, tableName);
         createTable.withColumn("foo").ofType(ColumnType.STRING);
         createTable.withColumn("bar").ofType(ColumnType.NUMBER);
         dataContext.executeUpdate(createTable);
 
-        final Table table = schema.getTableByName("testCreateTable");
+        final Table table = schema.getTableByName(tableName);
         try {
 
             dataContext.executeUpdate(new UpdateScript() {
@@ -369,12 +390,15 @@ public class ElasticSearchDataContextIT {
     @Test
     public void testUpdateRow() throws Exception {
         final Schema schema = dataContext.getDefaultSchema();
-        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        final String tableName = "testCreateTable4";
+        final CreateTable createTable = new CreateTable(schema, tableName);
         createTable.withColumn("foo").ofType(ColumnType.STRING);
         createTable.withColumn("bar").ofType(ColumnType.NUMBER);
-        dataContext.executeUpdate(createTable);
+        if (schema.getTableByName(tableName) == null){
+            dataContext.executeUpdate(createTable);
+        }
 
-        final Table table = schema.getTableByName("testCreateTable");
+        final Table table = schema.getTableByName(tableName);
         try {
 
             dataContext.executeUpdate(new UpdateScript() {

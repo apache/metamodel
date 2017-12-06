@@ -71,5 +71,7 @@ final class ElasticSearchDropTableBuilder extends AbstractTableDropBuilder {
 
         final MutableSchema schema = (MutableSchema) table.getSchema();
         schema.removeTable(table);
+
+        client.admin().indices().prepareRefresh(indexName).get();
     }
 }

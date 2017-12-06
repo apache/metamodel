@@ -53,6 +53,8 @@ final class ElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder
 
         logger.debug("PutMapping response: acknowledged={}", result.isAcknowledged());
 
+        dataContext.getElasticSearchClient().admin().indices().prepareRefresh(indexName).get();
+
         final MutableSchema schema = (MutableSchema) getSchema();
         schema.addTable(table);
         return table;
