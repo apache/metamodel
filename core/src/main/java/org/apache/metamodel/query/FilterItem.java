@@ -310,13 +310,7 @@ public class FilterItem extends BaseObject implements QueryItem, Cloneable, IRow
 
         if (_childItems == null) {
             // Evaluate a single constraint
-            final Object selectItemValue;
-            final ScalarFunction scalarFunction = _selectItem.getScalarFunction();
-            if (scalarFunction == null) {
-                selectItemValue = row.getValue(_selectItem);
-            } else {
-                selectItemValue = scalarFunction.evaluate(row, _selectItem.getFunctionParameters(), _selectItem);
-            }
+            final Object selectItemValue = row.getValue(_selectItem);
             Object operandValue = _operand;
             if (_operand instanceof SelectItem) {
                 final SelectItem selectItem = (SelectItem) _operand;

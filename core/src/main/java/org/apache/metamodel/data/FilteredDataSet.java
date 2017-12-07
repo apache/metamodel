@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.data;
 
+import java.util.Collection;
 
 /**
  * Wraps another DataSet and transparently applies a set of filters to it.
@@ -27,6 +28,10 @@ public final class FilteredDataSet extends AbstractDataSet implements WrappingDa
 	private final DataSet _dataSet;
 	private final IRowFilter[] _filters;
 	private Row _row;
+	
+	public FilteredDataSet(DataSet dataSet, Collection<? extends IRowFilter> filterItems) {
+	    this(dataSet, filterItems.stream().toArray(IRowFilter[]::new));
+	}
 
 	public FilteredDataSet(DataSet dataSet, IRowFilter... filters) {
 	    super(dataSet);
@@ -34,7 +39,7 @@ public final class FilteredDataSet extends AbstractDataSet implements WrappingDa
 		_filters = filters;
 	}
 
-	@Override
+    @Override
 	public void close() {
 		super.close();
 		_dataSet.close();

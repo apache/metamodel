@@ -157,7 +157,8 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
                     if (whereItems.size() == 1) {
                         final FilterItem whereItem = whereItems.get(0);
                         final SelectItem selectItem = whereItem.getSelectItem();
-                        if (!whereItem.isCompoundFilter() && selectItem != null && selectItem.getColumn() != null) {
+                        if (!whereItem.isCompoundFilter() && selectItem != null && !selectItem.hasFunction()
+                                && selectItem.getColumn() != null) {
                             final Column column = selectItem.getColumn();
                             if (column.isPrimaryKey() && OperatorType.EQUALS_TO.equals(whereItem.getOperator())) {
                                 logger.debug(
@@ -284,7 +285,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
             // We need to materialize a single table
             final Table table = MetaModelHelper.resolveTable(fromItem);
             final List<SelectItem> selectItemsToMaterialize = new ArrayList<SelectItem>();
-
+            
             for (final SelectItem selectItem : selectItems) {
                 final FromItem selectedFromItem = selectItem.getFromItem();
                 if (selectedFromItem != null) {
@@ -358,6 +359,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         if (dataSet == null) {
             throw new IllegalStateException("FromItem was not succesfully materialized: " + fromItem);
         }
+        
         return dataSet;
     }
 

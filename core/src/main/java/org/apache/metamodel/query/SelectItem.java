@@ -499,7 +499,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             return true;
         }
 
-        EqualsBuilder eb = new EqualsBuilder();
+        final EqualsBuilder eb = new EqualsBuilder();
         if (exactColumnCompare) {
             eb.append(this._column == that._column);
             eb.append(this._fromItem, that._fromItem);
@@ -507,6 +507,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
             eb.append(this._column, that._column);
         }
         eb.append(this._function, that._function);
+        eb.appendArrays(this._functionParameters, that._functionParameters);
         eb.append(this._functionApproximationAllowed, that._functionApproximationAllowed);
         eb.append(this._expression, that._expression);
         if (_subQuerySelectItem != null) {
@@ -577,7 +578,18 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @return
      */
     public SelectItem replaceFunction(FunctionType function) {
-        return new SelectItem(_column, _fromItem, function, _functionParameters, _expression, _subQuerySelectItem,
+        return replaceFunction(function, null);
+    }
+    
+    /**
+     * Creates a copy of the {@link SelectItem}, with a different {@link FunctionType} and parameters.
+     * 
+     * @param function
+     * @param functionParameters
+     * @return
+     */
+    public SelectItem replaceFunction(FunctionType function, Object[] functionParameters) {
+        return new SelectItem(_column, _fromItem, function, functionParameters, _expression, _subQuerySelectItem,
                 _alias, _functionApproximationAllowed);
     }
 

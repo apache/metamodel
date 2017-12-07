@@ -67,6 +67,9 @@ public class SubstringFunction implements ScalarFunction {
     @Override
     public Object evaluate(Row row, Object[] parameters, SelectItem operandItem) {
         final String str = (String) FunctionType.TO_STRING.evaluate(row, null, operandItem);
+        if (str == null) {
+            return null;
+        }
         final int numParameters = parameters == null ? 0 : parameters.length;
         switch (numParameters) {
         case 0:

@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.apache.metamodel.data.CachingDataSetHeader;
 import org.apache.metamodel.data.DataSet;
@@ -40,7 +41,6 @@ import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.data.FilteredDataSet;
 import org.apache.metamodel.data.FirstRowDataSet;
-import org.apache.metamodel.data.IRowFilter;
 import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.data.MaxRowsDataSet;
 import org.apache.metamodel.data.Row;
@@ -270,18 +270,31 @@ public final class MetaModelHelper {
     }
 
     public static DataSet getFiltered(DataSet dataSet, Iterable<FilterItem> filterItems) {
-        List<IRowFilter> filters = CollectionUtils.map(filterItems, filterItem -> {
-            return filterItem;
-        });
-        if (filters.isEmpty()) {
-            return dataSet;
-        }
-
-        return new FilteredDataSet(dataSet, filters.toArray(new IRowFilter[filters.size()]));
+        final FilterItem[] filterItemsArray =
+                StreamSupport.stream(filterItems.spliterator(), false).toArray(FilterItem[]::new);
+        return getFiltered(dataSet, filterItemsArray);
     }
 
     public static DataSet getFiltered(DataSet dataSet, FilterItem... filterItems) {
+        if (filterItems == null || filterItems.length == 0) {
+            return dataSet;
+        }
         return getFiltered(dataSet, Arrays.asList(filterItems));
+    }
+
+    public static DataSet getFiltered(DataSet dataSet, Collection<FilterItem> filterItems) {
+        if (filterItems == null || filterItems.isEmpty()) {
+            return dataSet;
+        }
+        final Iterable<SelectItem> selectItems =
+                filterItems.stream().map(f -> f.getSelectItem()).filter(s -> s != null)::iterator;
+        final List<SelectItem> scalarFunctionSelectItems =
+                getUnmaterializedScalarFunctionSelectItems(selectItems, dataSet);
+        if (!scalarFunctionSelectItems.isEmpty()) {
+            // scalar functions are needed in evaluation of the filters
+            dataSet = new ScalarFunctionDataSet(scalarFunctionSelectItems, dataSet);
+        }
+        return new FilteredDataSet(dataSet, filterItems);
     }
 
     public static DataSet getSelection(final List<SelectItem> selectItems, final DataSet dataSet) {
@@ -317,7 +330,8 @@ public final class MetaModelHelper {
         return getSelection(Arrays.asList(selectItems), dataSet);
     }
 
-    public static DataSet getGrouped(List<SelectItem> selectItems, DataSet dataSet, Collection<GroupByItem> groupByItems) {
+    public static DataSet getGrouped(List<SelectItem> selectItems, DataSet dataSet,
+            Collection<GroupByItem> groupByItems) {
         DataSet result = dataSet;
         if (groupByItems != null && groupByItems.size() > 0) {
             Map<Row, Map<SelectItem, List<Object>>> uniqueRows = new HashMap<Row, Map<SelectItem, List<Object>>>();
@@ -524,8 +538,21 @@ public final class MetaModelHelper {
     }
 
     public static List<SelectItem> getScalarFunctionSelectItems(Iterable<SelectItem> selectItems) {
+        return getUnmaterializedScalarFunctionSelectItems(selectItems, null);
+    }
+
+    /**
+     * Gets select items with scalar functions that haven't already been materialized in a data set.
+     * 
+     * @param selectItems
+     * @param dataSetWithMaterializedSelectItems a {@link DataSet} containing the already materialized select items
+     * @return
+     */
+    public static List<SelectItem> getUnmaterializedScalarFunctionSelectItems(Iterable<SelectItem> selectItems,
+            DataSet dataSetWithMaterializedSelectItems) {
         return CollectionUtils.filter(selectItems, arg -> {
-            return arg.getScalarFunction() != null;
+            return arg.getScalarFunction() != null && (dataSetWithMaterializedSelectItems == null
+                    || dataSetWithMaterializedSelectItems.indexOf(arg) == -1);
         });
     }
 

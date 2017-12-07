@@ -230,6 +230,9 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             return;
         }
 
+        if (mongoDb.getCollection(getCollectionName()) != null) {
+            mongoDb.getCollection(getCollectionName()).drop();
+        }
         mongoDb.createCollection(getCollectionName());
         final MongoCollection<Document> col = mongoDb.getCollection(getCollectionName());
 
@@ -272,7 +275,6 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
 
     @Test
     public void testRead() throws Exception {
-        // Adding a comment to commit something and invoke a build in Travis...
         if (!isConfigured()) {
             System.err.println(getInvalidConfigurationMessage());
             return;
