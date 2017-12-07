@@ -1185,7 +1185,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
     
     public void testColumnOnlyUsedInScalarFunctionInWhereClause() throws Exception {
         final DataContext dc = getDataContext();
-        final Query query = dc.parseQuery("SELECT contributor_id FROM contributor WHERE SUBSTRING(name, 3, 6) = 'per' ORDER BY contributor_id");
+        final Query query = dc.parseQuery("SELECT contributor_id FROM contributor WHERE JAVA_SUBSTRING(name, 3, 6) = 'per' ORDER BY contributor_id");
         try (DataSet ds = dc.executeQuery(query)) {
             assertTrue(ds.next());
             // kasper

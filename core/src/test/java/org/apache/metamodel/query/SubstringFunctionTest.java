@@ -27,42 +27,51 @@ import org.junit.Test;
 
 public class SubstringFunctionTest {
 
-    private final SubstringFunction function = new SubstringFunction();
+    private final SubstringFunction javaStyleFunction = SubstringFunction.createJavaStyle();
+    private final SubstringFunction sqlStyleFunction = SubstringFunction.createSqlStyle();
 
     @Test
     public void testSubstringVanilla() {
-        Assert.assertEquals("2", runTest("123456", 1, 2));
-        Assert.assertEquals("1234", runTest("123456", 0, 4));
+        Assert.assertEquals("2", runTest(javaStyleFunction, "123456", 1, 2));
+        Assert.assertEquals("1234", runTest(javaStyleFunction, "123456", 0, 4));
+        Assert.assertEquals("34", runTest(javaStyleFunction, "123456", 2, 4));
+        
+        Assert.assertEquals("1", runTest(sqlStyleFunction, "123456", 1, 1));
+        Assert.assertEquals("1234", runTest(sqlStyleFunction, "123456", 1, 4));
+        Assert.assertEquals("34", runTest(sqlStyleFunction, "123456", 3, 2));
     }
     
     @Test
     public void testSubstringBadOrWeirdParamValues() {
-        Assert.assertEquals("", runTest("123456", 0, 0));
-        Assert.assertEquals("1234", runTest("123456", -10, 4));
-        Assert.assertEquals("", runTest("123456", 4, -1));
+        Assert.assertEquals("", runTest(javaStyleFunction, "123456", 0, 0));
+        Assert.assertEquals("1234", runTest(javaStyleFunction, "123456", -10, 4));
+        Assert.assertEquals("", runTest(javaStyleFunction, "123456", 4, -1));
     }
 
     @Test
     public void testSubstringEndIndexTooLarge() {
-        Assert.assertEquals("123456", runTest("123456", 0, 200));
-        Assert.assertEquals("56", runTest("123456", 4, 8));
+        Assert.assertEquals("123456", runTest(javaStyleFunction, "123456", 0, 200));
+        Assert.assertEquals("56", runTest(javaStyleFunction, "123456", 4, 8));
+        
+        Assert.assertEquals("123456", runTest(sqlStyleFunction, "123456", 1, 200));
+        Assert.assertEquals("56", runTest(sqlStyleFunction, "123456", 5, 5));
     }
 
     @Test
     public void testSubstringStartIndexTooLarge() {
-        Assert.assertEquals("", runTest("123456", 200, 2));
+        Assert.assertEquals("", runTest(javaStyleFunction, "123456", 200, 2));
     }
 
     @Test
     public void testSubstringOnlyStartIndex() {
-        Assert.assertEquals("123456", runTest("123456", 0));
-        Assert.assertEquals("", runTest("123456", 10));
-        Assert.assertEquals("3456", runTest("123456", 2));
+        Assert.assertEquals("123456", runTest(javaStyleFunction, "123456", 0));
+        Assert.assertEquals("", runTest(javaStyleFunction, "123456", 10));
+        Assert.assertEquals("3456", runTest(javaStyleFunction, "123456", 2));
     }
 
-    private String runTest(String str, Object... params) {
+    private String runTest(ScalarFunction f, String str, Object... params) {
         SelectItem selectItem = new SelectItem(new MutableColumn("column"));
         DataSetHeader header = new SimpleDataSetHeader(new SelectItem[] { selectItem });
-        return (String) function.evaluate(new DefaultRow(header, new Object[] { str }), params, selectItem);
+        return (String) f.evaluate(new DefaultRow(header, new Object[] { str }), params, selectItem);
     }
 }
