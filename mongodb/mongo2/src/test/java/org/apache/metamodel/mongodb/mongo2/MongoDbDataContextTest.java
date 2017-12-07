@@ -278,7 +278,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         // Instantiate the actual data context
         final DataContext dataContext = new MongoDbDataContext(db);
 
-        assertTrue(Arrays.asList(dataContext.getDefaultSchema().getTableNames()).contains(getCollectionName()));
+        assertTrue(dataContext.getDefaultSchema().getTableNames().contains(getCollectionName()));
         Table table = dataContext.getDefaultSchema().getTableByName(getCollectionName());
         assertEquals("[_id, baz, foo, id, list, name]", Arrays.toString(table.getColumnNames().toArray()));
 

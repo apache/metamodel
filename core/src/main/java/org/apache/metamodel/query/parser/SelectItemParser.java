@@ -18,9 +18,16 @@
  */
 package org.apache.metamodel.query.parser;
 
+import java.util.Arrays;
+
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
-import org.apache.metamodel.query.*;
+import org.apache.metamodel.query.CountAggregateFunction;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.FunctionType;
+import org.apache.metamodel.query.FunctionTypeFactory;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 
 public final class SelectItemParser implements QueryPartProcessor {
@@ -108,6 +115,8 @@ public final class SelectItemParser implements QueryPartProcessor {
 
         final boolean functionApproximation;
         final FunctionType function;
+        Object[] functionParameters = null;
+        
         final int startParenthesis = expression.indexOf('(');
         if (startParenthesis > 0 && expression.endsWith(")")) {
             functionApproximation = (expression.startsWith(SelectItem.FUNCTION_APPROXIMATION_PREFIX));
@@ -120,10 +129,18 @@ public final class SelectItemParser implements QueryPartProcessor {
                     final SelectItem selectItem = SelectItem.getCountAllItem();
                     selectItem.setFunctionApproximationAllowed(functionApproximation);
                     return selectItem;
+                } else {
+                    final String[] expressionSplit = expression.split(",");
+                    if (expressionSplit.length > 1) {
+                        // there are multiple parameters to the function
+                        expression = expressionSplit[0].trim();
+                        functionParameters = Arrays.copyOfRange(expressionSplit, 1, expressionSplit.length - 1, String[].class);
+                    }
                 }
             }
         } else {
             function = null;
+            functionParameters = null;
             functionApproximation = false;
         }
 
@@ -170,19 +187,19 @@ public final class SelectItemParser implements QueryPartProcessor {
                     column = fromItem.getTable().getColumnByName(part1);
                     if (column != null) {
                         final String part2 = columnName.substring(offset + 1);
-                        return new SelectItem(new MapValueFunction(), new Object[] { part2 }, column, fromItem);
+                        return new SelectItem(FunctionType.MAP_VALUE, new Object[] { part2 }, column, fromItem);
                     }
                 }
 
                 if (column != null) {
-                    final SelectItem selectItem = new SelectItem(function, column, fromItem);
+                    final SelectItem selectItem = new SelectItem(function, functionParameters, column, fromItem);
                     selectItem.setFunctionApproximationAllowed(functionApproximation);
                     return selectItem;
                 }
             } else if (fromItem.getSubQuery() != null) {
                 final Query subQuery = fromItem.getSubQuery();
-                final SelectItem subQuerySelectItem = new SelectItemParser(subQuery, _allowExpressionBasedSelectItems)
-                        .findSelectItem(columnName);
+                final SelectItem subQuerySelectItem =
+                        new SelectItemParser(subQuery, _allowExpressionBasedSelectItems).findSelectItem(columnName);
                 if (subQuerySelectItem == null) {
                     return null;
                 }
