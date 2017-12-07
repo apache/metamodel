@@ -1,4 +1,5 @@
  * [METAMODEL-1169] - Fixed issue with SQL Server milliseconds precision in WHERE
+ * [METAMODEL-1171] - Fixed parsing of query operators with DATE, TIME, TIMESTAMP prefix to operand date/time values.
 
 ### Apache MetaModel 5.0
 
