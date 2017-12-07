@@ -22,7 +22,9 @@ import java.util.Date;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.metamodel.data.Style;
 import org.apache.metamodel.data.Style.Color;
@@ -87,7 +89,7 @@ final class ExcelInsertBuilder extends
 
 					};
 					if (style.isBold()) {
-						font.get().setBoldweight(Font.BOLDWEIGHT_BOLD);
+					    font.get().setBold(true);
 					}
 					if (style.isItalic()) {
 						font.get().setItalic(true);
@@ -120,7 +122,7 @@ final class ExcelInsertBuilder extends
 					final Color backgroundColor = style.getBackgroundColor();
 					if (backgroundColor != null) {
 						cellStyle.get().setFillPattern(
-								CellStyle.SOLID_FOREGROUND);
+						        FillPatternType.SOLID_FOREGROUND);
 						cellStyle.get().setFillForegroundColor(
 								getUpdateCallback().getColorIndex(
 										backgroundColor));
@@ -161,16 +163,16 @@ final class ExcelInsertBuilder extends
 		return d.intValue();
 	}
 
-	private short getAlignment(TextAlignment alignment) {
+	private HorizontalAlignment getAlignment(TextAlignment alignment) {
 		switch (alignment) {
 		case LEFT:
-			return CellStyle.ALIGN_LEFT;
+			return HorizontalAlignment.LEFT;
 		case RIGHT:
-			return CellStyle.ALIGN_RIGHT;
+			return HorizontalAlignment.RIGHT;
 		case CENTER:
-			return CellStyle.ALIGN_CENTER;
+			return HorizontalAlignment.CENTER;
 		case JUSTIFY:
-			return CellStyle.ALIGN_JUSTIFY;
+			return HorizontalAlignment.JUSTIFY;
 		default:
 			throw new IllegalArgumentException("Unknown alignment type: "
 					+ alignment);

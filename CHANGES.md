@@ -1,3 +1,4 @@
+ * [METAMODEL-1174] - Upgraded Excel module's dependency on Apache POI to latest stable version (3.17).
  * [METAMODEL-1169] - Fixed issue with SQL Server milliseconds precision in WHERE
  * [METAMODEL-1171] - Fixed parsing of query operators with DATE, TIME, TIMESTAMP prefix to operand date/time values.
 
