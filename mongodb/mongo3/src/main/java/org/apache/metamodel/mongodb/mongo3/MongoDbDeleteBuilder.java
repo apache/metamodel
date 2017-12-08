@@ -44,8 +44,10 @@ final class MongoDbDeleteBuilder extends AbstractRowDeletionBuilder {
         final MongoCollection<Document> collection = _updateCallback.getCollection(getTable().getName());
 
         final MongoDbDataContext dataContext = _updateCallback.getDataContext();
-        final Document query = dataContext.createMongoDbQuery(getTable(), getWhereItems());
-        
+        final Document query = dataContext.createMongoDbQuery(getTable(), getWhereItems(), whereItem -> {
+            throw new UnsupportedOperationException("Unable to handle WHERE item in DELETE: " + whereItem.toSql());
+        });
+
         DeleteResult result = collection.deleteMany(query);
         logger.info("Remove returned result: {}", result);
     }

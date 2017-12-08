@@ -286,15 +286,22 @@ public final class MetaModelHelper {
         if (filterItems == null || filterItems.isEmpty()) {
             return dataSet;
         }
+        final List<SelectItem> selectItemsOnOutput = dataSet.getSelectItems();
         final Iterable<SelectItem> selectItems =
                 filterItems.stream().map(f -> f.getSelectItem()).filter(s -> s != null)::iterator;
         final List<SelectItem> scalarFunctionSelectItems =
                 getUnmaterializedScalarFunctionSelectItems(selectItems, dataSet);
-        if (!scalarFunctionSelectItems.isEmpty()) {
+        final boolean calculateScalarFunctions = !scalarFunctionSelectItems.isEmpty();
+        if (calculateScalarFunctions) {
             // scalar functions are needed in evaluation of the filters
             dataSet = new ScalarFunctionDataSet(scalarFunctionSelectItems, dataSet);
         }
-        return new FilteredDataSet(dataSet, filterItems);
+        final FilteredDataSet filteredDataSet = new FilteredDataSet(dataSet, filterItems);
+        if (calculateScalarFunctions) {
+            return getSelection(selectItemsOnOutput, filteredDataSet);
+        } else {
+            return filteredDataSet;
+        }
     }
 
     public static DataSet getSelection(final List<SelectItem> selectItems, final DataSet dataSet) {

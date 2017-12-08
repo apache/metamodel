@@ -578,9 +578,9 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @return
      */
     public SelectItem replaceFunction(FunctionType function) {
-        return replaceFunction(function, null);
+        return replaceFunction(function, new Object[0]);
     }
-    
+
     /**
      * Creates a copy of the {@link SelectItem}, with a different {@link FunctionType} and parameters.
      * 
@@ -588,7 +588,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
      * @param functionParameters
      * @return
      */
-    public SelectItem replaceFunction(FunctionType function, Object[] functionParameters) {
+    public SelectItem replaceFunction(FunctionType function, Object... functionParameters) {
         return new SelectItem(_column, _fromItem, function, functionParameters, _expression, _subQuerySelectItem,
                 _alias, _functionApproximationAllowed);
     }
