@@ -219,7 +219,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
         final Document query = createMongoDbQuery(table, whereItems, whereItem -> {
             postProcessFilters.add(whereItem);
         });
-        
+
         if (!postProcessFilters.isEmpty()) {
             // not possible to use the native API for this
             return null;
@@ -344,7 +344,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
         final MongoCursor<Document> cursor = getDocumentMongoCursor(table, whereItems, firstRow, maxRows, whereItem -> {
             postProcessWhereItems.add(whereItem);
         });
-        
+
         final DataSet dataSet;
         if (postProcessWhereItems.isEmpty()) {
             dataSet = new MongoDbDataSet(cursor, selectItems, queryPostProcessed);
@@ -353,12 +353,14 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
             postProcessWhereItems.forEach(whereItem -> {
                 final Column column = whereItem.getSelectItem().getColumn();
                 if (column != null) {
+                    // TODO: Minor optimization possible here to avoid having multiple select items for the same column.
+                    // We could check if the column is already being queried.
                     selectItemsToQuery.add(new SelectItem(column));
                 }
             });
-            DataSet innerDataSet = new MongoDbDataSet(cursor, selectItemsToQuery, queryPostProcessed);
-            innerDataSet = MetaModelHelper.getFiltered(innerDataSet, postProcessWhereItems);
-            dataSet = MetaModelHelper.getSelection(selectItems, innerDataSet);
+            final DataSet innerDataSet1 = new MongoDbDataSet(cursor, selectItemsToQuery, queryPostProcessed);
+            final DataSet innerDataSet2 = MetaModelHelper.getFiltered(innerDataSet1, postProcessWhereItems);
+            dataSet = MetaModelHelper.getSelection(selectItems, innerDataSet2);
         }
         return dataSet;
     }
@@ -383,7 +385,8 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
         return iterable.iterator();
     }
 
-    protected Document createMongoDbQuery(Table table, List<FilterItem> whereItems, Consumer<FilterItem> whereItemToPostProcessConsumer) {
+    protected Document createMongoDbQuery(Table table, List<FilterItem> whereItems,
+            Consumer<FilterItem> whereItemToPostProcessConsumer) {
         assert _schema == table.getSchema();
 
         final Document query = new Document();
@@ -449,13 +452,13 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
             query.put("$or", orList);
             return true;
         } else {
-            
+
             final SelectItem selectItem = item.getSelectItem();
             if (selectItem.hasFunction()) {
-                // at this point, (scalar) functions in filters aren't possible to push down to the query 
+                // at this point, (scalar) functions in filters aren't possible to push down to the query
                 return false;
             }
-            
+
             final Column column = selectItem.getColumn();
             final String columnName = column.getName();
             final String operatorName;
@@ -492,7 +495,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                     existingFilterObject.append(operatorName, operand);
                 }
             }
-            
+
             return true;
         }
     }

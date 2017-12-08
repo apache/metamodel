@@ -83,7 +83,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
         _column = column;
         _fromItem = fromItem;
         _function = function;
-        _functionParameters = functionParameters;
+        _functionParameters = (functionParameters != null && functionParameters.length == 0) ? null : functionParameters;
         _expression = expression;
         _subQuerySelectItem = subQuerySelectItem;
         _alias = alias;
@@ -519,13 +519,14 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
         }
         return eb.isEquals();
     }
-
+    
     @Override
     protected void decorateIdentity(List<Object> identifiers) {
         identifiers.add(_expression);
         identifiers.add(_alias);
         identifiers.add(_column);
         identifiers.add(_function);
+        identifiers.add(_functionParameters);
         identifiers.add(_functionApproximationAllowed);
         if (_fromItem == null && _column != null && _column.getTable() != null) {
             // add a FromItem representing the column's table - this makes equal

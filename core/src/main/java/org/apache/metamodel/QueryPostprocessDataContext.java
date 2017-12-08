@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -408,18 +409,15 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
     }
 
     private List<SelectItem> buildWorkingSelectItems(List<SelectItem> selectItems, List<FilterItem> whereItems) {
-        final List<SelectItem> primarySelectItems = new ArrayList<>(selectItems.size());
-        for (SelectItem selectItem : selectItems) {
-            final ScalarFunction scalarFunction = selectItem.getScalarFunction();
-            if (scalarFunction == null || isScalarFunctionMaterialized(scalarFunction)) {
-                primarySelectItems.add(selectItem);
-            } else {
-                final SelectItem copySelectItem = selectItem.replaceFunction(null);
-                primarySelectItems.add(copySelectItem);
-            }
+        if (whereItems == null || whereItems.isEmpty()) {
+            return selectItems;
         }
         final List<SelectItem> evaluatedSelectItems = MetaModelHelper.getEvaluatedSelectItems(whereItems);
-        return CollectionUtils.concat(true, primarySelectItems, evaluatedSelectItems);
+        
+        final LinkedHashSet<SelectItem> workingSelectItems = new LinkedHashSet<>();
+        workingSelectItems.addAll(selectItems);
+        workingSelectItems.addAll(evaluatedSelectItems);
+        return new ArrayList<>(workingSelectItems);
     }
 
     /**

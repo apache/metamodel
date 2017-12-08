@@ -32,7 +32,6 @@ import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.bson.Document;
@@ -224,12 +223,52 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
     }
 
     @Test
-    public void testQueryIntoNestedObject() {
+    public void testSelectNestedObject() {
         if (!isConfigured()) {
             System.err.println(getInvalidConfigurationMessage());
             return;
         }
 
+        try (DataSet ds =
+                executeNestedObjectQuery("SELECT name.given FROM " + getCollectionName() + " WHERE id = 42")) {
+            assertTrue(ds.next());
+            assertEquals("John", (String) ds.getRow().getValue(0));
+            assertFalse(ds.next());
+        }
+    }
+
+    @Test
+    public void testWhereNestedObject() {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        try (DataSet ds =
+                executeNestedObjectQuery("SELECT id FROM " + getCollectionName() + " WHERE name.given = 'Jane'")) {
+            assertTrue(ds.next());
+            assertEquals(43, ((Number) ds.getRow().getValue(0)).intValue());
+            assertFalse(ds.next());
+        }
+    }
+
+    @Test
+    public void testSelectAndWhereNestedObject() {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        try (DataSet ds = executeNestedObjectQuery(
+                "SELECT name.family FROM " + getCollectionName() + " WHERE name.given = 'Jane'")) {
+            assertTrue(ds.next());
+            assertEquals("Johnson", (String) ds.getRow().getValue(0));
+            assertFalse(ds.next());
+        }
+    }
+
+    // reusable method for a couple of test cases above
+    private DataSet executeNestedObjectQuery(String sql) {
         if (mongoDb.getCollection(getCollectionName()) != null) {
             mongoDb.getCollection(getCollectionName()).drop();
         }
@@ -251,26 +290,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         final Table table = dataContext.getDefaultSchema().getTableByName(getCollectionName());
         assertEquals("[_id, id, name]", table.getColumnNames().toString());
 
-        try (DataSet ds =
-                dataContext.executeQuery("SELECT name.given FROM " + getCollectionName() + " WHERE id = 42")) {
-            assertTrue(ds.next());
-            assertEquals("John", (String) ds.getRow().getValue(0));
-            assertFalse(ds.next());
-        }
-
-        try (DataSet ds =
-                dataContext.executeQuery("SELECT id FROM " + getCollectionName() + " WHERE name.given = 'Jane'")) {
-            assertTrue(ds.next());
-            assertEquals(43, ((Number) ds.getRow().getValue(0)).intValue());
-            assertFalse(ds.next());
-        }
-
-        try (DataSet ds = dataContext
-                .executeQuery("SELECT name.family FROM " + getCollectionName() + " WHERE name.given = 'Jane'")) {
-            assertTrue(ds.next());
-            assertEquals("Johnson", (String) ds.getRow().getValue(0));
-            assertFalse(ds.next());
-        }
+        return dataContext.executeQuery(sql);
     }
 
     @Test
@@ -498,25 +518,18 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
             System.err.println(getInvalidConfigurationMessage());
             return;
         }
+        
+        if (mongoDb.getCollection(getCollectionName()) != null) {
+            mongoDb.getCollection(getCollectionName()).drop();
+        }
+        
         final MongoDbDataContext dc = new MongoDbDataContext(mongoDb);
-        final Schema defaultSchema = dc.getDefaultSchema();
-
-        dc.executeUpdate(new UpdateScript() {
-            @Override
-            public void run(UpdateCallback callback) {
-                for (Table table : defaultSchema.getTables()) {
-                    callback.deleteFrom(table).execute();
-                }
-            }
-        });
-
-        assertEquals(0, defaultSchema.getTableCount());
 
         dc.executeUpdate(new UpdateScript() {
 
             @Override
             public void run(UpdateCallback callback) {
-                Table table = callback.createTable(defaultSchema, "some_entries").withColumn("foo").withColumn("bar")
+                Table table = callback.createTable(dc.getDefaultSchema(), getCollectionName()).withColumn("foo").withColumn("bar")
                         .withColumn("baz").withColumn("list").execute();
 
                 callback.insertInto(table).value("foo", 1).value("bar", "hello").execute();
@@ -531,12 +544,13 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
                         .value("list", Arrays.asList(1, 2, 3)).execute();
             }
         });
+        dc.refreshSchemas();
 
         DataSet dataSet;
-        assertEquals(1, defaultSchema.getTableCount());
+        assertEquals(1, dc.getDefaultSchema().getTableCount());
 
         // "Pure" SELECT COUNT(*) query
-        dataSet = dc.query().from("some_entries").selectCount().execute();
+        dataSet = dc.query().from(getCollectionName()).selectCount().execute();
         dataSet.close();
         assertTrue(dataSet.next());
         assertEquals(1, dataSet.getSelectItems().size());
@@ -546,7 +560,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         assertEquals(InMemoryDataSet.class, dataSet.getClass());
 
         // A conditional SELECT COUNT(*) query
-        dataSet = dc.query().from("some_entries").selectCount().where("foo").greaterThan(2).execute();
+        dataSet = dc.query().from(getCollectionName()).selectCount().where("foo").greaterThan(2).execute();
         dataSet.close();
         assertTrue(dataSet.next());
         assertEquals(1, dataSet.getSelectItems().size());
@@ -556,7 +570,7 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         assertEquals(InMemoryDataSet.class, dataSet.getClass());
 
         // Select columns
-        dataSet = dc.query().from("some_entries").select("foo").and("bar").and("baz").and("list").execute();
+        dataSet = dc.query().from(getCollectionName()).select("foo").and("bar").and("baz").and("list").execute();
         assertTrue(dataSet.next());
         assertEquals("Row[values=[1, hello, null, null]]", dataSet.getRow().toString());
         assertTrue(dataSet.next());
@@ -573,11 +587,11 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                callback.deleteFrom("some_entries").where("foo").greaterThan(2).where("baz").isNotNull().execute();
+                callback.deleteFrom(getCollectionName()).where("foo").greaterThan(2).where("baz").isNotNull().execute();
             }
         });
 
-        dataSet = dc.query().from("some_entries").select("foo").execute();
+        dataSet = dc.query().from(getCollectionName()).select("foo").execute();
         assertTrue(dataSet.next());
         assertEquals("Row[values=[1]]", dataSet.getRow().toString());
         assertTrue(dataSet.next());
@@ -592,14 +606,14 @@ public class MongoDbDataContextTest extends MongoDbTestCase {
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                callback.dropTable("some_entries").execute();
+                callback.dropTable(getCollectionName()).execute();
             }
         });
 
-        assertNull(dc.getTableByQualifiedLabel("some_entries"));
+        assertNull(dc.getTableByQualifiedLabel(getCollectionName()));
 
         dc.refreshSchemas();
-        assertEquals(0, defaultSchema.getTableCount());
+        assertEquals(0, dc.getDefaultSchema().getTableCount());
     }
 
     @Test
