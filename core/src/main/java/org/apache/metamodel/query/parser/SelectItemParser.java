@@ -134,7 +134,7 @@ public final class SelectItemParser implements QueryPartProcessor {
                     if (expressionSplit.length > 1) {
                         // there are multiple parameters to the function
                         expression = expressionSplit[0].trim();
-                        functionParameters = Arrays.copyOfRange(expressionSplit, 1, expressionSplit.length - 1, String[].class);
+                        functionParameters = Arrays.copyOfRange(expressionSplit, 1, expressionSplit.length, String[].class);
                     }
                 }
             }
