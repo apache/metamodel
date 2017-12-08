@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -157,7 +158,8 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
                     if (whereItems.size() == 1) {
                         final FilterItem whereItem = whereItems.get(0);
                         final SelectItem selectItem = whereItem.getSelectItem();
-                        if (!whereItem.isCompoundFilter() && selectItem != null && selectItem.getColumn() != null) {
+                        if (!whereItem.isCompoundFilter() && selectItem != null && !selectItem.hasFunction()
+                                && selectItem.getColumn() != null) {
                             final Column column = selectItem.getColumn();
                             if (column.isPrimaryKey() && OperatorType.EQUALS_TO.equals(whereItem.getOperator())) {
                                 logger.debug(
@@ -284,7 +286,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
             // We need to materialize a single table
             final Table table = MetaModelHelper.resolveTable(fromItem);
             final List<SelectItem> selectItemsToMaterialize = new ArrayList<SelectItem>();
-
+            
             for (final SelectItem selectItem : selectItems) {
                 final FromItem selectedFromItem = selectItem.getFromItem();
                 if (selectedFromItem != null) {
@@ -358,6 +360,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
         if (dataSet == null) {
             throw new IllegalStateException("FromItem was not succesfully materialized: " + fromItem);
         }
+        
         return dataSet;
     }
 
@@ -406,18 +409,15 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
     }
 
     private List<SelectItem> buildWorkingSelectItems(List<SelectItem> selectItems, List<FilterItem> whereItems) {
-        final List<SelectItem> primarySelectItems = new ArrayList<>(selectItems.size());
-        for (SelectItem selectItem : selectItems) {
-            final ScalarFunction scalarFunction = selectItem.getScalarFunction();
-            if (scalarFunction == null || isScalarFunctionMaterialized(scalarFunction)) {
-                primarySelectItems.add(selectItem);
-            } else {
-                final SelectItem copySelectItem = selectItem.replaceFunction(null);
-                primarySelectItems.add(copySelectItem);
-            }
+        if (whereItems == null || whereItems.isEmpty()) {
+            return selectItems;
         }
         final List<SelectItem> evaluatedSelectItems = MetaModelHelper.getEvaluatedSelectItems(whereItems);
-        return CollectionUtils.concat(true, primarySelectItems, evaluatedSelectItems);
+        
+        final LinkedHashSet<SelectItem> workingSelectItems = new LinkedHashSet<>();
+        workingSelectItems.addAll(selectItems);
+        workingSelectItems.addAll(evaluatedSelectItems);
+        return new ArrayList<>(workingSelectItems);
     }
 
     /**

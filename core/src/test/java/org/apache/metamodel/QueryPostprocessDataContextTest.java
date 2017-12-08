@@ -62,18 +62,18 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
 
     public void testSchemaTraversalWithAliasTable() {
         final MockUpdateableDataContext dc = new MockUpdateableDataContext();
-        
+
         final Column column = dc.getColumnByQualifiedLabel("foo");
         assertEquals("table", column.getTable().getName());
     }
-    
+
     public void testNoAliasTableWhenSystemPropertySet() {
         System.setProperty(QueryPostprocessDataContext.SYSTEM_PROPERTY_CREATE_DEFAULT_TABLE_ALIAS, "false");
         try {
             final MockUpdateableDataContext dc = new MockUpdateableDataContext();
             final List<Table> tables = dc.getDefaultSchema().getTables();
             assertEquals(1, tables.size());
-            
+
             assertEquals("table", tables.get(0).getName());
         } finally {
             System.clearProperty(QueryPostprocessDataContext.SYSTEM_PROPERTY_CREATE_DEFAULT_TABLE_ALIAS);
@@ -87,7 +87,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
 
         assertEquals("table", tables.get(0).getName());
     }
-    
+
     public void testAliasTableQueries() {
         final MockUpdateableDataContext dc = new MockUpdateableDataContext();
         final List<Table> tables = dc.getDefaultSchema().getTables();
@@ -338,17 +338,15 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
     }
 
     public void testScalarFunctionWhere() throws Exception {
-        MockDataContext dc = new MockDataContext("sch", "tab", "1");
-        Table table = dc.getDefaultSchema().getTable(0);
+        final MockDataContext dc = new MockDataContext("sch", "tab", "1");
+        final Table table = dc.getDefaultSchema().getTable(0);
 
-        Query query = dc.query().from(table).select("foo").where(FunctionType.TO_NUMBER, "bar").eq(1).toQuery();
+        final Query query = dc.query().from(table).select("foo").where(FunctionType.TO_NUMBER, "bar").eq(1).toQuery();
         assertEquals("SELECT tab.foo FROM sch.tab WHERE TO_NUMBER(tab.bar) = 1", query.toSql());
 
-        DataSet ds = dc.executeQuery(query);
+        final DataSet ds = dc.executeQuery(query);
         assertTrue(ds.next());
-        Row row;
-
-        row = ds.getRow();
+        final Row row = ds.getRow();
         assertEquals("Row[values=[2]]", row.toString());
 
         assertFalse(ds.next());
@@ -1183,4 +1181,70 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         assertEquals("[hello, world]", values.toString());
     }
 
+    public void testColumnOnlyUsedInScalarFunctionInWhereClause() throws Exception {
+        final DataContext dc = getDataContext();
+        final Query query = dc.parseQuery(
+                "SELECT contributor_id FROM contributor WHERE JAVA_SUBSTRING(name, 3, 6) = 'per' ORDER BY contributor_id");
+        try (DataSet ds = dc.executeQuery(query)) {
+            assertTrue(ds.next());
+            // kasper
+            assertEquals("1", ds.getRow().getValue(0).toString());
+            assertTrue(ds.next());
+            // jesper
+            assertEquals("6", ds.getRow().getValue(0).toString());
+            assertFalse(ds.next());
+        }
+    }
+
+    public void testQueryDifferentScalarFunctionsOnSameColumnInBothSelectAndWhere() throws Exception {
+        final DataContext dc = getDataContext();
+        final Query query = dc.parseQuery(
+                "SELECT SUBSTRING(name, 1, 3) FROM contributor WHERE JAVA_SUBSTRING(name, 3, 6) = 'per' ORDER BY contributor_id");
+
+        // assert on the parsed select items just to ensure that nothing gets mangled in the parsing
+        assertSame(FunctionType.SUBSTRING, query.getSelectClause().getItem(0).getScalarFunction());
+        assertEquals(" 1", query.getSelectClause().getItem(0).getFunctionParameters()[0]);
+        assertEquals(" 3", query.getSelectClause().getItem(0).getFunctionParameters()[1]);
+        assertSame(FunctionType.JAVA_SUBSTRING, query.getWhereClause().getItem(0).getSelectItem().getScalarFunction());
+        assertEquals(" 3", query.getWhereClause().getItem(0).getSelectItem().getFunctionParameters()[0]);
+        assertEquals(" 6", query.getWhereClause().getItem(0).getSelectItem().getFunctionParameters()[1]);
+
+        try (DataSet ds = dc.executeQuery(query)) {
+            assertTrue(ds.next());
+            // name is "kasper"
+            final Object value1 = ds.getRow().getValue(0);
+            assertEquals("kas", value1.toString());
+            assertTrue(ds.next());
+            // name is "jesper"
+            final Object value2 = ds.getRow().getValue(0);
+            assertEquals("jes", value2.toString());
+            assertFalse(ds.next());
+        }
+    }
+    
+    public void testQuerySameScalarFunctionOnSameColumnButDifferentParamsInBothSelectAndWhere() throws Exception {
+        final DataContext dc = getDataContext();
+        final Query query = dc.parseQuery(
+                "SELECT SUBSTRING(name, 1, 3) FROM contributor WHERE SUBSTRING(name, 4, 3) = 'per' ORDER BY contributor_id");
+
+        // assert on the parsed select items just to ensure that nothing gets mangled in the parsing
+        assertSame(FunctionType.SUBSTRING, query.getSelectClause().getItem(0).getScalarFunction());
+        assertEquals(" 1", query.getSelectClause().getItem(0).getFunctionParameters()[0]);
+        assertEquals(" 3", query.getSelectClause().getItem(0).getFunctionParameters()[1]);
+        assertSame(FunctionType.SUBSTRING, query.getWhereClause().getItem(0).getSelectItem().getScalarFunction());
+        assertEquals(" 4", query.getWhereClause().getItem(0).getSelectItem().getFunctionParameters()[0]);
+        assertEquals(" 3", query.getWhereClause().getItem(0).getSelectItem().getFunctionParameters()[1]);
+
+        try (DataSet ds = dc.executeQuery(query)) {
+            assertTrue(ds.next());
+            // name is "kasper"
+            final Object value1 = ds.getRow().getValue(0);
+            assertEquals("kas", value1.toString());
+            assertTrue(ds.next());
+            // name is "jesper"
+            final Object value2 = ds.getRow().getValue(0);
+            assertEquals("jes", value2.toString());
+            assertFalse(ds.next());
+        }
+    }
 }
