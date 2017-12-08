@@ -41,6 +41,8 @@ public interface FunctionType extends Serializable {
     public static final ScalarFunction TO_NUMBER = new ToNumberFunction();
     public static final ScalarFunction TO_DATE = new ToDateFunction();
     public static final ScalarFunction TO_BOOLEAN = new ToBooleanFunction();
+    public static final ScalarFunction SUBSTRING = SubstringFunction.createSqlStyle();
+    public static final ScalarFunction JAVA_SUBSTRING = SubstringFunction.createJavaStyle();
     public static final ScalarFunction MAP_VALUE = new MapValueFunction();
 
     public ColumnType getExpectedColumnType(ColumnType type);

@@ -24,11 +24,26 @@ import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
+import static org.junit.Assert.assertNotEquals;
+
 import java.util.List;
 
 public class SelectItemTest extends MetaModelTestCase {
 
     private Schema _schema = getExampleSchema();
+    
+    public void testEqualsAndHashCodeWithScalarFunctionParameters() {
+        final SelectItem selectItem = new SelectItem(_schema.getTableByName(TABLE_PROJECT).getColumns().get(0));
+        final SelectItem item1 = selectItem.replaceFunction(FunctionType.SUBSTRING, 2, 2);
+        final SelectItem item2 = selectItem.replaceFunction(FunctionType.SUBSTRING, 2, 2);
+        final SelectItem item3 = selectItem.replaceFunction(FunctionType.SUBSTRING, 2, 3);
+        
+        assertEquals(item1, item2);
+        assertEquals(item1.hashCode(), item2.hashCode());
+        
+        assertNotEquals(item1, item3);
+        assertNotEquals(item1.hashCode(), item3.hashCode());
+    }
 
     public void testSelectColumnInFromItem() throws Exception {
         final Table projectTable = _schema.getTableByName(TABLE_PROJECT);

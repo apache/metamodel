@@ -4,6 +4,8 @@ jdk:
   - oraclejdk8
   
 before_install:
+  # copy integration test config
+  - cp travis-metamodel-integrationtest-configuration.properties /home/travis/metamodel-integrationtest-configuration.properties
   # install Neo4j locally:
   - wget dist.neo4j.org/neo4j-community-2.2.3-unix.tar.gz
   - tar -xzf neo4j-community-2.2.3-unix.tar.gz

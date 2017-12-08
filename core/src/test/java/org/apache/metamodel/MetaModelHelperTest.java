@@ -33,6 +33,7 @@ import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.data.SubSelectionDataSet;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.JoinType;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.OrderByItem;
@@ -44,9 +45,11 @@ import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.junit.Test;
 
 public class MetaModelHelperTest extends MetaModelTestCase {
 
+    @Test
     public void testLeftJoin() throws Exception {
         SelectItem si1 = new SelectItem(new MutableColumn("person_id", ColumnType.INTEGER));
         SelectItem si2 = new SelectItem(new MutableColumn("person_name", ColumnType.VARCHAR));
@@ -67,8 +70,8 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         data2.add(new Object[] { 2, "bad boy", "bb" });
         data2.add(new Object[] { 4, "trying harder", "try" });
 
-        DataSet ds1 = createDataSet(Lists.newArrayList(si1, si2, si3, si4 ), data1);
-        DataSet ds2 = createDataSet(Lists.newArrayList(si5, si6, si7 ), data2);
+        DataSet ds1 = createDataSet(Lists.newArrayList(si1, si2, si3, si4), data1);
+        DataSet ds2 = createDataSet(Lists.newArrayList(si5, si6, si7), data2);
         FilterItem[] onConditions = new FilterItem[1];
         onConditions[0] = new FilterItem(si4, OperatorType.EQUALS_TO, si5);
 
@@ -82,6 +85,7 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         assertEquals(5, objectArrays.size());
     }
 
+    @Test
     public void testRightJoin() throws Exception {
         SelectItem si1 = new SelectItem(new MutableColumn("person_id", ColumnType.INTEGER));
         SelectItem si2 = new SelectItem(new MutableColumn("person_name", ColumnType.VARCHAR));
@@ -101,8 +105,8 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         data2.add(new Object[] { 2, "bad boy", "bb" });
         data2.add(new Object[] { 4, "trying harder", "try" });
 
-        DataSet ds1 = createDataSet(Lists.newArrayList(si1, si2, si3, si4 ), data1);
-        DataSet ds2 = createDataSet(Lists.newArrayList( si5, si6, si7 ), data2);
+        DataSet ds1 = createDataSet(Lists.newArrayList(si1, si2, si3, si4), data1);
+        DataSet ds2 = createDataSet(Lists.newArrayList(si5, si6, si7), data2);
         FilterItem[] onConditions = new FilterItem[1];
         onConditions[0] = new FilterItem(si4, OperatorType.EQUALS_TO, si5);
 
@@ -114,10 +118,10 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         assertEquals(3, objectArrays.size());
     }
 
+    @Test
     public void testSimpleCarthesianProduct() throws Exception {
         DataSet dataSet = MetaModelHelper.getCarthesianProduct(createDataSet1(), createDataSet2());
         List<String> results = new ArrayList<String>();
-
 
         while (dataSet.next()) {
             results.add(dataSet.getRow().toString());
@@ -130,9 +134,45 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         assertTrue(results.contains("Row[values=[o, b]]"));
         assertTrue(results.contains("Row[values=[o, a]]"));
         assertTrue(results.contains("Row[values=[o, r]]"));
-
     }
 
+    @Test
+    public void testGetFilteredWithScalarFunctionInWhere() throws Exception {
+        final DataSet ds1 = createDataSet3(); // contains ["w00p",true] and ["yippie",false]
+        final SelectItem selectItem1 = ds1.getSelectItems().get(0);
+        final DataSet ds2 = MetaModelHelper.getFiltered(ds1, new FilterItem(
+                selectItem1.replaceFunction(FunctionType.SUBSTRING, 2, 2), OperatorType.EQUALS_TO, "00"));
+        final List<Object[]> resultRows = ds2.toObjectArrays();
+
+        assertEquals(1, resultRows.size());
+        assertEquals("[w00p, true]", Arrays.toString(resultRows.get(0)));
+    }
+
+    @Test
+    public void testGetSelectionWithScalarFunctionInSelectItem() throws Exception {
+        final DataSet ds1 = createDataSet3(); // contains ["w00p",true] and ["yippie",false]
+        final SelectItem selectItem1 = ds1.getSelectItems().get(0);
+        final DataSet ds2 = MetaModelHelper.getSelection(new SelectItem[] { selectItem1.replaceFunction(FunctionType.SUBSTRING, 2, 2) }, ds1);
+        final List<Object[]> resultRows = ds2.toObjectArrays();
+        
+        assertEquals(2, resultRows.size());
+        assertEquals("[00]", Arrays.toString(resultRows.get(0)));
+        assertEquals("[ip]", Arrays.toString(resultRows.get(1)));
+    }
+
+    @Test
+    public void testGetSelectionWithScalarFunctionAndNonFunctionInSelectItem() throws Exception {
+        final DataSet ds1 = createDataSet3(); // contains ["w00p",true] and ["yippie",false]
+        final SelectItem selectItem1 = ds1.getSelectItems().get(0);
+        final DataSet ds2 = MetaModelHelper.getSelection(new SelectItem[] { selectItem1, selectItem1.replaceFunction(FunctionType.SUBSTRING, 2, 2) }, ds1);
+        final List<Object[]> resultRows = ds2.toObjectArrays();
+        
+        assertEquals(2, resultRows.size());
+        assertEquals("[w00p, 00]", Arrays.toString(resultRows.get(0)));
+        assertEquals("[yippie, ip]", Arrays.toString(resultRows.get(1)));
+    }
+
+    @Test
     public void testTripleCarthesianProduct() throws Exception {
         DataSet dataSet = MetaModelHelper.getCarthesianProduct(createDataSet1(), createDataSet2(), createDataSet3());
         assertEquals(4, dataSet.getSelectItems().size());
@@ -142,6 +182,7 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         assertFalse(dataSet.next());
     }
 
+    @Test
     public void testTripleCarthesianProductWithWhereItems() throws Exception {
         DataSet ds1 = createDataSet1();
         DataSet ds2 = createDataSet2();
@@ -156,6 +197,7 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         assertFalse(dataSet.next());
     }
 
+    @Test
     public void testGetCarthesianProductNoRows() throws Exception {
         DataSet dataSet = MetaModelHelper.getCarthesianProduct(createDataSet4(), createDataSet2(), createDataSet3());
         assertEquals(4, dataSet.getSelectItems().size());
@@ -170,6 +212,7 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         assertFalse(dataSet.next());
     }
 
+    @Test
     public void testGetOrdered() throws Exception {
         DataSet dataSet = createDataSet3();
         List<OrderByItem> orderByItems = new ArrayList<OrderByItem>();
@@ -189,8 +232,8 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         data1.add(new Object[] { "o" });
         data1.add(new Object[] { "o" });
 
-        DataSet dataSet1 = createDataSet(
-                Lists.newArrayList( new SelectItem(new MutableColumn("foo", ColumnType.VARCHAR)) ), data1);
+        DataSet dataSet1 =
+                createDataSet(Lists.newArrayList(new SelectItem(new MutableColumn("foo", ColumnType.VARCHAR))), data1);
 
         return dataSet1;
     }
@@ -200,7 +243,7 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         data2.add(new Object[] { "b" });
         data2.add(new Object[] { "a" });
         data2.add(new Object[] { "r" });
-        DataSet dataSet2 = createDataSet(Lists.newArrayList(new SelectItem("bar", "bar") ), data2);
+        DataSet dataSet2 = createDataSet(Lists.newArrayList(new SelectItem("bar", "bar")), data2);
         return dataSet2;
     }
 
@@ -209,15 +252,15 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         data3.add(new Object[] { "w00p", true });
         data3.add(new Object[] { "yippie", false });
 
-        DataSet dataSet3 = createDataSet(Lists.newArrayList(new SelectItem("expression", "e"),
-                new SelectItem("webish?", "w") ), data3);
+        DataSet dataSet3 = createDataSet(
+                Lists.newArrayList(new SelectItem("expression", "e"), new SelectItem("webish?", "w")), data3);
 
         return dataSet3;
     }
 
     private DataSet createDataSet4() {
         List<Object[]> data4 = new ArrayList<Object[]>();
-        DataSet dataSet4 = createDataSet(Lists.newArrayList(new SelectItem("abc", "abc") ), data4);
+        DataSet dataSet4 = createDataSet(Lists.newArrayList(new SelectItem("abc", "abc")), data4);
         return dataSet4;
     }
 
@@ -234,9 +277,9 @@ public class MetaModelHelperTest extends MetaModelTestCase {
             data5.add(new Object[] { i, "Person_" + i, bigDataSetSize - (i + 1) });
         }
 
-        DataSet dataSet5 = createDataSet(Lists.newArrayList( new SelectItem(new MutableColumn("nr", ColumnType.BIGINT)),
-                new SelectItem(new MutableColumn("name", ColumnType.STRING)), new SelectItem(new MutableColumn("dnr",
-                        ColumnType.BIGINT)) ), data5);
+        DataSet dataSet5 = createDataSet(Lists.newArrayList(new SelectItem(new MutableColumn("nr", ColumnType.BIGINT)),
+                new SelectItem(new MutableColumn("name", ColumnType.STRING)),
+                new SelectItem(new MutableColumn("dnr", ColumnType.BIGINT))), data5);
         return dataSet5;
     }
 
@@ -256,6 +299,7 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         return dataSet6;
     }
 
+    @Test
     public void testGetTables() throws Exception {
         MutableTable table1 = new MutableTable("table1");
         MutableTable table2 = new MutableTable("table2");
@@ -281,6 +325,7 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         assertTrue(Arrays.asList(tables).contains(table2));
     }
 
+    @Test
     public void testGetTableColumns() throws Exception {
         MutableTable table1 = new MutableTable("table1");
         MutableColumn column1 = new MutableColumn("c1", ColumnType.BIGINT);
@@ -307,6 +352,7 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         assertSame(column3, columns[1]);
     }
 
+    @Test
     public void testGetTableFromItems() throws Exception {
         Schema schema = getExampleSchema();
         Table contributorTable = schema.getTableByName(TABLE_CONTRIBUTOR);
@@ -324,6 +370,7 @@ public class MetaModelHelperTest extends MetaModelTestCase {
                 Arrays.toString(fromItems));
     }
 
+    @Test
     public void testGetSelectionNoRows() throws Exception {
         SelectItem item1 = new SelectItem("foo", "f");
         SelectItem item2 = new SelectItem("bar", "b");
@@ -337,6 +384,7 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         assertEquals("[bar AS b, foo AS f]", Arrays.toString(ds.getSelectItems().toArray()));
     }
 
+    @Test
     public void testLeftJoinNoRowsOrSingleRow() throws Exception {
         SelectItem item1 = new SelectItem("foo", "f");
         SelectItem item2 = new SelectItem("bar", "b");
@@ -347,8 +395,8 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         DataSet ds1 = new EmptyDataSet(selectItems1);
         DataSet ds2 = new EmptyDataSet(selectItems2);
 
-        DataSet joinedDs = MetaModelHelper.getLeftJoin(ds1, ds2, new FilterItem[] { new FilterItem(item2,
-                OperatorType.EQUALS_TO, item3) });
+        DataSet joinedDs = MetaModelHelper.getLeftJoin(ds1, ds2,
+                new FilterItem[] { new FilterItem(item2, OperatorType.EQUALS_TO, item3) });
 
         assertEquals(SubSelectionDataSet.class, joinedDs.getClass());
         assertEquals("[foo AS f, bar AS b, baz AS z]", Arrays.toString(joinedDs.getSelectItems().toArray()));
@@ -357,21 +405,22 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         Row row = new DefaultRow(header1, new Object[] { 1, 2 }, null);
         ds1 = new InMemoryDataSet(header1, row);
 
-        joinedDs = MetaModelHelper.getLeftJoin(ds1, ds2, new FilterItem[] { new FilterItem(item2,
-                OperatorType.EQUALS_TO, item3) });
+        joinedDs = MetaModelHelper.getLeftJoin(ds1, ds2,
+                new FilterItem[] { new FilterItem(item2, OperatorType.EQUALS_TO, item3) });
         assertEquals("[foo AS f, bar AS b, baz AS z]", Arrays.toString(joinedDs.getSelectItems().toArray()));
         assertTrue(joinedDs.next());
         assertEquals("Row[values=[1, 2, null]]", joinedDs.getRow().toString());
         assertFalse(joinedDs.next());
     }
 
+    @Test
     public void testCarthesianProductScalability() {
 
         DataSet employees = createDataSet5();
         DataSet departmens = createDataSet6();
 
-        FilterItem fi = new FilterItem(employees.getSelectItems().get(2), OperatorType.EQUALS_TO, departmens
-                .getSelectItems().get(0));
+        FilterItem fi = new FilterItem(employees.getSelectItems().get(2), OperatorType.EQUALS_TO,
+                departmens.getSelectItems().get(0));
 
         DataSet joined = MetaModelHelper.getCarthesianProduct(new DataSet[] { employees, departmens }, fi);
         int count = 0;
@@ -380,6 +429,5 @@ public class MetaModelHelperTest extends MetaModelTestCase {
         }
 
         assertTrue(count == bigDataSetSize);
-
     }
 }
