@@ -27,7 +27,6 @@ import org.apache.metamodel.delete.RowDeletionBuilder;
 import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.LogicalOperator;
-import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.search.SearchResponse;
@@ -79,19 +78,16 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
                 client.prepareSearch(indexName).setQuery(queryBuilder).execute()
                         .actionGet();
 
+        client.admin().indices().prepareRefresh(indexName).execute().actionGet();
         final Iterator<SearchHit> iterator = response.getHits().iterator();
         while (iterator.hasNext()) {
             final SearchHit hit = iterator.next();
             final String typeId = hit.getId();
             final DeleteResponse deleteResponse =
-                    client.prepareDelete().setIndex(indexName).setType(documentType).setId(typeId).get();
-
+                    client.prepareDelete().setIndex(indexName).setType(documentType).setId(typeId).execute()
+                            .actionGet();
             logger.debug("Deleted documents by query." + deleteResponse.getResult());
-            final MutableSchema schema = (MutableSchema) table.getSchema();
-            schema.removeTable(table);
         }
-
-
-        client.admin().indices().prepareRefresh(indexName).get();
+        client.admin().indices().prepareRefresh(indexName).execute().actionGet();
     }
 }

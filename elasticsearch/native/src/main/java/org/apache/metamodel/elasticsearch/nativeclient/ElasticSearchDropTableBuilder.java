@@ -69,9 +69,8 @@ final class ElasticSearchDropTableBuilder extends AbstractTableDropBuilder {
             logger.debug("Delete mapping response: acknowledged={}", deleteResponse.getResult());
         }
 
+        client.admin().indices().prepareRefresh(indexName).execute().actionGet();
         final MutableSchema schema = (MutableSchema) table.getSchema();
         schema.removeTable(table);
-
-        client.admin().indices().prepareRefresh(indexName).get();
     }
 }

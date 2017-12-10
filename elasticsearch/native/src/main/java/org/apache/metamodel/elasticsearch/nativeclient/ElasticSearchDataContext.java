@@ -242,9 +242,6 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
             @SuppressWarnings("unchecked")
             final Map<String, ?> metadataPropertiesMap = (Map<String, ?>) metadataProperties;
             final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(metadataPropertiesMap);
-
-
-
             final SimpleTableDef std = new SimpleTableDef(documentType, metaData.getColumnNames(),
                     metaData.getColumnTypes());
             return std;
@@ -366,7 +363,7 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         final TermQueryBuilder query = QueryBuilders.termQuery("_type", documentType);
         final SearchResponse searchResponse =
                 elasticSearchClient.prepareSearch(indexName).setSource(new SearchSourceBuilder().size(0).query(query))
-                        .get();
+                        .execute().actionGet();
         return searchResponse.getHits().getTotalHits();
     }
 

@@ -23,6 +23,7 @@ import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.index.IndexAction;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +65,8 @@ final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<Elast
         assert !valueMap.isEmpty();
 
         requestBuilder.setSource(valueMap);
+        requestBuilder.setRefreshPolicy("wait_for");
+        requestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.WAIT_UNTIL);
 
         final IndexResponse result = requestBuilder.execute().actionGet();
 
