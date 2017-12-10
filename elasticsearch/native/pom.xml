@@ -27,7 +27,7 @@
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
 			<artifactId>MetaModel-core</artifactId>
-			<version>${project.version}</version>
+			<version>5.0.0</version>
 		</dependency>
 
 		<dependency>
@@ -72,6 +72,28 @@
 		</dependency>
 	</dependencies>
 
+	<build>
+		<plugins>
+			<!-- any other plugins -->
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
 	<profiles>
 		<profile>
 			<id>integration-test</id>
@@ -99,14 +121,29 @@
 							<autoPull>true</autoPull>
 							<images>
 								<image>
+
 									<name>elasticsearch-metamodel</name>
 									<build>
 										<dockerFileDir>${project.build.directory}/test-classes</dockerFileDir>
 									</build>
 									<run>
+
 										<ports>
+											<port>9200:9200</port>
 											<port>9300:9300</port>
 										</ports>
+
+										<env>
+												<ES_JAVA_OPTS>-Xms1g -Xmx1g</ES_JAVA_OPTS>
+												<cluster.name>docker-cluster</cluster.name>
+												<bootstrap.memory_lock>true</bootstrap.memory_lock>
+											    <xpack.security.enabled>false</xpack.security.enabled>
+										</env>
+
+										<wait>
+											<url>http://${docker.host.address}:9200</url>
+											<time>300000</time>
+										</wait>
 									</run>
 								</image>
 							</images>

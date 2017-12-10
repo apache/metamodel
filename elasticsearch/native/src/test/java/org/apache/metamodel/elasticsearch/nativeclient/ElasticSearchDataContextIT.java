@@ -92,7 +92,7 @@ public class ElasticSearchDataContextIT {
     public static void beforeTests() throws Exception {
         client = new PreBuiltTransportClient(
                 Settings.builder().put("client.transport.ignore_cluster_name", true).build())
-                .addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress("localhost", 9300)));
+                .addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress("192.168.99.100", 9300)));
         client.admin().cluster().prepareHealth().setTimeout(TimeValue.timeValueMillis(200)).get();
         indexTweeterDocument(indexType1, 1);
         indexTweeterDocument(indexType2, 1);
@@ -298,7 +298,35 @@ public class ElasticSearchDataContextIT {
     }
 
     @Test
-    public void testDeleteAll() throws Exception {
+    public void testDeleteFromWithWhere() throws Exception {
+        final Schema schema = dataContext.getDefaultSchema();
+        final String tableName = "testCreateTableDelete";
+        final CreateTable createTable = new CreateTable(schema, tableName);
+        createTable.withColumn("foo").ofType(ColumnType.STRING);
+        createTable.withColumn("bar").ofType(ColumnType.DOUBLE);
+        dataContext.executeUpdate(createTable);
+
+        final Table table = schema.getTableByName(tableName);
+
+        dataContext.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
+            }
+        });
+
+        dataContext.executeUpdate(new DeleteFrom(table).where("bar").eq(42));
+
+        final Row row = MetaModelHelper.executeSingleRowQuery(dataContext, dataContext.query().from(table).selectCount()
+                .toQuery());
+        //there where no "where" items, therefore no elements should be deleted
+        assertEquals("Row[values=[1]]", row.toString());
+
+    }
+
+    @Test
+    public void testDeleteNoWhere() throws Exception {
         final Schema schema = dataContext.getDefaultSchema();
         final String tableName = "testCreateTable1";
         final CreateTable createTable = new CreateTable(schema, tableName);
@@ -320,9 +348,8 @@ public class ElasticSearchDataContextIT {
 
         Row row = MetaModelHelper.executeSingleRowQuery(dataContext, dataContext.query().from(table).selectCount()
                 .toQuery());
-        assertEquals("Row[values=[0]]", row.toString());
-
-        dataContext.executeUpdate(new DropTable(table));
+        //there where no "where" items, therefore no elements should be deleted
+        assertEquals("Row[values=[2]]", row.toString());
     }
 
     @Test
@@ -378,7 +405,7 @@ public class ElasticSearchDataContextIT {
                 dataContext.executeUpdate(new DeleteFrom(table).where("bar").gt(40));
                 fail("Exception expected");
             } catch (UnsupportedOperationException e) {
-                assertEquals("Could not push down WHERE items to delete by query request: [testCreateTable.bar > 40]",
+                assertEquals("Could not push down WHERE items to delete by query request: [testCreateTable3.bar > 40]",
                         e.getMessage());
             }
 
@@ -394,9 +421,7 @@ public class ElasticSearchDataContextIT {
         final CreateTable createTable = new CreateTable(schema, tableName);
         createTable.withColumn("foo").ofType(ColumnType.STRING);
         createTable.withColumn("bar").ofType(ColumnType.NUMBER);
-        if (schema.getTableByName(tableName) == null){
-            dataContext.executeUpdate(createTable);
-        }
+        dataContext.executeUpdate(createTable);
 
         final Table table = schema.getTableByName(tableName);
         try {
@@ -564,14 +589,15 @@ public class ElasticSearchDataContextIT {
 
     @Test
     public void testCountQuery() throws Exception {
-        Table table = dataContext.getDefaultSchema().getTableByName(bulkIndexType);
-        Query q = new Query().selectCount().from(table);
+        final Table table = dataContext.getDefaultSchema().getTableByName(bulkIndexType);
 
-        List<Object[]> data = dataContext.executeQuery(q).toObjectArrays();
+        final Query q = new Query().selectCount().from(table);
+        final List<Object[]> data = dataContext.executeQuery(q).toObjectArrays();
         assertEquals(1, data.size());
-        Object[] row = data.get(0);
+        final Object[] row = data.get(0);
         assertEquals(1, row.length);
-        assertEquals("[10]", Arrays.toString(row));
+
+        assertEquals("[6]", Arrays.toString(row));
     }
 
     @Test(expected = IllegalArgumentException.class)
