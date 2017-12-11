@@ -90,9 +90,10 @@ public class ElasticSearchDataContextIT {
 
     @BeforeClass
     public static void beforeTests() throws Exception {
+        final String dockerHostAddress = System.getenv("DOCKER_HOST_NAME");
         client = new PreBuiltTransportClient(
                 Settings.builder().put("client.transport.ignore_cluster_name", true).build())
-                .addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress("192.168.99.100", 9300)));
+                .addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress(dockerHostAddress, 9300)));
         client.admin().cluster().prepareHealth().setTimeout(TimeValue.timeValueMillis(200)).get();
         indexTweeterDocument(indexType1, 1);
         indexTweeterDocument(indexType2, 1);
