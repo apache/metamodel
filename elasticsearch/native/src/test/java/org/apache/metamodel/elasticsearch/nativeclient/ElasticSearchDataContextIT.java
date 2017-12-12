@@ -61,7 +61,11 @@ import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.delete.DeleteAction;
+import org.elasticsearch.action.delete.DeleteRequestBuilder;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.common.settings.Settings;
@@ -261,11 +265,11 @@ public class ElasticSearchDataContextIT {
 
     @Test
     public void testDetectOutsideChanges() throws Exception {
-        ElasticSearchDataContext elasticSearchDataContext = (ElasticSearchDataContext) dataContext;
+        final ElasticSearchDataContext elasticSearchDataContext = (ElasticSearchDataContext) dataContext;
 
         // Create the type in ES
         final IndicesAdminClient indicesAdmin = elasticSearchDataContext.getElasticSearchClient().admin().indices();
-        final String tableType = "outsideTable";
+        final String tableType = "outsideTable2";
 
         Object[] sourceProperties = { "testA", "type=text", "testB", "type=integer" };
 
@@ -286,14 +290,17 @@ public class ElasticSearchDataContextIT {
         while (iterator.hasNext()) {
             final SearchHit hit = iterator.next();
             final String typeId = hit.getId();
-           /* new DeleteRequestBuilder(indicesAdmin, DeleteAction.INSTANCE).setType(tableType).setIndex(indexName)
-                    .setId(typeId).get();*/
+            final DeleteRequestBuilder deleteRequestBuilder =
+                    new DeleteRequestBuilder(indicesAdmin, DeleteAction.INSTANCE).setType(tableType).setIndex(indexName)
+                            .setId(typeId);
+            final DeleteResponse deleteResponse = deleteRequestBuilder.get();
+            deleteRequestBuilder.setRefreshPolicy("wait_for");
+            deleteRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.WAIT_UNTIL);
 
-            client.prepareDelete().setIndex(indexName).setType(tableType).setId(typeId).get();
+            //client.prepareDelete().setIndex(indexName).setType(tableType).setId(typeId).execute().actionGet();
 
         }
-        client.admin().indices().prepareRefresh(indexName).get();
-
+        client.admin().indices().prepareRefresh(indexName).execute().actionGet();
         dataContext.refreshSchemas();
         assertNull(dataContext.getTableByQualifiedLabel(tableType));
     }
@@ -598,7 +605,7 @@ public class ElasticSearchDataContextIT {
         final Object[] row = data.get(0);
         assertEquals(1, row.length);
 
-        assertEquals("[6]", Arrays.toString(row));
+        assertEquals("[9]", Arrays.toString(row));
     }
 
     @Test(expected = IllegalArgumentException.class)

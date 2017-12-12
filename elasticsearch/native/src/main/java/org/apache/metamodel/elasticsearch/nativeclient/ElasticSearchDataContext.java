@@ -379,6 +379,11 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         return callback.getUpdateSummary();
     }
 
+    @Override
+    protected void onSchemaCacheRefreshed() {
+        detectSchema();
+    }
+
     /**
      * Gets the {@link Client} that this {@link DataContext} is wrapping.
      *
