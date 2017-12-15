@@ -170,7 +170,7 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
             final List<Column> columns = new ArrayList<>(selectItems.size());
             for (SelectItem selectItem : selectItems) {
                 validateSoqlSupportedSelectItem(selectItem);
-                columns.set(i,selectItem.getColumn());
+                columns.add(selectItem.getColumn());
                 if (i != 0) {
                     sb.append(", ");
                 }
