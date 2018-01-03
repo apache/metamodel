@@ -24,9 +24,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
-public abstract class CouchDbTestCase extends TestCase {
+public abstract class CouchDbTestSupport {
 
     private static final String DEFAULT_TEST_DATABASE_NAME = "eobjects_metamodel_test";
 
@@ -34,11 +32,8 @@ public abstract class CouchDbTestCase extends TestCase {
     private boolean _configured;
     private String _databaseName;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        File file = new File(getPropertyFilePath());
+    public void loadConfiguration() throws Exception {
+        final File file = new File(getPropertyFilePath());
         if (file.exists()) {
             loadPropertyFile(file);
         } else {

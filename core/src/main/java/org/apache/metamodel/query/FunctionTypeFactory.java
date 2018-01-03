@@ -67,6 +67,13 @@ public class FunctionTypeFactory {
         case "TO_DATE":
         case "DATE":
             return FunctionType.TO_DATE;
+        case "SUBSTRING":
+        case "SUBSTR":
+        case "SUB_STRING":
+        case "SUB_STR":
+            return FunctionType.SUBSTRING;
+        case "JAVA_SUBSTRING":
+            return FunctionType.JAVA_SUBSTRING;
         case "MAP_VALUE":
             return FunctionType.MAP_VALUE;
         default:

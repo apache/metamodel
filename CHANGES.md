@@ -1,6 +1,13 @@
- * [METAMODEL-1169] - Fixed issue with SQL Server milliseconds precision in WHERE
+### Apache MetaModel 5.0.1
 
-### Apache MetaModel 5.0
+ * [METAMODEL-1169] - Fixed issue with SQL Server milliseconds precision in WHERE.
+ * [METAMODEL-1173] - Added CouchDB integration test in add. to MongoDB
+ * [METAMODEL-1173] - Fixed parsing and handling of scalar functions in WHERE clause.
+ * [METAMODEL-1171] - Fixed parsing of query operators with DATE, TIME, TIMESTAMP prefix to operand date/time values.
+ * [METAMODEL-1174] - Upgraded Excel module's dependency on Apache POI to latest stable version (3.17).
+ * [METAMODEL-1176] - Fixed issue with bad ArrayList population during SalesforceDataContext query building
+
+### Apache MetaModel 5.0.0
 
  * [METAMODEL-1161] - Fixed issue with maxRows being ignored on Oracle 
  * [METAMODEL-6] - Added update summary containing information about changes on returning UpdateableDataContext.executeUpdate(..)

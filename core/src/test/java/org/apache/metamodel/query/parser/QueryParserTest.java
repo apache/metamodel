@@ -27,6 +27,7 @@ import org.apache.metamodel.MockDataContext;
 import org.apache.metamodel.query.FilterClause;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.OrderByItem;
 import org.apache.metamodel.query.OrderByItem.Direction;
@@ -83,7 +84,25 @@ public class QueryParserTest extends TestCase {
         Query q = MetaModelHelper.parseQuery(dc,
                 "SELECT sch.tbl.baz.foo.bar, baz.helloworld, baz.hello.world FROM sch.tbl");
         assertEquals(
-                "SELECT MAP_VALUE('foo.bar',tbl.baz), MAP_VALUE('helloworld',tbl.baz), MAP_VALUE('hello.world',tbl.baz) FROM sch.tbl",
+                "SELECT MAP_VALUE(tbl.baz,'foo.bar'), MAP_VALUE(tbl.baz,'helloworld'), MAP_VALUE(tbl.baz,'hello.world') FROM sch.tbl",
+                q.toSql());
+    }
+    
+    public void testWhereMapValueUsingDotNotation() throws Exception {
+        // set 'baz' column to a MAP column
+        MutableColumn col = (MutableColumn) dc.getColumnByQualifiedLabel("tbl.baz");
+        col.setType(ColumnType.MAP);
+
+        Query q = MetaModelHelper.parseQuery(dc,
+                "SELECT baz.lorem, baz.ipsum FROM sch.tbl WHERE baz.hello = 'world'");
+        
+        final SelectItem whereSelectItem = q.getWhereClause().getItem(0).getSelectItem();
+        assertEquals(whereSelectItem.getScalarFunction(), FunctionType.MAP_VALUE);
+        assertEquals(col, whereSelectItem.getColumn());
+        assertEquals("[hello]", Arrays.toString(whereSelectItem.getFunctionParameters()));
+        
+        assertEquals(
+                "SELECT MAP_VALUE(tbl.baz,'lorem'), MAP_VALUE(tbl.baz,'ipsum') FROM sch.tbl WHERE MAP_VALUE(tbl.baz,'hello') = 'world'",
                 q.toSql());
     }
 
