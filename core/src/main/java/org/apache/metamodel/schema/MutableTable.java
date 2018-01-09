@@ -149,6 +149,9 @@ public class MutableTable extends AbstractTable implements Serializable {
 
     @Override
     public TableType getType() {
+        if (_type == null) {
+            return TableType.TABLE;
+        }
         return _type;
     }
 

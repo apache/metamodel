@@ -80,6 +80,9 @@ final class ImmutableTable extends AbstractTable implements Serializable {
 
 	@Override
 	public TableType getType() {
+	    if (type == null) {
+	        return TableType.TABLE;
+	    }
 		return type;
 	}
 

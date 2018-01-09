@@ -1,3 +1,7 @@
+### WIP
+
+ * [METAMODEL-1177] - Made TableType.TABLE the default table type, replacing null values.
+
 ### Apache MetaModel 5.0.1
 
  * [METAMODEL-1169] - Fixed issue with SQL Server milliseconds precision in WHERE.
