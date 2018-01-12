@@ -75,7 +75,7 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
         }
 
         final SearchResponse response =
-                client.prepareSearch(indexName).setQuery(queryBuilder).execute()
+                client.prepareSearch(indexName).setQuery(queryBuilder).setTypes(documentType).execute()
                         .actionGet();
 
         client.admin().indices().prepareRefresh(indexName).execute().actionGet();

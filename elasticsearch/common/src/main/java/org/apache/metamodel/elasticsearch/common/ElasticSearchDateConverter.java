@@ -31,6 +31,10 @@ import java.util.Date;
 public final class ElasticSearchDateConverter {
 
     public static Date tryToConvert(String dateAsString) {
+        if (dateAsString == null) {  
+            return null;
+        }
+
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
             return dateFormat.parse(dateAsString);

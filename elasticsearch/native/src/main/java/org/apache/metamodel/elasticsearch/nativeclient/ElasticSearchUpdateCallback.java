@@ -51,13 +51,13 @@ final class ElasticSearchUpdateCallback extends AbstractUpdateCallback {
 
     @Override
     public boolean isDropTableSupported() {
-        return true;
+        return false;
     }
 
     @Override
     public TableDropBuilder dropTable(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        return new ElasticSearchDropTableBuilder(this, table);
+        throw new UnsupportedOperationException();
     }
 
     @Override

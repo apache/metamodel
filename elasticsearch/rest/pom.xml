@@ -28,7 +28,6 @@ under the License.
 
 	<properties>
 		<jest.version>2.0.2</jest.version>
-		<elasticsearch.version>1.4.4</elasticsearch.version>
 	</properties>
 
 	<artifactId>MetaModel-elasticsearch-rest</artifactId>
