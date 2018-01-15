@@ -19,10 +19,8 @@
 package org.apache.metamodel.elasticsearch.nativeclient;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -56,16 +54,13 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.elasticsearch.test.ESSingleNodeTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ElasticSearchDataContextIT {
+public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     private static final String indexName = "twitter";
     private static final String indexType1 = "tweet1";
@@ -80,11 +75,7 @@ public class ElasticSearchDataContextIT {
 
     @Before
     public void beforeTests() throws Exception {
-        final String dockerHostAddress = System.getenv("DOCKER_HOST_NAME");
-        client = new PreBuiltTransportClient(
-                Settings.builder().put("client.transport.ignore_cluster_name", true).build())
-                .addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress(dockerHostAddress, 9300)));
-        client.admin().cluster().prepareHealth().setTimeout(TimeValue.timeValueMillis(200)).get();
+        client = client();
 
         dataContext = new ElasticSearchDataContext(client, indexName);
 
@@ -116,7 +107,6 @@ public class ElasticSearchDataContextIT {
     public void afterTests() {
         client.admin().indices().delete(new DeleteIndexRequest("_all")).actionGet();
     }
-
 
     @Test
     public void testSimpleQuery() throws Exception {
