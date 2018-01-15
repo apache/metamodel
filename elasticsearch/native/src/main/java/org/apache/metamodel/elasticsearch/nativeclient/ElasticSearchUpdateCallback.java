@@ -78,13 +78,7 @@ final class ElasticSearchUpdateCallback extends AbstractUpdateCallback {
     }
 
     @Override
-    public boolean isInsertSupported() {
-        return super.isInsertSupported();
-    }
-
-    @Override
-    public RowUpdationBuilder update(final Table table)
-            throws IllegalArgumentException, IllegalStateException, UnsupportedOperationException {
+    public RowUpdationBuilder update(final Table table) {
         return new ElasticSearchUpdateBuilder(this, table);
     }
 

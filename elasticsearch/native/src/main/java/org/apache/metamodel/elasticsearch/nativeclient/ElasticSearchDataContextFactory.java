@@ -33,6 +33,8 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Factory for ElasticSearch data context of native type.
@@ -59,6 +61,7 @@ import org.elasticsearch.transport.client.PreBuiltTransportClient;
  * </ul>
  */
 public class ElasticSearchDataContextFactory implements DataContextFactory {
+    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContextFactory.class);
 
     @Override
     public boolean accepts(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry) {
@@ -133,7 +136,7 @@ public class ElasticSearchDataContextFactory implements DataContextFactory {
         try {
             client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(properties.getHostname()), properties.getPort()));
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            logger.warn("no IP address for the host with name \"{}\" could be found.", properties.getHostname());
         }
         return client;
     }

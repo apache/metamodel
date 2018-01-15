@@ -232,7 +232,6 @@ public class ElasticSearchDataContext extends QueryPostprocessDataContext implem
         }
         final ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
         final MappingMetaData mappingMetaData = mappings.get(documentType);
-        //final MappingMetaData mappingMetaData = imd.mapping(documentType);
         if (mappingMetaData == null) {
             throw new IllegalArgumentException("No such document type in index '" + indexName + "': " + documentType);
         }

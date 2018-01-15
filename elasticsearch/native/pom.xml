@@ -27,7 +27,7 @@
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
 			<artifactId>MetaModel-core</artifactId>
-			<version>5.0.0</version>
+			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
