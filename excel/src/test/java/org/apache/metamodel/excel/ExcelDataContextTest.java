@@ -524,7 +524,7 @@ public class ExcelDataContextTest extends TestCase {
         DataContext dc = new ExcelDataContext(file);
         Schema schema = dc.getDefaultSchema();
         assertEquals(
-                "[Table[name=Sheet1,type=null,remarks=null], Table[name=Sheet2,type=null,remarks=null], Table[name=Sheet3,type=null,remarks=null]]",
+                "[Table[name=Sheet1,type=TABLE,remarks=null], Table[name=Sheet2,type=TABLE,remarks=null], Table[name=Sheet3,type=TABLE,remarks=null]]",
                 Arrays.toString(schema.getTables().toArray()));
 
         assertEquals(0, schema.getTableByName("Sheet2").getColumnCount());
