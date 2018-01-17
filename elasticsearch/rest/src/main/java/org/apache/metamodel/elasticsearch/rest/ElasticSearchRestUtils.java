@@ -19,7 +19,6 @@
 package org.apache.metamodel.elasticsearch.rest;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.metamodel.data.DataSetHeader;
@@ -29,62 +28,42 @@ import org.apache.metamodel.elasticsearch.common.ElasticSearchDateConverter;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.util.NumberComparator;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 /**
  * Shared/common util functions for the ElasticSearch MetaModel module.
  */
-final class JestElasticSearchUtils {
-    public static Row createRow(JsonObject source, String documentId, DataSetHeader header) {
+final class ElasticSearchRestUtils {
+    /**
+     * TODO: Remove this method which is a carbon copy of the one on NativeElasticSearchUtils.
+     */
+    public static Row createRow(Map<String, Object> sourceMap, String documentId, DataSetHeader header) {
         final Object[] values = new Object[header.size()];
         for (int i = 0; i < values.length; i++) {
             final SelectItem selectItem = header.getSelectItem(i);
             final Column column = selectItem.getColumn();
 
             assert column != null;
-            assert !selectItem.hasFunction();
+            assert selectItem.getAggregateFunction() == null;
+            assert selectItem.getScalarFunction() == null;
 
             if (column.isPrimaryKey()) {
                 values[i] = documentId;
             } else {
-                values[i] = getDataFromColumnType(source.get(column.getName()), column.getType());
+                Object value = sourceMap.get(column.getName());
+
+                if (column.getType() == ColumnType.DATE) {
+                    Date valueToDate = ElasticSearchDateConverter.tryToConvert((String) value);
+                    if (valueToDate == null) {
+                        values[i] = value;
+                    } else {
+                        values[i] = valueToDate;
+                    }
+                } else {
+                    values[i] = value;
+                }
             }
         }
 
         return new DefaultRow(header, values);
-    }
-
-    private static Object getDataFromColumnType(JsonElement field, ColumnType type) {
-        if (field == null || field.isJsonNull()) {
-            return null;
-        }
-
-        if (field.isJsonObject()) {
-            return new Gson().fromJson(field, Map.class);
-        }
-        if (field.isJsonArray()) {
-            return new Gson().fromJson(field, List.class);
-        }
-
-        if (type.isNumber()) {
-            // Pretty terrible workaround to avoid LazilyParsedNumber
-            // (which is happily output, but not recognized by Jest/GSON).
-            return NumberComparator.toNumber(field.getAsString());
-        } else if (type.isTimeBased()) {
-            final Date valueToDate = ElasticSearchDateConverter.tryToConvert(field.getAsString());
-            if (valueToDate == null) {
-                return field.getAsString();
-            } else {
-                return valueToDate;
-            }
-        } else if (type.isBoolean()) {
-            return field.getAsBoolean();
-        } else {
-            return field.getAsString();
-        }
     }
 }

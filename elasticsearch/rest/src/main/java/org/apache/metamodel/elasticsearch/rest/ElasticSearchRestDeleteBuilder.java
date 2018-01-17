@@ -18,7 +18,10 @@
  */
 package org.apache.metamodel.elasticsearch.rest;
 
-import io.searchbox.core.DeleteByQuery;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
 import org.apache.metamodel.delete.RowDeletionBuilder;
@@ -26,19 +29,21 @@ import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.LogicalOperator;
 import org.apache.metamodel.schema.Table;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-
-import java.util.List;
 
 /**
  * {@link RowDeletionBuilder} implementation for
  * {@link ElasticSearchRestDataContext}.
  */
-final class JestElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
-    private final JestElasticSearchUpdateCallback _updateCallback;
+final class ElasticSearchRestDeleteBuilder extends AbstractRowDeletionBuilder {
+    private final ElasticSearchRestUpdateCallback _updateCallback;
 
-    public JestElasticSearchDeleteBuilder(JestElasticSearchUpdateCallback updateCallback, Table table) {
+    public ElasticSearchRestDeleteBuilder(ElasticSearchRestUpdateCallback updateCallback, Table table) {
         super(table);
         _updateCallback = updateCallback;
     }
@@ -52,7 +57,7 @@ final class JestElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
         final String indexName = dataContext.getIndexName();
 
         final List<FilterItem> whereItems = getWhereItems();
-
+        
         // delete by query - note that creteQueryBuilderForSimpleWhere may
         // return matchAllQuery() if no where items are present.
         final QueryBuilder queryBuilder = ElasticSearchUtils.createQueryBuilderForSimpleWhere(whereItems,
@@ -64,13 +69,29 @@ final class JestElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
             throw new UnsupportedOperationException("Could not push down WHERE items to delete by query request: "
                     + whereItems);
         }
+        
         final SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder);
 
-        final DeleteByQuery deleteByQuery =
-                new DeleteByQuery.Builder(searchSourceBuilder.toString()).addIndex(indexName).addType(
-                        documentType).build();
+        SearchRequest searchRequest = new SearchRequest(indexName);
+        searchRequest.types(documentType);
+        searchRequest.source(searchSourceBuilder);
+        
+        try {
+            final SearchResponse response = dataContext.getElasticSearchClient().search(searchRequest);
 
-        _updateCallback.execute(deleteByQuery);
+            final Iterator<SearchHit> iterator = response.getHits().iterator();
+            while (iterator.hasNext()) {
+                final SearchHit hit = iterator.next();
+                final String typeId = hit.getId();
+
+                DeleteRequest deleteRequest = new DeleteRequest(indexName, documentType, typeId);
+
+                _updateCallback.execute(deleteRequest);
+
+            }
+        } catch (IOException e) {
+            throw new MetaModelException(e);
+        }
     }
 }

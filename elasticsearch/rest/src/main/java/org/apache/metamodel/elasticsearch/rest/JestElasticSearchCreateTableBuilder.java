@@ -28,11 +28,9 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
-import io.searchbox.indices.mapping.PutMapping;
-
-final class JestElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder<JestElasticSearchUpdateCallback> {
+final class JestElasticSearchCreateTableBuilder extends AbstractTableCreationBuilder<ElasticSearchRestUpdateCallback> {
     
-    public JestElasticSearchCreateTableBuilder(JestElasticSearchUpdateCallback updateCallback, Schema schema,
+    public JestElasticSearchCreateTableBuilder(ElasticSearchRestUpdateCallback updateCallback, Schema schema,
             String name) {
         super(updateCallback, schema, name);
     }
@@ -45,8 +43,8 @@ final class JestElasticSearchCreateTableBuilder extends AbstractTableCreationBui
         final ElasticSearchRestDataContext dataContext = getUpdateCallback().getDataContext();
         final String indexName = dataContext.getIndexName();
 
-        final PutMapping putMapping = new PutMapping.Builder(indexName, table.getName(), source).build();
-        getUpdateCallback().execute(putMapping);
+//        final PutMapping putMapping = new PutMapping.Builder(indexName, table.getName(), source).build();
+//        getUpdateCallback().execute(putMapping);
 
         final MutableSchema schema = (MutableSchema) getSchema();
         schema.addTable(table);

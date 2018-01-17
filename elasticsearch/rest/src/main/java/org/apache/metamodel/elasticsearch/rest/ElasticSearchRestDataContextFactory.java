@@ -18,6 +18,12 @@
  */
 package org.apache.metamodel.elasticsearch.rest;
 
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.metamodel.ConnectionException;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.factory.DataContextFactory;
@@ -25,10 +31,9 @@ import org.apache.metamodel.factory.DataContextProperties;
 import org.apache.metamodel.factory.ResourceFactoryRegistry;
 import org.apache.metamodel.factory.UnsupportedDataContextPropertiesException;
 import org.apache.metamodel.util.SimpleTableDef;
-
-import io.searchbox.client.JestClient;
-import io.searchbox.client.JestClientFactory;
-import io.searchbox.client.config.HttpClientConfig;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
 
 /**
  * Factory for ElasticSearch data context of REST type.
@@ -72,18 +77,23 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
         return true;
     }
 
-    private JestClient createClient(DataContextProperties properties) {
-        final String serverUri = properties.getUrl();
-        final HttpClientConfig.Builder builder = new HttpClientConfig.Builder(serverUri);
+    private ElasticSearchRestClient createClient(DataContextProperties properties) {
+        final RestClientBuilder builder = RestClient.builder(new HttpHost(properties.getUrl(), properties.getPort()));
+        
         if (properties.getUsername() != null) {
-            builder.defaultCredentials(properties.getUsername(), properties.getPassword());
+			final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+			credentialsProvider.setCredentials(AuthScope.ANY,
+					new UsernamePasswordCredentials(properties.getUsername(), properties.getPassword()));
+
+			builder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+				@Override
+				public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
+					return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+				}
+			});
         }
 
-        final JestClientFactory clientFactory = new JestClientFactory();
-        final HttpClientConfig httpClientConfig = new HttpClientConfig(builder);
-        clientFactory.setHttpClientConfig(httpClientConfig);
-        final JestClient client = clientFactory.getObject();
-        return client;
+        return new ElasticSearchRestClient(builder.build());
     }
 
     private String getIndex(DataContextProperties properties) {
@@ -97,7 +107,7 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
     @Override
     public DataContext create(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry)
             throws UnsupportedDataContextPropertiesException, ConnectionException {
-        final JestClient client = createClient(properties);
+        final ElasticSearchRestClient client = createClient(properties);
         final String indexName = getIndex(properties);
         final SimpleTableDef[] tableDefinitions = properties.getTableDefs();
         return new ElasticSearchRestDataContext(client, indexName, tableDefinitions);
