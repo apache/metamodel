@@ -19,11 +19,12 @@
 package org.apache.metamodel.elasticsearch.rest;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -47,53 +48,47 @@ import org.apache.metamodel.drop.DropTable;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.query.parser.QueryParserException;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.Update;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RestClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class ElasticSearchRestDataContextIT {
+    private static final String DEFAULT_DOCKER_HOST_NAME = "localhost";
 
     private static final String indexName = "twitter";
     private static final String indexType1 = "tweet1";
     private static final String indexType2 = "tweet2";
-    private static final String indexName2 = "twitter2";
-    private static final String indexType3 = "tweet3";
     private static final String bulkIndexType = "bulktype";
     private static final String peopleIndexType = "peopletype";
-    private static final String mapping =
-            "{\"date_detection\":\"false\",\"properties\":{\"message\":{\"type\":\"string\",\"index\":\"not_analyzed\",\"doc_values\":\"true\"}}}";
 
     private static ElasticSearchRestClient client;
 
     private static UpdateableDataContext dataContext;
-
-    @Test
-    public void testDetectSchema() throws IOException {
-      final ElasticSearchRestClient restClient = new ElasticSearchRestClient(RestClient.builder(new HttpHost("localhost", 9200)).build());
-      
-      final UpdateableDataContext restDataContext = new ElasticSearchRestDataContext(restClient, "twitter");
-      
-      restDataContext.getDefaultSchema();
-    }
     
+    private static String determineHostName() throws URISyntaxException {
+        final String dockerHost = System.getenv("DOCKER_HOST");
+
+        if (dockerHost == null) {
+            // If no value is returned for the DOCKER_HOST environment variable fall back to a default.
+            return DEFAULT_DOCKER_HOST_NAME;
+        } else {
+            return (new URI(dockerHost)).getHost();
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
-//        final String dockerHostAddress = System.getenv("DOCKER_HOST_NAME");
-        // TODO use line above instead of line below
-        final String dockerHostAddress = "localhost";
+        final String dockerHostAddress = determineHostName();
         
         client = new ElasticSearchRestClient(RestClient.builder(new HttpHost(dockerHostAddress, 9200)).build()); 
 
@@ -167,8 +162,8 @@ public class ElasticSearchRestDataContextIT {
 
         try (DataSet ds = dataContext.query().from(table).selectAll().where(pks[0]).eq("tweet_tweet2_1").execute()) {
             assertTrue(ds.next());
-            Object dateValue = ds.getRow().getValue(2);
-            assertEquals("Row[values=[tweet_tweet2_1, 1, " + dateValue + ", user1]]", ds.getRow().toString());
+            Object dateValue = ds.getRow().getValue(1);
+            assertEquals("Row[values=[tweet_tweet2_1, " + dateValue + ", 1, user1]]", ds.getRow().toString());
 
             assertFalse(ds.next());
 
@@ -205,7 +200,7 @@ public class ElasticSearchRestDataContextIT {
     }
 
     @Test
-    public void testCreateTableInsertQueryAndDrop() throws Exception {
+    public void testCreateTableAndInsertQuery() throws Exception {
         final Schema schema = dataContext.getDefaultSchema();
         final CreateTable createTable = new CreateTable(schema, "testCreateTable");
         createTable.withColumn("foo").ofType(ColumnType.STRING);
@@ -231,7 +226,6 @@ public class ElasticSearchRestDataContextIT {
 
         dataContext.refreshSchemas();
 
-
         try (DataSet ds = dataContext.query().from(table).selectAll().orderBy("bar").execute()) {
             assertTrue(ds.next());
             assertEquals("hello", ds.getRow().getValue(fooColumn).toString());
@@ -241,29 +235,7 @@ public class ElasticSearchRestDataContextIT {
             assertNotNull(ds.getRow().getValue(idColumn));
             assertFalse(ds.next());
         }
-
-        dataContext.executeUpdate(new DropTable(table));
-
-        dataContext.refreshSchemas();
-
-        assertNull(dataContext.getTableByQualifiedLabel(table.getName()));
     }
-
-//    @Test
-//    public void testDetectOutsideChanges() throws Exception {
-//        // Create the type in ES
-//        final IndicesAdminClient indicesAdmin = embeddedElasticsearchServer.getClient().admin().indices();
-//        final String tableType = "outsideTable";
-//
-//        Object[] sourceProperties = { "testA", "type=text", "testB", "type=string" };
-//
-//		new PutMappingRequestBuilder(indicesAdmin, PutMappingAction.INSTANCE).setIndices(indexName).setType(tableType)
-//				.setSource(sourceProperties).execute().actionGet();
-//
-//        dataContext.refreshSchemas();
-//
-//        assertNotNull(dataContext.getDefaultSchema().getTableByName(tableType));
-//    }
 
     @Test
     public void testDeleteAll() throws Exception {
@@ -288,8 +260,6 @@ public class ElasticSearchRestDataContextIT {
         Row row = MetaModelHelper.executeSingleRowQuery(dataContext, dataContext.query().from(table).selectCount()
                 .toQuery());
         assertEquals("Count is wrong", 0, ((Number) row.getValue(0)).intValue());
-
-        dataContext.executeUpdate(new DropTable(table));
     }
 
     @Test
@@ -315,8 +285,6 @@ public class ElasticSearchRestDataContextIT {
         Row row = MetaModelHelper.executeSingleRowQuery(dataContext,
                 dataContext.query().from(table).select("foo", "bar").toQuery());
         assertEquals("Row[values=[world, 43]]", row.toString());
-
-        dataContext.executeUpdate(new DropTable(table));
     }
 
     @Test
@@ -328,27 +296,22 @@ public class ElasticSearchRestDataContextIT {
         dataContext.executeUpdate(createTable);
 
         final Table table = schema.getTableByName("testCreateTable");
-        try {
 
-            dataContext.executeUpdate(new UpdateScript() {
-                @Override
-                public void run(UpdateCallback callback) {
-                    callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
-                    callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
-                }
-            });
-
-            // greater than is not yet supported
-            try {
-                dataContext.executeUpdate(new DeleteFrom(table).where("bar").gt(40));
-                fail("Exception expected");
-            } catch (UnsupportedOperationException e) {
-                assertEquals("Could not push down WHERE items to delete by query request: [testCreateTable.bar > 40]",
-                        e.getMessage());
+        dataContext.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
             }
+        });
 
-        } finally {
-            dataContext.executeUpdate(new DropTable(table));
+        // greater than is not supported
+        try {
+            dataContext.executeUpdate(new DeleteFrom(table).where("bar").gt(40));
+            fail("Exception expected");
+        } catch (UnsupportedOperationException e) {
+            assertEquals("Could not push down WHERE items to delete by query request: [testCreateTable.bar > 40]", e
+                    .getMessage());
         }
     }
 
@@ -380,32 +343,6 @@ public class ElasticSearchRestDataContextIT {
         assertFalse(dataSet.next());
         dataSet.close();
     }
-
-//    @Test
-//    public void testDropTable() throws Exception {
-//        Table table = dataContext.getDefaultSchema().getTableByName(peopleIndexType);
-//
-//        // assert that the table was there to begin with
-//        {
-//            DataSet ds = dataContext.query().from(table).selectCount().execute();
-//            ds.next();
-//            assertEquals("Count is wrong", 9, ((Number) ds.getRow().getValue(0)).intValue());
-//            ds.close();
-//        }
-//
-//        dataContext.executeUpdate(new DropTable(table));
-//        try {
-//            DataSet ds = dataContext.query().from(table).selectCount().execute();
-//            ds.next();
-//            assertEquals("Count is wrong", 0, ((Number) ds.getRow().getValue(0)).intValue());
-//            ds.close();
-//        } finally {
-//            // restore the people documents for the next tests
-//            insertPeopleDocuments();
-//            embeddedElasticsearchServer.getClient().admin().indices().prepareRefresh().execute().actionGet();
-//            dataContext = new ElasticSearchRestDataContext(client, indexName);
-//        }
-//    }
 
     @Test
     public void testWhereColumnEqualsValues() throws Exception {
@@ -537,35 +474,12 @@ public class ElasticSearchRestDataContextIT {
         dataContext.query().from("nonExistingTable").select("user").and("message").execute();
     }
 
-//    @Test(expected = QueryParserException.class)
-//    public void testQueryForAnExistingTableAndNonExistingField() throws Exception {
-//        indexTweeterDocument(indexType1, 1);
-//        dataContext.query().from(indexType1).select("nonExistingField").execute();
-//    }
-//
-//    @Test
-//    public void testNonDynamicMapingTableNames() throws Exception {
-//        createIndex();
-//
-//        ElasticSearchRestDataContext dataContext2 = new ElasticSearchRestDataContext(client, indexName2);
-//
-//        assertEquals("[tweet3]", Arrays.toString(dataContext2.getDefaultSchema().getTableNames().toArray()));
-//    }
-//
-//    private static void createIndex() {
-//        CreateIndexRequest cir = new CreateIndexRequest(indexName2);
-//        CreateIndexResponse response =
-//                embeddedElasticsearchServer.getClient().admin().indices().create(cir).actionGet();
-//
-//        System.out.println("create index: " + response.isAcknowledged());
-//
-//        PutMappingRequest pmr = new PutMappingRequest(indexName2).type(indexType3).source(mapping);
-//
-//        PutMappingResponse response2 =
-//                embeddedElasticsearchServer.getClient().admin().indices().putMapping(pmr).actionGet();
-//        System.out.println("put mapping: " + response2.isAcknowledged());
-//    }
-//
+    @Test(expected = QueryParserException.class)
+    public void testQueryForAnExistingTableAndNonExistingField() throws Exception {
+        indexTweeterDocument(indexType1, 1);
+        dataContext.query().from(indexType1).select("nonExistingField").execute();
+    }
+
     private static void indexBulkDocuments(String indexName, String indexType, int numberOfDocuments) throws IOException {
         final BulkRequest bulkRequest = new BulkRequest();
 

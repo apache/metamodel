@@ -89,4 +89,80 @@ under the License.
 		</dependency>
 
     </dependencies>
+	<profiles>
+		<profile>
+			<id>integration-test</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<version>2.19.1</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>integration-test</goal>
+									<goal>verify</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+
+					<plugin>
+						<groupId>io.fabric8</groupId>
+						<artifactId>docker-maven-plugin</artifactId>
+						<version>0.15.16</version>
+						<configuration>
+							<logDate>default</logDate>
+							<autoPull>true</autoPull>
+							<images>
+								<image>
+
+									<name>elasticsearch-metamodel</name>
+									<build>
+										<dockerFileDir>${project.build.directory}/test-classes</dockerFileDir>
+									</build>
+									<run>
+
+										<ports>
+											<port>9200:9200</port>
+											<port>9300:9300</port>
+										</ports>
+
+										<env>
+												<ES_JAVA_OPTS>-Xms1g -Xmx1g</ES_JAVA_OPTS>
+												<cluster.name>docker-cluster</cluster.name>
+												<bootstrap.memory_lock>true</bootstrap.memory_lock>
+											    <xpack.security.enabled>false</xpack.security.enabled>
+										</env>
+
+										<wait>
+											<url>http://${docker.host.address}:9200</url>
+											<time>300000</time>
+										</wait>
+									</run>
+								</image>
+							</images>
+						</configuration>
+						<executions>
+							<execution>
+								<id>start</id>
+								<phase>pre-integration-test</phase>
+								<goals>
+									<goal>build</goal>
+									<goal>start</goal>
+								</goals>
+							</execution>
+							<execution>
+								<id>stop</id>
+								<phase>post-integration-test</phase>
+								<goals>
+									<goal>stop</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
