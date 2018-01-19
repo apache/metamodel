@@ -44,7 +44,6 @@ import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.delete.DeleteFrom;
-import org.apache.metamodel.drop.DropTable;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
