@@ -64,7 +64,6 @@ final class ElasticSearchRestInsertBuilder extends AbstractRowInsertionBuilder<E
         assert !source.isEmpty();
 
         IndexRequest indexRequest = new IndexRequest(indexName, documentType, id);
-        indexRequest.create(true);
         indexRequest.source(source);
 
         getUpdateCallback().execute(indexRequest);

@@ -288,6 +288,8 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
 
     @Override
     protected void onSchemaCacheRefreshed() {
+        getElasticSearchClient().admin().indices().prepareRefresh(indexName).get();
+        
         detectSchema();
     }
 

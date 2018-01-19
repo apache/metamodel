@@ -27,11 +27,16 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.http.Header;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.ContentType;
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
@@ -43,49 +48,71 @@ import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ElasticSearchRestClient extends RestHighLevelClient {
+    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchRestClient.class);
+    
     public ElasticSearchRestClient(RestClient restClient) {
 		super(restClient);
 	}
 
-	public final boolean refresh(final String indexName, Header... headers) throws IOException {
-		return performRequest(new MainRequest(), (request) -> refresh(indexName),
-				ElasticSearchRestClient::convertExistsResponse, emptySet(), headers);
+	public final boolean refresh(final String indexName, Header... headers) {
+		try {
+            return performRequest(new MainRequest(), (request) -> refresh(indexName),
+            		ElasticSearchRestClient::convertExistsResponse, emptySet(), headers);
+        } catch (IOException e) {
+            logger.info("Failed to refresh index \"{}\"", indexName, e);
+        }
+        return false;
 	}
 
     private static Request refresh(String indexName) {
-        return new Request(HttpPost.METHOD_NAME, indexName + "/_refresh", Collections.emptyMap(), null);
+        return new Request(HttpPost.METHOD_NAME, "/" + indexName + "/_refresh", Collections.emptyMap(), null);
     }
 
-    private static Request getMetaData(String indexName) throws IOException {
-        return new Request(HttpGet.METHOD_NAME, indexName, Collections.emptyMap(), null);
+    public final boolean delete(final String indexName, Header... headers) throws IOException {
+        return performRequest(new MainRequest(), (request) -> delete(indexName),
+                ElasticSearchRestClient::convertExistsResponse, emptySet(), headers);
     }
 
+    private static Request delete(String indexName) {
+        return new Request(HttpDelete.METHOD_NAME, "/" + indexName, Collections.emptyMap(), null);
+    }
+    
     public Set<Entry<String, Object>> getMappings(final String indexName, Header... headers) throws IOException {
-        return performRequestAndParseEntity(new GetIndexRequest(), (request) -> getMetaData(indexName), (response) -> parseMetaData(response, indexName), emptySet(), headers);
+        return performRequestAndParseEntity(new GetIndexRequest(), (request) -> getMappings(indexName), (
+                response) -> parseMappings(response, indexName), emptySet(), headers);
     }
+    
+    private static Request getMappings(String indexName) throws IOException {
+        return new Request(HttpGet.METHOD_NAME, "/" + indexName, Collections.emptyMap(), null);
+    }
+
+    public final boolean createMapping(final PutMappingRequest putMappingRequest, Header... headers) throws IOException {
+        return performRequest(putMappingRequest, (request) -> putMapping(putMappingRequest), ElasticSearchRestClient::convertExistsResponse, emptySet(), headers);        
+    }
+
+    private static Request putMapping(final PutMappingRequest putMappingRequest) throws IOException {
+        final String endpoint = "/" + putMappingRequest.indices()[0] + "/_mapping/" + putMappingRequest.type();
+        final ByteArrayEntity entity = new ByteArrayEntity(putMappingRequest.source().getBytes(),
+                ContentType.APPLICATION_JSON);
+        return new Request(HttpPut.METHOD_NAME, endpoint, Collections.emptyMap(), entity);
+    }
+
 
     // Carbon copy of RestHighLevelClient#convertExistsResponse(Response) method, which is unaccessible from this class.
     static boolean convertExistsResponse(Response response) {
         return response.getStatusLine().getStatusCode() == 200;
     }
     
-    static Set<Entry<String, Object>> parseMetaData(XContentParser response, String indexName) {
+    static Set<Entry<String, Object>> parseMappings(XContentParser response, String indexName) throws IOException {
+        Map<String, Object> schema = (Map<String, Object>) response.map().get(indexName);
+        Map<String, Object> tables = (Map<String, Object>) schema.get("mappings");
 
-        try {
-            Map<String, Object> schema = (Map<String, Object>) response.map().get(indexName);
-            Map<String, Object> tables = (Map<String, Object>) schema.get("mappings");
-
-            return tables.entrySet();
-
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        return emptySet();
-    }    
+        return tables.entrySet();
+    }
     
     ActionResponse execute(ActionRequest request) throws IOException {
         if (request instanceof BulkRequest) {

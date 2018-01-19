@@ -119,7 +119,6 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
     @Override
     protected SimpleTableDef[] detectSchema() {
         logger.info("Detecting schema for index '{}'", indexName);
-
         
         final Set<Entry<String, Object>> mappings;
         try {
@@ -134,11 +133,13 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
 		if (mappings.size() == 0) {
 			logger.warn("No metadata returned for index name '{}' - no tables will be detected.");
 		} else {
-			for (Entry<String, Object> entry : mappings) {
-				final String documentType = entry.getKey();
+			for (Entry<String, Object> mapping : mappings) {
+				final String documentType = mapping.getKey();
 				
-				Map<String, Object> mappingA = (Map<String, Object>) entry.getValue();
-				Map<String, Object> properties = (Map<String, Object>) mappingA.get("properties");
+				@SuppressWarnings("unchecked")
+                Map<String, Object> mappingConfiguration = (Map<String, Object>) mapping.getValue();
+				@SuppressWarnings("unchecked")
+                Map<String, Object> properties = (Map<String, Object>) mappingConfiguration.get("properties");
 				
 				try {
                     final SimpleTableDef table = detectTable(properties, documentType);
@@ -157,6 +158,13 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
         });
 
         return tableDefArray;
+    }
+
+    @Override
+    protected void onSchemaCacheRefreshed() {
+        getElasticSearchClient().refresh(indexName);
+        
+        detectSchema();
     }
 
     /**
@@ -225,7 +233,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
         if (limitMaxRowsIsSet(maxRows)) {
             searchRequest.size(maxRows);
         } else {
-            searchRequest.size(Integer.MAX_VALUE);
+            searchRequest.size(SCROLL_THRESHOLD);
         }
 
         if (queryBuilder != null) {

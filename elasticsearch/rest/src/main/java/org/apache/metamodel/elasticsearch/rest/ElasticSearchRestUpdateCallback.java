@@ -31,6 +31,7 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -68,8 +69,7 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
     @Override
     public TableCreationBuilder createTable(Schema schema, String name) throws IllegalArgumentException,
             IllegalStateException {
-        // return new JestElasticSearchCreateTableBuilder(this, schema, name);
-        return null;
+        return new ElasticSearchRestCreateTableBuilder(this, schema, name);
     }
 
     @Override
@@ -103,6 +103,8 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
         if (isBatch()) {
 //            flushBulkActions();
         }
+        
+        getDataContext().refreshSchemas();
     }
 
 //    private void flushBulkActions() {
@@ -132,27 +134,31 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
     }
 
     private void executeBlocking(ActionRequest action) {
-        ActionResponse result;
         try {
-            result = getDataContext().getElasticSearchClient().execute(action);
-        } catch (IOException e) {
-            logger.warn("Could not execute command {} ", action, e);
-            throw new MetaModelException("Could not execute " + action, e);
-        }
+            if (action instanceof PutMappingRequest) {
+                getDataContext().getElasticSearchClient().createMapping((PutMappingRequest) action);
+            } else {
+                ActionResponse result;
+                result = getDataContext().getElasticSearchClient().execute(action);
 
-        if (result instanceof BulkResponse && ((BulkResponse) result).hasFailures()) {
-            if (result instanceof BulkResponse) {
-                BulkItemResponse[] failedItems = ((BulkResponse) result).getItems();
-                for (int i = 0; i < failedItems.length; i++) {
+                if (result instanceof BulkResponse && ((BulkResponse) result).hasFailures()) {
+                    if (result instanceof BulkResponse) {
+                        BulkItemResponse[] failedItems = ((BulkResponse) result).getItems();
+                        for (int i = 0; i < failedItems.length; i++) {
 
-                    if (failedItems[i].isFailed()) {
-                        final BulkItemResponse failedItem = failedItems[i];
-                        logger.error("Bulk failed with item no. {} of {}: id={} op={} status={} error={}", i + 1,
-                                failedItems.length, failedItem.getId(), failedItem.getOpType(), failedItem.status(),
-                                failedItem.getFailureMessage());
+                            if (failedItems[i].isFailed()) {
+                                final BulkItemResponse failedItem = failedItems[i];
+                                logger.error("Bulk failed with item no. {} of {}: id={} op={} status={} error={}", i
+                                        + 1, failedItems.length, failedItem.getId(), failedItem.getOpType(), failedItem
+                                                .status(), failedItem.getFailureMessage());
+                            }
+                        }
                     }
                 }
             }
+        } catch (IOException e) {
+            logger.warn("Could not execute command {} ", action, e);
+            throw new MetaModelException("Could not execute " + action, e);
         }
     }
 

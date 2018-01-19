@@ -87,8 +87,6 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
         indexBulkDocuments(indexName, bulkIndexType, 10);
 
         dataContext.refreshSchemas();
-        
-        Thread.sleep(1000);
     }
 
     private void insertPeopleDocuments() throws IOException {

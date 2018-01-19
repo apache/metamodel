@@ -19,12 +19,8 @@
 package org.apache.metamodel.elasticsearch.rest;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -51,29 +47,21 @@ import org.apache.metamodel.drop.DropTable;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.query.parser.QueryParserException;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.Update;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingAction;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.IndicesAdminClient;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class ElasticSearchRestDataContextIT {
@@ -101,50 +89,42 @@ public class ElasticSearchRestDataContextIT {
       restDataContext.getDefaultSchema();
     }
     
-//    @BeforeClass
-//    public static void beforeTests() throws Exception {
+    @Before
+    public void setUp() throws Exception {
 //        final String dockerHostAddress = System.getenv("DOCKER_HOST_NAME");
-//        client = new RestHighLevelClient(RestClient.builder(new HttpHost(dockerHostAddress, 9200)).build()); 
-//
-//        dataContext = new ElasticSearchRestDataContext(client, indexName);
-//
-//        indexTweeterDocument(indexType1, 1);
-//        indexTweeterDocument(indexType2, 1);
-//        indexTweeterDocument(indexType2, 2, null);
-//        insertPeopleDocuments();
-//        indexTweeterDocument(indexType2, 1);
-//        indexBulkDocuments(indexName, bulkIndexType, 10);
-//
-//        dataContext.refreshSchemas();
-//        
-//        Thread.sleep(1000);        
-//
-//        indexTweeterDocument(indexType1, 1);
-//        indexTweeterDocument(indexType2, 1);
-//        indexTweeterDocument(indexType2, 2, null);
-//        insertPeopleDocuments();
-//        indexTweeterDocument(indexType2, 1);
-//        indexBulkDocuments(indexName, bulkIndexType, 10);
-//
-//        // The refresh API allows to explicitly refresh one or more index,
-//        // making all operations performed since the last refresh available for
-//        // search
-//        dataContext = new ElasticSearchRestDataContext(client, indexName);
-//        Thread.sleep(1000);
-//        System.out.println("Embedded ElasticSearch server created!");
-//    }
-//
-//    private static void insertPeopleDocuments() throws IOException {
-//        indexOnePeopleDocument("female", 20, 5);
-//        indexOnePeopleDocument("female", 17, 8);
-//        indexOnePeopleDocument("female", 18, 9);
-//        indexOnePeopleDocument("female", 19, 10);
-//        indexOnePeopleDocument("female", 20, 11);
-//        indexOnePeopleDocument("male", 19, 1);
-//        indexOnePeopleDocument("male", 17, 2);
-//        indexOnePeopleDocument("male", 18, 3);
-//        indexOnePeopleDocument("male", 18, 4);
-//    }
+        // TODO use line above instead of line below
+        final String dockerHostAddress = "localhost";
+        
+        client = new ElasticSearchRestClient(RestClient.builder(new HttpHost(dockerHostAddress, 9200)).build()); 
+
+        indexTweeterDocument(indexType1, 1);
+        indexTweeterDocument(indexType2, 1);
+        indexTweeterDocument(indexType2, 2, null);
+        insertPeopleDocuments();
+        indexTweeterDocument(indexType2, 1);
+        indexBulkDocuments(indexName, bulkIndexType, 10);
+        
+        client.refresh(indexName);
+
+        dataContext = new ElasticSearchRestDataContext(client, indexName);
+    }
+
+    @After
+    public void tearDown() throws IOException {
+        client.delete(indexName);
+    }
+
+    private static void insertPeopleDocuments() throws IOException {
+        indexOnePeopleDocument("female", 20, 5);
+        indexOnePeopleDocument("female", 17, 8);
+        indexOnePeopleDocument("female", 18, 9);
+        indexOnePeopleDocument("female", 19, 10);
+        indexOnePeopleDocument("female", 20, 11);
+        indexOnePeopleDocument("male", 19, 1);
+        indexOnePeopleDocument("male", 17, 2);
+        indexOnePeopleDocument("male", 18, 3);
+        indexOnePeopleDocument("male", 18, 4);
+    }
 
     @Test
     public void testSimpleQuery() throws Exception {
@@ -152,8 +132,8 @@ public class ElasticSearchRestDataContextIT {
                 Arrays.toString(dataContext.getDefaultSchema().getTableNames().toArray()));
 
         Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
-
-        assertEquals("[_id, message, postDate, user]", Arrays.toString(table.getColumnNames().toArray()));
+        
+        assertThat(table.getColumnNames(), containsInAnyOrder("_id", "message", "postDate", "user"));
 
         assertEquals(ColumnType.STRING, table.getColumnByName("user").getType());
         assertEquals(ColumnType.DATE, table.getColumnByName("postDate").getType());
@@ -381,28 +361,24 @@ public class ElasticSearchRestDataContextIT {
         dataContext.executeUpdate(createTable);
 
         final Table table = schema.getTableByName("testCreateTable");
-        try {
 
-            dataContext.executeUpdate(new UpdateScript() {
-                @Override
-                public void run(UpdateCallback callback) {
-                    callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
-                    callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
-                }
-            });
+        dataContext.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
+            }
+        });
 
-            dataContext.executeUpdate(new Update(table).value("foo", "howdy").where("bar").eq(42));
-
-            DataSet dataSet = dataContext.query().from(table).select("foo", "bar").orderBy("bar").execute();
-            assertTrue(dataSet.next());
-            assertEquals("Row[values=[howdy, 42]]", dataSet.getRow().toString());
-            assertTrue(dataSet.next());
-            assertEquals("Row[values=[world, 43]]", dataSet.getRow().toString());
-            assertFalse(dataSet.next());
-            dataSet.close();
-        } finally {
-            dataContext.executeUpdate(new DropTable(table));
-        }
+        dataContext.executeUpdate(new Update(table).value("foo", "howdy").where("bar").eq(42));
+        
+        DataSet dataSet = dataContext.query().from(table).select("foo", "bar").orderBy("bar").execute();
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[howdy, 42]]", dataSet.getRow().toString());
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[world, 43]]", dataSet.getRow().toString());
+        assertFalse(dataSet.next());
+        dataSet.close();
     }
 
 //    @Test
@@ -590,39 +566,46 @@ public class ElasticSearchRestDataContextIT {
 //        System.out.println("put mapping: " + response2.isAcknowledged());
 //    }
 //
-//    private static void indexBulkDocuments(String indexName, String indexType, int numberOfDocuments) {
-//        BulkRequestBuilder bulkRequest = embeddedElasticsearchServer.getClient().prepareBulk();
-//
-//        for (int i = 0; i < numberOfDocuments; i++) {
-//            bulkRequest.add(embeddedElasticsearchServer.getClient().prepareIndex(indexName, indexType,
-//                    Integer.toString(i)).setSource(
-//                    buildTweeterJson(i)));
-//        }
-//        bulkRequest.execute().actionGet();
-//    }
-//
-//    private static void indexTweeterDocument(String indexType, int id, Date date) {
-//        embeddedElasticsearchServer.getClient().prepareIndex(indexName, indexType).setSource(buildTweeterJson(id, date))
-//                .setId("tweet_" + indexType + "_" + id).execute().actionGet();
-//    }
-//
-//    private static void indexTweeterDocument(String indexType, int id) {
-//        embeddedElasticsearchServer.getClient().prepareIndex(indexName, indexType).setSource(buildTweeterJson(id))
-//                .setId("tweet_" + indexType + "_" + id).execute().actionGet();
-//    }
-//
-//    private static void indexOnePeopleDocument(String gender, int age, int id) throws IOException {
-//        embeddedElasticsearchServer.getClient().prepareIndex(indexName, peopleIndexType)
-//                .setSource(buildPeopleJson(gender, age, id)).execute()
-//                .actionGet();
-//    }
+    private static void indexBulkDocuments(String indexName, String indexType, int numberOfDocuments) throws IOException {
+        final BulkRequest bulkRequest = new BulkRequest();
+
+        for (int i = 0; i < numberOfDocuments; i++) {
+            final IndexRequest indexRequest = new IndexRequest(indexName, indexType, Integer.toString(i));
+            indexRequest.source(buildTweeterJson(i));
+            
+            bulkRequest.add(indexRequest);
+        }
+        
+        client.bulk(bulkRequest);
+    }
+
+    private static void indexTweeterDocument(String indexType, int id, Date date) throws IOException {
+        final IndexRequest indexRequest = new IndexRequest(indexName, indexType, "tweet_" + indexType + "_" + id);
+        indexRequest.source(buildTweeterJson(id, date));
+        
+        client.index(indexRequest);
+    }
+
+    private static void indexTweeterDocument(String indexType, int id) throws IOException {
+        final IndexRequest indexRequest = new IndexRequest(indexName, indexType, "tweet_" + indexType + "_" + id);
+        indexRequest.source(buildTweeterJson(id));
+        
+        client.index(indexRequest);
+    }
+
+    private static void indexOnePeopleDocument(String gender, int age, int id) throws IOException {
+        final IndexRequest indexRequest = new IndexRequest(indexName, peopleIndexType);
+        indexRequest.source(buildPeopleJson(gender, age, id));
+        
+        client.index(indexRequest);
+    }
 
     private static Map<String, Object> buildTweeterJson(int elementId) {
         return buildTweeterJson(elementId, new Date());
     }
 
     private static Map<String, Object> buildTweeterJson(int elementId, Date date) {
-        Map<String, Object> map = new LinkedHashMap<>();
+        final Map<String, Object> map = new LinkedHashMap<>();
         map.put("user", "user" + elementId);
         map.put("postDate", date);
         map.put("message", elementId);
