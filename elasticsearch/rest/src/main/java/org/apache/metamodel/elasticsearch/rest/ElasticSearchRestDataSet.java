@@ -30,6 +30,7 @@ import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.query.SelectItem;
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,15 +100,20 @@ final class ElasticSearchRestDataSet extends AbstractDataSet {
 
         final String scrollId = _searchResponse.getScrollId();
         if (scrollId == null) {
-            // this search response is not scrolleable - then it's the end.
+            // this search response is not scroll=able - then it's the end.
             _currentHit = null;
             return false;
         }
 
+        
         // try to scroll to the next set of hits
-        // TODO: Implement scrolling later
-//        _searchResponse = _client.prepareSearchScroll(scrollId).setScroll(ElasticSearchDataContext.TIMEOUT_SCROLL)
-//                .execute().actionGet();
+        try {
+            _searchResponse = _client.searchScroll(new SearchScrollRequest(scrollId).scroll(
+                    ElasticSearchRestDataContext.TIMEOUT_SCROLL));
+        } catch (IOException e) {
+            logger.warn("Failed to scroll to the next search response set.", e);
+            return false;
+        }
 
         // start over (recursively)
         _hitIndex = 0;

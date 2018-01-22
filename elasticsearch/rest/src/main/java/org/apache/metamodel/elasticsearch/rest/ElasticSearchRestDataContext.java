@@ -50,6 +50,7 @@ import org.apache.metamodel.util.SimpleTableDef;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -79,11 +80,10 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
 
     public static final String FIELD_ID = "_id";
 
-    // 1 minute timeout
-    public static final String TIMEOUT_SCROLL = "1m";
-
     // we scroll when more than 400 rows are expected
     private static final int SCROLL_THRESHOLD = 400;
+
+    public static final TimeValue TIMEOUT_SCROLL = TimeValue.timeValueMinutes(1);
 
     /**
      * Constructs a {@link ElasticSearchRestDataContext}. This constructor
@@ -204,12 +204,14 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
     }
 
     private SearchResponse executeSearch(Table table, SearchSourceBuilder searchSourceBuilder, boolean scroll) {
-//        if (scroll) {
-//            builder.setParameter(Parameters.SCROLL, TIMEOUT_SCROLL);
-//        }
+        final SearchRequest searchRequest = new SearchRequest(new String[] {getIndexName()}, searchSourceBuilder).types(table.getName());
+
+        if (scroll) {
+            searchRequest.scroll(TIMEOUT_SCROLL);
+        }
 
         try {
-        	return getElasticSearchClient().search(new SearchRequest(new String[] {getIndexName()}, searchSourceBuilder).types(table.getName()));
+            return getElasticSearchClient().search(searchRequest);
         } catch (IOException e) {
             logger.warn("Could not execute ElasticSearch query", e);
             throw new MetaModelException("Could not execute ElasticSearch query", e);
