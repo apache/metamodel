@@ -55,6 +55,7 @@ import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.test.ESSingleNodeTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -511,7 +512,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
         CreateIndexRequest cir = new CreateIndexRequest(indexName2);
         client.admin().indices().create(cir).actionGet();
         
-        PutMappingRequest pmr = new PutMappingRequest(indexName2).type(indexType3).source(mapping);
+        PutMappingRequest pmr = new PutMappingRequest(indexName2).type(indexType3).source(mapping, XContentType.JSON);
         
         client.admin().indices().putMapping(pmr).actionGet();
 

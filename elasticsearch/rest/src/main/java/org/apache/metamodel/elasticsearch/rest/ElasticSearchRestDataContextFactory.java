@@ -33,7 +33,6 @@ import org.apache.metamodel.factory.UnsupportedDataContextPropertiesException;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
 
 /**
  * Factory for ElasticSearch data context of REST type.
@@ -53,7 +52,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 public class ElasticSearchRestDataContextFactory implements DataContextFactory {
 
     @Override
-    public boolean accepts(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry) {
+    public boolean accepts(final DataContextProperties properties, final ResourceFactoryRegistry resourceFactoryRegistry) {
         switch (properties.getDataContextType()) {
         case "elasticsearch":
             // ensure that the url is http or https based to infer that this is
@@ -67,7 +66,7 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
         return false;
     }
 
-    private boolean acceptsInternal(DataContextProperties properties) {
+    private boolean acceptsInternal(final DataContextProperties properties) {
         if (properties.getUrl() == null) {
             return false;
         }
@@ -77,7 +76,7 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
         return true;
     }
 
-    private ElasticSearchRestClient createClient(DataContextProperties properties) {
+    private ElasticSearchRestClient createClient(final DataContextProperties properties) {
         final RestClientBuilder builder = RestClient.builder(new HttpHost(properties.getUrl(), properties.getPort()));
         
         if (properties.getUsername() != null) {
@@ -96,7 +95,7 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
         return new ElasticSearchRestClient(builder.build());
     }
 
-    private String getIndex(DataContextProperties properties) {
+    private String getIndex(final DataContextProperties properties) {
         final String databaseName = properties.getDatabaseName();
         if (databaseName == null) {
             properties.toMap().get("index");
@@ -105,7 +104,7 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
     }
 
     @Override
-    public DataContext create(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry)
+    public DataContext create(final DataContextProperties properties, final ResourceFactoryRegistry resourceFactoryRegistry)
             throws UnsupportedDataContextPropertiesException, ConnectionException {
         final ElasticSearchRestClient client = createClient(properties);
         final String indexName = getIndex(properties);

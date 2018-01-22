@@ -20,14 +20,19 @@ package org.apache.metamodel.elasticsearch.common;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.metamodel.data.DataSetHeader;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.LogicalOperator;
 import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
@@ -37,12 +42,8 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.ExistsQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ElasticSearchUtils {
-
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchUtils.class);
 
     public static final String FIELD_ID = "_id";
     public static final String SYSTEM_PROPERTY_STRIP_INVALID_FIELD_CHARS = "metamodel.elasticsearch.strip_invalid_field_chars";
@@ -262,5 +263,36 @@ public class ElasticSearchUtils {
             columnType = ColumnType.STRING;
         }
         return columnType;
+    }
+
+    public static Row createRow(final Map<String, Object> sourceMap, final String documentId, final DataSetHeader header) {
+        final Object[] values = new Object[header.size()];
+        for (int i = 0; i < values.length; i++) {
+            final SelectItem selectItem = header.getSelectItem(i);
+            final Column column = selectItem.getColumn();
+
+            assert column != null;
+            assert selectItem.getAggregateFunction() == null;
+            assert selectItem.getScalarFunction() == null;
+
+            if (column.isPrimaryKey()) {
+                values[i] = documentId;
+            } else {
+                Object value = sourceMap.get(column.getName());
+
+                if (column.getType() == ColumnType.DATE) {
+                    Date valueToDate = ElasticSearchDateConverter.tryToConvert((String) value);
+                    if (valueToDate == null) {
+                        values[i] = value;
+                    } else {
+                        values[i] = valueToDate;
+                    }
+                } else {
+                    values[i] = value;
+                }
+            }
+        }
+
+        return new DefaultRow(header, values);
     }
 }

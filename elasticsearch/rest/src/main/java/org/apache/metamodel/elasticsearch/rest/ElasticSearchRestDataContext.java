@@ -98,7 +98,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
      *            an array of {@link SimpleTableDef}s, which define the table
      *            and column model of the ElasticSearch index.
      */
-    public ElasticSearchRestDataContext(ElasticSearchRestClient client, String indexName, SimpleTableDef... tableDefinitions) {
+    public ElasticSearchRestDataContext(final ElasticSearchRestClient client, final String indexName, final SimpleTableDef... tableDefinitions) {
         super(client, indexName, tableDefinitions);
     }
 
@@ -112,7 +112,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
      * @param indexName
      *            the name of the ElasticSearch index to represent
      */
-    public ElasticSearchRestDataContext(ElasticSearchRestClient client, String indexName) {
+    public ElasticSearchRestDataContext(final ElasticSearchRestClient client, String indexName) {
         this(client, indexName, new SimpleTableDef[0]);
     }
 
@@ -184,8 +184,8 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, List<SelectItem> selectItems,
-            List<FilterItem> whereItems, int firstRow, int maxRows) {
+    protected DataSet materializeMainSchemaTable(final Table table, final List<SelectItem> selectItems,
+            final List<FilterItem> whereItems, final int firstRow, final int maxRows) {
         final QueryBuilder queryBuilder = ElasticSearchUtils.createQueryBuilderForSimpleWhere(whereItems,
                 LogicalOperator.AND);
         if (queryBuilder != null) {
@@ -217,14 +217,14 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
+    protected DataSet materializeMainSchemaTable(final Table table, final List<Column> columns, final int maxRows) {
         SearchResponse searchResult = executeSearch(table, createSearchRequest(1, maxRows, null), scrollNeeded(
                 maxRows));
 
         return new ElasticSearchRestDataSet(getElasticSearchClient(), searchResult, columns.stream().map(SelectItem::new).collect(Collectors.toList()));
     }
 
-    private SearchSourceBuilder createSearchRequest(int firstRow, int maxRows, QueryBuilder queryBuilder) {
+    private SearchSourceBuilder createSearchRequest(final int firstRow, final int maxRows, final QueryBuilder queryBuilder) {
         final SearchSourceBuilder searchRequest = new SearchSourceBuilder();
         if (firstRow > 1) {
             final int zeroBasedFrom = firstRow - 1;
@@ -244,7 +244,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
     }
 
     @Override
-    protected Row executePrimaryKeyLookupQuery(Table table, List<SelectItem> selectItems, Column primaryKeyColumn,
+    protected Row executePrimaryKeyLookupQuery(final Table table, final List<SelectItem> selectItems, final Column primaryKeyColumn,
             Object keyValue) {
         if (keyValue == null) {
             return null;
@@ -257,7 +257,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
 		final DataSetHeader header = new SimpleDataSetHeader(selectItems);
 
 		try {
-			return ElasticSearchRestUtils.createRow(
+			return ElasticSearchUtils.createRow(
 			        getElasticSearchClient().get(new GetRequest(getIndexName(), documentType, id)).getSource(), id, header);
 		} catch (IOException e) {
 			logger.warn("Could not execute ElasticSearch query", e);
@@ -266,13 +266,13 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
 	}
 
     @Override
-    protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
+    protected Number executeCountQuery(final Table table, final List<FilterItem> whereItems, final boolean functionApproximationAllowed) {
         if (!whereItems.isEmpty()) {
             // not supported - will have to be done by counting client-side
             return null;
         }
         final String documentType = table.getName();
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         sourceBuilder.query(QueryBuilders.termQuery("_type", documentType));
         sourceBuilder.size(0);
         
@@ -285,7 +285,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
     }
 
     @Override
-    public UpdateSummary executeUpdate(UpdateScript update) {
+    public UpdateSummary executeUpdate(final UpdateScript update) {
         final boolean isBatch = update instanceof BatchUpdateScript;
         final ElasticSearchRestUpdateCallback callback = new ElasticSearchRestUpdateCallback(this, isBatch);
         update.run(callback);

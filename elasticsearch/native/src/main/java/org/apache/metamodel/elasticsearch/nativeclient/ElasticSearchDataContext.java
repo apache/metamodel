@@ -261,7 +261,7 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
 
         final DataSetHeader header = new SimpleDataSetHeader(selectItems);
 
-        return NativeElasticSearchUtils.createRow(source, documentId, header);
+        return ElasticSearchUtils.createRow(source, documentId, header);
     }
 
     @Override

@@ -30,9 +30,9 @@ import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 
 final class ElasticSearchRestCreateTableBuilder extends AbstractTableCreationBuilder<ElasticSearchRestUpdateCallback> {
-    
-    public ElasticSearchRestCreateTableBuilder(ElasticSearchRestUpdateCallback updateCallback, Schema schema,
-            String name) {
+
+    public ElasticSearchRestCreateTableBuilder(final ElasticSearchRestUpdateCallback updateCallback,
+            final Schema schema, final String name) {
         super(updateCallback, schema, name);
     }
 

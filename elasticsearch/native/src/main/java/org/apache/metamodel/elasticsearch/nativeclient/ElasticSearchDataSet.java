@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.query.SelectItem;
 import org.elasticsearch.action.search.ClearScrollAction;
 import org.elasticsearch.action.search.ClearScrollRequestBuilder;
@@ -80,7 +81,7 @@ final class ElasticSearchDataSet extends AbstractDataSet {
 
     @Override
     public boolean next() {
-        final SearchHit[] hits = _searchResponse.getHits().hits();
+        final SearchHit[] hits = _searchResponse.getHits().getHits();
         if (hits.length == 0) {
             // break condition for the scroll
             _currentHit = null;
@@ -118,7 +119,7 @@ final class ElasticSearchDataSet extends AbstractDataSet {
 
         final Map<String, Object> source = _currentHit.getSource();
         final String documentId = _currentHit.getId();
-        final Row row = NativeElasticSearchUtils.createRow(source, documentId, getHeader());
+        final Row row = ElasticSearchUtils.createRow(source, documentId, getHeader());
         return row;
     }
 }

@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.query.SelectItem;
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -47,7 +48,7 @@ final class ElasticSearchRestDataSet extends AbstractDataSet {
     private SearchHit _currentHit;
     private int _hitIndex = 0;
 
-    public ElasticSearchRestDataSet(ElasticSearchRestClient client, SearchResponse searchResponse, List<SelectItem> selectItems) {
+    public ElasticSearchRestDataSet(final ElasticSearchRestClient client, final SearchResponse searchResponse, final List<SelectItem> selectItems) {
         super(selectItems);
         _client = client;
         _searchResponse = searchResponse;
@@ -82,7 +83,7 @@ final class ElasticSearchRestDataSet extends AbstractDataSet {
 
     @Override
     public boolean next() {
-        final SearchHit[] hits = _searchResponse.getHits().hits();
+        final SearchHit[] hits = _searchResponse.getHits().getHits();
         if (hits.length == 0) {
             // break condition for the scroll
             _currentHit = null;
@@ -121,7 +122,7 @@ final class ElasticSearchRestDataSet extends AbstractDataSet {
 
         final Map<String, Object> source = _currentHit.getSource();
         final String documentId = _currentHit.getId();
-        final Row row = ElasticSearchRestUtils.createRow(source, documentId, getHeader());
+        final Row row = ElasticSearchUtils.createRow(source, documentId, getHeader());
         return row;
     }
 }

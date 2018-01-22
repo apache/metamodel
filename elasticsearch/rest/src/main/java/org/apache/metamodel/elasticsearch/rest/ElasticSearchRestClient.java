@@ -53,45 +53,47 @@ import org.slf4j.LoggerFactory;
 
 public class ElasticSearchRestClient extends RestHighLevelClient {
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchRestClient.class);
-    
-    public ElasticSearchRestClient(RestClient restClient) {
-		super(restClient);
-	}
 
-	public final boolean refresh(final String indexName, Header... headers) {
-		try {
+    public ElasticSearchRestClient(final RestClient restClient) {
+        super(restClient);
+    }
+
+    public final boolean refresh(final String indexName, final Header... headers) {
+        try {
             return performRequest(new MainRequest(), (request) -> refresh(indexName),
-            		ElasticSearchRestClient::convertExistsResponse, emptySet(), headers);
+                    ElasticSearchRestClient::convertResponse, emptySet(), headers);
         } catch (IOException e) {
             logger.info("Failed to refresh index \"{}\"", indexName, e);
         }
         return false;
-	}
+    }
 
-    private static Request refresh(String indexName) {
+    private static Request refresh(final String indexName) {
         return new Request(HttpPost.METHOD_NAME, "/" + indexName + "/_refresh", Collections.emptyMap(), null);
     }
 
-    public final boolean delete(final String indexName, Header... headers) throws IOException {
+    public final boolean delete(final String indexName, final Header... headers) throws IOException {
         return performRequest(new MainRequest(), (request) -> delete(indexName),
-                ElasticSearchRestClient::convertExistsResponse, emptySet(), headers);
+                ElasticSearchRestClient::convertResponse, emptySet(), headers);
     }
 
-    private static Request delete(String indexName) {
+    private static Request delete(final String indexName) {
         return new Request(HttpDelete.METHOD_NAME, "/" + indexName, Collections.emptyMap(), null);
     }
-    
-    public Set<Entry<String, Object>> getMappings(final String indexName, Header... headers) throws IOException {
+
+    public Set<Entry<String, Object>> getMappings(final String indexName, final Header... headers) throws IOException {
         return performRequestAndParseEntity(new GetIndexRequest(), (request) -> getMappings(indexName), (
                 response) -> parseMappings(response, indexName), emptySet(), headers);
     }
-    
-    private static Request getMappings(String indexName) throws IOException {
+
+    private static Request getMappings(final String indexName) throws IOException {
         return new Request(HttpGet.METHOD_NAME, "/" + indexName, Collections.emptyMap(), null);
     }
 
-    public final boolean createMapping(final PutMappingRequest putMappingRequest, Header... headers) throws IOException {
-        return performRequest(putMappingRequest, (request) -> putMapping(putMappingRequest), ElasticSearchRestClient::convertExistsResponse, emptySet(), headers);        
+    public final boolean createMapping(final PutMappingRequest putMappingRequest, final Header... headers)
+            throws IOException {
+        return performRequest(putMappingRequest, (request) -> putMapping(putMappingRequest),
+                ElasticSearchRestClient::convertResponse, emptySet(), headers);
     }
 
     private static Request putMapping(final PutMappingRequest putMappingRequest) throws IOException {
@@ -101,20 +103,20 @@ public class ElasticSearchRestClient extends RestHighLevelClient {
         return new Request(HttpPut.METHOD_NAME, endpoint, Collections.emptyMap(), entity);
     }
 
-
     // Carbon copy of RestHighLevelClient#convertExistsResponse(Response) method, which is unaccessible from this class.
-    static boolean convertExistsResponse(Response response) {
+    private static boolean convertResponse(final Response response) {
         return response.getStatusLine().getStatusCode() == 200;
     }
-    
-    static Set<Entry<String, Object>> parseMappings(XContentParser response, String indexName) throws IOException {
+
+    @SuppressWarnings("unchecked")
+    static Set<Entry<String, Object>> parseMappings(final XContentParser response, final String indexName) throws IOException {
         Map<String, Object> schema = (Map<String, Object>) response.map().get(indexName);
         Map<String, Object> tables = (Map<String, Object>) schema.get("mappings");
 
         return tables.entrySet();
     }
-    
-    ActionResponse execute(ActionRequest request) throws IOException {
+
+    ActionResponse execute(final ActionRequest request) throws IOException {
         if (request instanceof BulkRequest) {
             return bulk((BulkRequest) request);
         } else if (request instanceof IndexRequest) {

@@ -43,7 +43,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 final class ElasticSearchRestDeleteBuilder extends AbstractRowDeletionBuilder {
     private final ElasticSearchRestUpdateCallback _updateCallback;
 
-    public ElasticSearchRestDeleteBuilder(ElasticSearchRestUpdateCallback updateCallback, Table table) {
+    public ElasticSearchRestDeleteBuilder(final ElasticSearchRestUpdateCallback updateCallback, final Table table) {
         super(table);
         _updateCallback = updateCallback;
     }

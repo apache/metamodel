@@ -31,6 +31,7 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionResponse;
+import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -52,7 +53,7 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
     private int bulkActionCount = 0;
     private final boolean isBatch;
 
-    public ElasticSearchRestUpdateCallback(ElasticSearchRestDataContext dataContext, boolean isBatch) {
+    public ElasticSearchRestUpdateCallback(final ElasticSearchRestDataContext dataContext, final boolean isBatch) {
         super(dataContext);
         this.isBatch = isBatch;
     }
@@ -67,7 +68,7 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
     }
 
     @Override
-    public TableCreationBuilder createTable(Schema schema, String name) throws IllegalArgumentException,
+    public TableCreationBuilder createTable(final Schema schema, final String name) throws IllegalArgumentException,
             IllegalStateException {
         return new ElasticSearchRestCreateTableBuilder(this, schema, name);
     }
@@ -78,12 +79,12 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
     }
 
     @Override
-    public TableDropBuilder dropTable(Table table) {
+    public TableDropBuilder dropTable(final Table table) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public RowInsertionBuilder insertInto(Table table) throws IllegalArgumentException, IllegalStateException,
+    public RowInsertionBuilder insertInto(final Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
         return new ElasticSearchRestInsertBuilder(this, table);
     }
@@ -94,46 +95,46 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
     }
 
     @Override
-    public RowDeletionBuilder deleteFrom(Table table) throws IllegalArgumentException, IllegalStateException,
+    public RowDeletionBuilder deleteFrom(final Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
         return new ElasticSearchRestDeleteBuilder(this, table);
     }
 
     public void onExecuteUpdateFinished() {
         if (isBatch()) {
-//            flushBulkActions();
+            flushBulkActions();
         }
-        
+
         getDataContext().refreshSchemas();
     }
 
-//    private void flushBulkActions() {
-//        if (bulkRequest == null || bulkActionCount == 0) {
-//            // nothing to flush
-//            return;
-//        }
-//        final Bulk bulk = getBulkRequest().build();
-//        logger.info("Flushing {} actions to ElasticSearch index {}", bulkActionCount, getDataContext().getIndexName());
-//        executeBlocking(bulk);
-//
-//        bulkActionCount = 0;
-//        bulkRequest = null;
-//    }
+    private void flushBulkActions() {
+        if (bulkRequest == null || bulkActionCount == 0) {
+            // nothing to flush
+            return;
+        }
 
-    public void execute(ActionRequest action) {
-//        if (isBatch() && action instanceof BulkAction) {
-//            final BulkRequest bulkRequest = getBulkRequest();
-//            bulkRequest.addAction((BulkableAction<?>) action);
-//            bulkActionCount++;
-//            if (bulkActionCount == BULK_BUFFER_SIZE) {
-//                flushBulkActions();
-//            }
-//        } else {
-            executeBlocking(action);
-//        }
+        logger.info("Flushing {} actions to ElasticSearch index {}", bulkActionCount, getDataContext().getIndexName());
+        executeBlocking(bulkRequest);
+
+        bulkActionCount = 0;
+        bulkRequest = null;
     }
 
-    private void executeBlocking(ActionRequest action) {
+    public void execute(final ActionRequest action) {
+        if (isBatch() && (action instanceof DocWriteRequest<?>)) {
+            final BulkRequest bulkRequest = getBulkRequest();
+            bulkRequest.add((DocWriteRequest<?>) action);
+            bulkActionCount++;
+            if (bulkActionCount == BULK_BUFFER_SIZE) {
+                flushBulkActions();
+            }
+        } else {
+            executeBlocking(action);
+        }
+    }
+
+    private void executeBlocking(final ActionRequest action) {
         try {
             if (action instanceof PutMappingRequest) {
                 getDataContext().getElasticSearchClient().createMapping((PutMappingRequest) action);
@@ -165,7 +166,6 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
     private BulkRequest getBulkRequest() {
         if (bulkRequest == null) {
             bulkRequest = new BulkRequest();
-            //bulkRequest.defaultIndex(getDataContext().getIndexName());
         }
         return bulkRequest;
     }
