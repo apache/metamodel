@@ -126,7 +126,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
         } catch (IOException e) {
             logger.error("Failed to retrieve mappings", e);
             throw new MetaModelException("Failed to execute request for index information needed to detect schema", e);
-        }            
+        }
 
         final List<SimpleTableDef> result = new ArrayList<>();
 

@@ -18,6 +18,9 @@
  */
 package org.apache.metamodel.elasticsearch.rest;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -76,8 +79,9 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
         return true;
     }
 
-    private ElasticSearchRestClient createClient(final DataContextProperties properties) {
-        final RestClientBuilder builder = RestClient.builder(new HttpHost(properties.getUrl(), properties.getPort()));
+    private ElasticSearchRestClient createClient(final DataContextProperties properties) throws MalformedURLException {
+        final URL url = new URL(properties.getUrl());
+        final RestClientBuilder builder = RestClient.builder(new HttpHost(url.getHost(), url.getPort()));
         
         if (properties.getUsername() != null) {
 			final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
@@ -106,10 +110,14 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
     @Override
     public DataContext create(final DataContextProperties properties, final ResourceFactoryRegistry resourceFactoryRegistry)
             throws UnsupportedDataContextPropertiesException, ConnectionException {
-        final ElasticSearchRestClient client = createClient(properties);
-        final String indexName = getIndex(properties);
-        final SimpleTableDef[] tableDefinitions = properties.getTableDefs();
-        return new ElasticSearchRestDataContext(client, indexName, tableDefinitions);
+        try {
+            ElasticSearchRestClient client = createClient(properties);
+            final String indexName = getIndex(properties);
+            final SimpleTableDef[] tableDefinitions = properties.getTableDefs();
+            return new ElasticSearchRestDataContext(client, indexName, tableDefinitions);
+        } catch (MalformedURLException e) {
+            throw new UnsupportedDataContextPropertiesException(e);
+        }
     }
 
 }

@@ -74,7 +74,7 @@ public class ElasticSearchRestDataContextIT {
 
     private static UpdateableDataContext dataContext;
     
-    private static String determineHostName() throws URISyntaxException {
+    public static String determineHostName() throws URISyntaxException {
         final String dockerHost = System.getenv("DOCKER_HOST");
 
         if (dockerHost == null) {
