@@ -26,7 +26,6 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.metamodel.ConnectionException;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.factory.DataContextFactory;
@@ -88,12 +87,8 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
 			credentialsProvider.setCredentials(AuthScope.ANY,
 					new UsernamePasswordCredentials(properties.getUsername(), properties.getPassword()));
 
-			builder.setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
-				@Override
-				public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-					return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
-				}
-			});
+            builder.setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(
+                    credentialsProvider));
         }
 
         return new ElasticSearchRestClient(builder.build());

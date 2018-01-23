@@ -60,7 +60,7 @@ public class ElasticSearchRestClient extends RestHighLevelClient {
 
     public final boolean refresh(final String indexName, final Header... headers) {
         try {
-            return performRequest(new MainRequest(), (request) -> refresh(indexName),
+            return performRequest(new MainRequest(), request -> refresh(indexName),
                     ElasticSearchRestClient::convertResponse, emptySet(), headers);
         } catch (IOException e) {
             logger.info("Failed to refresh index \"{}\"", indexName, e);
@@ -73,7 +73,7 @@ public class ElasticSearchRestClient extends RestHighLevelClient {
     }
 
     public final boolean delete(final String indexName, final Header... headers) throws IOException {
-        return performRequest(new MainRequest(), (request) -> delete(indexName),
+        return performRequest(new MainRequest(), request -> delete(indexName),
                 ElasticSearchRestClient::convertResponse, emptySet(), headers);
     }
 
@@ -82,21 +82,21 @@ public class ElasticSearchRestClient extends RestHighLevelClient {
     }
 
     public Set<Entry<String, Object>> getMappings(final String indexName, final Header... headers) throws IOException {
-        return performRequestAndParseEntity(new GetIndexRequest(), (request) -> getMappings(indexName), (
+        return performRequestAndParseEntity(new GetIndexRequest(), request -> getMappings(indexName), (
                 response) -> parseMappings(response, indexName), emptySet(), headers);
     }
 
-    private static Request getMappings(final String indexName) throws IOException {
+    private static Request getMappings(final String indexName) {
         return new Request(HttpGet.METHOD_NAME, "/" + indexName, Collections.emptyMap(), null);
     }
 
     public final boolean createMapping(final PutMappingRequest putMappingRequest, final Header... headers)
             throws IOException {
-        return performRequest(putMappingRequest, (request) -> putMapping(putMappingRequest),
+        return performRequest(putMappingRequest, request -> putMapping(putMappingRequest),
                 ElasticSearchRestClient::convertResponse, emptySet(), headers);
     }
 
-    private static Request putMapping(final PutMappingRequest putMappingRequest) throws IOException {
+    private static Request putMapping(final PutMappingRequest putMappingRequest) {
         final String endpoint = "/" + putMappingRequest.indices()[0] + "/_mapping/" + putMappingRequest.type();
         final ByteArrayEntity entity = new ByteArrayEntity(putMappingRequest.source().getBytes(),
                 ContentType.APPLICATION_JSON);

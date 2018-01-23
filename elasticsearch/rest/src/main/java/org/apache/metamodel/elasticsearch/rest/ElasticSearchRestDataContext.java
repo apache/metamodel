@@ -123,7 +123,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
 
         final List<SimpleTableDef> result = new ArrayList<>();
 
-		if (mappings.size() == 0) {
+		if (mappings.isEmpty()) {
 			logger.warn("No metadata returned for index name '{}' - no tables will be detected.");
 		} else {
 			for (Entry<String, Object> mapping : mappings) {

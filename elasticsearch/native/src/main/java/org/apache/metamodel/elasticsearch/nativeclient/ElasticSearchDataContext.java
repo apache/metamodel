@@ -195,7 +195,7 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
             // where clause can be pushed down to an ElasticSearch query
             final SearchRequestBuilder searchRequest = createSearchRequest(table, firstRow, maxRows, queryBuilder);
             final SearchResponse response = searchRequest.execute().actionGet();
-            return new ElasticSearchDataSet(getElasticSearchClient(), response, selectItems, false);
+            return new ElasticSearchDataSet(getElasticSearchClient(), response, selectItems);
         }
         return super.materializeMainSchemaTable(table, selectItems, whereItems, firstRow, maxRows);
     }
@@ -204,7 +204,8 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
     protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         final SearchRequestBuilder searchRequest = createSearchRequest(table, 1, maxRows, null);
         final SearchResponse response = searchRequest.execute().actionGet();
-        return new ElasticSearchDataSet(getElasticSearchClient(), response, columns.stream().map(SelectItem::new).collect(Collectors.toList()), false);
+        return new ElasticSearchDataSet(getElasticSearchClient(), response, columns.stream().map(SelectItem::new)
+                .collect(Collectors.toList()));
     }
 
     private SearchRequestBuilder createSearchRequest(Table table, int firstRow, int maxRows, QueryBuilder queryBuilder) {

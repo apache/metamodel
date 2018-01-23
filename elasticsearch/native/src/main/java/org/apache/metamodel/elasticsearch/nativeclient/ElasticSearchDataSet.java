@@ -35,8 +35,8 @@ final class ElasticSearchDataSet extends AbstractElasticSearchDataSet {
 
     private final Client _client;
 
-    public ElasticSearchDataSet(final Client client, final SearchResponse searchResponse, final List<SelectItem> selectItems,
-            final boolean queryPostProcessed) {
+    public ElasticSearchDataSet(final Client client, final SearchResponse searchResponse,
+            final List<SelectItem> selectItems) {
         super(searchResponse, selectItems);
         _client = client;
     }

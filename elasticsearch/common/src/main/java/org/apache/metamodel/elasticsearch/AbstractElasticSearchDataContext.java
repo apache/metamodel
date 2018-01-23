@@ -21,7 +21,6 @@ package org.apache.metamodel.elasticsearch;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.apache.metamodel.DataContext;
@@ -37,7 +36,7 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.elasticsearch.common.unit.TimeValue;
 
-abstract public class AbstractElasticSearchDataContext extends QueryPostprocessDataContext implements DataContext,
+public abstract class AbstractElasticSearchDataContext extends QueryPostprocessDataContext implements DataContext,
         UpdateableDataContext {
 
     public static final TimeValue TIMEOUT_SCROLL = TimeValue.timeValueSeconds(60);
@@ -90,7 +89,7 @@ abstract public class AbstractElasticSearchDataContext extends QueryPostprocessD
      * @return a mutable schema instance, useful for further fine tuning by the
      *         user.
      */
-    abstract protected SimpleTableDef[] detectSchema();
+    protected abstract SimpleTableDef[] detectSchema();
 
     @Override
     protected Schema getMainSchema() throws MetaModelException {
@@ -143,12 +142,7 @@ abstract public class AbstractElasticSearchDataContext extends QueryPostprocessD
     
     protected static SimpleTableDef[] sortTables(final List<SimpleTableDef> result) {
         final SimpleTableDef[] tableDefArray = result.toArray(new SimpleTableDef[result.size()]);
-        Arrays.sort(tableDefArray, new Comparator<SimpleTableDef>() {
-            @Override
-            public int compare(SimpleTableDef o1, SimpleTableDef o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+        Arrays.sort(tableDefArray, (o1, o2) -> o1.getName().compareTo(o2.getName()));
         return tableDefArray;
     }
 

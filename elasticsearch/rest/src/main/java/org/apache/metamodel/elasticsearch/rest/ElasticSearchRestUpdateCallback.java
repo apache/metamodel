@@ -123,8 +123,7 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
 
     public void execute(final ActionRequest action) {
         if (isBatch() && (action instanceof DocWriteRequest<?>)) {
-            final BulkRequest bulkRequest = getBulkRequest();
-            bulkRequest.add((DocWriteRequest<?>) action);
+            getBulkRequest().add((DocWriteRequest<?>) action);
             bulkActionCount++;
             if (bulkActionCount == BULK_BUFFER_SIZE) {
                 flushBulkActions();
@@ -139,20 +138,16 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
             if (action instanceof PutMappingRequest) {
                 getDataContext().getElasticSearchClient().createMapping((PutMappingRequest) action);
             } else {
-                ActionResponse result;
-                result = getDataContext().getElasticSearchClient().execute(action);
+                final ActionResponse result = getDataContext().getElasticSearchClient().execute(action);
 
                 if (result instanceof BulkResponse && ((BulkResponse) result).hasFailures()) {
-                    if (result instanceof BulkResponse) {
-                        BulkItemResponse[] failedItems = ((BulkResponse) result).getItems();
-                        for (int i = 0; i < failedItems.length; i++) {
-
-                            if (failedItems[i].isFailed()) {
-                                final BulkItemResponse failedItem = failedItems[i];
-                                logger.error("Bulk failed with item no. {} of {}: id={} op={} status={} error={}", i
-                                        + 1, failedItems.length, failedItem.getId(), failedItem.getOpType(), failedItem
-                                                .status(), failedItem.getFailureMessage());
-                            }
+                    BulkItemResponse[] failedItems = ((BulkResponse) result).getItems();
+                    for (int i = 0; i < failedItems.length; i++) {
+                        if (failedItems[i].isFailed()) {
+                            final BulkItemResponse failedItem = failedItems[i];
+                            logger.error("Bulk failed with item no. {} of {}: id={} op={} status={} error={}", i + 1,
+                                    failedItems.length, failedItem.getId(), failedItem.getOpType(), failedItem.status(),
+                                    failedItem.getFailureMessage());
                         }
                     }
                 }
