@@ -50,7 +50,7 @@ final class ElasticSearchRestInsertBuilder extends AbstractRowInsertionBuilder<E
                 final String columnName = columns[i].getName();
 
                 final Object value = values[i];
-                if (ElasticSearchRestDataContext.FIELD_ID.equals(columnName)) {
+                if (ElasticSearchUtils.FIELD_ID.equals(columnName)) {
                     if (value != null) {
                         id = value.toString();
                     }
@@ -68,5 +68,4 @@ final class ElasticSearchRestInsertBuilder extends AbstractRowInsertionBuilder<E
 
         getUpdateCallback().execute(indexRequest);
     }
-
 }

@@ -21,6 +21,7 @@ package org.apache.metamodel.elasticsearch;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.metamodel.DataContext;
@@ -34,9 +35,12 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.elasticsearch.common.unit.TimeValue;
 
 abstract public class AbstractElasticSearchDataContext extends QueryPostprocessDataContext implements DataContext,
         UpdateableDataContext {
+
+    public static final TimeValue TIMEOUT_SCROLL = TimeValue.timeValueSeconds(60);
 
     protected final Object elasticSearchClient;
 
@@ -136,4 +140,16 @@ abstract public class AbstractElasticSearchDataContext extends QueryPostprocessD
     protected boolean limitMaxRowsIsSet(int maxRows) {
         return (maxRows != -1);
     }
+    
+    protected static SimpleTableDef[] sortTables(final List<SimpleTableDef> result) {
+        final SimpleTableDef[] tableDefArray = result.toArray(new SimpleTableDef[result.size()]);
+        Arrays.sort(tableDefArray, new Comparator<SimpleTableDef>() {
+            @Override
+            public int compare(SimpleTableDef o1, SimpleTableDef o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        return tableDefArray;
+    }
+
 }

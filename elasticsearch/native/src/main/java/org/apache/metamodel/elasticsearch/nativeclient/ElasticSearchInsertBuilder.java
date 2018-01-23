@@ -71,5 +71,4 @@ final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<Elast
 
         client.admin().indices().prepareRefresh(indexName).execute().actionGet();
     }
-
 }

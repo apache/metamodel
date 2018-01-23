@@ -19,8 +19,6 @@
 package org.apache.metamodel.elasticsearch.nativeclient;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -51,7 +49,6 @@ import org.elasticsearch.cluster.ClusterState;
 import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
-import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
@@ -82,8 +79,6 @@ import com.carrotsearch.hppc.cursors.ObjectCursor;
 public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
-
-    public static final TimeValue TIMEOUT_SCROLL = TimeValue.timeValueSeconds(60);
 
     private String id;
 
@@ -149,15 +144,7 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
                 }
             }
         }
-        final SimpleTableDef[] tableDefArray = result.toArray(new SimpleTableDef[result.size()]);
-        Arrays.sort(tableDefArray, new Comparator<SimpleTableDef>() {
-            @Override
-            public int compare(SimpleTableDef o1, SimpleTableDef o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
-
-        return tableDefArray;
+        return sortTables(result);
     }
 
     /**

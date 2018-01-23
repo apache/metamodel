@@ -20,8 +20,6 @@ package org.apache.metamodel.elasticsearch.rest;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -50,7 +48,6 @@ import org.apache.metamodel.util.SimpleTableDef;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -78,12 +75,8 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchRestDataContext.class);
 
-    public static final String FIELD_ID = "_id";
-
     // we scroll when more than 400 rows are expected
     private static final int SCROLL_THRESHOLD = 400;
-
-    public static final TimeValue TIMEOUT_SCROLL = TimeValue.timeValueMinutes(1);
 
     /**
      * Constructs a {@link ElasticSearchRestDataContext}. This constructor
@@ -149,15 +142,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
 				}
 			}
 		}
-        final SimpleTableDef[] tableDefArray = result.toArray(new SimpleTableDef[result.size()]);
-        Arrays.sort(tableDefArray, new Comparator<SimpleTableDef>() {
-            @Override
-            public int compare(SimpleTableDef o1, SimpleTableDef o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
-
-        return tableDefArray;
+        return sortTables(result);
     }
 
     @Override
