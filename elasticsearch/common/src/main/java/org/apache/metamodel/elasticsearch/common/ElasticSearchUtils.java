@@ -38,6 +38,7 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.util.CollectionUtils;
+import org.elasticsearch.common.Strings;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.ExistsQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -64,25 +65,25 @@ public class ElasticSearchUtils {
         }
 
         final Map<String, Map<String, String>> propertiesMap = new LinkedHashMap<>();
-
+        
         for (Column column : table.getColumns()) {
             final String columnName = column.getName();
             if (FIELD_ID.equals(columnName)) {
                 // do nothing - the ID is a client-side construct
                 continue;
             }
-
+            
             final String fieldName = getValidatedFieldName(columnName);
             final Map<String, String> propertyMap = new HashMap<>();
             final String type = getType(column);
             propertyMap.put("type", type);
-
+            
             propertiesMap.put(fieldName, propertyMap);
         }
 
         HashMap<String, Map<String, Map<String, String>>> docTypeMap = new HashMap<>();
         docTypeMap.put("properties", propertiesMap);
-
+        
         final Map<String, Map<String, Map<String, Map<String, String>>>> mapping = new HashMap<>();
         mapping.put(table.getName(), docTypeMap);
         return mapping;
@@ -129,7 +130,7 @@ public class ElasticSearchUtils {
      */
     private static String getType(Column column) {
         String nativeType = column.getNativeType();
-        if (nativeType != null && !nativeType.isEmpty()) {
+        if (!Strings.isNullOrEmpty(nativeType)) {
             return nativeType;
         }
 
