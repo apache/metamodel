@@ -275,9 +275,9 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
                 callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
             }
         });
-        dataContext.refreshSchemas();
+
         dataContext.executeUpdate(new DeleteFrom(table));
-        dataContext.refreshSchemas();
+
         Row row = MetaModelHelper.executeSingleRowQuery(dataContext, dataContext.query().from(table).selectCount()
                 .toQuery());
 
@@ -288,13 +288,12 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
     @Test
     public void testDeleteByQuery() throws Exception {
         final Schema schema = dataContext.getDefaultSchema();
-        final String tableName = "testCreateTable2";
-        final CreateTable createTable = new CreateTable(schema, tableName);
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
         createTable.withColumn("foo").ofType(ColumnType.STRING);
         createTable.withColumn("bar").ofType(ColumnType.NUMBER);
         dataContext.executeUpdate(createTable);
 
-        final Table table = schema.getTableByName(tableName);
+        final Table table = schema.getTableByName("testCreateTable");
 
         dataContext.executeUpdate(new UpdateScript() {
             @Override
@@ -314,13 +313,12 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
     @Test
     public void testDeleteUnsupportedQueryType() throws Exception {
         final Schema schema = dataContext.getDefaultSchema();
-        final String tableName = "testCreateTable3";
-        final CreateTable createTable = new CreateTable(schema, tableName);
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
         createTable.withColumn("foo").ofType(ColumnType.STRING);
         createTable.withColumn("bar").ofType(ColumnType.NUMBER);
         dataContext.executeUpdate(createTable);
 
-        final Table table = schema.getTableByName(tableName);
+        final Table table = schema.getTableByName("testCreateTable");
 
         dataContext.executeUpdate(new UpdateScript() {
             @Override
@@ -335,7 +333,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
             dataContext.executeUpdate(new DeleteFrom(table).where("bar").gt(40));
             fail("Exception expected");
         } catch (UnsupportedOperationException e) {
-            assertEquals("Could not push down WHERE items to delete by query request: [testCreateTable3.bar > 40]",
+            assertEquals("Could not push down WHERE items to delete by query request: [testCreateTable.bar > 40]",
                     e.getMessage());
         }
     }
@@ -343,13 +341,12 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
     @Test
     public void testUpdateRow() throws Exception {
         final Schema schema = dataContext.getDefaultSchema();
-        final String tableName = "testCreateTable4";
-        final CreateTable createTable = new CreateTable(schema, tableName);
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
         createTable.withColumn("foo").ofType(ColumnType.STRING);
         createTable.withColumn("bar").ofType(ColumnType.NUMBER);
         dataContext.executeUpdate(createTable);
 
-        final Table table = schema.getTableByName(tableName);
+        final Table table = schema.getTableByName("testCreateTable");
 
         dataContext.executeUpdate(new UpdateScript() {
             @Override
@@ -485,14 +482,13 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testCountQuery() throws Exception {
-        final Table table = dataContext.getDefaultSchema().getTableByName(bulkIndexType);
-
-        final Query q = new Query().selectCount().from(table);
-        final List<Object[]> data = dataContext.executeQuery(q).toObjectArrays();
+        Table table = dataContext.getDefaultSchema().getTableByName(bulkIndexType);
+        Query q = new Query().selectCount().from(table);
+        
+        List<Object[]> data = dataContext.executeQuery(q).toObjectArrays();
         assertEquals(1, data.size());
-        final Object[] row = data.get(0);
+        Object[] row = data.get(0);
         assertEquals(1, row.length);
-
         assertEquals("[10]", Arrays.toString(row));
     }
 
