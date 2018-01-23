@@ -127,7 +127,7 @@ public class ElasticSearchRestDataContextIT {
                 Arrays.toString(dataContext.getDefaultSchema().getTableNames().toArray()));
 
         Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
-        
+
         assertThat(table.getColumnNames(), containsInAnyOrder("_id", "message", "postDate", "user"));
 
         assertEquals(ColumnType.STRING, table.getColumnByName("user").getType());
@@ -225,6 +225,7 @@ public class ElasticSearchRestDataContextIT {
         });
 
         dataContext.refreshSchemas();
+
 
         try (DataSet ds = dataContext.query().from(table).selectAll().orderBy("bar").execute()) {
             assertTrue(ds.next());
@@ -480,7 +481,8 @@ public class ElasticSearchRestDataContextIT {
         dataContext.query().from(indexType1).select("nonExistingField").execute();
     }
 
-    private static void indexBulkDocuments(String indexName, String indexType, int numberOfDocuments) throws IOException {
+    private static void indexBulkDocuments(final String indexName, final String indexType, final int numberOfDocuments)
+            throws IOException {
         final BulkRequest bulkRequest = new BulkRequest();
 
         for (int i = 0; i < numberOfDocuments; i++) {
@@ -493,7 +495,7 @@ public class ElasticSearchRestDataContextIT {
         client.bulk(bulkRequest);
     }
 
-    private static void indexTweeterDocument(String indexType, int id, Date date) throws IOException {
+    private static void indexTweeterDocument(final String indexType, final int id, final Date date) throws IOException {
         final IndexRequest indexRequest = new IndexRequest(indexName, indexType, "tweet_" + indexType + "_" + id);
         indexRequest.source(buildTweeterJson(id, date));
         
@@ -519,7 +521,7 @@ public class ElasticSearchRestDataContextIT {
     }
 
     private static Map<String, Object> buildTweeterJson(int elementId, Date date) {
-        final Map<String, Object> map = new LinkedHashMap<>();
+        Map<String, Object> map = new LinkedHashMap<>();
         map.put("user", "user" + elementId);
         map.put("postDate", date);
         map.put("message", elementId);

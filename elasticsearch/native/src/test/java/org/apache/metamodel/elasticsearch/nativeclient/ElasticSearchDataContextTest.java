@@ -534,7 +534,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
                 .setId("tweet_" + indexType + "_" + id).execute().actionGet();
     }
 
-    private  void indexOnePeopleDocument(String gender, int age, int id) throws IOException {
+    private void indexOnePeopleDocument(String gender, int age, int id) throws IOException {
         client.prepareIndex(indexName, peopleIndexType).setSource(buildPeopleJson(gender, age, id)).execute()
                 .actionGet();
     }

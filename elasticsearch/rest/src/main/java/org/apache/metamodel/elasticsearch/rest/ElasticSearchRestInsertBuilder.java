@@ -30,7 +30,7 @@ import org.elasticsearch.action.index.IndexRequest;
 
 final class ElasticSearchRestInsertBuilder extends AbstractRowInsertionBuilder<ElasticSearchRestUpdateCallback> {
 
-    public ElasticSearchRestInsertBuilder(ElasticSearchRestUpdateCallback updateCallback, Table table) {
+    public ElasticSearchRestInsertBuilder(final ElasticSearchRestUpdateCallback updateCallback, final Table table) {
         super(updateCallback, table);
     }
 
@@ -68,4 +68,5 @@ final class ElasticSearchRestInsertBuilder extends AbstractRowInsertionBuilder<E
 
         getUpdateCallback().execute(indexRequest);
     }
+
 }

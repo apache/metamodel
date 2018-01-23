@@ -57,7 +57,7 @@ final class ElasticSearchRestDeleteBuilder extends AbstractRowDeletionBuilder {
         final String indexName = dataContext.getIndexName();
 
         final List<FilterItem> whereItems = getWhereItems();
-        
+
         // delete by query - note that creteQueryBuilderForSimpleWhere may
         // return matchAllQuery() if no where items are present.
         final QueryBuilder queryBuilder = ElasticSearchUtils.createQueryBuilderForSimpleWhere(whereItems,
@@ -76,7 +76,7 @@ final class ElasticSearchRestDeleteBuilder extends AbstractRowDeletionBuilder {
         SearchRequest searchRequest = new SearchRequest(indexName);
         searchRequest.types(documentType);
         searchRequest.source(searchSourceBuilder);
-        
+
         try {
             final SearchResponse response = dataContext.getElasticSearchClient().search(searchRequest);
 

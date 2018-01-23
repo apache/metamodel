@@ -54,7 +54,7 @@ import org.elasticsearch.client.RestClientBuilder;
 public class ElasticSearchRestDataContextFactory implements DataContextFactory {
 
     @Override
-    public boolean accepts(final DataContextProperties properties, final ResourceFactoryRegistry resourceFactoryRegistry) {
+    public boolean accepts(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry) {
         switch (properties.getDataContextType()) {
         case "elasticsearch":
             // ensure that the url is http or https based to infer that this is
@@ -68,7 +68,7 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
         return false;
     }
 
-    private boolean acceptsInternal(final DataContextProperties properties) {
+    private boolean acceptsInternal(DataContextProperties properties) {
         if (properties.getUrl() == null) {
             return false;
         }
@@ -94,7 +94,7 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
         return new ElasticSearchRestClient(builder.build());
     }
 
-    private String getIndex(final DataContextProperties properties) {
+    private String getIndex(DataContextProperties properties) {
         final String databaseName = properties.getDatabaseName();
         if (databaseName == null) {
             properties.toMap().get("index");
@@ -103,7 +103,7 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
     }
 
     @Override
-    public DataContext create(final DataContextProperties properties, final ResourceFactoryRegistry resourceFactoryRegistry)
+    public DataContext create(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry)
             throws UnsupportedDataContextPropertiesException, ConnectionException {
         try {
             ElasticSearchRestClient client = createClient(properties);
