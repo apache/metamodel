@@ -260,13 +260,12 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
     @Test
     public void testDeleteNoWhere() throws Exception {
         final Schema schema = dataContext.getDefaultSchema();
-        final String tableName = "testCreateTable1";
-        final CreateTable createTable = new CreateTable(schema, tableName);
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
         createTable.withColumn("foo").ofType(ColumnType.STRING);
         createTable.withColumn("bar").ofType(ColumnType.DOUBLE);
         dataContext.executeUpdate(createTable);
 
-        final Table table = schema.getTableByName(tableName);
+        final Table table = schema.getTableByName("testCreateTable");
 
         dataContext.executeUpdate(new UpdateScript() {
             @Override
@@ -280,8 +279,6 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
         Row row = MetaModelHelper.executeSingleRowQuery(dataContext, dataContext.query().from(table).selectCount()
                 .toQuery());
-
-        //there where no "where" items, therefore no elements should be deleted
         assertEquals("Row[values=[0]]", row.toString());
     }
 
@@ -484,7 +481,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
     public void testCountQuery() throws Exception {
         Table table = dataContext.getDefaultSchema().getTableByName(bulkIndexType);
         Query q = new Query().selectCount().from(table);
-        
+
         List<Object[]> data = dataContext.executeQuery(q).toObjectArrays();
         assertEquals(1, data.size());
         Object[] row = data.get(0);

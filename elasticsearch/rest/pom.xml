@@ -69,13 +69,13 @@ under the License.
 		</dependency>
 
 		<!-- test -->
-	   <dependency><!-- required by elasticsearch -->
-	        <groupId>org.apache.logging.log4j</groupId>
-	        <artifactId>log4j-core</artifactId>
-	        <version>2.9.1</version>
+		<dependency><!-- required by elasticsearch -->
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.9.1</version>
 			<scope>test</scope>
-	    </dependency>
-   		<dependency>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
@@ -87,8 +87,7 @@ under the License.
 		    <version>1.3</version>
 		    <scope>test</scope>
 		</dependency>
-
-    </dependencies>
+	</dependencies>
 	<profiles>
 		<profile>
 			<id>integration-test</id>
