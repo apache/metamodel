@@ -83,9 +83,9 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
         final RestClientBuilder builder = RestClient.builder(new HttpHost(url.getHost(), url.getPort()));
         
         if (properties.getUsername() != null) {
-			final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-			credentialsProvider.setCredentials(AuthScope.ANY,
-					new UsernamePasswordCredentials(properties.getUsername(), properties.getPassword()));
+            final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(properties.getUsername(),
+                    properties.getPassword()));
 
             builder.setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(
                     credentialsProvider));

@@ -228,7 +228,6 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
         }
     }
 
-
     @Test
     public void testDeleteFromWithWhere() throws Exception {
         final Schema schema = dataContext.getDefaultSchema();

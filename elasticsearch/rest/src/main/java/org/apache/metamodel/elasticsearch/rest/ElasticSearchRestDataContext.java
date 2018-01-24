@@ -91,7 +91,8 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
      *            an array of {@link SimpleTableDef}s, which define the table
      *            and column model of the ElasticSearch index.
      */
-    public ElasticSearchRestDataContext(final ElasticSearchRestClient client, final String indexName, final SimpleTableDef... tableDefinitions) {
+    public ElasticSearchRestDataContext(final ElasticSearchRestClient client, final String indexName,
+            final SimpleTableDef... tableDefinitions) {
         super(client, indexName, tableDefinitions);
     }
 
@@ -123,32 +124,32 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
 
         final List<SimpleTableDef> result = new ArrayList<>();
 
-		if (mappings.isEmpty()) {
-			logger.warn("No metadata returned for index name '{}' - no tables will be detected.");
-		} else {
-			for (Entry<String, Object> mapping : mappings) {
-				final String documentType = mapping.getKey();
-				
-				@SuppressWarnings("unchecked")
+        if (mappings.isEmpty()) {
+            logger.warn("No metadata returned for index name '{}' - no tables will be detected.");
+        } else {
+            for (Entry<String, Object> mapping : mappings) {
+                final String documentType = mapping.getKey();
+
+                @SuppressWarnings("unchecked")
                 Map<String, Object> mappingConfiguration = (Map<String, Object>) mapping.getValue();
-				@SuppressWarnings("unchecked")
+                @SuppressWarnings("unchecked")
                 Map<String, Object> properties = (Map<String, Object>) mappingConfiguration.get("properties");
-				
-				try {
+
+                try {
                     final SimpleTableDef table = detectTable(properties, documentType);
-					result.add(table);
-				} catch (Exception e) {
-					logger.error("Unexpected error during detectTable for document type '{}'", documentType, e);
-				}
-			}
-		}
+                    result.add(table);
+                } catch (Exception e) {
+                    logger.error("Unexpected error during detectTable for document type '{}'", documentType, e);
+                }
+            }
+        }
         return sortTables(result);
     }
 
     @Override
     protected void onSchemaCacheRefreshed() {
         getElasticSearchClient().refresh(indexName);
-        
+
         detectSchema();
     }
 
@@ -210,7 +211,8 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
         SearchResponse searchResult = executeSearch(table, createSearchRequest(1, maxRows, null), scrollNeeded(
                 maxRows));
 
-        return new ElasticSearchRestDataSet(getElasticSearchClient(), searchResult, columns.stream().map(SelectItem::new).collect(Collectors.toList()));
+        return new ElasticSearchRestDataSet(getElasticSearchClient(), searchResult, columns.stream()
+                .map(SelectItem::new).collect(Collectors.toList()));
     }
 
     private SearchSourceBuilder createSearchRequest(int firstRow, int maxRows, QueryBuilder queryBuilder) {
@@ -242,17 +244,17 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
         final String documentType = table.getName();
         final String id = keyValue.toString();
 
-        
-		final DataSetHeader header = new SimpleDataSetHeader(selectItems);
+        final DataSetHeader header = new SimpleDataSetHeader(selectItems);
 
-		try {
-			return ElasticSearchUtils.createRow(
-			        getElasticSearchClient().get(new GetRequest(getIndexName(), documentType, id)).getSource(), id, header);
-		} catch (IOException e) {
-			logger.warn("Could not execute ElasticSearch query", e);
-			throw new MetaModelException("Could not execute ElasticSearch query", e);
-		}
-	}
+        try {
+            return ElasticSearchUtils.createRow(getElasticSearchClient()
+                    .get(new GetRequest(getIndexName(), documentType, id))
+                    .getSource(), id, header);
+        } catch (IOException e) {
+            logger.warn("Could not execute ElasticSearch query", e);
+            throw new MetaModelException("Could not execute ElasticSearch query", e);
+        }
+    }
 
     @Override
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
@@ -264,9 +266,10 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
         final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         sourceBuilder.query(QueryBuilders.termQuery("_type", documentType));
         sourceBuilder.size(0);
-        
+
         try {
-        	return getElasticSearchClient().search(new SearchRequest(new String[] {getIndexName()}, sourceBuilder)).getHits().getTotalHits();
+            return getElasticSearchClient().search(new SearchRequest(new String[] { getIndexName() }, sourceBuilder))
+                    .getHits().getTotalHits();
         } catch (Exception e) {
             logger.warn("Could not execute ElasticSearch get query", e);
             throw new MetaModelException("Could not execute ElasticSearch get query", e);

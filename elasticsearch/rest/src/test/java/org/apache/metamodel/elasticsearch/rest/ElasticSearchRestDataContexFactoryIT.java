@@ -46,25 +46,25 @@ public class ElasticSearchRestDataContexFactoryIT {
     private static final String INDEX_NAME = "myindex";
 
     private static ElasticSearchRestClient externalClient;
-    
+
     private String dockerHostAddress;
-    
+
     private DataContextFactory factory;
 
     @Before
     public void setUp() throws Exception {
         dockerHostAddress = ElasticSearchRestDataContextIT.determineHostName();
-        
-        externalClient = new ElasticSearchRestClient(RestClient.builder(new HttpHost(dockerHostAddress, 9200)).build()); 
+
+        externalClient = new ElasticSearchRestClient(RestClient.builder(new HttpHost(dockerHostAddress, 9200)).build());
 
         final Map<String, Object> source = new LinkedHashMap<>();
         source.put("mytext", "dummy");
-        
+
         final IndexRequest indexRequest = new IndexRequest(INDEX_NAME, "text");
         indexRequest.source(source);
-        
+
         externalClient.index(indexRequest);
-        
+
         factory = new ElasticSearchRestDataContextFactory();
     }
 
@@ -79,21 +79,22 @@ public class ElasticSearchRestDataContexFactoryIT {
         properties.setDataContextType("elasticsearch");
         properties.put(DataContextPropertiesImpl.PROPERTY_URL, "http://" + dockerHostAddress + ":9200");
         properties.put(DataContextPropertiesImpl.PROPERTY_DATABASE, INDEX_NAME);
-        
+
         assertTrue(factory.accepts(properties, null));
     }
-    
+
     @Test
     public void testCreateContextAndBulkScript() throws Exception {
         final DataContextPropertiesImpl properties = new DataContextPropertiesImpl();
         properties.setDataContextType("es-rest");
         properties.put(DataContextPropertiesImpl.PROPERTY_URL, "http://" + dockerHostAddress + ":9200");
         properties.put(DataContextPropertiesImpl.PROPERTY_DATABASE, INDEX_NAME);
-        
+
         assertTrue(factory.accepts(properties, null));
 
-        final ElasticSearchRestDataContext dataContext = (ElasticSearchRestDataContext) factory.create(properties, null);
-        
+        final ElasticSearchRestDataContext dataContext = (ElasticSearchRestDataContext) factory.create(properties,
+                null);
+
         dataContext.executeUpdate(new BatchUpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
@@ -109,19 +110,21 @@ public class ElasticSearchRestDataContexFactoryIT {
             public void run(UpdateCallback callback) {
                 callback.insertInto("persons").value("name", "John Doe").value("age", 42).execute();
                 callback.insertInto("persons").value("name", "Jane Doe").value("age", 41).execute();
-            }});
+            }
+        });
 
         dataContext.refreshSchemas();
 
         final DataSet persons = dataContext.executeQuery("SELECT name, age FROM persons");
         final List<Row> personData = persons.toRows();
-        
+
         assertEquals(2, personData.size());
-        
+
         // Sort person data, so we can validate each row's values.
         Column ageColumn = dataContext.getSchemaByName(INDEX_NAME).getTableByName("persons").getColumnByName("age");
-        personData.sort((row1, row2) -> ((Integer) row1.getValue(ageColumn)).compareTo(((Integer) row2.getValue(ageColumn))));
-        
+        personData.sort((row1, row2) -> ((Integer) row1.getValue(ageColumn)).compareTo(((Integer) row2.getValue(
+                ageColumn))));
+
         assertThat(Arrays.asList(personData.get(0).getValues()), containsInAnyOrder("Jane Doe", 41));
         assertThat(Arrays.asList(personData.get(1).getValues()), containsInAnyOrder("John Doe", 42));
     }

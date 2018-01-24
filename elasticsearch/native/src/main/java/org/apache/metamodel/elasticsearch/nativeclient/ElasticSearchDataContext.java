@@ -80,9 +80,6 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
 
-    private String id;
-
-
     /**
      * Constructs a {@link ElasticSearchDataContext}. This constructor accepts a
      * custom array of {@link SimpleTableDef}s which allows the user to define
@@ -129,9 +126,6 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
             // index does not exist
             logger.warn("No metadata returned for index name '{}' - no tables will be detected.");
         } else {
-            // id of the index, required for delete operations
-            final String indexUUID = imd.getIndexUUID();
-            setId(indexUUID);
             final ImmutableOpenMap<String, MappingMetaData> mappings = imd.getMappings();
             final ObjectLookupContainer<String> documentTypes = mappings.keys();
             for (final ObjectCursor<?> documentTypeCursor : documentTypes) {
@@ -288,13 +282,5 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
      */
     public Client getElasticSearchClient() {
         return (Client) elasticSearchClient;
-    }
-
-    public void setId(final String id) {
-        this.id = id;
-    }
-
-    public String getId() {
-        return id;
     }
 }

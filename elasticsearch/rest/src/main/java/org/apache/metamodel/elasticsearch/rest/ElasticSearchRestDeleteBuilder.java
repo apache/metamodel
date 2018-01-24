@@ -69,7 +69,7 @@ final class ElasticSearchRestDeleteBuilder extends AbstractRowDeletionBuilder {
             throw new UnsupportedOperationException("Could not push down WHERE items to delete by query request: "
                     + whereItems);
         }
-        
+
         final SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder);
 
@@ -88,7 +88,6 @@ final class ElasticSearchRestDeleteBuilder extends AbstractRowDeletionBuilder {
                 DeleteRequest deleteRequest = new DeleteRequest(indexName, documentType, typeId);
 
                 _updateCallback.execute(deleteRequest);
-
             }
         } catch (IOException e) {
             throw new MetaModelException(e);
