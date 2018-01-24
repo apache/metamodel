@@ -34,6 +34,7 @@ import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.factory.DataContextFactory;
 import org.apache.metamodel.factory.DataContextPropertiesImpl;
+import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RestClient;
@@ -45,10 +46,14 @@ public class ElasticSearchRestDataContexFactoryIT {
     private static final String INDEX_NAME = "myindex";
 
     private static ElasticSearchRestClient externalClient;
+    
+    private String dockerHostAddress;
+    
+    private DataContextFactory factory;
 
     @Before
     public void setUp() throws Exception {
-        final String dockerHostAddress = ElasticSearchRestDataContextIT.determineHostName();
+        dockerHostAddress = ElasticSearchRestDataContextIT.determineHostName();
         
         externalClient = new ElasticSearchRestClient(RestClient.builder(new HttpHost(dockerHostAddress, 9200)).build()); 
 
@@ -59,6 +64,8 @@ public class ElasticSearchRestDataContexFactoryIT {
         indexRequest.source(source);
         
         externalClient.index(indexRequest);
+        
+        factory = new ElasticSearchRestDataContextFactory();
     }
 
     @After
@@ -68,10 +75,6 @@ public class ElasticSearchRestDataContexFactoryIT {
 
     @Test
     public void testAccepts() throws Exception {
-        final String dockerHostAddress = ElasticSearchRestDataContextIT.determineHostName();
-
-        DataContextFactory factory = new ElasticSearchRestDataContextFactory();
-
         final DataContextPropertiesImpl properties = new DataContextPropertiesImpl();
         properties.setDataContextType("elasticsearch");
         properties.put(DataContextPropertiesImpl.PROPERTY_URL, "http://" + dockerHostAddress + ":9200");
@@ -82,10 +85,6 @@ public class ElasticSearchRestDataContexFactoryIT {
     
     @Test
     public void testCreateContextAndBulkScript() throws Exception {
-        final String dockerHostAddress = ElasticSearchRestDataContextIT.determineHostName();
-
-        DataContextFactory factory = new ElasticSearchRestDataContextFactory();
-
         final DataContextPropertiesImpl properties = new DataContextPropertiesImpl();
         properties.setDataContextType("es-rest");
         properties.put(DataContextPropertiesImpl.PROPERTY_URL, "http://" + dockerHostAddress + ":9200");
@@ -94,7 +93,7 @@ public class ElasticSearchRestDataContexFactoryIT {
         assertTrue(factory.accepts(properties, null));
 
         final ElasticSearchRestDataContext dataContext = (ElasticSearchRestDataContext) factory.create(properties, null);
-
+        
         dataContext.executeUpdate(new BatchUpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
@@ -108,8 +107,8 @@ public class ElasticSearchRestDataContexFactoryIT {
         dataContext.executeUpdate(new BatchUpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                callback.insertInto("persons").value("name", "John Doe").value("age", "42").execute();
-                callback.insertInto("persons").value("name", "Jane Doe").value("age", "41").execute();
+                callback.insertInto("persons").value("name", "John Doe").value("age", 42).execute();
+                callback.insertInto("persons").value("name", "Jane Doe").value("age", 41).execute();
             }});
 
         dataContext.refreshSchemas();
@@ -118,7 +117,12 @@ public class ElasticSearchRestDataContexFactoryIT {
         final List<Row> personData = persons.toRows();
         
         assertEquals(2, personData.size());
-        assertThat(Arrays.asList(personData.get(0).getValues()), containsInAnyOrder("John Doe", "42"));
-        assertThat(Arrays.asList(personData.get(1).getValues()), containsInAnyOrder("Jane Doe", "41"));
+        
+        // Sort person data, so we can validate each row's values.
+        Column ageColumn = dataContext.getSchemaByName(INDEX_NAME).getTableByName("persons").getColumnByName("age");
+        personData.sort((row1, row2) -> ((Integer) row1.getValue(ageColumn)).compareTo(((Integer) row2.getValue(ageColumn))));
+        
+        assertThat(Arrays.asList(personData.get(0).getValues()), containsInAnyOrder("Jane Doe", 41));
+        assertThat(Arrays.asList(personData.get(1).getValues()), containsInAnyOrder("John Doe", 42));
     }
 }
