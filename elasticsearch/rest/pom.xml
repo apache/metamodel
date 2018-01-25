@@ -26,10 +26,6 @@ under the License.
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<properties>
-		<jest.version>2.0.2</jest.version>
-	</properties>
-
 	<artifactId>MetaModel-elasticsearch-rest</artifactId>
 	<name>MetaModel module for ElasticSearch via REST client</name>
 
@@ -109,31 +105,27 @@ under the License.
 					<plugin>
 						<groupId>io.fabric8</groupId>
 						<artifactId>docker-maven-plugin</artifactId>
-						<version>0.15.16</version>
+						<version>${docker-maven-plugin.version}</version>
 						<configuration>
 							<logDate>default</logDate>
 							<autoPull>true</autoPull>
 							<images>
 								<image>
-
 									<name>elasticsearch-metamodel</name>
 									<build>
 										<dockerFileDir>${project.build.directory}/test-classes</dockerFileDir>
 									</build>
 									<run>
-
 										<ports>
 											<port>9200:9200</port>
 											<port>9300:9300</port>
 										</ports>
-
 										<env>
-												<ES_JAVA_OPTS>-Xms1g -Xmx1g</ES_JAVA_OPTS>
-												<cluster.name>docker-cluster</cluster.name>
-												<bootstrap.memory_lock>true</bootstrap.memory_lock>
-											    <xpack.security.enabled>false</xpack.security.enabled>
+											<ES_JAVA_OPTS>-Xms1g -Xmx1g</ES_JAVA_OPTS>
+											<cluster.name>docker-cluster</cluster.name>
+											<bootstrap.memory_lock>true</bootstrap.memory_lock>
+										    <xpack.security.enabled>false</xpack.security.enabled>
 										</env>
-
 										<wait>
 											<url>http://${docker.host.address}:9200</url>
 											<time>300000</time>

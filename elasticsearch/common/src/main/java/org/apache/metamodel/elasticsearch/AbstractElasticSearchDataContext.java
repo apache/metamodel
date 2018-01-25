@@ -41,8 +41,6 @@ public abstract class AbstractElasticSearchDataContext extends QueryPostprocessD
 
     public static final TimeValue TIMEOUT_SCROLL = TimeValue.timeValueSeconds(60);
 
-    protected final Object elasticSearchClient;
-
     protected final String indexName;
 
     // Table definitions that are set from the beginning, not supposed to be
@@ -57,27 +55,20 @@ public abstract class AbstractElasticSearchDataContext extends QueryPostprocessD
      * accepts a custom array of {@link SimpleTableDef}s which allows the user
      * to define his own view on the indexes in the engine.
      *
-     * @param client
-     *            the ElasticSearch client
      * @param indexName
      *            the name of the ElasticSearch index to represent
      * @param tableDefinitions
      *            an array of {@link SimpleTableDef}s, which define the table
      *            and column model of the ElasticSearch index.
      */
-    public AbstractElasticSearchDataContext(Object client, String indexName, SimpleTableDef... tableDefinitions) {
+    public AbstractElasticSearchDataContext(String indexName, SimpleTableDef... tableDefinitions) {
         super(false);
-        if (client == null) {
-            throw new IllegalArgumentException("ElasticSearch Client cannot be null");
-        }
         if (indexName == null || indexName.trim().length() == 0) {
             throw new IllegalArgumentException("Invalid ElasticSearch Index name: " + indexName);
         }
-        this.elasticSearchClient = client;
         this.indexName = indexName;
         this.staticTableDefinitions = (tableDefinitions == null || tableDefinitions.length == 0 ? Collections
                 .<SimpleTableDef> emptyList() : Arrays.asList(tableDefinitions));
-        this.dynamicTableDefinitions.addAll(Arrays.asList(detectSchema()));
     }
 
     /**

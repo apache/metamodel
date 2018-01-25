@@ -20,6 +20,7 @@ package org.apache.metamodel.elasticsearch.rest;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -78,6 +79,8 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
     // we scroll when more than 400 rows are expected
     private static final int SCROLL_THRESHOLD = 400;
 
+    private final ElasticSearchRestClient elasticSearchClient;
+
     /**
      * Constructs a {@link ElasticSearchRestDataContext}. This constructor
      * accepts a custom array of {@link SimpleTableDef}s which allows the user
@@ -93,7 +96,13 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
      */
     public ElasticSearchRestDataContext(final ElasticSearchRestClient client, final String indexName,
             final SimpleTableDef... tableDefinitions) {
-        super(client, indexName, tableDefinitions);
+        super(indexName, tableDefinitions);
+
+        if (client == null) {
+            throw new IllegalArgumentException("ElasticSearch Client cannot be null");
+        }
+        this.elasticSearchClient = client;
+        this.dynamicTableDefinitions.addAll(Arrays.asList(detectSchema()));
     }
 
     /**
@@ -289,6 +298,6 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
      * Gets the {@link JestClient} that this {@link DataContext} is wrapping.
      */
     public ElasticSearchRestClient getElasticSearchClient() {
-        return (ElasticSearchRestClient) elasticSearchClient;
+        return elasticSearchClient;
     }
 }

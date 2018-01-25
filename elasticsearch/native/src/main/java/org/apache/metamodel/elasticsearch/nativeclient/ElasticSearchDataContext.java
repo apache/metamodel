@@ -19,6 +19,7 @@
 package org.apache.metamodel.elasticsearch.nativeclient;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -80,6 +81,8 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
 
+    private final Client elasticSearchClient;
+
     /**
      * Constructs a {@link ElasticSearchDataContext}. This constructor accepts a
      * custom array of {@link SimpleTableDef}s which allows the user to define
@@ -94,7 +97,13 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
      *            and column model of the ElasticSearch index.
      */
     public ElasticSearchDataContext(Client client, String indexName, SimpleTableDef... tableDefinitions) {
-        super(client, indexName, tableDefinitions);
+        super(indexName, tableDefinitions);
+
+        if (client == null) {
+            throw new IllegalArgumentException("ElasticSearch Client cannot be null");
+        }
+        this.elasticSearchClient = client;
+        this.dynamicTableDefinitions.addAll(Arrays.asList(detectSchema()));
     }
 
     /**
@@ -281,6 +290,6 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
      * @return
      */
     public Client getElasticSearchClient() {
-        return (Client) elasticSearchClient;
+        return elasticSearchClient;
     }
 }
