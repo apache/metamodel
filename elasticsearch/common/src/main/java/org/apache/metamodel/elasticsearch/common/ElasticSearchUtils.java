@@ -18,72 +18,43 @@
  */
 package org.apache.metamodel.elasticsearch.common;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.metamodel.data.DataSetHeader;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.LogicalOperator;
 import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.util.CollectionUtils;
-import org.elasticsearch.common.base.Strings;
+import org.elasticsearch.common.Strings;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.ExistsQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ElasticSearchUtils {
-
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchUtils.class);
 
     public static final String FIELD_ID = "_id";
     public static final String SYSTEM_PROPERTY_STRIP_INVALID_FIELD_CHARS = "metamodel.elasticsearch.strip_invalid_field_chars";
 
-    /**
-     * Gets a "filter" query which is both 1.x and 2.x compatible.
-     */
-    private static QueryBuilder getFilteredQuery(String prefix, String fieldName) {
-        // 1.x: itemQueryBuilder = QueryBuilders.filteredQuery(null,
-        // FilterBuilders.missingFilter(fieldName));
-        // 2.x: itemQueryBuilder =
-        // QueryBuilders.boolQuery().must(QueryBuilders.missingQuery(fieldName));
-        try {
-            try {
-                Method method = QueryBuilders.class.getDeclaredMethod(prefix + "Query", String.class);
-                method.setAccessible(true);
-                return QueryBuilders.boolQuery().must((QueryBuilder) method.invoke(null, fieldName));
-            } catch (NoSuchMethodException e) {
-                Class<?> clazz = ElasticSearchUtils.class.getClassLoader().loadClass(
-                        "org.elasticsearch.index.query.FilterBuilders");
-                Method filterBuilderMethod = clazz.getDeclaredMethod(prefix + "Filter", String.class);
-                filterBuilderMethod.setAccessible(true);
-                Method queryBuildersFilteredQueryMethod = QueryBuilders.class.getDeclaredMethod("filteredQuery",
-                        QueryBuilder.class, FilterBuilder.class);
-                return (QueryBuilder) queryBuildersFilteredQueryMethod.invoke(null, null, filterBuilderMethod.invoke(
-                        null, fieldName));
-            }
-        } catch (Exception e) {
-            logger.error("Failed to resolve/invoke filtering method", e);
-            throw new IllegalStateException("Failed to resolve filtering method", e);
-        }
-    }
-
     public static QueryBuilder getMissingQuery(String fieldName) {
-        return getFilteredQuery("missing", fieldName);
+        return new BoolQueryBuilder().mustNot(new ExistsQueryBuilder(fieldName));
     }
 
     public static QueryBuilder getExistsQuery(String fieldName) {
-        return getFilteredQuery("exists", fieldName);
+        return new ExistsQueryBuilder(fieldName);
     }
 
     public static Map<String, ?> getMappingSource(final MutableTable table) {
@@ -170,7 +141,7 @@ public class ElasticSearchUtils {
         }
 
         if (type.isLiteral()) {
-            return "string";
+            return "text";
         } else if (type == ColumnType.FLOAT) {
             return "float";
         } else if (type == ColumnType.DOUBLE || type == ColumnType.NUMERIC || type == ColumnType.NUMBER) {
@@ -293,5 +264,36 @@ public class ElasticSearchUtils {
             columnType = ColumnType.STRING;
         }
         return columnType;
+    }
+
+    public static Row createRow(final Map<String, Object> sourceMap, final String documentId, final DataSetHeader header) {
+        final Object[] values = new Object[header.size()];
+        for (int i = 0; i < values.length; i++) {
+            final SelectItem selectItem = header.getSelectItem(i);
+            final Column column = selectItem.getColumn();
+
+            assert column != null;
+            assert selectItem.getAggregateFunction() == null;
+            assert selectItem.getScalarFunction() == null;
+
+            if (column.isPrimaryKey()) {
+                values[i] = documentId;
+            } else {
+                Object value = sourceMap.get(column.getName());
+
+                if (column.getType() == ColumnType.DATE) {
+                    Date valueToDate = ElasticSearchDateConverter.tryToConvert((String) value);
+                    if (valueToDate == null) {
+                        values[i] = value;
+                    } else {
+                        values[i] = valueToDate;
+                    }
+                } else {
+                    values[i] = value;
+                }
+            }
+        }
+
+        return new DefaultRow(header, values);
     }
 }

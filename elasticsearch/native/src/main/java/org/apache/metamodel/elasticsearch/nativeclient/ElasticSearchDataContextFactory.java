@@ -18,6 +18,9 @@
  */
 package org.apache.metamodel.elasticsearch.nativeclient;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.apache.metamodel.ConnectionException;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.factory.DataContextFactory;
@@ -27,12 +30,11 @@ import org.apache.metamodel.factory.UnsupportedDataContextPropertiesException;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.ImmutableSettings.Builder;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
+import org.elasticsearch.transport.client.PreBuiltTransportClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Factory for ElasticSearch data context of native type.
@@ -59,6 +61,7 @@ import org.elasticsearch.node.NodeBuilder;
  * </ul>
  */
 public class ElasticSearchDataContextFactory implements DataContextFactory {
+    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContextFactory.class);
 
     @Override
     public boolean accepts(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry) {
@@ -120,46 +123,22 @@ public class ElasticSearchDataContextFactory implements DataContextFactory {
     @Override
     public DataContext create(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry)
             throws UnsupportedDataContextPropertiesException, ConnectionException {
-        final String clientType = getClientType(properties);
         final Client client;
-        if ("node".equals(clientType)) {
-            client = createNodeClient(properties);
-        } else {
             client = createTransportClient(properties);
-        }
         final String indexName = getIndex(properties);
         final SimpleTableDef[] tableDefinitions = properties.getTableDefs();
         return new ElasticSearchDataContext(client, indexName, tableDefinitions);
     }
 
     private Client createTransportClient(DataContextProperties properties) {
-        final Builder settingsBuilder = ImmutableSettings.builder();
-        settingsBuilder.put("name", "MetaModel");
-        settingsBuilder.put("cluster.name", getCluster(properties));
-        if (properties.getUsername() != null && properties.getPassword() != null) {
-            settingsBuilder.put("shield.user", properties.getUsername() + ":" + properties.getPassword());
-            if ("true".equals(properties.toMap().get("ssl"))) {
-                if (properties.toMap().get("keystorePath") != null) {
-                    settingsBuilder.put("shield.ssl.keystore.path", properties.toMap().get("keystorePath"));
-                    settingsBuilder.put("shield.ssl.keystore.password", properties.toMap().get("keystorePassword"));
-                }
-                settingsBuilder.put("shield.transport.ssl", "true");
-            }
+        final Settings settings = Settings.builder().put().put("name", "MetaModel").put("cluster.name", getCluster(properties)).build();
+        final TransportClient client = new PreBuiltTransportClient(settings);
+        try {
+            client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(properties.getHostname()), properties.getPort()));
+        } catch (UnknownHostException e) {
+            logger.warn("no IP address for the host with name \"{}\" could be found.", properties.getHostname());
         }
-        final Settings settings = settingsBuilder.build();
-
-        final TransportClient client = new TransportClient(settings);
-        client.addTransportAddress(new InetSocketTransportAddress(properties.getHostname(), properties.getPort()));
         return client;
     }
 
-    private Client createNodeClient(DataContextProperties properties) {
-        final Builder settingsBuilder = ImmutableSettings.builder();
-        settingsBuilder.put("name", "MetaModel");
-        settingsBuilder.put("shield.enabled", false);
-        final Settings settings = settingsBuilder.build();
-        final Node node = NodeBuilder.nodeBuilder().clusterName(getCluster(properties)).client(true).settings(settings)
-                .node();
-        return node.client();
-    }
 }

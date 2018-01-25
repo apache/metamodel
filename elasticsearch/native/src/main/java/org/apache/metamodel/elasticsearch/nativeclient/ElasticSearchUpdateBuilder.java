@@ -18,76 +18,99 @@
  */
 package org.apache.metamodel.elasticsearch.nativeclient;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
-import org.apache.metamodel.delete.RowDeletionBuilder;
 import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.LogicalOperator;
+import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
-import org.elasticsearch.action.delete.DeleteResponse;
+import org.apache.metamodel.update.AbstractRowUpdationBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateAction;
+import org.elasticsearch.action.update.UpdateRequestBuilder;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * {@link RowDeletionBuilder} implementation for
- * {@link ElasticSearchDataContext}.
- */
-final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
+public class ElasticSearchUpdateBuilder extends AbstractRowUpdationBuilder {
 
-    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDeleteBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchUpdateBuilder.class);
 
     private final ElasticSearchUpdateCallback _updateCallback;
 
-    public ElasticSearchDeleteBuilder(ElasticSearchUpdateCallback updateCallback, Table table) {
+    public ElasticSearchUpdateBuilder(ElasticSearchUpdateCallback updateCallback, Table table) {
         super(table);
         _updateCallback = updateCallback;
     }
 
     @Override
     public void execute() throws MetaModelException {
+
         final Table table = getTable();
         final String documentType = table.getName();
 
         final ElasticSearchDataContext dataContext = _updateCallback.getDataContext();
         final Client client = dataContext.getElasticSearchClient();
         final String indexName = dataContext.getIndexName();
-
         final List<FilterItem> whereItems = getWhereItems();
 
         // delete by query - note that creteQueryBuilderForSimpleWhere may
         // return matchAllQuery() if no where items are present.
-        final QueryBuilder queryBuilder = ElasticSearchUtils.createQueryBuilderForSimpleWhere(whereItems,
-                LogicalOperator.AND);
+        final QueryBuilder queryBuilder =
+                ElasticSearchUtils.createQueryBuilderForSimpleWhere(whereItems, LogicalOperator.AND);
         if (queryBuilder == null) {
             // TODO: The where items could not be pushed down to a query. We
             // could solve this by running a query first, gather all
             // document IDs and then delete by IDs.
-            throw new UnsupportedOperationException("Could not push down WHERE items to delete by query request: "
-                    + whereItems);
+            throw new UnsupportedOperationException(
+                    "Could not push down WHERE items to delete by query request: " + whereItems);
         }
 
-        final SearchResponse response =
-                client.prepareSearch(indexName).setQuery(queryBuilder).setTypes(documentType).execute()
-                        .actionGet();
+        final SearchResponse response = client.prepareSearch(indexName).setQuery(queryBuilder).execute().actionGet();
 
-        client.admin().indices().prepareRefresh(indexName).execute().actionGet();
         final Iterator<SearchHit> iterator = response.getHits().iterator();
         while (iterator.hasNext()) {
             final SearchHit hit = iterator.next();
             final String typeId = hit.getId();
-            final DeleteResponse deleteResponse =
-                    client.prepareDelete().setIndex(indexName).setType(documentType).setId(typeId).execute()
-                            .actionGet();
-            logger.debug("Deleted documents by query." + deleteResponse.getResult());
+
+            final UpdateRequestBuilder requestBuilder =
+                    new UpdateRequestBuilder(client, UpdateAction.INSTANCE).setIndex(indexName).setType(documentType)
+                            .setId(typeId);
+
+            final Map<String, Object> valueMap = new HashMap<>();
+            final Column[] columns = getColumns();
+            final Object[] values = getValues();
+            for (int i = 0; i < columns.length; i++) {
+                if (isSet(columns[i])) {
+                    final String name = columns[i].getName();
+                    final Object value = values[i];
+                    if (ElasticSearchUtils.FIELD_ID.equals(name)) {
+                        if (value != null) {
+                            requestBuilder.setId(value.toString());
+                        }
+                    } else {
+                        valueMap.put(name, value);
+                    }
+                }
+            }
+
+            assert !valueMap.isEmpty();
+
+            requestBuilder.setDoc(valueMap);
+
+            final UpdateResponse updateResponse = requestBuilder.execute().actionGet();
+
+            logger.debug("Update document: id={}", updateResponse.getId());
+
+            client.admin().indices().prepareRefresh(indexName).get();
         }
-        client.admin().indices().prepareRefresh(indexName).execute().actionGet();
     }
 }

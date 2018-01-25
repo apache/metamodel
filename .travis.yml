@@ -15,7 +15,10 @@ before_install:
 services:
   - couchdb
   - mongodb
-  
+  - docker
+
+script: "mvn clean verify -P integration-test"  
+
 after_success:
   - mvn test javadoc:javadoc
  
