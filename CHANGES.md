@@ -1,5 +1,6 @@
-### WIP
+### Apache MetaModel 5.1.0 (WIP)
 
+ * [METAMODEL-1179] - Refactored ElasticSearch REST module to use new official REST based client from Elastic.
  * [METAMODEL-1177] - Made TableType.TABLE the default table type, replacing null values.
 
 ### Apache MetaModel 5.0.1

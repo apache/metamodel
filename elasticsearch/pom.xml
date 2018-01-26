@@ -21,7 +21,7 @@
 	<name>MetaModel module for Elasticsearch</name>
 
 	<properties>
-		<elasticsearch.version>1.4.4</elasticsearch.version>
+		<elasticsearch.version>5.6.3</elasticsearch.version>
 	</properties>
 
 	<modules>

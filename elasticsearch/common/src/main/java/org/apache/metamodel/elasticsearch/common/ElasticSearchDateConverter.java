@@ -20,6 +20,7 @@ package org.apache.metamodel.elasticsearch.common;
 
 import org.apache.metamodel.util.TimeComparator;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,12 +31,22 @@ import java.util.Date;
  */
 public final class ElasticSearchDateConverter {
 
+    private static final DateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    private static final DateFormat FALLBACK_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+
     public static Date tryToConvert(String dateAsString) {
+        if (dateAsString == null) {  
+            return null;
+        }
+
         try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
-            return dateFormat.parse(dateAsString);
+            return DEFAULT_DATE_FORMAT.parse(dateAsString);
         } catch (ParseException e) {
-            return TimeComparator.toDate(dateAsString);
+            try {
+                return FALLBACK_DATE_FORMAT.parse(dateAsString);
+            } catch (ParseException e1) {
+                return TimeComparator.toDate(dateAsString);
+            }
         }
     }
 }

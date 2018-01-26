@@ -1,0 +1,13 @@
+bootstrap.memory_lock: true
+cluster.name: docker-cluster
+http.port: 9200
+node.data: true
+node.ingest: true
+node.master: true
+node.max_local_storage_nodes: 1
+node.name: estest
+path.data: /usr/share/elasticsearch/data
+path.logs: /usr/share/elasticsearch/logs
+transport.tcp.port: 9300
+discovery.type: single-node
+network.host: 0.0.0.0
