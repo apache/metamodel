@@ -25,7 +25,7 @@ public class KafkaDataContextTest extends EasyMockSupport {
 
     @Test
     public void testGetSchemaInfo() {
-        final ConsumerFactory consumerFactory = createMock(ConsumerFactory.class);
+        final ConsumerAndProducerFactory consumerFactory = createMock(ConsumerAndProducerFactory.class);
 
         replayAll();
 
@@ -39,7 +39,7 @@ public class KafkaDataContextTest extends EasyMockSupport {
 
     @Test
     public void testQueryWithoutOptimization() {
-        final ConsumerFactory consumerFactory = createMock(ConsumerFactory.class);
+        final ConsumerAndProducerFactory consumerFactory = createMock(ConsumerAndProducerFactory.class);
         @SuppressWarnings("unchecked")
         final Consumer<String, String> consumer = createMock(Consumer.class);
 
@@ -94,7 +94,7 @@ public class KafkaDataContextTest extends EasyMockSupport {
 
     @Test
     public void testQueryOptimizationByPartition() {
-        final ConsumerFactory consumerFactory = createMock(ConsumerFactory.class);
+        final ConsumerAndProducerFactory consumerFactory = createMock(ConsumerAndProducerFactory.class);
         @SuppressWarnings("unchecked")
         final Consumer<String, String> consumer = createMock(Consumer.class);
 

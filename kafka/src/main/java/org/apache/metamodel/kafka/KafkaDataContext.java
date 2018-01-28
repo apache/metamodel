@@ -28,10 +28,14 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
+import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.FirstRowDataSet;
 import org.apache.metamodel.data.MaxRowsDataSet;
@@ -47,7 +51,7 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
-public class KafkaDataContext<K, V> extends QueryPostprocessDataContext {
+public class KafkaDataContext<K, V> extends QueryPostprocessDataContext implements UpdateableDataContext {
 
     public static final String SYSTEM_PROPERTY_CONSUMER_POLL_TIMEOUT = "metamodel.kafka.consumer.poll.timeout";
 
@@ -64,19 +68,19 @@ public class KafkaDataContext<K, V> extends QueryPostprocessDataContext {
 
     private final Class<K> keyClass;
     private final Class<V> valueClass;
-    private final ConsumerFactory consumerFactory;
+    private final ConsumerAndProducerFactory consumerAndProducerFactory;
     private final Supplier<Collection<String>> topicSupplier;
 
     public KafkaDataContext(Class<K> keyClass, Class<V> valueClass, String bootstrapServers,
             Collection<String> topics) {
-        this(keyClass, valueClass, new KafkaConsumerFactory(bootstrapServers), () -> topics);
+        this(keyClass, valueClass, new KafkaConsumerAndProducerFactory(bootstrapServers), () -> topics);
     }
 
-    public KafkaDataContext(Class<K> keyClass, Class<V> valueClass, ConsumerFactory consumerFactory,
-            Supplier<Collection<String>> topicSupplier) {
+    public KafkaDataContext(Class<K> keyClass, Class<V> valueClass,
+            ConsumerAndProducerFactory consumerAndProducerFactory, Supplier<Collection<String>> topicSupplier) {
         this.keyClass = keyClass;
         this.valueClass = valueClass;
-        this.consumerFactory = consumerFactory;
+        this.consumerAndProducerFactory = consumerAndProducerFactory;
         this.topicSupplier = topicSupplier;
     }
 
@@ -106,7 +110,7 @@ public class KafkaDataContext<K, V> extends QueryPostprocessDataContext {
     @Override
     protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
         final String topic = table.getName();
-        final Consumer<K, V> consumer = consumerFactory.createConsumer(topic, keyClass, valueClass);
+        final Consumer<K, V> consumer = consumerAndProducerFactory.createConsumer(topic, keyClass, valueClass);
         final List<PartitionInfo> partitionInfos = consumer.partitionsFor(topic);
         final List<TopicPartition> partitions = partitionInfos.stream().map(partitionInfo -> {
             return new TopicPartition(topic, partitionInfo.partition());
@@ -171,7 +175,7 @@ public class KafkaDataContext<K, V> extends QueryPostprocessDataContext {
                 }
 
                 final String topic = table.getName();
-                final Consumer<K, V> consumer = consumerFactory.createConsumer(topic, keyClass, valueClass);
+                final Consumer<K, V> consumer = consumerAndProducerFactory.createConsumer(topic, keyClass, valueClass);
 
                 // handle partition filtering
                 final List<TopicPartition> assignedPartitions;
@@ -257,5 +261,19 @@ public class KafkaDataContext<K, V> extends QueryPostprocessDataContext {
         default:
             return false;
         }
+    }
+
+    @Override
+    public UpdateSummary executeUpdate(UpdateScript update) {
+        final Producer<K, V> producer = consumerAndProducerFactory.createProducer(keyClass, valueClass);
+        final KafkaUpdateCallback<K, V> callback = new KafkaUpdateCallback<>(this, producer);
+        try {
+            update.run(callback);
+        } finally {
+            callback.flush();
+        }
+        final UpdateSummary updateSummary = callback.getUpdateSummary();
+        callback.close();
+        return updateSummary;
     }
 }

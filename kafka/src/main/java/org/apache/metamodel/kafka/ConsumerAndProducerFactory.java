@@ -19,14 +19,17 @@
 package org.apache.metamodel.kafka;
 
 import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.producer.Producer;
 
 /**
- * Factory interface for Kafka {@link Consumer} objects to be used by Apache
- * MetaModel. Since Apache MetaModel may potentially serve multiple queries at
- * the same times, multiple consumers may be needed. This class determines how
- * these are instantiated.
+ * Factory interface for Kafka {@link Consumer} and {@link Producer} objects to
+ * be used by Apache MetaModel. Since Apache MetaModel may potentially serve
+ * multiple queries at the same times, multiple consumers may be needed. This
+ * class determines how these are instantiated.
  */
-public interface ConsumerFactory {
+public interface ConsumerAndProducerFactory {
 
     public <K, V> Consumer<K, V> createConsumer(String topic, Class<K> keyClass, Class<V> valueClass);
+
+    public <K, V> Producer<K, V> createProducer(Class<K> keyClass, Class<V> valueClass);
 }
