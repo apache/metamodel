@@ -62,7 +62,6 @@ public abstract class AbstractDataSet extends BaseObject implements DataSet {
         _header = Objects.requireNonNull(header);
     }
 
-
     /**
      * {@inheritDoc}
      */
