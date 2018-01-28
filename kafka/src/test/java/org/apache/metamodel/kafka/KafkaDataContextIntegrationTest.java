@@ -17,34 +17,46 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.WrappingDataSet;
 import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class KafkaDataContextIntegrationTest {
 
-    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
     private static final Logger logger = LoggerFactory.getLogger(KafkaDataContextIntegrationTest.class);
+
+    private final KafkaTestServer testServer = new KafkaTestServer();
+
+    @Before
+    public void setUp() {
+        final boolean configured = testServer.isConfigured();
+        if (!configured) {
+            System.err.println(testServer.getInvalidConfigurationMessage());
+        }
+        Assume.assumeTrue(configured);
+    }
 
     @Test
     public void testGetSchemaInfo() {
-        final DataContext dataContext1 = new KafkaDataContext<>(String.class, String.class, BOOTSTRAP_SERVERS, Arrays
-                .asList("non-existing-topic"));
+        final DataContext dataContext1 = new KafkaDataContext<>(String.class, String.class, testServer
+                .getBootstrapServers(), Arrays.asList("non-existing-topic"));
 
         Assert.assertEquals("[non-existing-topic, default_table]", dataContext1.getDefaultSchema().getTableNames()
                 .toString());
 
-        final DataContext dataContext2 = new KafkaDataContext<>(String.class, String.class, BOOTSTRAP_SERVERS, Arrays
-                .asList("test1", "test2", "test3"));
+        final DataContext dataContext2 = new KafkaDataContext<>(String.class, String.class, testServer
+                .getBootstrapServers(), Arrays.asList("test1", "test2", "test3"));
         Assert.assertEquals("[test1, test2, test3]", dataContext2.getDefaultSchema().getTableNames().toString());
     }
 
     @Test
     public void testQueryNoFilters() {
-        final String topic = "test_" + UUID.randomUUID().toString().replaceAll("\\-", "");
+        final String topic = testServer.getTopicPrefix() + UUID.randomUUID().toString().replaceAll("\\-", "");
 
-        final DataContext dataContext = new KafkaDataContext<>(String.class, String.class, BOOTSTRAP_SERVERS, Arrays
-                .asList(topic));
+        final DataContext dataContext = new KafkaDataContext<>(String.class, String.class, testServer
+                .getBootstrapServers(), Arrays.asList(topic));
 
         Assert.assertEquals("[" + topic + ", default_table]", dataContext.getDefaultSchema().getTableNames()
                 .toString());
@@ -72,10 +84,10 @@ public class KafkaDataContextIntegrationTest {
 
     @Test
     public void testQueryUsingOffset() throws InterruptedException {
-        final String topic = "test_" + UUID.randomUUID().toString().replaceAll("\\-", "");
+        final String topic = testServer.getTopicPrefix() + UUID.randomUUID().toString().replaceAll("\\-", "");
 
-        final DataContext dataContext = new KafkaDataContext<>(String.class, String.class, BOOTSTRAP_SERVERS, Arrays
-                .asList(topic));
+        final DataContext dataContext = new KafkaDataContext<>(String.class, String.class, testServer
+                .getBootstrapServers(), Arrays.asList(topic));
 
         final int numRecords = 1000;
         final int queriedOffset = 500;
@@ -117,7 +129,7 @@ public class KafkaDataContextIntegrationTest {
             @Override
             public void run() {
                 final Properties properties = new Properties();
-                properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+                properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, testServer.getBootstrapServers());
                 properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
                 properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
                 properties.setProperty(ProducerConfig.CLIENT_ID_CONFIG, "metamodel-test");
