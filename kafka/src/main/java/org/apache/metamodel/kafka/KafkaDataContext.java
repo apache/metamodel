@@ -203,6 +203,12 @@ public class KafkaDataContext<K, V> extends QueryPostprocessDataContext {
     }
 
     private static List<Integer> toIntList(Object operand) {
+        if (operand == null) {
+            return null;
+        }
+        if (operand.getClass().isArray()) {
+            operand = Arrays.asList((Object[]) operand);
+        }
         final List<Integer> list = new ArrayList<>();
         if (operand instanceof Iterable) {
             ((Iterable<?>) operand).forEach(o -> {
