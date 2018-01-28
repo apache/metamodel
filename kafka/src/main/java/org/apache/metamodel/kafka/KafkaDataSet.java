@@ -20,7 +20,6 @@ package org.apache.metamodel.kafka;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -30,7 +29,6 @@ import org.apache.metamodel.data.CachingDataSetHeader;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
 
 final class KafkaDataSet<K, V> extends AbstractDataSet {
 
@@ -40,11 +38,15 @@ final class KafkaDataSet<K, V> extends AbstractDataSet {
     private Iterator<ConsumerRecord<K, V>> currentIterator;
     private ConsumerRecord<K, V> currentRow;
 
-    public KafkaDataSet(Consumer<K, V> consumer, List<Column> columns) {
-        super(new CachingDataSetHeader(columns.stream().map(col -> new SelectItem(col)).collect(Collectors.toList())));
+    public KafkaDataSet(Consumer<K, V> consumer, List<SelectItem> selectItems) {
+        super(new CachingDataSetHeader(selectItems));
         this.consumer = consumer;
         this.pollTimeout = Long.parseLong(System.getProperty(KafkaDataContext.SYSTEM_PROPERTY_CONSUMER_POLL_TIMEOUT,
                 "1000"));
+    }
+    
+    public Consumer<K, V> getConsumer() {
+        return consumer;
     }
 
     @Override

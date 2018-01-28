@@ -19,6 +19,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>MetaModel-kafka</artifactId>
 	<name>MetaModel module for Apache Kafka</name>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
@@ -34,7 +35,7 @@
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-nop</artifactId>
+			<artifactId>slf4j-simple</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.util.Properties;
 
 import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteBufferDeserializer;
@@ -55,10 +56,16 @@ public class KafkaConsumerFactory implements ConsumerFactory {
     public <K, V> Consumer<K, V> createConsumer(String topic, Class<K> keyClass, Class<V> valueClass) {
         final String groupId = "apache_metamodel_" + topic + "_" + System.currentTimeMillis();
 
-        final Properties properties = new Properties(baseProperties);
-        properties.setProperty("group.id", groupId);
-        properties.setProperty("key.deserializer", deserializerForClass(keyClass).getName());
-        properties.setProperty("value.deserializer", deserializerForClass(keyClass).getName());
+        final Properties properties = new Properties();
+        baseProperties.stringPropertyNames().forEach(k -> {
+            properties.setProperty(k, baseProperties.getProperty(k));
+        });
+
+        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, deserializerForClass(keyClass).getName());
+        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializerForClass(keyClass)
+                .getName());
         return new KafkaConsumer<>(properties);
     }
 
