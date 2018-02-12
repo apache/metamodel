@@ -35,7 +35,7 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Resource;
-import org.apache.poi.POIXMLDocument;
+import org.apache.poi.poifs.filesystem.FileMagic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,6 +79,7 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
      * @param configuration
      */
     public ExcelDataContext(File file, ExcelConfiguration configuration) {
+        super(true);
         if (file == null) {
             throw new IllegalArgumentException("File cannot be null");
         }
@@ -93,6 +94,7 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
     }
 
     public ExcelDataContext(Resource resource, ExcelConfiguration configuration) {
+        super(true);
         if (resource == null) {
             throw new IllegalArgumentException("Resource cannot be null");
         }
@@ -187,7 +189,7 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
                 if (_spreadsheetReaderDelegate == null) {
                     _spreadsheetReaderDelegate = _resource.read(in -> {
                         try {
-                            if (POIXMLDocument.hasOOXMLHeader(in)) {
+                            if (FileMagic.valueOf(in) == FileMagic.OOXML) {
                                 return new XlsxSpreadsheetReaderDelegate(_resource, _configuration);
                             } else {
                                 return new DefaultSpreadsheetReaderDelegate(_resource, _configuration);

@@ -27,6 +27,7 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.jdbc.JdbcUtils.JdbcActionType;
 import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.query.Query;
@@ -49,6 +50,7 @@ final class JdbcDataSet extends AbstractDataSet {
     private final ResultSet _resultSet;
     private final JdbcDataContext _jdbcDataContext;
     private final Connection _connection;
+    private final boolean _closeConnectionOnCloseDataSet;
     private Row _row;
     private boolean _closed;
 
@@ -60,15 +62,17 @@ final class JdbcDataSet extends AbstractDataSet {
      * @param connection
      * @param statement
      * @param resultSet
+     * @param closeConnectionOnCloseDataSet
      */
     public JdbcDataSet(Query query, JdbcDataContext jdbcDataContext, Connection connection, Statement statement,
-            ResultSet resultSet) {
+            ResultSet resultSet, boolean closeConnectionOnCloseDataSet) {
         super(query.getSelectClause().getItems());
         if (query == null || statement == null || resultSet == null) {
             throw new IllegalArgumentException("Arguments cannot be null");
         }
         _jdbcDataContext = jdbcDataContext;
         _connection = connection;
+        _closeConnectionOnCloseDataSet = closeConnectionOnCloseDataSet;
         _statement = statement;
         _resultSet = resultSet;
         _closed = false;
@@ -94,6 +98,7 @@ final class JdbcDataSet extends AbstractDataSet {
 
         _jdbcDataContext = null;
         _connection = null;
+        _closeConnectionOnCloseDataSet = false;
         _statement = null;
         _resultSet = resultSet;
         _closed = false;
@@ -138,7 +143,7 @@ final class JdbcDataSet extends AbstractDataSet {
             }
             return result;
         } catch (SQLException e) {
-            throw JdbcUtils.wrapException(e, "get next record in resultset");
+            throw JdbcUtils.wrapException(e, "get next record in resultset", JdbcActionType.QUERY);
         }
     }
 
@@ -173,7 +178,9 @@ final class JdbcDataSet extends AbstractDataSet {
 
         if (_jdbcDataContext != null) {
             FileHelper.safeClose(_statement);
-            _jdbcDataContext.close(_connection);
+            if (_closeConnectionOnCloseDataSet) {
+                _jdbcDataContext.close(_connection);
+            }
         }
         if (_compiledQuery != null) {
             _compiledQuery.returnLease(_lease);

@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
 import org.apache.metamodel.delete.RowDeletionBuilder;
+import org.apache.metamodel.jdbc.JdbcUtils.JdbcActionType;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FromItem;
@@ -77,7 +78,7 @@ final class JdbcDeleteBuilder extends AbstractRowDeletionBuilder {
             }
             _updateCallback.executeDelete(st, reuseStatement);
         } catch (SQLException e) {
-            throw JdbcUtils.wrapException(e, "execute delete statement: " + sql);
+            throw JdbcUtils.wrapException(e, "execute delete statement: " + sql, JdbcActionType.UPDATE);
         } finally {
             if (_inlineValues) {
                 FileHelper.safeClose(st);

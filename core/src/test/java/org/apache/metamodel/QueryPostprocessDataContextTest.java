@@ -60,6 +60,70 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
     private final Table table1 = schema.getTableByName(TABLE_CONTRIBUTOR);
     private final Table table2 = schema.getTableByName(TABLE_ROLE);
 
+    public void testSchemaTraversalWithAliasTable() {
+        final MockUpdateableDataContext dc = new MockUpdateableDataContext();
+
+        final Column column = dc.getColumnByQualifiedLabel("foo");
+        assertEquals("table", column.getTable().getName());
+    }
+
+    public void testNoAliasTableWhenSystemPropertySet() {
+        System.setProperty(QueryPostprocessDataContext.SYSTEM_PROPERTY_CREATE_DEFAULT_TABLE_ALIAS, "false");
+        try {
+            final MockUpdateableDataContext dc = new MockUpdateableDataContext();
+            final List<Table> tables = dc.getDefaultSchema().getTables();
+            assertEquals(1, tables.size());
+
+            assertEquals("table", tables.get(0).getName());
+        } finally {
+            System.clearProperty(QueryPostprocessDataContext.SYSTEM_PROPERTY_CREATE_DEFAULT_TABLE_ALIAS);
+        }
+    }
+
+    public void testNoAliasTableWhenConstructorArgSet() {
+        final MockUpdateableDataContext dc = new MockUpdateableDataContext(false);
+        final List<Table> tables = dc.getDefaultSchema().getTables();
+        assertEquals(1, tables.size());
+
+        assertEquals("table", tables.get(0).getName());
+    }
+
+    public void testAliasTableQueries() {
+        final MockUpdateableDataContext dc = new MockUpdateableDataContext();
+        final List<Table> tables = dc.getDefaultSchema().getTables();
+        assertEquals(2, tables.size());
+
+        final Query q0 = dc.query().from(tables.get(0)).selectAll().toQuery();
+        assertEquals("SELECT table.foo, table.bar FROM schema.table", q0.toSql());
+
+        final Query q1 = dc.parseQuery("SELECT * FROM default_table d");
+        assertEquals("SELECT d.foo, d.bar FROM schema.default_table d", q1.toSql());
+
+        final Query q2 = dc.parseQuery("SELECT * FROM default_table");
+        assertEquals("SELECT default_table.foo, default_table.bar FROM schema.default_table", q2.toSql());
+
+        final DataSet dataSet0 = dc.executeQuery(q0);
+        final DataSet dataSet1 = dc.executeQuery(q1);
+        final DataSet dataSet2 = dc.executeQuery(q2);
+
+        Arrays.asList(dataSet0, dataSet1, dataSet2).forEach(ds -> {
+            assertTrue(ds.next());
+            assertEquals("Row[values=[1, hello]]", ds.getRow().toString());
+            assertTrue(ds.next());
+            assertEquals("Row[values=[2, there]]", ds.getRow().toString());
+            assertTrue(ds.next());
+            assertFalse(ds.next());
+            ds.close();
+        });
+
+        assertEquals("Row[values=[3]]", MetaModelHelper
+                .executeSingleRowQuery(dc, dc.parseQuery("SELECT COUNT(*) FROM default_table")).toString());
+        assertEquals("Row[values=[1]]",
+                MetaModelHelper
+                        .executeSingleRowQuery(dc, dc.parseQuery("SELECT COUNT(*) FROM default_table WHERE foo = '2'"))
+                        .toString());
+    }
+
     public void testQueryMaxRows0() throws Exception {
         final MockDataContext dc = new MockDataContext("sch", "tab", "1");
         final Table table = dc.getDefaultSchema().getTable(0);
@@ -83,7 +147,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
                 for (int i = 0; i < columns.size(); i++) {
                     values[i] = columns.get(i).getColumnNumber();
                 }
-                DataSetHeader header = new SimpleDataSetHeader(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
+                DataSetHeader header =
+                        new SimpleDataSetHeader(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
                 DefaultRow row = new DefaultRow(header, values);
                 return new InMemoryDataSet(row);
             }
@@ -118,8 +183,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
     public void testAggregateQueryRegularWhereClause() throws Exception {
         MockDataContext dc = new MockDataContext("sch", "tab", "1");
         Table table = dc.getDefaultSchema().getTable(0);
-        assertSingleRowResult("Row[values=[3]]", dc.query().from(table).selectCount().where("baz").eq("world")
-                .execute());
+        assertSingleRowResult("Row[values=[3]]",
+                dc.query().from(table).selectCount().where("baz").eq("world").execute());
     }
 
     public void testApplyFunctionToNullValues() throws Exception {
@@ -247,8 +312,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
 
         Query query = dc.query().from(table).select("foo").select(FunctionType.TO_NUMBER, "foo").select("bar")
                 .select(FunctionType.TO_STRING, "bar").select(FunctionType.TO_NUMBER, "bar").toQuery();
-        assertEquals(
-                "SELECT tab.foo, TO_NUMBER(tab.foo), tab.bar, TO_STRING(tab.bar), TO_NUMBER(tab.bar) FROM sch.tab",
+        assertEquals("SELECT tab.foo, TO_NUMBER(tab.foo), tab.bar, TO_STRING(tab.bar), TO_NUMBER(tab.bar) FROM sch.tab",
                 query.toSql());
 
         DataSet ds = dc.executeQuery(query);
@@ -274,17 +338,15 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
     }
 
     public void testScalarFunctionWhere() throws Exception {
-        MockDataContext dc = new MockDataContext("sch", "tab", "1");
-        Table table = dc.getDefaultSchema().getTable(0);
+        final MockDataContext dc = new MockDataContext("sch", "tab", "1");
+        final Table table = dc.getDefaultSchema().getTable(0);
 
-        Query query = dc.query().from(table).select("foo").where(FunctionType.TO_NUMBER, "bar").eq(1).toQuery();
+        final Query query = dc.query().from(table).select("foo").where(FunctionType.TO_NUMBER, "bar").eq(1).toQuery();
         assertEquals("SELECT tab.foo FROM sch.tab WHERE TO_NUMBER(tab.bar) = 1", query.toSql());
 
-        DataSet ds = dc.executeQuery(query);
+        final DataSet ds = dc.executeQuery(query);
         assertTrue(ds.next());
-        Row row;
-
-        row = ds.getRow();
+        final Row row = ds.getRow();
         assertEquals("Row[values=[2]]", row.toString());
 
         assertFalse(ds.next());
@@ -343,7 +405,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
                     }
                     return createDataSet(selectItems, data);
                 } else if (table == table2) {
-                    List<SelectItem> selectItems = table2.getColumns().stream().map(SelectItem::new).collect(Collectors.toList());
+                    List<SelectItem> selectItems =
+                            table2.getColumns().stream().map(SelectItem::new).collect(Collectors.toList());
                     List<Object[]> data = new ArrayList<Object[]>();
                     data.add(new Object[] { 1, 1, "founder" });
                     data.add(new Object[] { 1, 1, "developer" });
@@ -409,22 +472,20 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
                         + "Relationship[primaryTable=columns,primaryColumns=[name],foreignTable=relationships,foreignColumns=[foreign_column]]]",
                 Arrays.toString(informationSchema.getRelationships().toArray()));
         Table tablesTable = informationSchema.getTableByName("tables");
-        assertEquals(
-                "[Column[name=name,columnNumber=0,type=VARCHAR,nullable=false,nativeType=null,columnSize=null], "
-                        + "Column[name=type,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
-                        + "Column[name=num_columns,columnNumber=2,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
-                        + "Column[name=remarks,columnNumber=3,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]]",
+        assertEquals("[Column[name=name,columnNumber=0,type=VARCHAR,nullable=false,nativeType=null,columnSize=null], "
+                + "Column[name=type,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=num_columns,columnNumber=2,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=remarks,columnNumber=3,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]]",
                 Arrays.toString(tablesTable.getColumns().toArray()));
         Table columnsTable = informationSchema.getTableByName("columns");
-        assertEquals(
-                "[Column[name=name,columnNumber=0,type=VARCHAR,nullable=false,nativeType=null,columnSize=null], "
-                        + "Column[name=type,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
-                        + "Column[name=native_type,columnNumber=2,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
-                        + "Column[name=size,columnNumber=3,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
-                        + "Column[name=nullable,columnNumber=4,type=BOOLEAN,nullable=true,nativeType=null,columnSize=null], "
-                        + "Column[name=indexed,columnNumber=5,type=BOOLEAN,nullable=true,nativeType=null,columnSize=null], "
-                        + "Column[name=table,columnNumber=6,type=VARCHAR,nullable=false,nativeType=null,columnSize=null], "
-                        + "Column[name=remarks,columnNumber=7,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]]",
+        assertEquals("[Column[name=name,columnNumber=0,type=VARCHAR,nullable=false,nativeType=null,columnSize=null], "
+                + "Column[name=type,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=native_type,columnNumber=2,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=size,columnNumber=3,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=nullable,columnNumber=4,type=BOOLEAN,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=indexed,columnNumber=5,type=BOOLEAN,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=table,columnNumber=6,type=VARCHAR,nullable=false,nativeType=null,columnSize=null], "
+                + "Column[name=remarks,columnNumber=7,type=VARCHAR,nullable=true,nativeType=null,columnSize=null]]",
                 Arrays.toString(columnsTable.getColumns().toArray()));
         Table relationshipsTable = informationSchema.getTableByName("relationships");
         assertEquals(
@@ -639,8 +700,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
     public void testCompiledQueryParameterInWhereClause() throws Exception {
         DataContext dc = getDataContext();
         QueryParameter param1 = new QueryParameter();
-        CompiledQuery compiledQuery = dc.query().from(table1).select("name").where(COLUMN_CONTRIBUTOR_COUNTRY)
-                .eq(param1).compile();
+        CompiledQuery compiledQuery =
+                dc.query().from(table1).select("name").where(COLUMN_CONTRIBUTOR_COUNTRY).eq(param1).compile();
         try {
             assertEquals(1, compiledQuery.getParameters().size());
             assertSame(param1, compiledQuery.getParameters().get(0));
@@ -675,8 +736,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         final DataContext dc = getDataContext();
 
         final QueryParameter param1 = new QueryParameter();
-        final Query subQuery = dc.query().from(table1).select("name").where(COLUMN_CONTRIBUTOR_COUNTRY).eq(param1)
-                .toQuery();
+        final Query subQuery =
+                dc.query().from(table1).select("name").where(COLUMN_CONTRIBUTOR_COUNTRY).eq(param1).toQuery();
 
         final FromItem subQueryFromItem = new FromItem(subQuery);
         final Query query = new Query().select(new SelectItem(subQuery.getSelectClause().getItem(0), subQueryFromItem))
@@ -766,8 +827,8 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         Query q = new Query();
         q.from(table1);
         q.select(table1.getColumns());
-        SelectItem countrySelectItem = q.getSelectClause().getSelectItem(
-                table1.getColumnByName(COLUMN_CONTRIBUTOR_COUNTRY));
+        SelectItem countrySelectItem =
+                q.getSelectClause().getSelectItem(table1.getColumnByName(COLUMN_CONTRIBUTOR_COUNTRY));
         q.where(new FilterItem(countrySelectItem, OperatorType.EQUALS_TO, "denmark"));
 
         DataSet data = dc.executeQuery(q);
@@ -1019,7 +1080,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
             }
 
             @Override
-            protected Schema getMainSchema() throws MetaModelException {
+            protected MutableSchema getMainSchema() throws MetaModelException {
                 MutableSchema schema = new MutableSchema(getMainSchemaName());
                 MutableTable table = new MutableTable("tabl").setSchema(schema);
                 return schema.addTable(table.addColumn(new MutableColumn("col").setTable(table)));
@@ -1058,7 +1119,7 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
             }
 
             @Override
-            protected Schema getMainSchema() throws MetaModelException {
+            protected MutableSchema getMainSchema() throws MetaModelException {
                 MutableSchema schema = new MutableSchema(getMainSchemaName());
                 MutableTable table = new MutableTable("tabl").setSchema(schema);
                 table.addColumn(new MutableColumn("col1").setTable(table).setPrimaryKey(true));
@@ -1120,4 +1181,70 @@ public class QueryPostprocessDataContextTest extends MetaModelTestCase {
         assertEquals("[hello, world]", values.toString());
     }
 
+    public void testColumnOnlyUsedInScalarFunctionInWhereClause() throws Exception {
+        final DataContext dc = getDataContext();
+        final Query query = dc.parseQuery(
+                "SELECT contributor_id FROM contributor WHERE JAVA_SUBSTRING(name, 3, 6) = 'per' ORDER BY contributor_id");
+        try (DataSet ds = dc.executeQuery(query)) {
+            assertTrue(ds.next());
+            // kasper
+            assertEquals("1", ds.getRow().getValue(0).toString());
+            assertTrue(ds.next());
+            // jesper
+            assertEquals("6", ds.getRow().getValue(0).toString());
+            assertFalse(ds.next());
+        }
+    }
+
+    public void testQueryDifferentScalarFunctionsOnSameColumnInBothSelectAndWhere() throws Exception {
+        final DataContext dc = getDataContext();
+        final Query query = dc.parseQuery(
+                "SELECT SUBSTRING(name, 1, 3) FROM contributor WHERE JAVA_SUBSTRING(name, 3, 6) = 'per' ORDER BY contributor_id");
+
+        // assert on the parsed select items just to ensure that nothing gets mangled in the parsing
+        assertSame(FunctionType.SUBSTRING, query.getSelectClause().getItem(0).getScalarFunction());
+        assertEquals(" 1", query.getSelectClause().getItem(0).getFunctionParameters()[0]);
+        assertEquals(" 3", query.getSelectClause().getItem(0).getFunctionParameters()[1]);
+        assertSame(FunctionType.JAVA_SUBSTRING, query.getWhereClause().getItem(0).getSelectItem().getScalarFunction());
+        assertEquals(" 3", query.getWhereClause().getItem(0).getSelectItem().getFunctionParameters()[0]);
+        assertEquals(" 6", query.getWhereClause().getItem(0).getSelectItem().getFunctionParameters()[1]);
+
+        try (DataSet ds = dc.executeQuery(query)) {
+            assertTrue(ds.next());
+            // name is "kasper"
+            final Object value1 = ds.getRow().getValue(0);
+            assertEquals("kas", value1.toString());
+            assertTrue(ds.next());
+            // name is "jesper"
+            final Object value2 = ds.getRow().getValue(0);
+            assertEquals("jes", value2.toString());
+            assertFalse(ds.next());
+        }
+    }
+    
+    public void testQuerySameScalarFunctionOnSameColumnButDifferentParamsInBothSelectAndWhere() throws Exception {
+        final DataContext dc = getDataContext();
+        final Query query = dc.parseQuery(
+                "SELECT SUBSTRING(name, 1, 3) FROM contributor WHERE SUBSTRING(name, 4, 3) = 'per' ORDER BY contributor_id");
+
+        // assert on the parsed select items just to ensure that nothing gets mangled in the parsing
+        assertSame(FunctionType.SUBSTRING, query.getSelectClause().getItem(0).getScalarFunction());
+        assertEquals(" 1", query.getSelectClause().getItem(0).getFunctionParameters()[0]);
+        assertEquals(" 3", query.getSelectClause().getItem(0).getFunctionParameters()[1]);
+        assertSame(FunctionType.SUBSTRING, query.getWhereClause().getItem(0).getSelectItem().getScalarFunction());
+        assertEquals(" 4", query.getWhereClause().getItem(0).getSelectItem().getFunctionParameters()[0]);
+        assertEquals(" 3", query.getWhereClause().getItem(0).getSelectItem().getFunctionParameters()[1]);
+
+        try (DataSet ds = dc.executeQuery(query)) {
+            assertTrue(ds.next());
+            // name is "kasper"
+            final Object value1 = ds.getRow().getValue(0);
+            assertEquals("kas", value1.toString());
+            assertTrue(ds.next());
+            // name is "jesper"
+            final Object value2 = ds.getRow().getValue(0);
+            assertEquals("jes", value2.toString());
+            assertFalse(ds.next());
+        }
+    }
 }

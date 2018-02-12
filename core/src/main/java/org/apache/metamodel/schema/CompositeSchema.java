@@ -71,6 +71,7 @@ public class CompositeSchema extends AbstractSchema {
     public List<Table> getTables() {
         return delegates.stream()
                 .flatMap(delegate -> delegate.getTables().stream())
+                .filter(table -> table.getType() != TableType.ALIAS)
                 .collect(Collectors.toList());
     }
 

@@ -26,11 +26,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.UpdateSummary;
@@ -71,10 +73,8 @@ import com.mongodb.client.MongoIterable;
 /**
  * DataContext implementation for MongoDB.
  *
- * Since MongoDB has no schema, a virtual schema will be used in this
- * DataContext. This implementation supports either automatic discovery of a
- * schema or manual specification of a schema, through the
- * {@link SimpleTableDef} class.
+ * Since MongoDB has no schema, a virtual schema will be used in this DataContext. This implementation supports either
+ * automatic discovery of a schema or manual specification of a schema, through the {@link SimpleTableDef} class.
  */
 public class MongoDbDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
 
@@ -86,44 +86,37 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     private Schema _schema;
 
     /**
-     * Constructs a {@link MongoDbDataContext}. This constructor accepts a
-     * custom array of {@link SimpleTableDef}s which allows the user to define
-     * his own view on the collections in the database.
+     * Constructs a {@link MongoDbDataContext}. This constructor accepts a custom array of {@link SimpleTableDef}s which
+     * allows the user to define his own view on the collections in the database.
      *
-     * @param mongoDb
-     *            the mongo db connection
-     * @param tableDefs
-     *            an array of {@link SimpleTableDef}s, which define the table
-     *            and column model of the mongo db collections. (consider using
-     *            {@link #detectSchema(MongoDatabase)} or {@link #detectTable(MongoDatabase, String)}
-     *            ).
+     * @param mongoDb the mongo db connection
+     * @param tableDefs an array of {@link SimpleTableDef}s, which define the table and column model of the mongo db
+     *            collections. (consider using {@link #detectSchema(MongoDatabase)} or
+     *            {@link #detectTable(MongoDatabase, String)} ).
      */
     public MongoDbDataContext(MongoDatabase mongoDb, SimpleTableDef... tableDefs) {
+        super(false);
         _mongoDb = mongoDb;
         _tableDefs = tableDefs;
         _schema = null;
     }
 
     /**
-     * Constructs a {@link MongoDbDataContext} and automatically detects the
-     * schema structure/view on all collections (see {@link #detectSchema(MongoDatabase)}).
+     * Constructs a {@link MongoDbDataContext} and automatically detects the schema structure/view on all collections
+     * (see {@link #detectSchema(MongoDatabase)}).
      *
-     * @param mongoDb
-     *            the mongo db connection
+     * @param mongoDb the mongo db connection
      */
     public MongoDbDataContext(MongoDatabase mongoDb) {
         this(mongoDb, detectSchema(mongoDb));
     }
 
     /**
-     * Performs an analysis of the available collections in a Mongo {@link DB}
-     * instance and tries to detect the table's structure based on the first
-     * 1000 documents in each collection.
+     * Performs an analysis of the available collections in a Mongo {@link DB} instance and tries to detect the table's
+     * structure based on the first 1000 documents in each collection.
      *
-     * @param mongoDb
-     *            the mongo db to inspect
-     * @return a mutable schema instance, useful for further fine tuning by the
-     *         user.
+     * @param mongoDb the mongo db to inspect
+     * @return a mutable schema instance, useful for further fine tuning by the user.
      * @see #detectTable(MongoDatabase, String)
      */
     public static SimpleTableDef[] detectSchema(MongoDatabase mongoDb) {
@@ -138,18 +131,15 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     /**
-     * Performs an analysis of an available collection in a Mongo {@link DB}
-     * instance and tries to detect the table structure based on the first 1000
-     * documents in the collection.
+     * Performs an analysis of an available collection in a Mongo {@link DB} instance and tries to detect the table
+     * structure based on the first 1000 documents in the collection.
      *
-     * @param mongoDb
-     *            the mongo DB
-     * @param collectionName
-     *            the name of the collection
+     * @param mongoDb the mongo DB
+     * @param collectionName the name of the collection
      * @return a table definition for mongo db.
      */
     public static SimpleTableDef detectTable(MongoDatabase mongoDb, String collectionName) {
-        
+
         final MongoCollection<Document> collection = mongoDb.getCollection(collectionName);
         final FindIterable<Document> iterable = collection.find().limit(1000);
 
@@ -168,7 +158,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                 }
             }
         }
-           
+
         final String[] columnNames = new String[columnsAndTypes.size()];
         final ColumnType[] columnTypes = new ColumnType[columnsAndTypes.size()];
 
@@ -225,7 +215,15 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
         final MongoCollection<Document> collection = _mongoDb.getCollection(table.getName());
 
-        final Document query = createMongoDbQuery(table, whereItems);
+        final List<FilterItem> postProcessFilters = new ArrayList<>();
+        final Document query = createMongoDbQuery(table, whereItems, whereItem -> {
+            postProcessFilters.add(whereItem);
+        });
+
+        if (!postProcessFilters.isEmpty()) {
+            // not possible to use the native API for this
+            return null;
+        }
 
         logger.info("Executing MongoDB 'count' query: {}", query);
         final long count = collection.count(query);
@@ -238,16 +236,16 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
             Object keyValue) {
         final MongoCollection<Document> collection = _mongoDb.getCollection(table.getName());
 
-        List<FilterItem> whereItems = new ArrayList<FilterItem>();
-        SelectItem selectItem = new SelectItem(primaryKeyColumn);
-        FilterItem primaryKeyWhereItem = new FilterItem(selectItem, OperatorType.EQUALS_TO, keyValue);
+        final List<FilterItem> whereItems = new ArrayList<FilterItem>();
+        final SelectItem selectItem = new SelectItem(primaryKeyColumn);
+        final FilterItem primaryKeyWhereItem = new FilterItem(selectItem, OperatorType.EQUALS_TO, keyValue);
         whereItems.add(primaryKeyWhereItem);
-        final Document query = createMongoDbQuery(table, whereItems);
+        final Document query = createMongoDbQuery(table, whereItems, null);
         final Document resultDoc = collection.find(query).first();
 
-        DataSetHeader header = new SimpleDataSetHeader(selectItems);
+        final DataSetHeader header = new SimpleDataSetHeader(selectItems);
 
-        Row row = MongoDBUtils.toRow(resultDoc, header);
+        final Row row = MongoDBUtils.toRow(resultDoc, header);
 
         return row;
     }
@@ -288,7 +286,6 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
                     // prepare for a non-post-processed query
 
-
                     // checking if the query is a primary key lookup query
                     if (whereItems.size() == 1) {
                         final FilterItem whereItem = whereItems.get(0);
@@ -296,12 +293,14 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                         if (!whereItem.isCompoundFilter() && selectItem != null && selectItem.getColumn() != null) {
                             final Column column = selectItem.getColumn();
                             if (column.isPrimaryKey() && OperatorType.EQUALS_TO.equals(whereItem.getOperator())) {
-                                logger.debug("Query is a primary key lookup query. Trying executePrimaryKeyLookupQuery(...)");
+                                logger.debug(
+                                        "Query is a primary key lookup query. Trying executePrimaryKeyLookupQuery(...)");
                                 final Object operand = whereItem.getOperand();
                                 final Row row = executePrimaryKeyLookupQuery(table, selectItems, column, operand);
                                 if (row == null) {
-                                    logger.debug("DataContext did not return any primary key lookup query results. Proceeding "
-                                            + "with manual lookup.");
+                                    logger.debug(
+                                            "DataContext did not return any primary key lookup query results. Proceeding "
+                                                    + "with manual lookup.");
                                 } else {
                                     final DataSetHeader header = new SimpleDataSetHeader(selectItems);
                                     return new InMemoryDataSet(header, row);
@@ -323,16 +322,12 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                     }
 
                     if (thereIsAtLeastOneAlias) {
-                        final DataSet dataSet = materializeMainSchemaTableInternal(
-                                table,
-                                selectItems,
-                                whereItems,
-                                firstRow,
-                                maxRows, false);
+                        final DataSet dataSet = materializeMainSchemaTableInternal(table, selectItems, whereItems,
+                                firstRow, maxRows, false);
                         return dataSet;
                     } else {
-                        final DataSet dataSet = materializeMainSchemaTableInternal(table, selectItems, whereItems, firstRow,
-                                maxRows, false);
+                        final DataSet dataSet = materializeMainSchemaTableInternal(table, selectItems, whereItems,
+                                firstRow, maxRows, false);
                         return dataSet;
                     }
                 }
@@ -343,19 +338,38 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
         return super.executeQuery(query);
     }
 
+    private DataSet materializeMainSchemaTableInternal(Table table, List<SelectItem> selectItems,
+            List<FilterItem> whereItems, int firstRow, int maxRows, boolean queryPostProcessed) {
+        final List<FilterItem> postProcessWhereItems = new ArrayList<>();
+        final MongoCursor<Document> cursor = getDocumentMongoCursor(table, whereItems, firstRow, maxRows, whereItem -> {
+            postProcessWhereItems.add(whereItem);
+        });
 
-    private DataSet materializeMainSchemaTableInternal(Table table, List<SelectItem> selectItems, List<FilterItem> whereItems,
-            int firstRow, int maxRows, boolean queryPostProcessed) {
-        MongoCursor<Document> cursor = getDocumentMongoCursor(table, whereItems, firstRow, maxRows);
-
-        return new MongoDbDataSet(cursor, selectItems, queryPostProcessed);
+        final DataSet dataSet;
+        if (postProcessWhereItems.isEmpty()) {
+            dataSet = new MongoDbDataSet(cursor, selectItems, queryPostProcessed);
+        } else {
+            final List<SelectItem> selectItemsToQuery = new ArrayList<>(selectItems);
+            postProcessWhereItems.forEach(whereItem -> {
+                final Column column = whereItem.getSelectItem().getColumn();
+                if (column != null) {
+                    // TODO: Minor optimization possible here to avoid having multiple select items for the same column.
+                    // We could check if the column is already being queried.
+                    selectItemsToQuery.add(new SelectItem(column));
+                }
+            });
+            final DataSet innerDataSet1 = new MongoDbDataSet(cursor, selectItemsToQuery, queryPostProcessed);
+            final DataSet innerDataSet2 = MetaModelHelper.getFiltered(innerDataSet1, postProcessWhereItems);
+            dataSet = MetaModelHelper.getSelection(selectItems, innerDataSet2);
+        }
+        return dataSet;
     }
 
     private MongoCursor<Document> getDocumentMongoCursor(Table table, List<FilterItem> whereItems, int firstRow,
-            int maxRows) {
+            int maxRows, Consumer<FilterItem> filterItemsToPostProcessConsumer) {
         final MongoCollection<Document> collection = _mongoDb.getCollection(table.getName());
 
-        final Document query = createMongoDbQuery(table, whereItems);
+        final Document query = createMongoDbQuery(table, whereItems, filterItemsToPostProcessConsumer);
 
         logger.info("Executing MongoDB 'find' query: {}", query);
         FindIterable<Document> iterable = collection.find(query);
@@ -371,13 +385,18 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
         return iterable.iterator();
     }
 
-    protected Document createMongoDbQuery(Table table, List<FilterItem> whereItems) {
+    protected Document createMongoDbQuery(Table table, List<FilterItem> whereItems,
+            Consumer<FilterItem> whereItemToPostProcessConsumer) {
         assert _schema == table.getSchema();
 
         final Document query = new Document();
         if (whereItems != null && !whereItems.isEmpty()) {
             for (FilterItem item : whereItems) {
-                convertToCursorObject(query, item);
+                final boolean converted = convertToCursorObject(query, item);
+                if (!converted) {
+                    // it wasn't possible to push down the filter item
+                    whereItemToPostProcessConsumer.accept(item);
+                }
             }
         }
 
@@ -386,52 +405,74 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     private static Object convertArrayToList(Object arr) {
         if (arr instanceof boolean[]) {
-            return Arrays.asList((boolean[])arr);
+            return Arrays.asList((boolean[]) arr);
         } else if (arr instanceof byte[]) {
-            return Arrays.asList((byte[])arr);
+            return Arrays.asList((byte[]) arr);
         } else if (arr instanceof short[]) {
-            return Arrays.asList((short[])arr);
+            return Arrays.asList((short[]) arr);
         } else if (arr instanceof char[]) {
-            return Arrays.asList((char[])arr);
+            return Arrays.asList((char[]) arr);
         } else if (arr instanceof int[]) {
-            return Arrays.asList((int[])arr);
+            return Arrays.asList((int[]) arr);
         } else if (arr instanceof long[]) {
-            return Arrays.asList((long[])arr);
+            return Arrays.asList((long[]) arr);
         } else if (arr instanceof float[]) {
-            return Arrays.asList((float[])arr);
+            return Arrays.asList((float[]) arr);
         } else if (arr instanceof double[]) {
-            return Arrays.asList((double[])arr);
+            return Arrays.asList((double[]) arr);
         } else if (arr instanceof Object[]) {
-            return Arrays.asList((Object[])arr);
+            return Arrays.asList((Object[]) arr);
         }
         // It's not an array.
         return null;
     }
-    
-    private void convertToCursorObject(Document query, FilterItem item) {
+
+    /**
+     * Attempts to convert a FilterItem into a refinement of a MongoDB query
+     * 
+     * @param query
+     * @param item
+     * @return true if the conversion was successful, false if not
+     */
+    private boolean convertToCursorObject(Document query, FilterItem item) {
         if (item.isCompoundFilter()) {
 
-            List<Document> orList = new ArrayList<Document>();
+            final List<Document> orList = new ArrayList<Document>();
 
             final FilterItem[] childItems = item.getChildItems();
             for (FilterItem childItem : childItems) {
-                Document childDoc = new Document();
-                convertToCursorObject(childDoc, childItem);
+                final Document childDoc = new Document();
+                boolean converted = convertToCursorObject(childDoc, childItem);
+                if (!converted) {
+                    return false;
+                }
                 orList.add(childDoc);
             }
 
             query.put("$or", orList);
-
+            return true;
         } else {
 
-            final Column column = item.getSelectItem().getColumn();
+            final SelectItem selectItem = item.getSelectItem();
+            if (selectItem.hasFunction()) {
+                // at this point, (scalar) functions in filters aren't possible to push down to the query
+                return false;
+            }
+
+            final Column column = selectItem.getColumn();
             final String columnName = column.getName();
-            final String operatorName = getOperatorName(item);
+            final String operatorName;
+            try {
+                operatorName = getOperatorName(item);
+            } catch (UnsupportedOperationException e) {
+                // not possible to push this operator down to the query
+                return false;
+            }
 
             Object operand = item.getOperand();
             if (ObjectId.isValid(String.valueOf(operand))) {
                 operand = new ObjectId(String.valueOf(operand));
-            } else if (operand != null && operand.getClass().isArray()){
+            } else if (operand != null && operand.getClass().isArray()) {
                 operand = convertArrayToList(operand);
             }
 
@@ -448,15 +489,18 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
                 }
             } else {
                 if (operatorName == null) {
-                    throw new IllegalStateException("Cannot retrieve records for a column with two EQUALS_TO operators");
+                    throw new IllegalStateException(
+                            "Cannot retrieve records for a column with two EQUALS_TO operators");
                 } else {
                     existingFilterObject.append(operatorName, operand);
                 }
             }
+
+            return true;
         }
     }
 
-    private String getOperatorName(FilterItem item) {
+    private String getOperatorName(FilterItem item) throws UnsupportedOperationException {
         final OperatorType operator = item.getOperator();
 
         if (OperatorType.EQUALS_TO.equals(operator)) {
@@ -484,7 +528,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
             return "$in";
         }
 
-        throw new IllegalStateException("Unsupported operator type: " + operator);
+        throw new UnsupportedOperationException("Unsupported operator type: " + operator);
     }
 
     private Pattern turnOperandIntoRegExp(Object operand) {
@@ -500,24 +544,14 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     @Override
     protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
 
-        return materializeMainSchemaTableInternal(
-                table,
-                columns.stream().map(SelectItem::new).collect(Collectors.toList()),
-                null,
-                1,
-                maxRows,
-                true);
+        return materializeMainSchemaTableInternal(table,
+                columns.stream().map(SelectItem::new).collect(Collectors.toList()), null, 1, maxRows, true);
     }
 
     @Override
     protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int firstRow, int maxRows) {
-        return materializeMainSchemaTableInternal(
-                table,
-                columns.stream().map(SelectItem::new).collect(Collectors.toList()),
-                null,
-                firstRow,
-                maxRows,
-                true);
+        return materializeMainSchemaTableInternal(table,
+                columns.stream().map(SelectItem::new).collect(Collectors.toList()), null, firstRow, maxRows, true);
     }
 
     /**
@@ -546,8 +580,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     /**
-     * Gets the {@link WriteConcernAdvisor} to use on
-     * {@link #executeUpdate(UpdateScript)} calls.
+     * Gets the {@link WriteConcernAdvisor} to use on {@link #executeUpdate(UpdateScript)} calls.
      */
     public WriteConcernAdvisor getWriteConcernAdvisor() {
         if (_writeConcernAdvisor == null) {
@@ -557,8 +590,7 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
     }
 
     /**
-     * Sets a global {@link WriteConcern} advisor to use on
-     * {@link #executeUpdate(UpdateScript)}.
+     * Sets a global {@link WriteConcern} advisor to use on {@link #executeUpdate(UpdateScript)}.
      */
     public void setWriteConcernAdvisor(WriteConcernAdvisor writeConcernAdvisor) {
         _writeConcernAdvisor = writeConcernAdvisor;
@@ -566,7 +598,8 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     /**
      * Gets the {@link DB} instance that this {@link DataContext} is backed by.
-     * @return 
+     * 
+     * @return
      */
     public MongoDatabase getMongoDb() {
         return _mongoDb;

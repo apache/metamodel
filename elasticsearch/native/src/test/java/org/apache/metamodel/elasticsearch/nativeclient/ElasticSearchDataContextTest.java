@@ -19,12 +19,6 @@
 package org.apache.metamodel.elasticsearch.nativeclient;
 
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -45,9 +39,7 @@ import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.delete.DeleteFrom;
-import org.apache.metamodel.drop.DropTable;
 import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
-import org.apache.metamodel.elasticsearch.nativeclient.utils.EmbeddedElasticsearchServer;
 import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
@@ -58,20 +50,18 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.Update;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.action.admin.indices.mapping.delete.DeleteMappingRequestBuilder;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.IndicesAdminClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.test.ESSingleNodeTestCase;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-public class ElasticSearchDataContextTest {
+public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     private static final String indexName = "twitter";
     private static final String indexType1 = "tweet1";
@@ -81,14 +71,15 @@ public class ElasticSearchDataContextTest {
     private static final String bulkIndexType = "bulktype";
     private static final String peopleIndexType = "peopletype";
     private static final String mapping = "{\"date_detection\":\"false\",\"properties\":{\"message\":{\"type\":\"string\",\"index\":\"not_analyzed\",\"doc_values\":\"true\"}}}";
-    private static EmbeddedElasticsearchServer embeddedElasticsearchServer;
-    private static Client client;
-    private static UpdateableDataContext dataContext;
+    private Client client;
+    private UpdateableDataContext dataContext;
 
-    @BeforeClass
-    public static void beforeTests() throws Exception {
-        embeddedElasticsearchServer = new EmbeddedElasticsearchServer();
-        client = embeddedElasticsearchServer.getClient();
+    @Before
+    public void beforeTests() throws Exception {
+        client = client();
+
+        dataContext = new ElasticSearchDataContext(client, indexName);
+
         indexTweeterDocument(indexType1, 1);
         indexTweeterDocument(indexType2, 1);
         indexTweeterDocument(indexType2, 2, null);
@@ -96,15 +87,10 @@ public class ElasticSearchDataContextTest {
         indexTweeterDocument(indexType2, 1);
         indexBulkDocuments(indexName, bulkIndexType, 10);
 
-        // The refresh API allows to explicitly refresh one or more index,
-        // making all operations performed since the last refresh available for
-        // search
-        embeddedElasticsearchServer.getClient().admin().indices().prepareRefresh().execute().actionGet();
-        dataContext = new ElasticSearchDataContext(client, indexName);
-        System.out.println("Embedded ElasticSearch server created!");
+        dataContext.refreshSchemas();
     }
 
-    private static void insertPeopleDocuments() throws IOException {
+    private void insertPeopleDocuments() throws IOException {
         indexOnePeopleDocument("female", 20, 5);
         indexOnePeopleDocument("female", 17, 8);
         indexOnePeopleDocument("female", 18, 9);
@@ -116,10 +102,9 @@ public class ElasticSearchDataContextTest {
         indexOnePeopleDocument("male", 18, 4);
     }
 
-    @AfterClass
-    public static void afterTests() {
-        embeddedElasticsearchServer.shutdown();
-        System.out.println("Embedded ElasticSearch server shut down!");
+    @After
+    public void afterTests() {
+        client.admin().indices().delete(new DeleteIndexRequest("_all")).actionGet();
     }
 
     @Test
@@ -128,9 +113,15 @@ public class ElasticSearchDataContextTest {
                 Arrays.toString(dataContext.getDefaultSchema().getTableNames().toArray()));
 
         Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
+        try (DataSet ds = dataContext.query().from(indexType1).select("_id").execute()) {
+            assertEquals(ElasticSearchDataSet.class, ds.getClass());
+            assertTrue(ds.next());
+            assertEquals("Row[values=[tweet_tweet1_1]]",ds.getRow().toString());
+        }
 
         assertEquals("[_id, message, postDate, user]", Arrays.toString(table.getColumnNames().toArray()));
 
+        assertEquals(ColumnType.STRING, table.getColumnByName("_id").getType());
         assertEquals(ColumnType.STRING, table.getColumnByName("user").getType());
         assertEquals(ColumnType.DATE, table.getColumnByName("postDate").getType());
         assertEquals(ColumnType.BIGINT, table.getColumnByName("message").getType());
@@ -201,7 +192,7 @@ public class ElasticSearchDataContextTest {
     }
 
     @Test
-    public void testCreateTableInsertQueryAndDrop() throws Exception {
+    public void testCreateTableAndInsertQuery() throws Exception {
         final Schema schema = dataContext.getDefaultSchema();
         final CreateTable createTable = new CreateTable(schema, "testCreateTable");
         createTable.withColumn("foo").ofType(ColumnType.STRING);
@@ -235,42 +226,42 @@ public class ElasticSearchDataContextTest {
             assertNotNull(ds.getRow().getValue(idColumn));
             assertFalse(ds.next());
         }
-
-        dataContext.executeUpdate(new DropTable(table));
-
-        dataContext.refreshSchemas();
-
-        assertNull(dataContext.getTableByQualifiedLabel(table.getName()));
     }
 
     @Test
-    public void testDetectOutsideChanges() throws Exception {
-        ElasticSearchDataContext elasticSearchDataContext = (ElasticSearchDataContext) dataContext;
+    public void testDeleteFromWithWhere() throws Exception {
+        final Schema schema = dataContext.getDefaultSchema();
+        final String tableName = "testCreateTableDelete";
+        final CreateTable createTable = new CreateTable(schema, tableName);
+        createTable.withColumn("foo").ofType(ColumnType.STRING);
+        createTable.withColumn("bar").ofType(ColumnType.DOUBLE);
+        dataContext.executeUpdate(createTable);
 
-        // Create the type in ES
-        final IndicesAdminClient indicesAdmin = elasticSearchDataContext.getElasticSearchClient().admin().indices();
-        final String tableType = "outsideTable";
+        final Table table = schema.getTableByName(tableName);
 
-        Object[] sourceProperties = { "testA", "type=string, store=true", "testB", "type=string, store=true" };
+        dataContext.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
+            }
+        });
 
-        new PutMappingRequestBuilder(indicesAdmin).setIndices(indexName).setType(tableType).setSource(sourceProperties)
-                .execute().actionGet();
+        dataContext.executeUpdate(new DeleteFrom(table).where("bar").eq(42));
 
-        dataContext.refreshSchemas();
+        final Row row = MetaModelHelper.executeSingleRowQuery(dataContext, dataContext.query().from(table).selectCount()
+                .toQuery());
 
-        assertNotNull(dataContext.getDefaultSchema().getTableByName(tableType));
+        assertEquals("Row[values=[1]]", row.toString());
 
-        new DeleteMappingRequestBuilder(indicesAdmin).setIndices(indexName).setType(tableType).execute().actionGet();
-        dataContext.refreshSchemas();
-        assertNull(dataContext.getTableByQualifiedLabel(tableType));
     }
 
     @Test
-    public void testDeleteAll() throws Exception {
+    public void testDeleteNoWhere() throws Exception {
         final Schema schema = dataContext.getDefaultSchema();
         final CreateTable createTable = new CreateTable(schema, "testCreateTable");
         createTable.withColumn("foo").ofType(ColumnType.STRING);
-        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
+        createTable.withColumn("bar").ofType(ColumnType.DOUBLE);
         dataContext.executeUpdate(createTable);
 
         final Table table = schema.getTableByName("testCreateTable");
@@ -288,8 +279,6 @@ public class ElasticSearchDataContextTest {
         Row row = MetaModelHelper.executeSingleRowQuery(dataContext, dataContext.query().from(table).selectCount()
                 .toQuery());
         assertEquals("Row[values=[0]]", row.toString());
-
-        dataContext.executeUpdate(new DropTable(table));
     }
 
     @Test
@@ -315,8 +304,6 @@ public class ElasticSearchDataContextTest {
         Row row = MetaModelHelper.executeSingleRowQuery(dataContext,
                 dataContext.query().from(table).select("foo", "bar").toQuery());
         assertEquals("Row[values=[world, 43]]", row.toString());
-
-        dataContext.executeUpdate(new DropTable(table));
     }
 
     @Test
@@ -328,27 +315,22 @@ public class ElasticSearchDataContextTest {
         dataContext.executeUpdate(createTable);
 
         final Table table = schema.getTableByName("testCreateTable");
-        try {
 
-            dataContext.executeUpdate(new UpdateScript() {
-                @Override
-                public void run(UpdateCallback callback) {
-                    callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
-                    callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
-                }
-            });
-
-            // greater than is not yet supported
-            try {
-                dataContext.executeUpdate(new DeleteFrom(table).where("bar").gt(40));
-                fail("Exception expected");
-            } catch (UnsupportedOperationException e) {
-                assertEquals("Could not push down WHERE items to delete by query request: [testCreateTable.bar > 40]",
-                        e.getMessage());
+        dataContext.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
             }
+        });
 
-        } finally {
-            dataContext.executeUpdate(new DropTable(table));
+        // greater than is not yet supported
+        try {
+            dataContext.executeUpdate(new DeleteFrom(table).where("bar").gt(40));
+            fail("Exception expected");
+        } catch (UnsupportedOperationException e) {
+            assertEquals("Could not push down WHERE items to delete by query request: [testCreateTable.bar > 40]",
+                    e.getMessage());
         }
     }
 
@@ -361,54 +343,24 @@ public class ElasticSearchDataContextTest {
         dataContext.executeUpdate(createTable);
 
         final Table table = schema.getTableByName("testCreateTable");
-        try {
 
-            dataContext.executeUpdate(new UpdateScript() {
-                @Override
-                public void run(UpdateCallback callback) {
-                    callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
-                    callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
-                }
-            });
+        dataContext.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                callback.insertInto(table).value("foo", "hello").value("bar", 42).execute();
+                callback.insertInto(table).value("foo", "world").value("bar", 43).execute();
+            }
+        });
 
-            dataContext.executeUpdate(new Update(table).value("foo", "howdy").where("bar").eq(42));
+        dataContext.executeUpdate(new Update(table).value("foo", "howdy").where("bar").eq(42));
 
-            DataSet dataSet = dataContext.query().from(table).select("foo", "bar").orderBy("bar").execute();
-            assertTrue(dataSet.next());
-            assertEquals("Row[values=[howdy, 42]]", dataSet.getRow().toString());
-            assertTrue(dataSet.next());
-            assertEquals("Row[values=[world, 43]]", dataSet.getRow().toString());
-            assertFalse(dataSet.next());
-            dataSet.close();
-        } finally {
-            dataContext.executeUpdate(new DropTable(table));
-        }
-    }
-
-    @Test
-    public void testDropTable() throws Exception {
-        Table table = dataContext.getDefaultSchema().getTableByName(peopleIndexType);
-
-        // assert that the table was there to begin with
-        {
-            DataSet ds = dataContext.query().from(table).selectCount().execute();
-            ds.next();
-            assertEquals("Row[values=[9]]", ds.getRow().toString());
-            ds.close();
-        }
-
-        dataContext.executeUpdate(new DropTable(table));
-        try {
-            DataSet ds = dataContext.query().from(table).selectCount().execute();
-            ds.next();
-            assertEquals("Row[values=[0]]", ds.getRow().toString());
-            ds.close();
-        } finally {
-            // restore the people documents for the next tests
-            insertPeopleDocuments();
-            client.admin().indices().prepareRefresh().execute().actionGet();
-            dataContext = new ElasticSearchDataContext(client, indexName);
-        }
+        DataSet dataSet = dataContext.query().from(table).select("foo", "bar").orderBy("bar").execute();
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[howdy, 42]]", dataSet.getRow().toString());
+        assertTrue(dataSet.next());
+        assertEquals("Row[values=[world, 43]]", dataSet.getRow().toString());
+        assertFalse(dataSet.next());
+        dataSet.close();
     }
 
     @Test
@@ -549,26 +501,19 @@ public class ElasticSearchDataContextTest {
 
     @Test
     public void testNonDynamicMapingTableNames() throws Exception {
-        createIndex();
+        CreateIndexRequest cir = new CreateIndexRequest(indexName2);
+        client.admin().indices().create(cir).actionGet();
+        
+        PutMappingRequest pmr = new PutMappingRequest(indexName2).type(indexType3).source(mapping, XContentType.JSON);
+        
+        client.admin().indices().putMapping(pmr).actionGet();
 
         ElasticSearchDataContext dataContext2 = new ElasticSearchDataContext(client, indexName2);
 
         assertEquals("[tweet3]", Arrays.toString(dataContext2.getDefaultSchema().getTableNames().toArray()));
     }
 
-    private static void createIndex() {
-        CreateIndexRequest cir = new CreateIndexRequest(indexName2);
-        CreateIndexResponse response = client.admin().indices().create(cir).actionGet();
-
-        System.out.println("create index: " + response.isAcknowledged());
-
-        PutMappingRequest pmr = new PutMappingRequest(indexName2).type(indexType3).source(mapping);
-
-        PutMappingResponse response2 = client.admin().indices().putMapping(pmr).actionGet();
-        System.out.println("put mapping: " + response2.isAcknowledged());
-    }
-
-    private static void indexBulkDocuments(String indexName, String indexType, int numberOfDocuments) {
+    private void indexBulkDocuments(String indexName, String indexType, int numberOfDocuments) {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
 
         for (int i = 0; i < numberOfDocuments; i++) {
@@ -578,17 +523,17 @@ public class ElasticSearchDataContextTest {
         bulkRequest.execute().actionGet();
     }
 
-    private static void indexTweeterDocument(String indexType, int id, Date date) {
-        client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id, date))
-                .setId("tweet_" + indexType + "_" + id).execute().actionGet();
+    private void indexTweeterDocument(String indexType, int id, Date date) {
+        final String id1 = "tweet_" + indexType + "_" + id;
+        client.prepareIndex(indexName, indexType, id1).setSource(buildTweeterJson(id, date)).execute().actionGet();
     }
 
-    private static void indexTweeterDocument(String indexType, int id) {
+    private void indexTweeterDocument(String indexType, int id) {
         client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id))
                 .setId("tweet_" + indexType + "_" + id).execute().actionGet();
     }
 
-    private static void indexOnePeopleDocument(String gender, int age, int id) throws IOException {
+    private void indexOnePeopleDocument(String gender, int age, int id) throws IOException {
         client.prepareIndex(indexName, peopleIndexType).setSource(buildPeopleJson(gender, age, id)).execute()
                 .actionGet();
     }

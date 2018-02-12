@@ -26,19 +26,17 @@ import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
+import org.elasticsearch.action.index.IndexRequest;
 
-import io.searchbox.core.Index;
-import io.searchbox.params.Parameters;
+final class ElasticSearchRestInsertBuilder extends AbstractRowInsertionBuilder<ElasticSearchRestUpdateCallback> {
 
-final class JestElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<JestElasticSearchUpdateCallback> {
-
-    public JestElasticSearchInsertBuilder(JestElasticSearchUpdateCallback updateCallback, Table table) {
+    public ElasticSearchRestInsertBuilder(final ElasticSearchRestUpdateCallback updateCallback, final Table table) {
         super(updateCallback, table);
     }
 
     @Override
     public void execute() throws MetaModelException {
-        final JestElasticSearchUpdateCallback updateCallback = getUpdateCallback();
+        final ElasticSearchRestUpdateCallback updateCallback = getUpdateCallback();
         final ElasticSearchRestDataContext dataContext = updateCallback.getDataContext();
         final String indexName = dataContext.getIndexName();
         final String documentType = getTable().getName();
@@ -52,7 +50,7 @@ final class JestElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<J
                 final String columnName = columns[i].getName();
 
                 final Object value = values[i];
-                if (ElasticSearchRestDataContext.FIELD_ID.equals(columnName)) {
+                if (ElasticSearchUtils.FIELD_ID.equals(columnName)) {
                     if (value != null) {
                         id = value.toString();
                     }
@@ -65,10 +63,10 @@ final class JestElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<J
 
         assert !source.isEmpty();
 
-        final Index index = new Index.Builder(source).index(indexName).type(documentType).id(id).setParameter(
-                Parameters.OP_TYPE, "create").build();
+        IndexRequest indexRequest = new IndexRequest(indexName, documentType, id);
+        indexRequest.source(source);
 
-        getUpdateCallback().execute(index);
+        getUpdateCallback().execute(indexRequest);
     }
 
 }

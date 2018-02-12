@@ -33,6 +33,7 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.TableType;
 import org.apache.metamodel.schema.naming.ColumnNamingContext;
 import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
 import org.apache.metamodel.schema.naming.ColumnNamingSession;
@@ -103,7 +104,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     private MutableTable createTable(final Workbook wb, final Sheet sheet) {
-        final MutableTable table = new MutableTable(sheet.getSheetName());
+        final MutableTable table = new MutableTable(sheet.getSheetName(), TableType.TABLE);
 
         if (sheet.getPhysicalNumberOfRows() <= 0) {
             // no physical rows in sheet

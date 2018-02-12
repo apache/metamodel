@@ -26,6 +26,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 
 import org.apache.metamodel.AbstractUpdateCallback;
+import org.apache.metamodel.DataContext;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateSummaryBuilder;
@@ -33,6 +34,7 @@ import org.apache.metamodel.create.TableCreationBuilder;
 import org.apache.metamodel.delete.RowDeletionBuilder;
 import org.apache.metamodel.drop.TableDropBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.jdbc.JdbcUtils.JdbcActionType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.RowUpdationBuilder;
@@ -96,12 +98,12 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
 
     protected final Connection getConnection() {
         if (_connection == null) {
-            _connection = getDataContext().getConnection();
-            if (getDataContext().getQueryRewriter().isTransactional()) {
+            _connection = getJdbcDataContext().getConnection();
+            if (getJdbcDataContext().getQueryRewriter().isTransactional()) {
                 try {
                     _connection.setAutoCommit(false);
                 } catch (SQLException e) {
-                    throw JdbcUtils.wrapException(e, "disable auto-commit");
+                    throw JdbcUtils.wrapException(e, "disable auto-commit", JdbcActionType.OTHER);
                 }
             }
         }
@@ -114,19 +116,19 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
                 closePreparedStatement(_preparedStatement);
             }
 
-            if (getDataContext().getQueryRewriter().isTransactional()) {
+            if (getJdbcDataContext().getQueryRewriter().isTransactional()) {
                 try {
                     commitOrRollback(success);
 
-                    if (getDataContext().isDefaultAutoCommit()) {
+                    if (getJdbcDataContext().isDefaultAutoCommit()) {
                         try {
                             getConnection().setAutoCommit(true);
                         } catch (SQLException e) {
-                            throw JdbcUtils.wrapException(e, "enable auto-commit");
+                            throw JdbcUtils.wrapException(e, "enable auto-commit", JdbcActionType.OTHER);
                         }
                     }
                 } finally {
-                    getDataContext().close(_connection);
+                    getJdbcDataContext().close(_connection);
                 }
             }
         }
@@ -137,13 +139,13 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
             try {
                 getConnection().commit();
             } catch (SQLException e) {
-                throw JdbcUtils.wrapException(e, "commit transaction");
+                throw JdbcUtils.wrapException(e, "commit transaction", JdbcActionType.COMMIT_ROLLBACK);
             }
         } else {
             try {
                 getConnection().rollback();
             } catch (SQLException e) {
-                throw JdbcUtils.wrapException(e, "rollback transaction");
+                throw JdbcUtils.wrapException(e, "rollback transaction", JdbcActionType.COMMIT_ROLLBACK);
             }
         }
     }
@@ -156,20 +158,25 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
 
     @Override
     public final RowInsertionBuilder insertInto(Table table) throws IllegalArgumentException, IllegalStateException {
-        return new JdbcInsertBuilder(this, table, getDataContext().getQueryRewriter());
+        return new JdbcInsertBuilder(this, table, getJdbcDataContext().getQueryRewriter());
+    }
+    
+    protected final JdbcDataContext getJdbcDataContext() {
+        return (JdbcDataContext) super.getDataContext();
     }
 
     // override the return type to the more specific subtype.
     @Override
-    public final JdbcDataContext getDataContext() {
-        return (JdbcDataContext) super.getDataContext();
+    public final DataContext getDataContext() {
+        final Connection connection = getConnection();
+        return new JdbcUpdateCallbackDataContext(getJdbcDataContext(), connection);
     }
 
     protected String quoteIfNescesary(String identifier) {
         if (identifier == null) {
             return null;
         }
-        final String quote = getDataContext().getIdentifierQuoteString();
+        final String quote = getJdbcDataContext().getIdentifierQuoteString();
         if (quote == null) {
             return identifier;
         }
@@ -224,7 +231,7 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
                 // not all databases support the RETURN_GENERATED_KEYS flag, so retry without
                 return createPreparedStatement(sql, false);
             }
-            throw JdbcUtils.wrapException(e, "create prepared statement for: " + sql);
+            throw JdbcUtils.wrapException(e, "create prepared statement for: " + sql, JdbcActionType.OTHER);
         }
     }
 
@@ -236,7 +243,7 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
     @Override
     public final RowDeletionBuilder deleteFrom(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        return new JdbcDeleteBuilder(this, table, getDataContext().getQueryRewriter());
+        return new JdbcDeleteBuilder(this, table, getJdbcDataContext().getQueryRewriter());
     }
 
     @Override
@@ -247,7 +254,7 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
     @Override
     public TableDropBuilder dropTable(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        return new JdbcDropTableBuilder(this, table, getDataContext().getQueryRewriter());
+        return new JdbcDropTableBuilder(this, table, getJdbcDataContext().getQueryRewriter());
     }
 
     @Override
@@ -258,7 +265,7 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
     @Override
     public final RowUpdationBuilder update(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        return new JdbcUpdateBuilder(this, table, getDataContext().getQueryRewriter());
+        return new JdbcUpdateBuilder(this, table, getJdbcDataContext().getQueryRewriter());
     }
 
     public void executeInsert(PreparedStatement st, boolean reuseStatement) throws SQLException {

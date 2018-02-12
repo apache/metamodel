@@ -51,8 +51,13 @@ public class MockUpdateableDataContext extends QueryPostprocessDataContext imple
 
     private final MutableTable _table;
     private final MutableSchema _schema;
-
+    
     public MockUpdateableDataContext() {
+        this(true);
+    }
+
+    public MockUpdateableDataContext(boolean addDefaultTableAlias) {
+        super(addDefaultTableAlias);
         _values.add(new Object[] { "1", "hello" });
         _values.add(new Object[] { "2", "there" });
         _values.add(new Object[] { "3", "world" });
@@ -70,6 +75,9 @@ public class MockUpdateableDataContext extends QueryPostprocessDataContext imple
 
     @Override
     protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
+        if (table != _table) {
+            throw new IllegalArgumentException("Unknown table: " + table);
+        }
 
         List<Row> rows = new ArrayList<Row>();
         List<SelectItem> items = columns.stream().map(SelectItem::new).collect(Collectors.toList());
@@ -112,6 +120,9 @@ public class MockUpdateableDataContext extends QueryPostprocessDataContext imple
             @Override
             public RowDeletionBuilder deleteFrom(Table table) throws IllegalArgumentException, IllegalStateException,
                     UnsupportedOperationException {
+                if (table != _table) {
+                    throw new IllegalArgumentException("Unknown table: " + table);
+                }
                 return new AbstractRowDeletionBuilder(table) {
                     @Override
                     public void execute() throws MetaModelException {
@@ -123,6 +134,9 @@ public class MockUpdateableDataContext extends QueryPostprocessDataContext imple
             @Override
             public RowInsertionBuilder insertInto(Table table) throws IllegalArgumentException, IllegalStateException,
                     UnsupportedOperationException {
+                if (table != _table) {
+                    throw new IllegalArgumentException("Unknown table: " + table);
+                }
                 return new AbstractRowInsertionBuilder<UpdateCallback>(this, table) {
 
                     @Override

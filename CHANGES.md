@@ -1,4 +1,18 @@
-### Apache MetaModel 5.0
+### Apache MetaModel 5.1.0 (WIP)
+
+ * [METAMODEL-1179] - Refactored ElasticSearch REST module to use new official REST based client from Elastic.
+ * [METAMODEL-1177] - Made TableType.TABLE the default table type, replacing null values.
+
+### Apache MetaModel 5.0.1
+
+ * [METAMODEL-1169] - Fixed issue with SQL Server milliseconds precision in WHERE.
+ * [METAMODEL-1173] - Added CouchDB integration test in add. to MongoDB
+ * [METAMODEL-1173] - Fixed parsing and handling of scalar functions in WHERE clause.
+ * [METAMODEL-1171] - Fixed parsing of query operators with DATE, TIME, TIMESTAMP prefix to operand date/time values.
+ * [METAMODEL-1174] - Upgraded Excel module's dependency on Apache POI to latest stable version (3.17).
+ * [METAMODEL-1176] - Fixed issue with bad ArrayList population during SalesforceDataContext query building
+
+### Apache MetaModel 5.0.0
 
  * [METAMODEL-1161] - Fixed issue with maxRows being ignored on Oracle 
  * [METAMODEL-6] - Added update summary containing information about changes on returning UpdateableDataContext.executeUpdate(..)
@@ -9,11 +23,13 @@
  * [METAMODEL-1139] - Employed Java 8 functional types (java.util.function) in favor of (now deprecated) Ref, Action, Func. 
  * [METAMODEL-1140] - Allowed SalesforceDataContext without a security token.
  * [METAMODEL-1141] - Added RFC 4180 compliant CSV parsing.
+ * [METAMODEL-1165] - Added a convenient alias table "default_table" for single-table data stores.
  * [METAMODEL-1144] - Optimized evaluation of conditional client-side JOIN statements.
  * [METAMODEL-1145] - Fixed bug with modelling JDBC table relationships when there are multiple keys involved in the relationship.
  * [METAMODEL-1151] - Added DataContextFactory classes for instantiating DataContexts of many types based on properties.
  * [METAMODEL-1160] - Fixed bug when deserializing v4.x CsvTable objects
  * [METAMODEL-1163] - Fixed bug when deserializing v4.x MutableRelationship and ImmutableRelationship objects
+ * [METAMODEL-86] - Made queries inside of a JDBC UpdateCallback pertain to the running transaction.
 
 ### Apache MetaModel 4.6.0
 

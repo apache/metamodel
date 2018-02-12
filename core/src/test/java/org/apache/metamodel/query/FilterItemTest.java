@@ -18,8 +18,11 @@
  */
 package org.apache.metamodel.query;
 
-import com.google.common.collect.Lists;
-import junit.framework.TestCase;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
@@ -36,15 +39,12 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
-import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.google.common.collect.Lists;
+
+import junit.framework.TestCase;
 
 public class FilterItemTest extends TestCase {
 
@@ -400,7 +400,7 @@ public class FilterItemTest extends TestCase {
             }
 
             @Override
-            protected Schema getMainSchema() throws MetaModelException {
+            protected MutableSchema getMainSchema() throws MetaModelException {
                 return schema;
             }
         };

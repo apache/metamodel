@@ -18,11 +18,21 @@
  */
 package org.apache.metamodel;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
+import java.util.stream.StreamSupport;
 
 import org.apache.metamodel.data.CachingDataSetHeader;
 import org.apache.metamodel.data.DataSet;
@@ -31,7 +41,6 @@ import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.EmptyDataSet;
 import org.apache.metamodel.data.FilteredDataSet;
 import org.apache.metamodel.data.FirstRowDataSet;
-import org.apache.metamodel.data.IRowFilter;
 import org.apache.metamodel.data.InMemoryDataSet;
 import org.apache.metamodel.data.MaxRowsDataSet;
 import org.apache.metamodel.data.Row;
@@ -51,6 +60,8 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.SuperColumnType;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.WrappingSchema;
+import org.apache.metamodel.schema.WrappingTable;
 import org.apache.metamodel.util.AggregateBuilder;
 import org.apache.metamodel.util.CollectionUtils;
 import org.apache.metamodel.util.ObjectComparator;
@@ -58,18 +69,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class contains various helper functionality to common tasks in
- * MetaModel, eg.:
+ * This class contains various helper functionality to common tasks in MetaModel, eg.:
  * 
  * <ul>
  * <li>Easy-access for traversing common schema items</li>
- * <li>Manipulate data in memory. These methods are primarily used to enable
- * queries for non-queryable data sources like CSV files and spreadsheets.</li>
+ * <li>Manipulate data in memory. These methods are primarily used to enable queries for non-queryable data sources like
+ * CSV files and spreadsheets.</li>
  * <li>Query rewriting, traversing and manipulation.</li>
  * </ul>
  * 
- * The class is mainly intended for internal use within the framework
- * operations, but is kept stable, so it can also be used by framework users.
+ * The class is mainly intended for internal use within the framework operations, but is kept stable, so it can also be
+ * used by framework users.
  */
 public final class MetaModelHelper {
 
@@ -80,8 +90,7 @@ public final class MetaModelHelper {
     }
 
     /**
-     * Creates an array of tables where all occurences of tables in the provided
-     * list of tables and columns are included
+     * Creates an array of tables where all occurences of tables in the provided list of tables and columns are included
      */
     public static Table[] getTables(Collection<Table> tableList, Iterable<Column> columnList) {
         HashSet<Table> set = new HashSet<Table>();
@@ -119,8 +128,7 @@ public final class MetaModelHelper {
     /**
      * Converts a list of columns to a corresponding array of tables
      * 
-     * @param columns
-     *            the columns that the tables will be extracted from
+     * @param columns the columns that the tables will be extracted from
      * @return an array containing the tables of the provided columns.
      */
     public static Table[] getTables(Iterable<Column> columns) {
@@ -135,8 +143,7 @@ public final class MetaModelHelper {
     }
 
     /**
-     * Creates a subset array of columns, where only columns that are contained
-     * within the specified table are included.
+     * Creates a subset array of columns, where only columns that are contained within the specified table are included.
      * 
      * @param table
      * @param columns
@@ -157,8 +164,7 @@ public final class MetaModelHelper {
     }
 
     /**
-     * Creates a subset array of columns, where only columns that are contained
-     * within the specified table are included.
+     * Creates a subset array of columns, where only columns that are contained within the specified table are included.
      * 
      * @param table
      * @param columns
@@ -185,7 +191,6 @@ public final class MetaModelHelper {
         // do a nested loop join, no matter what
         Iterator<DataSet> dsIter = Arrays.asList(fromDataSets).iterator();
 
-
         DataSet joined = dsIter.next();
 
         while (dsIter.hasNext()) {
@@ -198,8 +203,7 @@ public final class MetaModelHelper {
     }
 
     /**
-     * Executes a simple nested loop join. The innerLoopDs will be copied in an
-     * in-memory dataset.
+     * Executes a simple nested loop join. The innerLoopDs will be copied in an in-memory dataset.
      *
      */
     public static InMemoryDataSet nestedLoopJoin(DataSet innerLoopDs, DataSet outerLoopDs,
@@ -225,8 +229,8 @@ public final class MetaModelHelper {
                 Object[] joinedRowObjects = new Object[outerRow.getValues().length + innerRow.getValues().length];
 
                 System.arraycopy(outerRow.getValues(), 0, joinedRowObjects, 0, outerRow.getValues().length);
-                System.arraycopy(innerRow.getValues(), 0, joinedRowObjects, outerRow.getValues().length, innerRow
-                        .getValues().length);
+                System.arraycopy(innerRow.getValues(), 0, joinedRowObjects, outerRow.getValues().length,
+                        innerRow.getValues().length);
 
                 Row joinedRow = new DefaultRow(jointHeader, joinedRowObjects);
 
@@ -240,8 +244,8 @@ public final class MetaModelHelper {
     }
 
     /**
-     * Filters the FilterItems such that only the FilterItems are returned,
-     * which contain SelectItems that are contained in selectItemList
+     * Filters the FilterItems such that only the FilterItems are returned, which contain SelectItems that are contained
+     * in selectItemList
      * 
      * @param filters
      * @param selectItemList
@@ -266,18 +270,38 @@ public final class MetaModelHelper {
     }
 
     public static DataSet getFiltered(DataSet dataSet, Iterable<FilterItem> filterItems) {
-        List<IRowFilter> filters = CollectionUtils.map(filterItems, filterItem -> {
-            return filterItem;
-        });
-        if (filters.isEmpty()) {
-            return dataSet;
-        }
-
-        return new FilteredDataSet(dataSet, filters.toArray(new IRowFilter[filters.size()]));
+        final FilterItem[] filterItemsArray =
+                StreamSupport.stream(filterItems.spliterator(), false).toArray(FilterItem[]::new);
+        return getFiltered(dataSet, filterItemsArray);
     }
 
     public static DataSet getFiltered(DataSet dataSet, FilterItem... filterItems) {
+        if (filterItems == null || filterItems.length == 0) {
+            return dataSet;
+        }
         return getFiltered(dataSet, Arrays.asList(filterItems));
+    }
+
+    public static DataSet getFiltered(DataSet dataSet, Collection<FilterItem> filterItems) {
+        if (filterItems == null || filterItems.isEmpty()) {
+            return dataSet;
+        }
+        final List<SelectItem> selectItemsOnOutput = dataSet.getSelectItems();
+        final Iterable<SelectItem> selectItems =
+                filterItems.stream().map(f -> f.getSelectItem()).filter(s -> s != null)::iterator;
+        final List<SelectItem> scalarFunctionSelectItems =
+                getUnmaterializedScalarFunctionSelectItems(selectItems, dataSet);
+        final boolean calculateScalarFunctions = !scalarFunctionSelectItems.isEmpty();
+        if (calculateScalarFunctions) {
+            // scalar functions are needed in evaluation of the filters
+            dataSet = new ScalarFunctionDataSet(scalarFunctionSelectItems, dataSet);
+        }
+        final FilteredDataSet filteredDataSet = new FilteredDataSet(dataSet, filterItems);
+        if (calculateScalarFunctions) {
+            return getSelection(selectItemsOnOutput, filteredDataSet);
+        } else {
+            return filteredDataSet;
+        }
     }
 
     public static DataSet getSelection(final List<SelectItem> selectItems, final DataSet dataSet) {
@@ -293,8 +317,8 @@ public final class MetaModelHelper {
 
         for (SelectItem selectItem : selectItems) {
             if (selectItem.getScalarFunction() != null) {
-                if (!dataSetSelectItems.contains(selectItem) && dataSetSelectItems.contains(selectItem.replaceFunction(
-                        null))) {
+                if (!dataSetSelectItems.contains(selectItem)
+                        && dataSetSelectItems.contains(selectItem.replaceFunction(null))) {
                     scalarFunctionSelectItemsToEvaluate.add(selectItem);
                 }
             }
@@ -304,8 +328,8 @@ public final class MetaModelHelper {
             return new SubSelectionDataSet(selectItems, dataSet);
         }
 
-        final ScalarFunctionDataSet scalaFunctionDataSet = new ScalarFunctionDataSet(
-                scalarFunctionSelectItemsToEvaluate, dataSet);
+        final ScalarFunctionDataSet scalaFunctionDataSet =
+                new ScalarFunctionDataSet(scalarFunctionSelectItemsToEvaluate, dataSet);
         return new SubSelectionDataSet(selectItems, scalaFunctionDataSet);
     }
 
@@ -315,17 +339,12 @@ public final class MetaModelHelper {
 
     public static DataSet getGrouped(List<SelectItem> selectItems, DataSet dataSet,
             Collection<GroupByItem> groupByItems) {
-        return getGrouped(selectItems, dataSet, groupByItems);
-    }
-
-    public static DataSet getGrouped(List<SelectItem> selectItems, DataSet dataSet, List<GroupByItem> groupByItems) {
         DataSet result = dataSet;
         if (groupByItems != null && groupByItems.size() > 0) {
             Map<Row, Map<SelectItem, List<Object>>> uniqueRows = new HashMap<Row, Map<SelectItem, List<Object>>>();
 
-            final List<SelectItem> groupBySelects = groupByItems.stream()
-                    .map(gbi -> gbi.getSelectItem())
-                    .collect(Collectors.toList());
+            final List<SelectItem> groupBySelects =
+                    groupByItems.stream().map(gbi -> gbi.getSelectItem()).collect(Collectors.toList());
             final DataSetHeader groupByHeader = new CachingDataSetHeader(groupBySelects);
 
             // Creates a list of SelectItems that have aggregate functions
@@ -418,13 +437,10 @@ public final class MetaModelHelper {
     }
 
     /**
-     * Applies aggregate values to a dataset. This method is to be invoked AFTER
-     * any filters have been applied.
+     * Applies aggregate values to a dataset. This method is to be invoked AFTER any filters have been applied.
      * 
-     * @param workSelectItems
-     *            all select items included in the processing of the query
-     *            (including those originating from other clauses than the
-     *            SELECT clause).
+     * @param workSelectItems all select items included in the processing of the query (including those originating from
+     *            other clauses than the SELECT clause).
      * @param dataSet
      * @return
      */
@@ -529,8 +545,21 @@ public final class MetaModelHelper {
     }
 
     public static List<SelectItem> getScalarFunctionSelectItems(Iterable<SelectItem> selectItems) {
+        return getUnmaterializedScalarFunctionSelectItems(selectItems, null);
+    }
+
+    /**
+     * Gets select items with scalar functions that haven't already been materialized in a data set.
+     * 
+     * @param selectItems
+     * @param dataSetWithMaterializedSelectItems a {@link DataSet} containing the already materialized select items
+     * @return
+     */
+    public static List<SelectItem> getUnmaterializedScalarFunctionSelectItems(Iterable<SelectItem> selectItems,
+            DataSet dataSetWithMaterializedSelectItems) {
         return CollectionUtils.filter(selectItems, arg -> {
-            return arg.getScalarFunction() != null;
+            return arg.getScalarFunction() != null && (dataSetWithMaterializedSelectItems == null
+                    || dataSetWithMaterializedSelectItems.indexOf(arg) == -1);
         });
     }
 
@@ -600,12 +629,10 @@ public final class MetaModelHelper {
     }
 
     /**
-     * Examines a query and extracts an array of FromItem's that refer
-     * (directly) to tables (hence Joined FromItems and SubQuery FromItems are
-     * traversed but not included).
+     * Examines a query and extracts an array of FromItem's that refer (directly) to tables (hence Joined FromItems and
+     * SubQuery FromItems are traversed but not included).
      * 
-     * @param q
-     *            the query to examine
+     * @param q the query to examine
      * @return an array of FromItem's that refer directly to tables
      */
     public static FromItem[] getTableFromItems(Query q) {
@@ -638,16 +665,12 @@ public final class MetaModelHelper {
     }
 
     /**
-     * Executes a single row query, like "SELECT COUNT(*), MAX(SOME_COLUMN) FROM
-     * MY_TABLE" or similar.
+     * Executes a single row query, like "SELECT COUNT(*), MAX(SOME_COLUMN) FROM MY_TABLE" or similar.
      * 
-     * @param dataContext
-     *            the DataContext object to use for executing the query
-     * @param query
-     *            the query to execute
+     * @param dataContext the DataContext object to use for executing the query
+     * @param query the query to execute
      * @return a row object representing the single row returned from the query
-     * @throws MetaModelException
-     *             if less or more than one Row is returned from the query
+     * @throws MetaModelException if less or more than one Row is returned from the query
      */
     public static Row executeSingleRowQuery(DataContext dataContext, Query query) throws MetaModelException {
         DataSet dataSet = dataContext.executeQuery(query);
@@ -667,12 +690,9 @@ public final class MetaModelHelper {
     /**
      * Performs a left join (aka left outer join) operation on two datasets.
      * 
-     * @param ds1
-     *            the left dataset
-     * @param ds2
-     *            the right dataset
-     * @param onConditions
-     *            the conditions to join by
+     * @param ds1 the left dataset
+     * @param ds2 the right dataset
+     * @param onConditions the conditions to join by
      * @return the left joined result dataset
      */
     public static DataSet getLeftJoin(DataSet ds1, DataSet ds2, FilterItem[] onConditions) {
@@ -684,7 +704,7 @@ public final class MetaModelHelper {
         }
         List<SelectItem> si1 = ds1.getSelectItems();
         List<SelectItem> si2 = ds2.getSelectItems();
-        List<SelectItem> selectItems = Stream.concat(si1.stream(),si2.stream()).collect(Collectors.toList());
+        List<SelectItem> selectItems = Stream.concat(si1.stream(), si2.stream()).collect(Collectors.toList());
         List<Row> resultRows = new ArrayList<Row>();
         List<Row> ds2data = readDataSetFull(ds2);
         if (ds2data.isEmpty()) {
@@ -703,9 +723,9 @@ public final class MetaModelHelper {
             List<Row> ds1rows = new ArrayList<Row>();
             ds1rows.add(ds1row);
 
-            DataSet carthesianProduct = getCarthesianProduct(new DataSet[] { new InMemoryDataSet(
-                    new CachingDataSetHeader(si1), ds1rows), new InMemoryDataSet(new CachingDataSetHeader(si2),
-                            ds2data) }, onConditions);
+            DataSet carthesianProduct =
+                    getCarthesianProduct(new DataSet[] { new InMemoryDataSet(new CachingDataSetHeader(si1), ds1rows),
+                            new InMemoryDataSet(new CachingDataSetHeader(si2), ds2data) }, onConditions);
             List<Row> carthesianRows = readDataSetFull(carthesianProduct);
             if (carthesianRows.size() > 0) {
                 resultRows.addAll(carthesianRows);
@@ -728,12 +748,9 @@ public final class MetaModelHelper {
     /**
      * Performs a right join (aka right outer join) operation on two datasets.
      * 
-     * @param ds1
-     *            the left dataset
-     * @param ds2
-     *            the right dataset
-     * @param onConditions
-     *            the conditions to join by
+     * @param ds1 the left dataset
+     * @param ds2 the right dataset
+     * @param onConditions the conditions to join by
      * @return the right joined result dataset
      */
     public static DataSet getRightJoin(DataSet ds1, DataSet ds2, FilterItem[] onConditions) {
@@ -761,9 +778,7 @@ public final class MetaModelHelper {
 
     public static DataSet getDistinct(DataSet dataSet) {
         List<SelectItem> selectItems = dataSet.getSelectItems();
-        List<GroupByItem> groupByItems = selectItems.stream()
-                .map(GroupByItem::new)
-                .collect(Collectors.toList());
+        List<GroupByItem> groupByItems = selectItems.stream().map(GroupByItem::new).collect(Collectors.toList());
 
         return getGrouped(selectItems, dataSet, groupByItems);
     }
@@ -841,11 +856,10 @@ public final class MetaModelHelper {
     }
 
     /**
-     * Determines if a query contains {@link ScalarFunction}s in any clause of
-     * the query EXCEPT for the SELECT clause. This is a handy thing to
-     * determine because decorating with {@link ScalarFunctionDataSet} only
-     * gives you select-item evaluation so if the rest of the query is pushed to
-     * an underlying datastore, then it may create issues.
+     * Determines if a query contains {@link ScalarFunction}s in any clause of the query EXCEPT for the SELECT clause.
+     * This is a handy thing to determine because decorating with {@link ScalarFunctionDataSet} only gives you
+     * select-item evaluation so if the rest of the query is pushed to an underlying datastore, then it may create
+     * issues.
      * 
      * @param query
      * @return
@@ -887,5 +901,24 @@ public final class MetaModelHelper {
         }
 
         return false;
+    }
+
+    public static Table resolveTable(FromItem fromItem) {
+        final Table table = fromItem.getTable();
+        return resolveUnderlyingTable(table);
+    }
+
+    public static Table resolveUnderlyingTable(Table table) {
+        while (table instanceof WrappingTable) {
+            table = ((WrappingTable) table).getWrappedTable();
+        }
+        return table;
+    }
+
+    public static Schema resolveUnderlyingSchema(Schema schema) {
+        while (schema instanceof WrappingSchema) {
+            schema = ((WrappingSchema) schema).getWrappedSchema();
+        }
+        return schema;
     }
 }

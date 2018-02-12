@@ -71,6 +71,7 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
     private final PartnerConnection _connection;
 
     public SalesforceDataContext(String endpoint, String username, String password, String securityToken) {
+        super(false);
         try {
             final ConnectorConfig config = new ConnectorConfig();
             config.setUsername(username);
@@ -86,6 +87,7 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
     }
 
     public SalesforceDataContext(String username, String password, String securityToken) {
+        super(false);
         try {
             _connection =
                     Connector.newConnection(username, securityToken == null ? password : password + securityToken);
@@ -95,6 +97,7 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
     }
 
     public SalesforceDataContext(String username, String password) {
+        super(false);
         try {
             _connection = Connector.newConnection(username, password);
         } catch (ConnectionException e) {
@@ -109,6 +112,7 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
      * 
      */
     public SalesforceDataContext(PartnerConnection connection) {
+        super(false);
         if (connection == null) {
             throw new IllegalArgumentException("connection cannot be null");
         }
@@ -166,7 +170,7 @@ public class SalesforceDataContext extends QueryPostprocessDataContext implement
             final List<Column> columns = new ArrayList<>(selectItems.size());
             for (SelectItem selectItem : selectItems) {
                 validateSoqlSupportedSelectItem(selectItem);
-                columns.set(i,selectItem.getColumn());
+                columns.add(selectItem.getColumn());
                 if (i != 0) {
                     sb.append(", ");
                 }

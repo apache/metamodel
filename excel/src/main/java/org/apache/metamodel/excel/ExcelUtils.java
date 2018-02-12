@@ -54,6 +54,7 @@ import org.apache.poi.ss.formula.FormulaParseException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Color;
+import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.FontUnderline;
 import org.apache.poi.ss.usermodel.FormulaError;
@@ -142,8 +143,8 @@ final class ExcelUtils {
     }
 
     /**
-     * Writes the {@link Workbook} to a {@link Resource}. The {@link Workbook}
-     * will be closed as a result of this operation!
+     * Writes the {@link Workbook} to a {@link Resource}. The {@link Workbook} will be closed as a result of this
+     * operation!
      * 
      * @param dataContext
      * @param wb
@@ -188,14 +189,15 @@ final class ExcelUtils {
 
         final String result;
 
-        switch (cell.getCellType()) {
-        case Cell.CELL_TYPE_BLANK:
+        switch (cell.getCellTypeEnum()) {
+        case BLANK:
+        case _NONE:
             result = null;
             break;
-        case Cell.CELL_TYPE_BOOLEAN:
+        case BOOLEAN:
             result = Boolean.toString(cell.getBooleanCellValue());
             break;
-        case Cell.CELL_TYPE_ERROR:
+        case ERROR:
             String errorResult;
             try {
                 byte errorCode = cell.getErrorCellValue();
@@ -214,11 +216,11 @@ final class ExcelUtils {
             }
             result = errorResult;
             break;
-        case Cell.CELL_TYPE_FORMULA:
+        case FORMULA:
             // result = cell.getCellFormula();
             result = getFormulaCellValue(wb, cell);
             break;
-        case Cell.CELL_TYPE_NUMERIC:
+        case NUMERIC:
             if (HSSFDateUtil.isCellDateFormatted(cell)) {
                 Date date = cell.getDateCellValue();
                 if (date == null) {
@@ -232,11 +234,11 @@ final class ExcelUtils {
                 result = _numberFormat.format(cell.getNumericCellValue());
             }
             break;
-        case Cell.CELL_TYPE_STRING:
+        case STRING:
             result = cell.getRichStringCellValue().getString();
             break;
         default:
-            throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
+            throw new IllegalStateException("Unknown cell type: " + cell.getCellTypeEnum());
         }
 
         logger.debug("cell {} resolved to value: {}", cellCoordinate, result);
@@ -260,8 +262,8 @@ final class ExcelUtils {
         // evaluate cell first, if possible
         try {
             if (logger.isInfoEnabled()) {
-                logger.info("cell({},{}) is a formula. Attempting to evaluate: {}", new Object[] { cell.getRowIndex(),
-                        cell.getColumnIndex(), cell.getCellFormula() });
+                logger.info("cell({},{}) is a formula. Attempting to evaluate: {}",
+                        new Object[] { cell.getRowIndex(), cell.getColumnIndex(), cell.getCellFormula() });
             }
 
             final FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
@@ -271,8 +273,8 @@ final class ExcelUtils {
 
             return getCellValue(wb, evaluatedCell);
         } catch (RuntimeException e) {
-            logger.warn("Exception occurred while evaluating formula at position ({},{}): {}", new Object[] { cell
-                    .getRowIndex(), cell.getColumnIndex(), e.getMessage() });
+            logger.warn("Exception occurred while evaluating formula at position ({},{}): {}",
+                    new Object[] { cell.getRowIndex(), cell.getColumnIndex(), e.getMessage() });
             // Some exceptions we simply log - result will be then be the
             // actual formula
             if (e instanceof FormulaParseException) {
@@ -299,7 +301,7 @@ final class ExcelUtils {
         final StyleBuilder styleBuilder = new StyleBuilder();
 
         // Font bold, italic, underline
-        if (font.getBoldweight() >= Font.BOLDWEIGHT_BOLD) {
+        if (font.getBold()) {
             styleBuilder.bold();
         }
         if (font.getItalic()) {
@@ -342,7 +344,7 @@ final class ExcelUtils {
         }
 
         // Background color
-        if (cellStyle.getFillPattern() == 1) {
+        if (cellStyle.getFillPatternEnum() == FillPatternType.SOLID_FOREGROUND) {
             Color color = cellStyle.getFillForegroundColorColor();
             if (color instanceof HSSFColor) {
                 short[] triplet = ((HSSFColor) color).getTriplet();
@@ -355,24 +357,27 @@ final class ExcelUtils {
                     styleBuilder.background(argb.substring(2));
                 }
             } else {
-                throw new IllegalStateException("Unexpected color type: " + (color == null ? "null" : color.getClass())
-                        + ")");
+                throw new IllegalStateException(
+                        "Unexpected color type: " + (color == null ? "null" : color.getClass()) + ")");
             }
         }
 
         // alignment
-        switch (cellStyle.getAlignment()) {
-        case CellStyle.ALIGN_LEFT:
+        switch (cellStyle.getAlignmentEnum()) {
+        case LEFT:
             styleBuilder.leftAligned();
             break;
-        case CellStyle.ALIGN_RIGHT:
+        case RIGHT:
             styleBuilder.rightAligned();
             break;
-        case CellStyle.ALIGN_CENTER:
+        case CENTER:
             styleBuilder.centerAligned();
             break;
-        case CellStyle.ALIGN_JUSTIFY:
+        case JUSTIFY:
             styleBuilder.justifyAligned();
+            break;
+        default:
+            // we currently don't support other alignment styles
             break;
         }
 
@@ -413,8 +418,7 @@ final class ExcelUtils {
      * 
      * @param workbook
      * @param row
-     * @param selectItems
-     *            select items of the columns in the table
+     * @param selectItems select items of the columns in the table
      * @return
      */
     public static DefaultRow createRow(Workbook workbook, Row row, DataSetHeader header) {
@@ -436,8 +440,8 @@ final class ExcelUtils {
     }
 
     public static DataSet getDataSet(Workbook workbook, Sheet sheet, Table table, ExcelConfiguration configuration) {
-        final List<SelectItem> selectItems = table.getColumns().stream().map(SelectItem::new).collect(Collectors
-                .toList());
+        final List<SelectItem> selectItems =
+                table.getColumns().stream().map(SelectItem::new).collect(Collectors.toList());
         final Iterator<Row> rowIterator = getRowIterator(sheet, configuration, true);
         if (!rowIterator.hasNext()) {
             // no more rows!

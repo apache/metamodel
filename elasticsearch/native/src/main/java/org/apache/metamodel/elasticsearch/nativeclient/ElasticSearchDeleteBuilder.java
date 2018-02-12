@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.elasticsearch.nativeclient;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.metamodel.MetaModelException;
@@ -27,9 +28,11 @@ import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.LogicalOperator;
 import org.apache.metamodel.schema.Table;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,10 +60,6 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
         final Client client = dataContext.getElasticSearchClient();
         final String indexName = dataContext.getIndexName();
 
-        final DeleteByQueryRequestBuilder deleteByQueryRequestBuilder = new DeleteByQueryRequestBuilder(client);
-        deleteByQueryRequestBuilder.setIndices(indexName);
-        deleteByQueryRequestBuilder.setTypes(documentType);
-
         final List<FilterItem> whereItems = getWhereItems();
 
         // delete by query - note that creteQueryBuilderForSimpleWhere may
@@ -74,9 +73,21 @@ final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
             throw new UnsupportedOperationException("Could not push down WHERE items to delete by query request: "
                     + whereItems);
         }
-        deleteByQueryRequestBuilder.setQuery(queryBuilder);
-        deleteByQueryRequestBuilder.execute().actionGet();
 
-        logger.debug("Deleted documents by query.");
+        final SearchResponse response =
+                client.prepareSearch(indexName).setQuery(queryBuilder).setTypes(documentType).execute()
+                        .actionGet();
+
+        client.admin().indices().prepareRefresh(indexName).execute().actionGet();
+        final Iterator<SearchHit> iterator = response.getHits().iterator();
+        while (iterator.hasNext()) {
+            final SearchHit hit = iterator.next();
+            final String typeId = hit.getId();
+            final DeleteResponse deleteResponse =
+                    client.prepareDelete().setIndex(indexName).setType(documentType).setId(typeId).execute()
+                            .actionGet();
+            logger.debug("Deleted documents by query." + deleteResponse.getResult());
+        }
+        client.admin().indices().prepareRefresh(indexName).execute().actionGet();
     }
 }

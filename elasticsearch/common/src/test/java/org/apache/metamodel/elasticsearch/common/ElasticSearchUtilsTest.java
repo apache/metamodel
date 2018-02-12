@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.elasticsearch.nativeclient;
+package org.apache.metamodel.elasticsearch.common;
 
 import junit.framework.TestCase;
 import org.apache.metamodel.data.DataSetHeader;
@@ -38,7 +38,7 @@ public class ElasticSearchUtilsTest extends TestCase {
         DataSetHeader header = new SimpleDataSetHeader(selectItems1);
         Map<String, Object> values = new HashMap<>();
         values.put("value1", "theValue");
-        Row row = NativeElasticSearchUtils.createRow(values, documentId, header);
+        Row row = ElasticSearchUtils.createRow(values, documentId, header);
         String primaryKeyValue = (String) row.getValue(primaryKeyItem);
 
         assertEquals(primaryKeyValue, documentId);
@@ -53,7 +53,7 @@ public class ElasticSearchUtilsTest extends TestCase {
         Map<String, Object> values = new HashMap<>();
         values.put("value1", "theValue");
         values.put("value2", "2013-01-04T15:55:51.217+01:00");
-        Row row = NativeElasticSearchUtils.createRow(values, documentId, header);
+        Row row = ElasticSearchUtils.createRow(values, documentId, header);
         Object stringValue = row.getValue(item1);
         Object dateValue = row.getValue(item2);
 

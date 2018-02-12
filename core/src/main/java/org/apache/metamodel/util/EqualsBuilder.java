@@ -40,12 +40,31 @@ public final class EqualsBuilder {
 		return this;
 	}
 
-	public EqualsBuilder append(Object o1, Object o2) {
-		if (equals) {
-			equals = equals(o1, o2);
-		}
-		return this;
-	}
+    public EqualsBuilder append(Object o1, Object o2) {
+        if (equals) {
+            equals = equals(o1, o2);
+        }
+        return this;
+    }
+    
+    public EqualsBuilder appendArrays(Object[] o1, Object[] o2) {
+        if (equals) {
+            if (o1 == null) {
+                o1 = new Object[0];
+            }
+            if (o2 == null) {
+                o2 = new Object[0];
+            }
+            if (o1.length != o2.length) {
+                equals = false;
+            } else {
+                for (int i = 0; i < o1.length; i++) {
+                    append(o1[i], o2[i]);
+                }
+            }
+        }
+        return this;
+    }
 
 	public static boolean equals(final Object obj1, final Object obj2) {
 		if (obj1 == obj2) {

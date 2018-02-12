@@ -34,10 +34,11 @@ import org.apache.metamodel.query.parser.QueryParser;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.TableType;
 
 /**
- * Abstract implementation of the DataContext interface. Provides convenient
- * implementations of all trivial and datastore-independent methods.
+ * Abstract implementation of the DataContext interface. Provides convenient implementations of all trivial and
+ * datastore-independent methods.
  */
 public abstract class AbstractDataContext implements DataContext {
 
@@ -58,9 +59,8 @@ public abstract class AbstractDataContext implements DataContext {
     }
 
     /**
-     * Method invoked when schemas have been refreshed using
-     * {@link #refreshSchemas()}. Can be overridden to add callback
-     * functionality in subclasses.
+     * Method invoked when schemas have been refreshed using {@link #refreshSchemas()}. Can be overridden to add
+     * callback functionality in subclasses.
      */
     protected void onSchemaCacheRefreshed() {
     }
@@ -72,7 +72,7 @@ public abstract class AbstractDataContext implements DataContext {
     public final List<Schema> getSchemas() throws MetaModelException {
         List<String> schemaNames = getSchemaNames();
         List<Schema> schemas = new ArrayList<>();
-        for (final String name: schemaNames) {
+        for (final String name : schemaNames) {
             final Schema schema = _schemaCache.get(getSchemaCacheKey(name));
             if (schema == null) {
                 final Schema newSchema = getSchemaByName(name);
@@ -128,7 +128,7 @@ public abstract class AbstractDataContext implements DataContext {
                 result = schemas.get(0);
             } else {
                 int highestTableCount = -1;
-                for (Schema schema: schemas) {
+                for (Schema schema : schemas) {
                     String name = schema.getName();
                     if (schema != null) {
                         name = name.toLowerCase();
@@ -299,13 +299,10 @@ public abstract class AbstractDataContext implements DataContext {
     /**
      * Searches for a particular column within a schema
      * 
-     * @param schemaNameSearch
-     *            the schema name to use for search
-     * @param columnNameOriginal
-     *            the original column name
-     * @param columnNameSearch
-     *            the column name as it should be searched for (either the same
-     *            as original, or lower case in case of case-insensitive search)
+     * @param schemaNameSearch the schema name to use for search
+     * @param columnNameOriginal the original column name
+     * @param columnNameSearch the column name as it should be searched for (either the same as original, or lower case
+     *            in case of case-insensitive search)
      * @return
      */
     private Column searchColumn(String schemaNameSearch, String columnNameOriginal, String columnNameSearch) {
@@ -365,7 +362,7 @@ public abstract class AbstractDataContext implements DataContext {
             }
         }
 
-        if (table == null && tableNames.size() == 1) {
+        if (table == null && schema.getTables().stream().filter(t -> t.getType() != TableType.ALIAS).count() == 1) {
             table = schema.getTables().get(0);
         }
 
@@ -536,9 +533,8 @@ public abstract class AbstractDataContext implements DataContext {
     }
 
     /**
-     * Gets schema names from the non-abstract implementation. These schema
-     * names will be cached except if the {@link #refreshSchemas()} method is
-     * called.
+     * Gets schema names from the non-abstract implementation. These schema names will be cached except if the
+     * {@link #refreshSchemas()} method is called.
      * 
      * @return an array of schema names.
      */
@@ -552,14 +548,11 @@ public abstract class AbstractDataContext implements DataContext {
     protected abstract String getDefaultSchemaName();
 
     /**
-     * Gets a specific schema from the non-abstract implementation. This schema
-     * object will be cached except if the {@link #refreshSchemas()} method is
-     * called.
+     * Gets a specific schema from the non-abstract implementation. This schema object will be cached except if the
+     * {@link #refreshSchemas()} method is called.
      * 
-     * @param name
-     *            the name of the schema to get
-     * @return a schema object representing the named schema, or null if no such
-     *         schema exists.
+     * @param name the name of the schema to get
+     * @return a schema object representing the named schema, or null if no such schema exists.
      */
     protected abstract Schema getSchemaByNameInternal(String name);
 }

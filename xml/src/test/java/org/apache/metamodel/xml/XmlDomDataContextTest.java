@@ -39,6 +39,7 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Relationship;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.util.ResourceException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -55,7 +56,7 @@ public class XmlDomDataContextTest extends TestCase {
             Schema schema = dataContext.getSchemaByName("xml_input_eobjects.xml");
             assertEquals("Schema[name=xml_input_eobjects.xml]", schema.toString());
             assertEquals(5, schema.getTableCount());
-        } catch (IllegalArgumentException e) {
+        } catch (ResourceException e) {
             // If the network is not accessible omit the test
             if (!(e.getCause() instanceof UnknownHostException)) {
                 throw e;

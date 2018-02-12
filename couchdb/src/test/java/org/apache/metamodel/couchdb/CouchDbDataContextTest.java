@@ -18,6 +18,12 @@
  */
 package org.apache.metamodel.couchdb;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,20 +46,24 @@ import org.ektorp.CouchDbConnector;
 import org.ektorp.http.HttpClient;
 import org.ektorp.http.StdHttpClient;
 import org.ektorp.impl.StdCouchDbInstance;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-public class CouchDbDataContextTest extends CouchDbTestCase {
+public class CouchDbDataContextTest extends CouchDbTestSupport {
 
     private HttpClient httpClient;
     private StdCouchDbInstance couchDbInstance;
     private CouchDbConnector connector;
     private SimpleTableDef predefinedTableDef;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void before() throws Exception {
+        loadConfiguration();
 
         if (isConfigured()) {
-            final int timeout = 8 * 1000; // 8 seconds should be more than enough
+            final int timeout = 8 * 1000; // 8 seconds should be more than
+                                          // enough
             httpClient = new StdHttpClient.Builder().socketTimeout(timeout).host(getHostname()).build();
 
             // set up a simple database
@@ -66,16 +76,15 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
             connector = couchDbInstance.createConnector(databaseName, true);
 
             final String[] columnNames = new String[] { "name", "gender", "age" };
-            final ColumnType[] columnTypes = new ColumnType[] { ColumnType.STRING, ColumnType.CHAR, ColumnType.INTEGER };
+            final ColumnType[] columnTypes = new ColumnType[] { ColumnType.STRING, ColumnType.CHAR,
+                    ColumnType.INTEGER };
             predefinedTableDef = new SimpleTableDef(databaseName, columnNames, columnTypes);
         }
 
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-
+    @After
+    public void after() {
         connector = null;
 
         if (isConfigured()) {
@@ -85,6 +94,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         }
     }
 
+    @Test
     public void testWorkingWithMapsAndLists() throws Exception {
         if (!isConfigured()) {
             System.err.println(getInvalidConfigurationMessage());
@@ -118,14 +128,14 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
             assertFalse(ds.next());
             ds.close();
 
-            assertEquals("Row[values=[1, {hello=[world, welt, verden], foo=bar}, [{}, {meta=model, couch=db}]]]",
-                    row.toString());
+            assertEquals("Row[values=[1, {hello=[world, welt, verden], foo=bar}, [{}, {meta=model, couch=db}]]]", row
+                    .toString());
             assertTrue(row.getValue(0) instanceof Integer);
             assertTrue(row.getValue(1) instanceof Map);
             assertTrue(row.getValue(2) instanceof List);
 
-            CouchDbDataContext dc2 = new CouchDbDataContext(couchDbInstance, new SimpleTableDef("test_table_map_and_list",
-                    new String[] { "foo.hello[0]", "bar[1].couch" }));
+            CouchDbDataContext dc2 = new CouchDbDataContext(couchDbInstance, new SimpleTableDef(
+                    "test_table_map_and_list", new String[] { "foo.hello[0]", "bar[1].couch" }));
             ds = dc2.query().from("test_table_map_and_list").select("foo.hello[0]", "bar[1].couch").execute();
             assertTrue(ds.next());
             assertEquals("Row[values=[world, db]]", ds.getRow().toString());
@@ -138,6 +148,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
 
     }
 
+    @Test
     public void testCreateUpdateDeleteScenario() throws Exception {
         if (!isConfigured()) {
             System.err.println(getInvalidConfigurationMessage());
@@ -165,8 +176,8 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
                 + "Column[name=_rev,columnNumber=1,type=STRING,nullable=false,nativeType=null,columnSize=null], "
                 + "Column[name=bar,columnNumber=2,type=STRING,nullable=null,nativeType=null,columnSize=null], "
                 + "Column[name=baz,columnNumber=3,type=INTEGER,nullable=null,nativeType=null,columnSize=null], "
-                + "Column[name=foo,columnNumber=4,type=STRING,nullable=null,nativeType=null,columnSize=null]]",
-                Arrays.toString(table.getColumns().toArray()));
+                + "Column[name=foo,columnNumber=4,type=STRING,nullable=null,nativeType=null,columnSize=null]]", Arrays
+                        .toString(table.getColumns().toArray()));
 
         // first delete the manually created database!
         dc.executeUpdate(new UpdateScript() {
@@ -182,8 +193,8 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         dc.executeUpdate(new UpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                Table table = callback.createTable(dc.getDefaultSchema(), databaseName).withColumn("foo")
-                        .ofType(ColumnType.STRING).withColumn("greeting").ofType(ColumnType.STRING).execute();
+                Table table = callback.createTable(dc.getDefaultSchema(), databaseName).withColumn("foo").ofType(
+                        ColumnType.STRING).withColumn("greeting").ofType(ColumnType.STRING).execute();
                 assertEquals("[_id, _rev, foo, greeting]", Arrays.toString(table.getColumnNames().toArray()));
             }
         });
@@ -230,6 +241,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         ds.close();
     }
 
+    @Test
     public void testBasicQuery() throws Exception {
         if (!isConfigured()) {
             System.err.println(getInvalidConfigurationMessage());
@@ -258,8 +270,8 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         Schema schema = dc.getMainSchema();
         assertEquals("[" + getDatabaseName() + "]", Arrays.toString(schema.getTableNames().toArray()));
 
-        assertEquals("[_id, _rev, age, gender, name]",
-                Arrays.toString(schema.getTableByName(getDatabaseName()).getColumnNames().toArray()));
+        assertEquals("[_id, _rev, age, gender, name]", Arrays.toString(schema.getTableByName(getDatabaseName())
+                .getColumnNames().toArray()));
         Column idColumn = schema.getTableByName(getDatabaseName()).getColumnByName("_id");
         assertEquals("Column[name=_id,columnNumber=0,type=STRING,nullable=false,nativeType=null,columnSize=null]",
                 idColumn.toString());
@@ -346,6 +358,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         ds.close();
     }
 
+    @Test
     public void testFirstRowAndLastRow() throws Exception {
         if (!isConfigured()) {
             System.err.println(getInvalidConfigurationMessage());
@@ -393,6 +406,7 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         ds2.close();
     }
 
+    @Test
     public void testInsert() throws Exception {
         if (!isConfigured()) {
             System.err.println(getInvalidConfigurationMessage());
@@ -437,5 +451,83 @@ public class CouchDbDataContextTest extends CouchDbTestCase {
         assertEquals("Row[values=[bar, null, 32]]", ds.getRow().toString());
         assertFalse(ds.next());
         ds.close();
+    }
+
+    @Test
+    public void testSelectNestedObject() {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        try (DataSet ds = executeNestedObjectQuery("SELECT name.given FROM " + getDatabaseName() + " WHERE id = 42")) {
+            assertTrue(ds.next());
+            assertEquals("John", (String) ds.getRow().getValue(0));
+            assertFalse(ds.next());
+        }
+    }
+
+    @Test
+    public void testWhereNestedObject() {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        try (DataSet ds = executeNestedObjectQuery("SELECT id FROM " + getDatabaseName()
+                + " WHERE name.given = 'Jane'")) {
+            assertTrue(ds.next());
+            assertEquals(43, ((Number) ds.getRow().getValue(0)).intValue());
+            assertFalse(ds.next());
+        }
+    }
+
+    @Test
+    public void testSelectAndWhereNestedObject() {
+        if (!isConfigured()) {
+            System.err.println(getInvalidConfigurationMessage());
+            return;
+        }
+
+        try (DataSet ds = executeNestedObjectQuery("SELECT name.family FROM " + getDatabaseName()
+                + " WHERE name.given = 'Jane'")) {
+            assertTrue(ds.next());
+            assertEquals("Johnson", (String) ds.getRow().getValue(0));
+            assertFalse(ds.next());
+        }
+    }
+
+    // reusable method for a couple of test cases above
+    private DataSet executeNestedObjectQuery(String sql) {
+     // insert a few records
+        {
+            HashMap<String, String> name = new HashMap<>();
+            name.put("given", "John");
+            name.put("family", "Doe");
+            
+            HashMap<String, Object> map;
+            
+            map = new HashMap<>();
+            map.put("id", 42);
+            map.put("name", name);
+            connector.create(map);
+            
+            name.put("given", "Jane");
+            name.put("family", "Johnson");
+
+            map = new HashMap<>();
+            map.put("id", 43);
+            map.put("name", name);
+            connector.create(map);
+        }
+        
+        final CouchDbDataContext dataContext = new CouchDbDataContext(httpClient);
+        
+        assertTrue(dataContext.getDefaultSchema().getTableNames().contains(getDatabaseName()));
+
+        final Table table = dataContext.getDefaultSchema().getTableByName(getDatabaseName());
+        assertEquals("[_id, _rev, id, name]", table.getColumnNames().toString());
+
+        return dataContext.executeQuery(sql);
     }
 }

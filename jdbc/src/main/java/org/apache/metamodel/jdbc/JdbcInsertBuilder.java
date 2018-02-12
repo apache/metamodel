@@ -24,6 +24,7 @@ import java.util.Arrays;
 
 import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.jdbc.JdbcUtils.JdbcActionType;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.schema.Column;
@@ -83,7 +84,7 @@ final class JdbcInsertBuilder extends AbstractRowInsertionBuilder<JdbcUpdateCall
 			}
 			updateCallback.executeInsert(st, reuseStatement);
 		} catch (SQLException e) {
-			throw JdbcUtils.wrapException(e, "execute insert statement: " + sql);
+			throw JdbcUtils.wrapException(e, "execute insert statement: " + sql, JdbcActionType.UPDATE);
 		} finally {
 			if (_inlineValues) {
 				FileHelper.safeClose(st);

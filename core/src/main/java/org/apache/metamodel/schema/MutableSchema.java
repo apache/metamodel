@@ -36,11 +36,11 @@ public class MutableSchema extends AbstractSchema implements Serializable,
 	private static final long serialVersionUID = 4465197783868238863L;
 
 	private String _name;
-	private final List<MutableTable> _tables;
+	private final List<Table> _tables;
 
 	public MutableSchema() {
 		super();
-		_tables = new ArrayList<MutableTable>();
+		_tables = new ArrayList<Table>();
 	}
 
 	public MutableSchema(String name) {
@@ -48,7 +48,7 @@ public class MutableSchema extends AbstractSchema implements Serializable,
 		_name = name;
 	}
 
-	public MutableSchema(String name, MutableTable... tables) {
+	public MutableSchema(String name, Table... tables) {
 		this(name);
 		setTables(tables);
 	}
@@ -69,17 +69,17 @@ public class MutableSchema extends AbstractSchema implements Serializable,
 	}
 
 
-	public MutableSchema setTables(Collection<? extends MutableTable> tables) {
+	public MutableSchema setTables(Collection<? extends Table> tables) {
 	    clearTables();
-		for (MutableTable table : tables) {
+		for (Table table : tables) {
 			_tables.add(table);
 		}
 		return this;
 	}
 
-	public MutableSchema setTables(MutableTable... tables) {
+	public MutableSchema setTables(Table... tables) {
 	    clearTables();
-		for (MutableTable table : tables) {
+		for (Table table : tables) {
 			_tables.add(table);
 		}
 		return this;
@@ -90,7 +90,7 @@ public class MutableSchema extends AbstractSchema implements Serializable,
 	    return this;
 	}
 
-	public MutableSchema addTable(MutableTable table) {
+	public MutableSchema addTable(Table table) {
 		_tables.add(table);
 		return this;
 	}

@@ -33,6 +33,7 @@ import org.apache.metamodel.couchdb.CouchDbDataContext;
 import org.apache.metamodel.csv.CsvConfiguration;
 import org.apache.metamodel.csv.CsvDataContext;
 import org.apache.metamodel.elasticsearch.nativeclient.ElasticSearchDataContext;
+import org.apache.metamodel.elasticsearch.rest.ElasticSearchRestClient;
 import org.apache.metamodel.elasticsearch.rest.ElasticSearchRestDataContext;
 import org.apache.metamodel.excel.ExcelConfiguration;
 import org.apache.metamodel.excel.ExcelDataContext;
@@ -63,8 +64,6 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoDatabase;
-
-import io.searchbox.client.JestClient;
 
 /**
  * A factory for DataContext objects. This class substantially easens the task
@@ -681,7 +680,8 @@ public class DataContextFactory {
      *       The ElasticSearch index name
      * @return a DataContext object that matches the request
      */
-    public static UpdateableDataContext createElasticSearchDataContext(JestClient client, String indexName) {
+    public static UpdateableDataContext createElasticSearchDataContext(final ElasticSearchRestClient client,
+            final String indexName) {
         return new ElasticSearchRestDataContext(client, indexName);
     }
 
