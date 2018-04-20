@@ -19,7 +19,6 @@
 package org.apache.metamodel.hbase;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -73,6 +72,9 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
         Configuration config = createConfig(configuration);
         _configuration = configuration;
         _connection = createConnection(config);
+
+        // HBaseUpdateCallback updateCallback = new HBaseUpdateCallback(this);
+        // updateCallback.writeRow();
     }
 
     /**
@@ -85,6 +87,9 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
         super(false);
         _configuration = configuration;
         _connection = connection;
+
+        // HBaseUpdateCallback updateCallback = new HBaseUpdateCallback(this);
+        // updateCallback.writeRow();
     }
 
     private Connection createConnection(Configuration config) {
@@ -95,7 +100,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
         }
     }
 
-    private Configuration createConfig(HBaseConfiguration configuration) {
+    static protected Configuration createConfig(HBaseConfiguration configuration) {
         Configuration config = org.apache.hadoop.hbase.HBaseConfiguration.create();
         config.set("hbase.zookeeper.quorum", configuration.getZookeeperHostname());
         config.set("hbase.zookeeper.property.clientPort", Integer.toString(configuration.getZookeeperPort()));
@@ -123,28 +128,28 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
     }
 
     @Override
-    protected Schema getMainSchema() throws MetaModelException {
+    public Schema getMainSchema() throws MetaModelException {
         final MutableSchema schema = new MutableSchema(_configuration.getSchemaName());
 
-        try {
-            SimpleTableDef[] tableDefinitions = _configuration.getTableDefinitions();
-            if (tableDefinitions == null) {
+        SimpleTableDef[] tableDefinitions = _configuration.getTableDefinitions();
+        if (tableDefinitions == null) {
+            try {
                 final HTableDescriptor[] tables = getAdmin().listTables();
                 tableDefinitions = new SimpleTableDef[tables.length];
                 for (int i = 0; i < tables.length; i++) {
                     SimpleTableDef emptyTableDef = new SimpleTableDef(tables[i].getNameAsString(), new String[0]);
                     tableDefinitions[i] = emptyTableDef;
                 }
+            } catch (IllegalArgumentException | IOException e) {
+                throw new MetaModelException(e);
             }
-
-            for (SimpleTableDef tableDef : tableDefinitions) {
-                schema.addTable(new HBaseTable(this, tableDef, schema, _configuration.getDefaultRowKeyType()));
-            }
-
-            return schema;
-        } catch (Exception e) {
-            throw new MetaModelException(e);
         }
+
+        for (SimpleTableDef tableDef : tableDefinitions) {
+            schema.addTable(new HBaseTable(this, tableDef, schema, _configuration.getDefaultRowKeyType()));
+        }
+
+        return schema;
     }
 
     /**
@@ -242,17 +247,6 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
     }
 
     private void setMaxRows(Scan scan, int maxRows) {
-        try {
-            // in old versions of the HBase API, the 'setMaxResultSize' method
-            // is not available
-            Method method = scan.getClass().getMethod("setMaxResultSize", long.class);
-            method.invoke(scan, (long) maxRows);
-            logger.debug("Succesfully set maxRows using Scan.setMaxResultSize({})", maxRows);
-        } catch (Exception e) {
-            logger.debug(
-                    "HBase API does not have Scan.setMaxResultSize(long) method, setting maxRows using PageFilter.", e);
-            scan.setFilter(new PageFilter(maxRows));
-        }
+        scan.setFilter(new PageFilter(maxRows));
     }
-
 }

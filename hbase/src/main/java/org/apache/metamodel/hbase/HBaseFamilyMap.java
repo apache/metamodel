@@ -18,7 +18,6 @@
  */
 package org.apache.metamodel.hbase;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -106,9 +105,9 @@ public class HBaseFamilyMap implements Map<Object, Object> {
             if (sb.length() > 1) {
                 sb.append(',');
             }
-            sb.append(Arrays.toString(entry.getKey()));
+            sb.append(new String(entry.getKey()));
             sb.append('=');
-            sb.append(Arrays.toString(entry.getValue()));
+            sb.append(new String(entry.getValue()));
         }
         sb.append('}');
         return sb.toString();

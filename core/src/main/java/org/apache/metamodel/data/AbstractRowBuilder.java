@@ -40,11 +40,23 @@ public abstract class AbstractRowBuilder<RB extends RowBuilder<?>> implements Ro
         this(table.getColumns());
     }
 
+    public AbstractRowBuilder(Table table, int numberOfValues) {
+        this(table.getColumns(), numberOfValues);
+    }
+
     public AbstractRowBuilder(List<Column> columns) {
         _columns = columns.toArray(new Column[columns.size()]);
         _explicitNulls = new boolean[_columns.length];
         _values = new Object[_columns.length];
         _styles = new Style[_columns.length];
+    }
+
+    public AbstractRowBuilder(List<Column> columns, int numberOfValues) {
+        _columns = columns.toArray(new Column[columns.size()]);
+        _explicitNulls = new boolean[numberOfValues];
+        _values = new Object[numberOfValues];
+        _styles = new Style[numberOfValues];
+        setColumns(columns);
     }
 
     /**
@@ -71,7 +83,8 @@ public abstract class AbstractRowBuilder<RB extends RowBuilder<?>> implements Ro
 
     @Override
     public final Row toRow() {
-        return new DefaultRow(new SimpleDataSetHeader(Arrays.stream(_columns).map(SelectItem::new).collect(Collectors.toList())), _values);
+        return new DefaultRow(new SimpleDataSetHeader(Arrays.stream(_columns).map(SelectItem::new).collect(Collectors
+                .toList())), _values);
     }
 
     @Override
@@ -145,5 +158,23 @@ public abstract class AbstractRowBuilder<RB extends RowBuilder<?>> implements Ro
             }
         }
         return false;
+    }
+
+    public void setColumns(List<Column> columns) {
+        if (columns.size() != _columns.length) {
+            throw new IllegalArgumentException("The amount of columns don't match");
+        }
+        for (int i = 0; i < _columns.length; i++) {
+            _columns[i] = columns.get(i);
+        }
+    }
+
+    public void setValues(Object[] values) {
+        if (values.length != _values.length) {
+            throw new IllegalArgumentException("The amount of values don't match");
+        }
+        for (int i = 0; i < values.length; i++) {
+            _values[i] = values[i];
+        }
     }
 }

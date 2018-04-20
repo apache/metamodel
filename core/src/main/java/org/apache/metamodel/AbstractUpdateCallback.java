@@ -117,7 +117,7 @@ public abstract class AbstractUpdateCallback implements UpdateCallback {
         return update(getTable(tableName));
     }
 
-    private Table getTable(String tableName) {
+    protected Table getTable(String tableName) {
         Table table = getDataContext().getTableByQualifiedLabel(tableName);
         if (table == null) {
             throw new IllegalArgumentException("No such table: " + tableName);
@@ -159,7 +159,7 @@ public abstract class AbstractUpdateCallback implements UpdateCallback {
             UnsupportedOperationException {
         return new DeleteAndInsertBuilder(this, table);
     }
-    
+
     public UpdateSummary getUpdateSummary() {
         return DefaultUpdateSummary.unknownUpdates();
     }

@@ -59,9 +59,13 @@ final class HBaseRow extends AbstractRow implements Row {
             }
             return rowKey;
         }
-
         final int colonIndex = name.indexOf(':');
         if (colonIndex != -1) {
+            /*
+             * I think this is DEATH code! The first line of this method: implementation
+             * _header.getSelectItem(index).getColumn() will always return only a columnfamily with our current
+             * implementations.
+             */
             byte[] family = name.substring(0, colonIndex).getBytes();
             byte[] qualifier = name.substring(colonIndex + 1).getBytes();
             byte[] value = _result.getValue(family, qualifier);
