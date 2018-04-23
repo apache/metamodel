@@ -72,9 +72,6 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
         Configuration config = createConfig(configuration);
         _configuration = configuration;
         _connection = createConnection(config);
-
-        // HBaseUpdateCallback updateCallback = new HBaseUpdateCallback(this);
-        // updateCallback.writeRow();
     }
 
     /**
@@ -87,9 +84,6 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
         super(false);
         _configuration = configuration;
         _connection = connection;
-
-        // HBaseUpdateCallback updateCallback = new HBaseUpdateCallback(this);
-        // updateCallback.writeRow();
     }
 
     private Connection createConnection(Configuration config) {

@@ -39,6 +39,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.metamodel.hbase.HBaseConfiguration;
 
 public class FindQualifiersDriver extends Configured implements Tool {
 
@@ -101,10 +102,10 @@ public class FindQualifiersDriver extends Configured implements Tool {
     protected Configuration createConfig() {
         Configuration config = org.apache.hadoop.hbase.HBaseConfiguration.create();
         config.set("hbase.zookeeper.quorum", "bigdatavm");
-        config.set("hbase.zookeeper.property.clientPort", Integer.toString(2181));
-        config.set("hbase.client.retries.number", Integer.toString(1));
-        config.set("zookeeper.session.timeout", Integer.toString(5000));
-        config.set("zookeeper.recovery.retry", Integer.toString(1));
+        config.set("hbase.zookeeper.property.clientPort", Integer.toString(HBaseConfiguration.DEFAULT_ZOOKEEPER_PORT));
+        config.set("hbase.client.retries.number", Integer.toString(HBaseConfiguration.DEFAULT_HBASE_CLIENT_RETRIES));
+        config.set("zookeeper.session.timeout", Integer.toString(HBaseConfiguration.DEFAULT_ZOOKEEPER_SESSION_TIMEOUT));
+        config.set("zookeeper.recovery.retry", Integer.toString(HBaseConfiguration.DEFAULT_ZOOKEEPER_RECOVERY_RETRIES));
         return config;
     }
 
