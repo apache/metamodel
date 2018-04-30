@@ -82,22 +82,12 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
         throw new UnsupportedOperationException("Use insertInto(String tableName, HBaseColumn[] outputColumns)");
     }
 
-    public HBaseRowInsertionBuilder insertInto(String tableName, HBaseColumn[] outputColumns)
-            throws IllegalArgumentException, IllegalStateException, UnsupportedOperationException {
-        Table table = getTable(tableName);
-        return insertInto(table, outputColumns);
-    }
-
-    public HBaseRowInsertionBuilder insertInto(Table table, HBaseColumn[] outputColumns)
-            throws IllegalArgumentException, IllegalStateException, UnsupportedOperationException {
-        validateTable(table);
-        return new HBaseRowInsertionBuilder(this, table, outputColumns);
-    }
-
-    private void validateTable(Table table) {
-        if (!(table instanceof HBaseTable)) {
-            throw new IllegalArgumentException("Not a valid HBase table: " + table);
+    public HBaseRowInsertionBuilder insertInto(Table table, HBaseColumn[] columns)
+            throws IllegalArgumentException {
+        if (table instanceof HBaseTable) {
+            return new HBaseRowInsertionBuilder(this, (HBaseTable) table, columns);
         }
+        throw new IllegalArgumentException("Not an HBase table: " + table);
     }
 
     protected synchronized void writeRow(HBaseTable hBaseTable, HBaseColumn[] outputColumns, Object[] values) {
@@ -118,10 +108,6 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
     public RowDeletionBuilder deleteFrom(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
         throw new UnsupportedOperationException();
-    }
-
-    public boolean tableAlreadyExists(String tableName) {
-        return _dataContext.getMainSchema().getTableByName(tableName) == null ? false : true;
     }
 
     public HBaseConfiguration getConfiguration() {

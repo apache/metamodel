@@ -26,8 +26,8 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
 
     private final HBaseColumn[] _outputColumns;
 
-    public HBaseRowInsertionBuilder(HBaseUpdateCallback updateCallback, Table table, HBaseColumn[] outputColumns) {
-        super(updateCallback, table, outputColumns.length);
+    public HBaseRowInsertionBuilder(HBaseUpdateCallback updateCallback, HBaseTable table, HBaseColumn[] outputColumns) {
+        super(updateCallback, table.setColumns(outputColumns));
         _outputColumns = outputColumns;
     }
 
@@ -44,7 +44,7 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
                 int indexOfTablesColumn = 0;
 
                 while (!matchingColumnFound && indexOfTablesColumn < table.getColumnCount()) {
-                    if (outputColumns[i].getColumnFamily().equals(table.getColumn(indexOfTablesColumn).getName())) {
+                    if (outputColumns[i].equals(table.getColumn(indexOfTablesColumn))) {
                         matchingColumnFound = true;
                     } else {
                         indexOfTablesColumn++;

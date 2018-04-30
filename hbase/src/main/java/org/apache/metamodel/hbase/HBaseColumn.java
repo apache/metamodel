@@ -18,33 +18,117 @@
  */
 package org.apache.metamodel.hbase;
 
-public final class HBaseColumn {
-    private String columnFamily;
-    private String qualifier;
+import org.apache.metamodel.schema.AbstractColumn;
+import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.schema.ColumnTypeImpl;
+import org.apache.metamodel.schema.SuperColumnType;
+import org.apache.metamodel.schema.Table;
 
-    public HBaseColumn() {
-        columnFamily = "";
-        qualifier = "";
+public final class HBaseColumn extends AbstractColumn {
+    private final String columnFamily;
+    private final String qualifier;
+    private final Table table;
+    private final boolean primaryKey;
+    private final ColumnType columnType;
+    private final int columnNumber;
+
+    public HBaseColumn(String columnFamily, Table table) {
+        this(columnFamily, null, table, -1);
     }
 
-    public HBaseColumn(String columnFamily, String qualifier) {
+    public HBaseColumn(String columnFamily, String qualifier, Table table) {
+        this(columnFamily, qualifier, table, -1);
+    }
+
+    public HBaseColumn(String columnFamily, Table table, int columnNumber) {
+        this(columnFamily, null, table, columnNumber);
+    }
+
+    public HBaseColumn(String columnFamily, String qualifier, Table table, int columnNumber) {
+        if (columnFamily == null) {
+            throw new IllegalArgumentException("Column family isn't allowed to be null.");
+        } else if (table == null) {
+            throw new IllegalArgumentException("Table isn't allowed to be null.");
+        }
+        
         this.columnFamily = columnFamily;
         this.qualifier = qualifier;
+        this.table = table;
+        this.columnNumber = columnNumber;
+
+        primaryKey = HBaseDataContext.FIELD_ID.equals(columnFamily);
+        
+        if (primaryKey || qualifier != null) {
+            columnType = new ColumnTypeImpl("BYTE[]", SuperColumnType.LITERAL_TYPE);
+        } else {
+            columnType = ColumnType.LIST;
+        }
     }
 
     public String getColumnFamily() {
         return columnFamily;
     }
 
-    public void setColumnFamily(String columnFamily) {
-        this.columnFamily = columnFamily;
-    }
-
     public String getQualifier() {
         return qualifier;
     }
 
-    public void setQualifier(String qualifier) {
-        this.qualifier = qualifier;
+    @Override
+    public String getName() {
+        if (qualifier == null) {
+            return columnFamily;
+        }
+        return columnFamily + ":" + qualifier;
+    }
+
+    @Override
+    public int getColumnNumber() {
+        return columnNumber;
+    }
+
+    @Override
+    public ColumnType getType() {
+        return columnType;
+    }
+
+    @Override
+    public Table getTable() {
+        return table;
+    }
+
+    @Override
+    public Boolean isNullable() {
+        return !primaryKey;
+    }
+
+    @Override
+    public String getRemarks() {
+        return null;
+    }
+
+    @Override
+    public Integer getColumnSize() {
+        return null;
+    }
+
+    @Override
+    public String getNativeType() {
+        // TODO: maybe change if no qualifier is present (and not identifier column).
+        return "byte[]";
+    }
+
+    @Override
+    public boolean isIndexed() {
+        return false;
+    }
+
+    @Override
+    public boolean isPrimaryKey() {
+        return primaryKey;
+    }
+
+    @Override
+    public String getQuote() {
+        return null;
     }
 }
