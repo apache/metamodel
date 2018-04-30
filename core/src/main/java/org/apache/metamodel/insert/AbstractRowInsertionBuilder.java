@@ -18,14 +18,14 @@
  */
 package org.apache.metamodel.insert;
 
-import java.util.List;
-
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.data.AbstractRowBuilder;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
+
+import java.util.List;
 
 /**
  * Abstract implementation of the {@link RowInsertionBuilder} interface,
@@ -40,12 +40,6 @@ public abstract class AbstractRowInsertionBuilder<U extends UpdateCallback> exte
 
     public AbstractRowInsertionBuilder(U updateCallback, Table table) {
         super(table);
-        _updateCallback = updateCallback;
-        _table = table;
-    }
-
-    public AbstractRowInsertionBuilder(U updateCallback, Table table, int numberOfValues) {
-        super(table, numberOfValues);
         _updateCallback = updateCallback;
         _table = table;
     }
