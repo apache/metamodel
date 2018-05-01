@@ -30,17 +30,17 @@ import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Delete;
+import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.metamodel.MetaModelException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class HBaseWriter extends Configured {
 
-    static final byte[] INFO_COLUMNFAMILY = Bytes.toBytes("info");
-    static final byte[] NAME_QUALIFIER = Bytes.toBytes("name");
-    static final byte[] LOCATION_QUALIFIER = Bytes.toBytes("location");
-    static final byte[] DESCRIPTION_QUALIFIER = Bytes.toBytes("description");
+    private static final Logger logger = LoggerFactory.getLogger(HBaseWriter.class);
 
     private final Connection _connection;
 
@@ -86,13 +86,22 @@ public final class HBaseWriter extends Configured {
         try {
             Table table = _connection.getTable(TableName.valueOf(hBaseTable.getName()));
             try {
-                table.delete(new Delete(Bytes.toBytes(key.toString())));
+                if (rowExists(table, key) == true) {
+                    table.delete(new Delete(Bytes.toBytes(key.toString())));
+                } else {
+                    logger.warn("Rowkey with value " + key.toString() + " doesn't exist in the table");
+                }
             } finally {
                 table.close();
             }
         } finally {
             _connection.close();
         }
+    }
+
+    private boolean rowExists(Table table, Object key) throws IOException {
+        Get get = new Get(Bytes.toBytes(key.toString()));
+        return (table.get(get).isEmpty()) == true ? false : true;
     }
 
     public void createTable(String tableName, Set<String> columnFamilies) throws IOException {

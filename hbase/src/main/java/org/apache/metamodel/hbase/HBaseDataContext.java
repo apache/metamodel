@@ -35,6 +35,9 @@ import org.apache.hadoop.hbase.filter.PageFilter;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
+import org.apache.metamodel.UpdateScript;
+import org.apache.metamodel.UpdateSummary;
+import org.apache.metamodel.UpdateableDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Row;
@@ -53,7 +56,7 @@ import org.slf4j.LoggerFactory;
 /**
  * MetaModel adaptor for Apache HBase.
  */
-public class HBaseDataContext extends QueryPostprocessDataContext {
+public class HBaseDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(HBaseDataContext.class);
 
@@ -242,5 +245,13 @@ public class HBaseDataContext extends QueryPostprocessDataContext {
 
     private void setMaxRows(Scan scan, int maxRows) {
         scan.setFilter(new PageFilter(maxRows));
+    }
+
+    @Override
+    public UpdateSummary executeUpdate(UpdateScript update) {
+        final HBaseUpdateCallback callback = new HBaseUpdateCallback(this);
+        update.run(callback);
+
+        return callback.getUpdateSummary();
     }
 }

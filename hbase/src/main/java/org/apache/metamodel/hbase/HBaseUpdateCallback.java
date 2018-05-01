@@ -79,11 +79,10 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
     @Override
     public RowInsertionBuilder insertInto(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        throw new UnsupportedOperationException("Use insertInto(String tableName, HBaseColumn[] outputColumns)");
+        throw new UnsupportedOperationException("Use insertInto(Table table, HBaseColumn[] outputColumns)");
     }
 
-    public HBaseRowInsertionBuilder insertInto(Table table, HBaseColumn[] columns)
-            throws IllegalArgumentException {
+    public HBaseRowInsertionBuilder insertInto(Table table, HBaseColumn[] columns) throws IllegalArgumentException {
         if (table instanceof HBaseTable) {
             return new HBaseRowInsertionBuilder(this, (HBaseTable) table, columns);
         }
@@ -107,7 +106,25 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
     @Override
     public RowDeletionBuilder deleteFrom(Table table) throws IllegalArgumentException, IllegalStateException,
             UnsupportedOperationException {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(
+                "Use deleteFrom(HBaseUpdateCallback updateCallback, Table table, Object key)");
+    }
+
+    public HBaseRowDeletionBuilder deleteFrom(HBaseUpdateCallback updateCallback, Table table)
+            throws IllegalArgumentException {
+        if (table instanceof HBaseTable) {
+            return new HBaseRowDeletionBuilder(this, (HBaseTable) table);
+        }
+        throw new IllegalArgumentException("Not an HBase table: " + table);
+    }
+
+    protected synchronized void deleteRow(HBaseTable hBaseTable, Object key) {
+        try {
+            final HBaseWriter HbaseWriter = new HBaseWriter(HBaseDataContext.createConfig(_configuration));
+            HbaseWriter.deleteRow(hBaseTable, key);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public HBaseConfiguration getConfiguration() {
