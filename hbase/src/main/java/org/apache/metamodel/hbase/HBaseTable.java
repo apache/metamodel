@@ -92,7 +92,7 @@ final class HBaseTable extends MutableTable {
     }
 
     @Override
-    protected List<Column> getColumnsInternal() {
+    protected synchronized List<Column> getColumnsInternal() {
         final List<Column> columnsInternal = super.getColumnsInternal();
         if (columnsInternal.isEmpty() && _dataContext != null) {
             try {
