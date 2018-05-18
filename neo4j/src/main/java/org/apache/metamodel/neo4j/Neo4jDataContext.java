@@ -19,6 +19,8 @@
 package org.apache.metamodel.neo4j;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +38,7 @@ import org.apache.metamodel.data.DocumentSource;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
@@ -158,59 +161,178 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
     }
 
     public SimpleTableDef[] detectTableDefs() {
-        List<SimpleTableDef> tableDefs = new ArrayList<SimpleTableDef>();
-
-        String labelsJsonString = _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot + "/labels"));
-
-        JSONArray labelsJsonArray;
+        final List<SimpleTableDef> tableDefs = new ArrayList<>();
+        final String labelsJsonString = _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot + "/labels"));
+        final JSONArray labelsJsonArray;
+        
         try {
             labelsJsonArray = new JSONArray(labelsJsonString);
+            
             for (int i = 0; i < labelsJsonArray.length(); i++) {
-                String label = labelsJsonArray.getString(i);
-
-                List<JSONObject> nodesPerLabel = getAllNodesPerLabel(label);
-
-                List<String> propertiesPerLabel = new ArrayList<String>();
-                for (JSONObject node : nodesPerLabel) {
-                    List<String> propertiesPerNode = getAllPropertiesPerNode(node);
-                    for (String property : propertiesPerNode) {
-                        if (!propertiesPerLabel.contains(property)) {
-                            propertiesPerLabel.add(property);
-                        }
-                    }
-                }
-
-                Set<String> relationshipPropertiesPerLabel = new LinkedHashSet<String>();
-                for (JSONObject node : nodesPerLabel) {
-                    Integer nodeId = (Integer) node.getJSONObject("metadata").get("id");
-                    List<JSONObject> relationshipsPerNode = getOutgoingRelationshipsPerNode(nodeId);
-                    for (JSONObject relationship : relationshipsPerNode) {
-                        // Add the relationship as a column in the table
-                        String relationshipName = relationship.getString("type");
-                        String relationshipNameProperty = RELATIONSHIP_PREFIX + relationshipName;
-                        if (!relationshipPropertiesPerLabel.contains(relationshipNameProperty)) {
-                            relationshipPropertiesPerLabel.add(relationshipNameProperty);
-                        }
-
-                        // Add all the relationship properties as table columns
-                        List<String> propertiesPerRelationship = getAllPropertiesPerRelationship(relationship);
-                        relationshipPropertiesPerLabel.addAll(propertiesPerRelationship);
-                    }
-                }
-                propertiesPerLabel.addAll(relationshipPropertiesPerLabel);
-
-                // Do not add a table if label has no nodes (empty tables are
-                // considered non-existent)
-                if (!nodesPerLabel.isEmpty()) {
-                    SimpleTableDef tableDef = new SimpleTableDef(label,
-                            propertiesPerLabel.toArray(new String[propertiesPerLabel.size()]));
-                    tableDefs.add(tableDef);
-                }
+                fillTableDefsFromLabel(labelsJsonArray.getString(i), tableDefs);
             }
+            
             return tableDefs.toArray(new SimpleTableDef[tableDefs.size()]);
-        } catch (JSONException e) {
+        } catch (final JSONException e) {
             logger.error("Error occured in parsing JSON while detecting the schema: ", e);
             throw new IllegalStateException(e);
+        }
+    }
+    
+    private void fillTableDefsFromLabel(final String label, final List<SimpleTableDef> tableDefs) throws JSONException {
+        final List<JSONObject> nodesPerLabel = getAllNodesPerLabel(label);
+        final List<String> propertiesPerLabel = getPropertiesFromLabelNodes(nodesPerLabel);
+        final Set<String> relationshipPropertiesPerLabel = new LinkedHashSet<>();
+
+        for (final JSONObject node : nodesPerLabel) {
+            final Long nodeId = (Long) node.getJSONObject("metadata").get("id");
+            fillRelationshipPropertiesPerLabel(nodeId, relationshipPropertiesPerLabel); 
+        }
+        
+        propertiesPerLabel.addAll(relationshipPropertiesPerLabel);
+
+        // Do not add a table if label has no nodes (empty tables are considered non-existent)
+        if (!nodesPerLabel.isEmpty()) {
+            final String[] columnNames = propertiesPerLabel.toArray(new String[propertiesPerLabel.size()]);
+            final ColumnType[] columnTypes = guessColumnTypesFromValues(nodesPerLabel.get(0),
+                    new ArrayList<>(Arrays.asList(columnNames)));
+            final SimpleTableDef tableDef = new SimpleTableDef(label, columnNames, columnTypes);
+            tableDefs.add(tableDef);
+        } 
+    }
+
+    private void fillRelationshipPropertiesPerLabel(final Long nodeId, final Set<String> relationshipPropertiesPerLabel)
+            throws JSONException {
+        final List<JSONObject> relationshipsPerNode = getOutgoingRelationshipsPerNode(nodeId);
+
+        for (final JSONObject relationship : relationshipsPerNode) {
+            // Add the relationship as a column in the table
+            final String relationshipName = relationship.getString("type");
+            final String relationshipNameProperty = RELATIONSHIP_PREFIX + relationshipName;
+            
+            if (!relationshipPropertiesPerLabel.contains(relationshipNameProperty)) {
+                relationshipPropertiesPerLabel.add(relationshipNameProperty);
+            }
+
+            // Add all the relationship properties as table columns
+            final List<String> propertiesPerRelationship = getAllPropertiesPerRelationship(relationship);
+            relationshipPropertiesPerLabel.addAll(propertiesPerRelationship);
+        }
+    }
+
+    private List<String> getPropertiesFromLabelNodes(final List<JSONObject> nodesPerLabel) {
+        final List<String> propertiesPerLabel = new ArrayList<>();
+        
+        for (final JSONObject node : nodesPerLabel) {
+            final List<String> propertiesPerNode = getAllPropertiesPerNode(node);
+
+            for (final String property : propertiesPerNode) {
+                if (!propertiesPerLabel.contains(property)) {
+                    propertiesPerLabel.add(property);
+                }
+            }
+        }
+        
+        return propertiesPerLabel;
+    }
+
+    private ColumnType[] guessColumnTypesFromValues(final JSONObject jsonObject, final List<String> columnNames) {
+        final List<ColumnType> columnTypes = new ArrayList<>();
+        
+        try {
+            fillColumnTypesFromMetadata(jsonObject, columnNames, columnTypes);
+            fillColumnTypesFromData(jsonObject, columnNames, columnTypes);
+        } catch (final JSONException e) {
+            // ignore missing data
+        }
+        
+        fillColumnTypesFromRemainingColumns(columnNames, columnTypes);
+        return columnTypes.toArray(new ColumnType[columnTypes.size()]);
+    }
+
+    private void fillColumnTypesFromData(final JSONObject jsonObject, final List<String> columnNames,
+            final List<ColumnType> columnTypes) throws JSONException {
+        final String dataKey = "data";
+        
+        if (jsonObject.has(dataKey)) {
+            final JSONObject data = jsonObject.getJSONObject(dataKey);
+            final Iterator keysIterator = data.keys();
+
+            while (keysIterator.hasNext()) {
+                final String key = (String) keysIterator.next();
+                final ColumnType type = getTypeFromValue(data, key);
+                columnTypes.add(type);
+                removeIfAvailable(columnNames, key);
+            }
+        }
+    }
+
+    private void fillColumnTypesFromMetadata(final JSONObject jsonObject, final List<String> columnNames,
+            final List<ColumnType> columnTypes) throws JSONException {
+        final String metadataKey = "metadata";
+        
+        if (jsonObject.has(metadataKey)) {
+            final JSONObject metadata = jsonObject.getJSONObject(metadataKey);
+
+            if (metadata.has("id")) {
+                columnTypes.add(ColumnType.BIGINT);
+                removeIfAvailable(columnNames, "_id");
+            }
+        }
+    }
+
+    private void fillColumnTypesFromRemainingColumns(final List<String> columnNames,
+            final List<ColumnType> columnTypes) {
+        for (final String remainingColumnName : columnNames) {
+            if (remainingColumnName.contains("rel_")) {
+                if (remainingColumnName.contains("#")) {
+                    columnTypes.add(ColumnType.ARRAY);
+                } else {
+                    columnTypes.add(ColumnType.BIGINT);
+                }
+            } else {
+                columnTypes.add(ColumnType.STRING);
+            }
+        }
+    }
+
+    private void removeIfAvailable(final List<String> list, final String key) {
+        if (list.contains(key)) {
+            list.remove(key);
+        }
+    }
+
+    private ColumnType getTypeFromValue(final JSONObject data, final String key) {
+        try {
+            data.getBoolean(key);
+            return ColumnType.BOOLEAN;
+        } catch (final JSONException e1) {
+            try {
+                data.getInt(key);
+                return ColumnType.INTEGER;
+            } catch (final JSONException e2) {
+                try {
+                    data.getLong(key);
+                    return ColumnType.BIGINT;
+                } catch (final JSONException e3) {
+                    try {
+                        data.getDouble(key);
+                        return ColumnType.DOUBLE;
+                    } catch (final JSONException e4) {
+                        try {
+                            data.getJSONArray(key);
+                            return ColumnType.ARRAY;
+                        } catch (final JSONException e5) {
+                            try {
+                                data.getJSONObject(key);
+                                return ColumnType.MAP;
+                            } catch (final JSONException e6) {
+                                return ColumnType.STRING;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -236,8 +358,8 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         }
     }
 
-    private List<JSONObject> getOutgoingRelationshipsPerNode(Integer nodeId) {
-        List<JSONObject> outgoingRelationshipsPerNode = new ArrayList<JSONObject>();
+    private List<JSONObject> getOutgoingRelationshipsPerNode(final Long nodeId) {
+        List<JSONObject> outgoingRelationshipsPerNode = new ArrayList<>();
 
         String outgoingRelationshipsPerNodeJsonString = _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot
                 + "/node/" + nodeId + "/relationships/out"));
