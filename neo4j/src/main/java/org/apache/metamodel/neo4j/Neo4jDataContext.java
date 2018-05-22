@@ -19,8 +19,6 @@
 package org.apache.metamodel.neo4j;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,10 +33,10 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DocumentSource;
+import org.apache.metamodel.neo4j.utils.ColumnTypeResolver;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
@@ -194,9 +192,9 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         // Do not add a table if label has no nodes (empty tables are considered non-existent)
         if (!nodesPerLabel.isEmpty()) {
             final String[] columnNames = propertiesPerLabel.toArray(new String[propertiesPerLabel.size()]);
-            final ColumnType[] columnTypes = guessColumnTypesFromValues(nodesPerLabel.get(0),
-                    new ArrayList<>(Arrays.asList(columnNames)));
-            final SimpleTableDef tableDef = new SimpleTableDef(label, columnNames, columnTypes);
+            final ColumnTypeResolver columnTypeResolver = new ColumnTypeResolver();
+            final SimpleTableDef tableDef = new SimpleTableDef(label, columnNames,
+                    columnTypeResolver.getColumnTypes(nodesPerLabel.get(0), columnNames));
             tableDefs.add(tableDef);
         } 
     }
@@ -234,106 +232,6 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         }
         
         return propertiesPerLabel;
-    }
-
-    private ColumnType[] guessColumnTypesFromValues(final JSONObject jsonObject, final List<String> columnNames) {
-        final List<ColumnType> columnTypes = new ArrayList<>();
-        
-        try {
-            fillColumnTypesFromMetadata(jsonObject, columnNames, columnTypes);
-            fillColumnTypesFromData(jsonObject, columnNames, columnTypes);
-        } catch (final JSONException e) {
-            // ignore missing data
-        }
-        
-        fillColumnTypesFromRemainingColumns(columnNames, columnTypes);
-        return columnTypes.toArray(new ColumnType[columnTypes.size()]);
-    }
-
-    private void fillColumnTypesFromData(final JSONObject jsonObject, final List<String> columnNames,
-            final List<ColumnType> columnTypes) throws JSONException {
-        final String dataKey = "data";
-        
-        if (jsonObject.has(dataKey)) {
-            final JSONObject data = jsonObject.getJSONObject(dataKey);
-            final Iterator keysIterator = data.keys();
-
-            while (keysIterator.hasNext()) {
-                final String key = (String) keysIterator.next();
-                final ColumnType type = getTypeFromValue(data, key);
-                columnTypes.add(type);
-                removeIfAvailable(columnNames, key);
-            }
-        }
-    }
-
-    private void fillColumnTypesFromMetadata(final JSONObject jsonObject, final List<String> columnNames,
-            final List<ColumnType> columnTypes) throws JSONException {
-        final String metadataKey = "metadata";
-        
-        if (jsonObject.has(metadataKey)) {
-            final JSONObject metadata = jsonObject.getJSONObject(metadataKey);
-
-            if (metadata.has("id")) {
-                columnTypes.add(ColumnType.BIGINT);
-                removeIfAvailable(columnNames, "_id");
-            }
-        }
-    }
-
-    private void fillColumnTypesFromRemainingColumns(final List<String> columnNames,
-            final List<ColumnType> columnTypes) {
-        for (final String remainingColumnName : columnNames) {
-            if (remainingColumnName.contains("rel_")) {
-                if (remainingColumnName.contains("#")) {
-                    columnTypes.add(ColumnType.ARRAY);
-                } else {
-                    columnTypes.add(ColumnType.BIGINT);
-                }
-            } else {
-                columnTypes.add(ColumnType.STRING);
-            }
-        }
-    }
-
-    private void removeIfAvailable(final List<String> list, final String key) {
-        if (list.contains(key)) {
-            list.remove(key);
-        }
-    }
-
-    private ColumnType getTypeFromValue(final JSONObject data, final String key) {
-        try {
-            data.getBoolean(key);
-            return ColumnType.BOOLEAN;
-        } catch (final JSONException e1) {
-            try {
-                data.getInt(key);
-                return ColumnType.INTEGER;
-            } catch (final JSONException e2) {
-                try {
-                    data.getLong(key);
-                    return ColumnType.BIGINT;
-                } catch (final JSONException e3) {
-                    try {
-                        data.getDouble(key);
-                        return ColumnType.DOUBLE;
-                    } catch (final JSONException e4) {
-                        try {
-                            data.getJSONArray(key);
-                            return ColumnType.ARRAY;
-                        } catch (final JSONException e5) {
-                            try {
-                                data.getJSONObject(key);
-                                return ColumnType.MAP;
-                            } catch (final JSONException e6) {
-                                return ColumnType.STRING;
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     private List<String> getAllPropertiesPerRelationship(JSONObject relationship) {
