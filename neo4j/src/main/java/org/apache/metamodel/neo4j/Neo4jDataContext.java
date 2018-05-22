@@ -183,7 +183,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         final Set<String> relationshipPropertiesPerLabel = new LinkedHashSet<>();
 
         for (final JSONObject node : nodesPerLabel) {
-            final Long nodeId = (Long) node.getJSONObject("metadata").get("id");
+            final Integer nodeId = (Integer) node.getJSONObject("metadata").get("id");
             fillRelationshipPropertiesPerLabel(nodeId, relationshipPropertiesPerLabel); 
         }
         
@@ -199,7 +199,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         } 
     }
 
-    private void fillRelationshipPropertiesPerLabel(final Long nodeId, final Set<String> relationshipPropertiesPerLabel)
+    private void fillRelationshipPropertiesPerLabel(final Integer nodeId, final Set<String> relationshipPropertiesPerLabel)
             throws JSONException {
         final List<JSONObject> relationshipsPerNode = getOutgoingRelationshipsPerNode(nodeId);
 
@@ -256,7 +256,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         }
     }
 
-    private List<JSONObject> getOutgoingRelationshipsPerNode(final Long nodeId) {
+    private List<JSONObject> getOutgoingRelationshipsPerNode(final Integer nodeId) {
         List<JSONObject> outgoingRelationshipsPerNode = new ArrayList<>();
 
         String outgoingRelationshipsPerNodeJsonString = _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot
