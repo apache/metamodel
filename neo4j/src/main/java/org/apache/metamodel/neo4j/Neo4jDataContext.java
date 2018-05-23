@@ -167,55 +167,59 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
             labelsJsonArray = new JSONArray(labelsJsonString);
             
             for (int i = 0; i < labelsJsonArray.length(); i++) {
-                fillTableDefsFromLabel(labelsJsonArray.getString(i), tableDefs);
+                final SimpleTableDef tableDefFromLabel = createTableDefFromLabel(labelsJsonArray.getString(i));
+                
+                if (tableDefFromLabel != null) {
+                    tableDefs.add(tableDefFromLabel);
+                }
             }
             
             return tableDefs.toArray(new SimpleTableDef[tableDefs.size()]);
         } catch (final JSONException e) {
-            logger.error("Error occured in parsing JSON while detecting the schema: ", e);
+            logger.error("Error occurred in parsing JSON while detecting the schema: ", e);
             throw new IllegalStateException(e);
         }
     }
     
-    private void fillTableDefsFromLabel(final String label, final List<SimpleTableDef> tableDefs) throws JSONException {
+    private SimpleTableDef createTableDefFromLabel(final String label) throws JSONException {
         final List<JSONObject> nodesPerLabel = getAllNodesPerLabel(label);
         final List<String> propertiesPerLabel = getPropertiesFromLabelNodes(nodesPerLabel);
         final Set<String> relationshipPropertiesPerLabel = new LinkedHashSet<>();
 
         for (final JSONObject node : nodesPerLabel) {
             final Integer nodeId = (Integer) node.getJSONObject("metadata").get("id");
-            fillRelationshipPropertiesPerLabel(nodeId, relationshipPropertiesPerLabel); 
+            final Set<String> relationshipPropertiesForNode = createRelationshipPropertiesForNode(nodeId);
+            relationshipPropertiesPerLabel.addAll(relationshipPropertiesForNode);
         }
         
         propertiesPerLabel.addAll(relationshipPropertiesPerLabel);
 
-        // Do not add a table if label has no nodes (empty tables are considered non-existent)
-        if (!nodesPerLabel.isEmpty()) {
+        if (nodesPerLabel.isEmpty()) { 
+            return null; // Do not add a table if label has no nodes (empty tables are considered non-existent)
+        } else {
             final String[] columnNames = propertiesPerLabel.toArray(new String[propertiesPerLabel.size()]);
             final ColumnTypeResolver columnTypeResolver = new ColumnTypeResolver();
-            final SimpleTableDef tableDef = new SimpleTableDef(label, columnNames,
+            return new SimpleTableDef(label, columnNames,
                     columnTypeResolver.getColumnTypes(nodesPerLabel.get(0), columnNames));
-            tableDefs.add(tableDef);
         } 
     }
 
-    private void fillRelationshipPropertiesPerLabel(final Integer nodeId, final Set<String> relationshipPropertiesPerLabel)
-            throws JSONException {
+    private Set<String> createRelationshipPropertiesForNode(final Integer nodeId) throws JSONException {
         final List<JSONObject> relationshipsPerNode = getOutgoingRelationshipsPerNode(nodeId);
+        final Set<String> relationshipProperties = new LinkedHashSet<>();
 
         for (final JSONObject relationship : relationshipsPerNode) {
             // Add the relationship as a column in the table
             final String relationshipName = relationship.getString("type");
             final String relationshipNameProperty = RELATIONSHIP_PREFIX + relationshipName;
+            relationshipProperties.add(relationshipNameProperty);
             
-            if (!relationshipPropertiesPerLabel.contains(relationshipNameProperty)) {
-                relationshipPropertiesPerLabel.add(relationshipNameProperty);
-            }
-
             // Add all the relationship properties as table columns
             final List<String> propertiesPerRelationship = getAllPropertiesPerRelationship(relationship);
-            relationshipPropertiesPerLabel.addAll(propertiesPerRelationship);
+            relationshipProperties.addAll(propertiesPerRelationship);
         }
+        
+        return relationshipProperties;
     }
 
     private List<String> getPropertiesFromLabelNodes(final List<JSONObject> nodesPerLabel) {
@@ -235,14 +239,17 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
     }
 
     private List<String> getAllPropertiesPerRelationship(JSONObject relationship) {
-        List<String> propertyNames = new ArrayList<String>();
+        final List<String> propertyNames = new ArrayList<>();
         try {
-            String relationshipName = RELATIONSHIP_PREFIX + relationship.getJSONObject("metadata").getString("type");
-            JSONObject relationshipPropertiesJSONObject = relationship.getJSONObject("data");
+            final String relationshipName =
+                    RELATIONSHIP_PREFIX + relationship.getJSONObject("metadata").getString("type");
+            final JSONObject relationshipPropertiesJSONObject = relationship.getJSONObject("data");
+            
             if (relationshipPropertiesJSONObject.length() > 0) {
-                JSONArray relationshipPropertiesNamesJSONArray = relationshipPropertiesJSONObject.names();
+                final JSONArray relationshipPropertiesNamesJSONArray = relationshipPropertiesJSONObject.names();
+                
                 for (int i = 0; i < relationshipPropertiesNamesJSONArray.length(); i++) {
-                    String propertyName = relationshipName + RELATIONSHIP_COLUMN_SEPARATOR
+                    final String propertyName = relationshipName + RELATIONSHIP_COLUMN_SEPARATOR
                             + relationshipPropertiesNamesJSONArray.getString(i);
                     if (!propertyNames.contains(propertyName)) {
                         propertyNames.add(propertyName);
@@ -250,30 +257,30 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
                 }
             }
             return propertyNames;
-        } catch (JSONException e) {
-            logger.error("Error occured in parsing JSON while getting relationship properties: ", e);
+        } catch (final JSONException e) {
+            logger.error("Error occurred in parsing JSON while getting relationship properties: ", e);
             throw new IllegalStateException(e);
         }
     }
 
     private List<JSONObject> getOutgoingRelationshipsPerNode(final Integer nodeId) {
-        List<JSONObject> outgoingRelationshipsPerNode = new ArrayList<>();
-
-        String outgoingRelationshipsPerNodeJsonString = _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot
-                + "/node/" + nodeId + "/relationships/out"));
-
-        JSONArray outgoingRelationshipsPerNodeJsonArray;
+        final List<JSONObject> outgoingRelationshipsPerNode = new ArrayList<>();
+        final String outgoingRelationshipsPerNodeJsonString = _requestWrapper.executeRestRequest(
+                new HttpGet(_serviceRoot + "/node/" + nodeId + "/relationships/out"));
+        final JSONArray outgoingRelationshipsPerNodeJsonArray;
+        
         try {
             outgoingRelationshipsPerNodeJsonArray = new JSONArray(outgoingRelationshipsPerNodeJsonString);
             for (int i = 0; i < outgoingRelationshipsPerNodeJsonArray.length(); i++) {
-                JSONObject relationship = outgoingRelationshipsPerNodeJsonArray.getJSONObject(i);
+                final JSONObject relationship = outgoingRelationshipsPerNodeJsonArray.getJSONObject(i);
                 if (!outgoingRelationshipsPerNode.contains(relationship)) {
                     outgoingRelationshipsPerNode.add(relationship);
                 }
             }
             return outgoingRelationshipsPerNode;
-        } catch (JSONException e) {
-            logger.error("Error occured in parsing JSON while detecting outgoing relationships for node: " + nodeId, e);
+        } catch (final JSONException e) {
+            logger.error("Error occurred in parsing JSON while detecting outgoing relationships for node: " + nodeId,
+                    e);
             throw new IllegalStateException(e);
         }
     }
@@ -293,7 +300,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
             }
             return allNodesPerLabel;
         } catch (JSONException e) {
-            logger.error("Error occured in parsing JSON while detecting the nodes for a label: " + label, e);
+            logger.error("Error occurred in parsing JSON while detecting the nodes for a label: " + label, e);
             throw new IllegalStateException(e);
         }
     }
@@ -318,7 +325,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
             }
             return properties;
         } catch (JSONException e) {
-            logger.error("Error occured in parsing JSON while detecting the properties of a node: " + node, e);
+            logger.error("Error occurred in parsing JSON while detecting the properties of a node: " + node, e);
             throw new IllegalStateException(e);
         }
     }
@@ -334,7 +341,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
                 final List<SelectItem> selectItems = columns.stream().map(SelectItem::new).collect(Collectors.toList());
                 dataSet = new Neo4jDataSet(selectItems, resultJSONObject);
             } catch (JSONException e) {
-                logger.error("Error occured in parsing JSON while materializing the schema: ", e);
+                logger.error("Error occurred in parsing JSON while materializing the schema: ", e);
                 throw new IllegalStateException(e);
             }
 
@@ -366,7 +373,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
             Number value = (Number) valueJSONArray.get(0);
             return value;
         } catch (JSONException e) {
-            logger.error("Error occured in parsing JSON response: ", e);
+            logger.error("Error occurred in parsing JSON response: ", e);
             // Do not throw an exception here. Returning null here will make
             // MetaModel attempt to count records manually and therefore recover
             // from the error.

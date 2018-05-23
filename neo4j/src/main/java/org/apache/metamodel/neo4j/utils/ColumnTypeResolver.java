@@ -24,10 +24,15 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.metamodel.schema.ColumnType;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ColumnTypeResolver {
+    private static final Logger logger = LoggerFactory.getLogger(ColumnTypeResolver.class);
+    
     public ColumnType[] getColumnTypes(final JSONObject jsonObject, final String[] columnNamesArray) {
         final List<String> columnNames = new ArrayList<>(Arrays.asList(columnNamesArray)); 
         final List<ColumnType> columnTypes = new ArrayList<>();
@@ -49,7 +54,7 @@ public class ColumnTypeResolver {
 
         if (jsonObject.has(dataKey)) {
             final JSONObject data = jsonObject.getJSONObject(dataKey);
-            final Iterator keysIterator = data.keys();
+            final Iterator<?> keysIterator = data.keys();
 
             while (keysIterator.hasNext()) {
                 final String key = (String) keysIterator.next();
@@ -96,22 +101,26 @@ public class ColumnTypeResolver {
     }
 
     private ColumnType getTypeFromValue(final JSONObject data, final String key) {
-        final BooleanColumnTypeHandler booleanHandler = new BooleanColumnTypeHandler();
-        final IntegerColumnTypeHandler integerHandler = new IntegerColumnTypeHandler();
-        final LongColumnTypeHandler longHandler = new LongColumnTypeHandler();
-        final DoubleColumnTypeHandler doubleHandler = new DoubleColumnTypeHandler();
-        final ArrayColumnTypeHandler arrayHandler = new ArrayColumnTypeHandler();
-        final MapColumnTypeHandler mapHandler = new MapColumnTypeHandler();
-        final StringColumnTypeHandler stringHandler = new StringColumnTypeHandler();
+        try {
+            final Class<? extends Object> keyClass = data.get(key).getClass();
+            
+            if (keyClass.equals(Boolean.class)) {
+                return ColumnType.BOOLEAN;
+            } else if (keyClass.equals(Integer.class)) {
+                return ColumnType.INTEGER;
+            } else if (keyClass.equals(Long.class)) {
+                return ColumnType.BIGINT;
+            } else if (keyClass.equals(Double.class)) {
+                return ColumnType.DOUBLE;
+            } else if (keyClass.equals(JSONArray.class)) {
+                return ColumnType.ARRAY;
+            } else if (keyClass.equals(JSONObject.class)) {
+                return ColumnType.MAP;
+            }
+        } catch (final JSONException e) {
+            logger.error("JSON object does not contain required key '{}'. {}", key, e.getMessage());
+        }
 
-        // chain of responsibility
-        booleanHandler.setSuccessor(integerHandler);
-        integerHandler.setSuccessor(longHandler);
-        longHandler.setSuccessor(doubleHandler);
-        doubleHandler.setSuccessor(arrayHandler);
-        arrayHandler.setSuccessor(mapHandler);
-        mapHandler.setSuccessor(stringHandler);
-
-        return booleanHandler.getTypeFromValue(data, key);
+        return ColumnType.STRING;
     }
 }
