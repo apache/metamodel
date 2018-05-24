@@ -43,49 +43,69 @@ final class HBaseTable extends MutableTable {
     private final transient HBaseDataContext _dataContext;
     private final transient ColumnType _defaultRowKeyColumnType;
 
+    /**
+     * Creates an HBaseTable. If the tableDef variable doesn't include the ID column (see {@link HBaseDataContext#FIELD_ID}). 
+     * Then it's first inserted.
+     * @param dataContext
+     * @param tableDef Table definition. The tableName, columnNames and columnTypes variables are used.
+     * @param schema {@link MutableSchema} where the table belongs to.
+     * @param defaultRowKeyColumnType This variable determines the {@link ColumnType}, 
+     * used when the tableDef doesn't include the ID column (see {@link HBaseDataContext#FIELD_ID}). 
+     */
     public HBaseTable(HBaseDataContext dataContext, SimpleTableDef tableDef, MutableSchema schema,
             ColumnType defaultRowKeyColumnType) {
         super(tableDef.getName(), TableType.TABLE, schema);
         _dataContext = dataContext;
         _defaultRowKeyColumnType = defaultRowKeyColumnType;
 
+        // Add the columns
         final String[] columnNames = tableDef.getColumnNames();
         if (columnNames == null || columnNames.length == 0) {
             logger.info("No user-defined columns specified for table {}. Columns will be auto-detected.");
         } else {
+            final ColumnType[] columnTypes = tableDef.getColumnTypes();
 
-            final ColumnType[] types = tableDef.getColumnTypes();
-            int columnNumber = 1;
-
-            for (int i = 0; i < columnNames.length; i++) {
-                String columnName = columnNames[i];
-                if (HBaseDataContext.FIELD_ID.equals(columnName)) {
-                    final ColumnType type = types[i];
-                    final MutableColumn idColumn = new MutableColumn(HBaseDataContext.FIELD_ID, type)
-                            .setPrimaryKey(true).setColumnNumber(columnNumber).setTable(this);
-                    addColumn(idColumn);
-                    columnNumber++;
+            // Find the ID-Column
+            boolean idColumnFound = false;
+            int indexOfIDColumn = 0;
+            while (!idColumnFound && indexOfIDColumn < columnNames.length) {
+                if (columnNames[indexOfIDColumn].equals(HBaseDataContext.FIELD_ID)) {
+                    idColumnFound = true;
+                } else {
+                    indexOfIDColumn++;
                 }
             }
 
-            if (columnNumber == 1) {
-                // insert a default definition of the id column
-                final MutableColumn idColumn = new MutableColumn(HBaseDataContext.FIELD_ID, defaultRowKeyColumnType)
-                        .setPrimaryKey(true).setColumnNumber(columnNumber).setTable(this);
-                addColumn(idColumn);
-                columnNumber++;
-            }
+            int columnNumber = indexOfIDColumn + 1; // ColumnNumbers start from 1
 
+            // Add the ID-Column, even if the column wasn't included in columnNames
+            ColumnType columnType;
+            if (idColumnFound) {
+                columnType = columnTypes[indexOfIDColumn];
+            } else {
+                columnType = defaultRowKeyColumnType;
+            }
+            final MutableColumn idColumn = new MutableColumn(HBaseDataContext.FIELD_ID, columnType)
+                    .setPrimaryKey(true)
+                    .setColumnNumber(columnNumber)
+                    .setTable(this);
+            addColumn(idColumn);
+
+            // Add the other columns
             for (int i = 0; i < columnNames.length; i++) {
                 final String columnName = columnNames[i];
-
+                if (idColumnFound) {
+                    columnNumber = i + 1; // ColumnNumbers start from 1
+                } else {
+                    columnNumber = i + 2; // ColumnNumbers start from 1 + the ID-column has just been created
+                }
                 if (!HBaseDataContext.FIELD_ID.equals(columnName)) {
-                    final ColumnType type = types[i];
+                    final ColumnType type = columnTypes[i];
                     final MutableColumn column = new MutableColumn(columnName, type);
                     column.setTable(this);
                     column.setColumnNumber(columnNumber);
-                    columnNumber++;
                     addColumn(column);
+                    columnNumber++;
                 }
             }
         }
@@ -100,7 +120,9 @@ final class HBaseTable extends MutableTable {
                 int columnNumber = 1;
 
                 final MutableColumn idColumn = new MutableColumn(HBaseDataContext.FIELD_ID, _defaultRowKeyColumnType)
-                        .setPrimaryKey(true).setColumnNumber(columnNumber).setTable(this);
+                        .setPrimaryKey(true)
+                        .setColumnNumber(columnNumber)
+                        .setTable(this);
                 addColumn(idColumn);
                 columnNumber++;
 
@@ -123,5 +145,29 @@ final class HBaseTable extends MutableTable {
             }
         }
         return columnsInternal;
+    }
+
+    /**
+     * Check if a list of columnNames all exist in this table
+     * If a column doesn't exist, then a {@link MetaModelException} is thrown
+     * @param columnNamesOfCheckedTable
+     */
+    public void checkForNotMatchingColumns(final List<String> columnNamesOfCheckedTable) {
+        final List<String> columnsNamesOfExistingTable = getColumnNames();
+        for (String columnNameOfCheckedTable : columnNamesOfCheckedTable) {
+            boolean matchingColumnFound = false;
+            int i = 0;
+            while (!matchingColumnFound && i < columnsNamesOfExistingTable.size()) {
+                if (columnNameOfCheckedTable.equals(columnsNamesOfExistingTable.get(i))) {
+                    matchingColumnFound = true;
+                } else {
+                    i++;
+                }
+            }
+            if (!matchingColumnFound) {
+                throw new MetaModelException(String.format("ColumnFamily: %s doesn't exist in the schema of the table",
+                        columnNameOfCheckedTable));
+            }
+        }
     }
 }

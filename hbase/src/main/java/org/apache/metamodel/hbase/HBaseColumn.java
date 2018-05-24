@@ -18,6 +18,9 @@
  */
 package org.apache.metamodel.hbase;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import org.apache.metamodel.schema.AbstractColumn;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.ColumnTypeImpl;
@@ -32,32 +35,32 @@ public final class HBaseColumn extends AbstractColumn {
     private final ColumnType columnType;
     private final int columnNumber;
 
-    public HBaseColumn(String columnFamily, Table table) {
+    public HBaseColumn(final String columnFamily, final Table table) {
         this(columnFamily, null, table, -1);
     }
 
-    public HBaseColumn(String columnFamily, String qualifier, Table table) {
+    public HBaseColumn(final String columnFamily, final String qualifier, final Table table) {
         this(columnFamily, qualifier, table, -1);
     }
 
-    public HBaseColumn(String columnFamily, Table table, int columnNumber) {
+    public HBaseColumn(final String columnFamily, final Table table, final int columnNumber) {
         this(columnFamily, null, table, columnNumber);
     }
 
-    public HBaseColumn(String columnFamily, String qualifier, Table table, int columnNumber) {
+    public HBaseColumn(final String columnFamily, final String qualifier, final Table table, final int columnNumber) {
         if (columnFamily == null) {
             throw new IllegalArgumentException("Column family isn't allowed to be null.");
         } else if (table == null) {
             throw new IllegalArgumentException("Table isn't allowed to be null.");
         }
-        
+
         this.columnFamily = columnFamily;
         this.qualifier = qualifier;
         this.table = table;
         this.columnNumber = columnNumber;
 
         primaryKey = HBaseDataContext.FIELD_ID.equals(columnFamily);
-        
+
         if (primaryKey || qualifier != null) {
             columnType = new ColumnTypeImpl("BYTE[]", SuperColumnType.LITERAL_TYPE);
         } else {
@@ -130,5 +133,18 @@ public final class HBaseColumn extends AbstractColumn {
     @Override
     public String getQuote() {
         return null;
+    }
+
+    /**
+     * Creates a set of columnFamilies out of an array of hbaseColumns
+     * @param hbaseColumns
+     * @return {@link LinkedHashSet}
+     */
+    public static Set<String> getColumnFamilies(HBaseColumn[] hbaseColumns) {
+        final LinkedHashSet<String> columnFamilies = new LinkedHashSet<String>();
+        for (int i = 0; i < hbaseColumns.length; i++) {
+            columnFamilies.add(hbaseColumns[i].getColumnFamily());
+        }
+        return columnFamilies;
     }
 }

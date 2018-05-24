@@ -18,59 +18,70 @@
  */
 package org.apache.metamodel.hbase;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Set;
+
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
-import org.apache.metamodel.schema.Table;
 
+/**
+ * A builder-class to insert rows in a HBase datastore
+ */
 public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseUpdateCallback> {
 
-    private final HBaseColumn[] _outputColumns;
+    private HBaseColumn[] _hbaseColumns;
 
-    public HBaseRowInsertionBuilder(HBaseUpdateCallback updateCallback, HBaseTable table, HBaseColumn[] outputColumns) {
-        super(updateCallback, table.setColumns(outputColumns));
-        _outputColumns = outputColumns;
+    public HBaseRowInsertionBuilder(final HBaseUpdateCallback updateCallback, final HBaseTable table) {
+        super(updateCallback, table);
+        checkTable(updateCallback, table);
+    }
+
+    /**
+     * Check if the table exits and it's columnFamilies exist
+     * If the table doesn't exist, then a {@link MetaModelException} is thrown
+     * @param updateCallback
+     * @param tableGettingInserts
+     */
+    private void checkTable(final HBaseUpdateCallback updateCallback, final HBaseTable tableGettingInserts) {
+        final HBaseTable tableInSchema = (HBaseTable) updateCallback.getDataContext().getDefaultSchema().getTableByName(
+                tableGettingInserts.getName());
+        if (tableInSchema == null) {
+            throw new MetaModelException("Trying to insert data into table: " + tableGettingInserts.getName()
+                    + ", which doesn't exist yet");
+        }
+        tableInSchema.checkForNotMatchingColumns(tableGettingInserts.getColumnNames());
+    }
+
+    /**
+     * Set the hbaseColumns. Checks if the columnFamilies exist in the table.
+     * @param hbaseColumns a {@link IllegalArgumentException} is thrown when this parameter is null or empty
+     */
+    public void setHbaseColumns(HBaseColumn[] hbaseColumns) {
+        if (hbaseColumns == null || hbaseColumns.length == 0) {
+            throw new IllegalArgumentException("List of hbaseColumns is null or empty");
+        }
+        final Set<String> columnFamilies = HBaseColumn.getColumnFamilies(hbaseColumns);
+        final HBaseTable tableInSchema = (HBaseTable) getTable();
+        final ArrayList<String> columnFamiliesAsList = new ArrayList<String>();
+        columnFamiliesAsList.addAll(columnFamilies);
+        tableInSchema.checkForNotMatchingColumns(columnFamiliesAsList);
+        this._hbaseColumns = hbaseColumns;
     }
 
     @Override
-    public void execute() throws MetaModelException {
-        checkForMatchingColumnFamilies(getTable(), _outputColumns);
-        getUpdateCallback().writeRow((HBaseTable) getTable(), _outputColumns, getValues());
-    }
-
-    private void checkForMatchingColumnFamilies(Table table, HBaseColumn[] outputColumns) {
-        for (int i = 0; i < outputColumns.length; i++) {
-            if (!outputColumns[i].getColumnFamily().equals(HBaseDataContext.FIELD_ID)) {
-                boolean matchingColumnFound = false;
-                int indexOfTablesColumn = 0;
-
-                while (!matchingColumnFound && indexOfTablesColumn < table.getColumnCount()) {
-                    if (outputColumns[i].equals(table.getColumn(indexOfTablesColumn))) {
-                        matchingColumnFound = true;
-                    } else {
-                        indexOfTablesColumn++;
-                    }
-                }
-
-                if (!matchingColumnFound) {
-                    throw new IllegalArgumentException(String.format(
-                            "OutputColumnFamily: %s doesn't exist in the schema of the table", outputColumns[i]
-                                    .getColumnFamily()));
-                }
-            }
+    public synchronized void execute() {
+        if (_hbaseColumns == null || _hbaseColumns.length == 0) {
+            throw new MetaModelException("The hbaseColumns-array is null or empty");
+        }
+        if (getValues() == null || getValues().length == 0) {
+            throw new MetaModelException("The values-array is null or empty");
+        }
+        try {
+            final HBaseClient hBaseClient = getUpdateCallback().getHBaseClient();
+            hBaseClient.writeRow((HBaseTable) getTable(), _hbaseColumns, getValues());
+        } catch (IOException e) {
+            throw new MetaModelException(e);
         }
     }
-
-    public HBaseColumn[] getOutputColumns() {
-        return _outputColumns;
-    }
-
-    public void setOutputColumns(HBaseColumn[] outputColumns) {
-        if (outputColumns.length != _outputColumns.length) {
-            throw new IllegalArgumentException("The amount of outputColumns don't match");
-        }
-        for (int i = 0; i < outputColumns.length; i++) {
-            _outputColumns[i] = outputColumns[i];
-        }
-    }
-
 }

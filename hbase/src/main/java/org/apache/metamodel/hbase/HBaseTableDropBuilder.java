@@ -18,20 +18,39 @@
  */
 package org.apache.metamodel.hbase;
 
+import java.io.IOException;
+
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.drop.AbstractTableDropBuilder;
+import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Table;
 
+/**
+ * A builder-class to drop tables in a HBase datastore
+ */
 public class HBaseTableDropBuilder extends AbstractTableDropBuilder {
     private final HBaseUpdateCallback _updateCallback;
 
-    public HBaseTableDropBuilder(Table table, HBaseUpdateCallback updateCallback) {
+    public HBaseTableDropBuilder(final Table table, final HBaseUpdateCallback updateCallback) {
         super(table);
+        if (updateCallback.getDataContext().getDefaultSchema().getTableByName(table.getName()) == null) {
+            throw new MetaModelException("Trying to delete a table that doesn't exist in the datastore.");
+        }
         _updateCallback = updateCallback;
     }
 
     @Override
-    public void execute() throws MetaModelException {
-        _updateCallback.dropTableExecute(getTable());
+    public void execute() {
+        try {
+            // Remove from the datastore
+            final HBaseClient hBaseClient = _updateCallback.getHBaseClient();
+            final Table table = getTable();
+            hBaseClient.dropTable(table.getName());
+
+            // Remove from schema
+            ((MutableSchema) table.getSchema()).removeTable(table);
+        } catch (IOException e) {
+            throw new MetaModelException(e);
+        }
     }
 }

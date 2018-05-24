@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.hbase;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -32,43 +33,10 @@ import org.apache.metamodel.util.SimpleTableDef;
 
 public class HBaseDataContextTest extends HBaseTestCase {
 
-    // Table
-    private static final String EXAMPLE_TABLE_NAME = "table_for_junit";
-
-    // ColumnFamilies
-    private static final String CF_FOO = "foo";
-    private static final String CF_BAR = "bar";
-
-    // Qualifiers
-    private static final String Q_HELLO = "hello";
-    private static final String Q_HI = "hi";
-    private static final String Q_HEY = "hey";
-    private static final String Q_BAH = "bah";
-
-    // RowKeys
-    private static final String RK_1 = "junit1";
-    private static final String RK_2 = "junit2";
-
-    private static final int NUMBER_OF_ROWS = 2;
-
-    // Values
-    private static final String V_WORLD = "world";
-    private static final String V_THERE = "there";
-    private static final String V_YO = "yo";
-    private static final byte[] V_123_BYTE_ARRAY = new byte[] { 1, 2, 3 };
-    private static final String V_YOU = "you";
-
-    private HBaseDataContext _dataContext;
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         if (isConfigured()) {
-            final String zookeeperHostname = getZookeeperHostname();
-            final int zookeeperPort = getZookeeperPort();
-            final HBaseConfiguration configuration = new HBaseConfiguration(zookeeperHostname, zookeeperPort,
-                    ColumnType.VARCHAR);
-            _dataContext = new HBaseDataContext(configuration);
             createTableNatively();
         }
     }
@@ -80,7 +48,7 @@ public class HBaseDataContextTest extends HBaseTestCase {
         }
 
         // test the schema exploration
-        final Table table = _dataContext.getDefaultSchema().getTableByName(EXAMPLE_TABLE_NAME);
+        final Table table = getDataContext().getDefaultSchema().getTableByName(TABLE_NAME);
         assertNotNull(table);
 
         assertEquals("[" + HBaseDataContext.FIELD_ID + ", " + CF_BAR + ", " + CF_FOO + "]", Arrays.toString(table
@@ -92,7 +60,7 @@ public class HBaseDataContextTest extends HBaseTestCase {
         insertRecordsNatively();
 
         // query using regular configuration
-        final DataSet dataSet1 = _dataContext.query().from(EXAMPLE_TABLE_NAME).selectAll().execute();
+        final DataSet dataSet1 = getDataContext().query().from(TABLE_NAME).selectAll().execute();
         try {
             assertTrue(dataSet1.next());
             assertEquals("Row[values=[" + RK_1 + ", {" + Q_HEY + "=" + V_YO + "," + Q_HI + "=" + V_THERE + "}, {"
@@ -111,14 +79,14 @@ public class HBaseDataContextTest extends HBaseTestCase {
         final String columnName3 = CF_BAR + ":" + Q_HEY;
         final String[] columnNames = new String[] { columnName1, columnName2, columnName3 };
         final ColumnType[] columnTypes = new ColumnType[] { ColumnType.MAP, ColumnType.VARCHAR, ColumnType.VARCHAR };
-        final SimpleTableDef[] tableDefinitions = new SimpleTableDef[] { new SimpleTableDef(EXAMPLE_TABLE_NAME,
+        final SimpleTableDef[] tableDefinitions = new SimpleTableDef[] { new SimpleTableDef(TABLE_NAME,
                 columnNames, columnTypes) };
-        _dataContext = new HBaseDataContext(new HBaseConfiguration("SCH", getZookeeperHostname(), getZookeeperPort(),
-                tableDefinitions, ColumnType.VARCHAR));
+        setDataContext(new HBaseDataContext(new HBaseConfiguration("SCH", getZookeeperHostname(), getZookeeperPort(),
+                tableDefinitions, ColumnType.VARCHAR)));
 
-        final DataSet dataSet2 = _dataContext
+        final DataSet dataSet2 = getDataContext()
                 .query()
-                .from(EXAMPLE_TABLE_NAME)
+                .from(TABLE_NAME)
                 .select(columnName1, columnName2, columnName3)
                 .execute();
         try {
@@ -134,7 +102,7 @@ public class HBaseDataContextTest extends HBaseTestCase {
         }
 
         // query count
-        final DataSet dataSet3 = _dataContext.query().from(EXAMPLE_TABLE_NAME).selectCount().execute();
+        final DataSet dataSet3 = getDataContext().query().from(TABLE_NAME).selectCount().execute();
         try {
             assertTrue(dataSet3.next());
             assertEquals("Row[values=[" + NUMBER_OF_ROWS + "]]", dataSet3.getRow().toString());
@@ -144,9 +112,9 @@ public class HBaseDataContextTest extends HBaseTestCase {
         }
 
         // query only id
-        final DataSet dataSet4 = _dataContext
+        final DataSet dataSet4 = getDataContext()
                 .query()
-                .from(EXAMPLE_TABLE_NAME)
+                .from(TABLE_NAME)
                 .select(HBaseDataContext.FIELD_ID)
                 .execute();
 
@@ -161,9 +129,9 @@ public class HBaseDataContextTest extends HBaseTestCase {
         }
 
         // primary key lookup query - using GET
-        final DataSet dataSet5 = _dataContext
+        final DataSet dataSet5 = getDataContext()
                 .query()
-                .from(EXAMPLE_TABLE_NAME)
+                .from(TABLE_NAME)
                 .select(HBaseDataContext.FIELD_ID)
                 .where(HBaseDataContext.FIELD_ID)
                 .eq(RK_1)
@@ -178,9 +146,8 @@ public class HBaseDataContextTest extends HBaseTestCase {
         }
     }
 
-    private void insertRecordsNatively() throws Exception {
-        final org.apache.hadoop.hbase.client.Table hTable = _dataContext.getHTable(EXAMPLE_TABLE_NAME);
-        try {
+    private void insertRecordsNatively() throws IOException, InterruptedException {
+        try (final org.apache.hadoop.hbase.client.Table hTable = getDataContext().getHTable(TABLE_NAME)) {
             final Put put1 = new Put(RK_1.getBytes());
             put1.addColumn(CF_FOO.getBytes(), Q_HELLO.getBytes(), V_WORLD.getBytes());
             put1.addColumn(CF_BAR.getBytes(), Q_HI.getBytes(), V_THERE.getBytes());
@@ -192,27 +159,26 @@ public class HBaseDataContextTest extends HBaseTestCase {
 
             final Object[] result = new Object[NUMBER_OF_ROWS];
             hTable.batch(Arrays.asList(put1, put2), result);
-        } finally {
-            hTable.close();
         }
     }
 
-    private void createTableNatively() throws Exception {
-        final TableName tableName = TableName.valueOf(EXAMPLE_TABLE_NAME);
+    private void createTableNatively() throws IOException {
+        try (Admin admin = getDataContext().getAdmin()) {
+            final TableName tableName = TableName.valueOf(TABLE_NAME);
 
-        // check if the table exists
-        if (_dataContext.getAdmin().isTableAvailable(tableName)) {
-            System.out.println("Unittest table already exists: " + EXAMPLE_TABLE_NAME);
-            // table already exists
-            return;
+            // Check if the table exists
+            if (admin.isTableAvailable(tableName)) {
+                // table already exists
+                System.out.println("Unittest table already exists: " + TABLE_NAME);
+            } else {
+                // Create table
+                System.out.println("Creating table");
+                final HTableDescriptor tableDescriptor = new HTableDescriptor(tableName);
+                tableDescriptor.addFamily(new HColumnDescriptor(CF_FOO.getBytes()));
+                tableDescriptor.addFamily(new HColumnDescriptor(CF_BAR.getBytes()));
+                admin.createTable(tableDescriptor);
+                System.out.println("Created table");
+            }
         }
-
-        Admin admin = _dataContext.getAdmin();
-        System.out.println("Creating table");
-        final HTableDescriptor tableDescriptor = new HTableDescriptor(tableName);
-        tableDescriptor.addFamily(new HColumnDescriptor(CF_FOO.getBytes()));
-        tableDescriptor.addFamily(new HColumnDescriptor(CF_BAR.getBytes()));
-        admin.createTable(tableDescriptor);
-        System.out.println("Created table");
     }
 }

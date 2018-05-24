@@ -18,7 +18,7 @@
  */
 package org.apache.metamodel.hbase;
 
-import java.io.IOException;
+import java.util.Set;
 
 import org.apache.metamodel.AbstractUpdateCallback;
 import org.apache.metamodel.UpdateCallback;
@@ -26,32 +26,35 @@ import org.apache.metamodel.create.TableCreationBuilder;
 import org.apache.metamodel.delete.RowDeletionBuilder;
 import org.apache.metamodel.drop.TableDropBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
-import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
+/**
+ * This class is used to build objects to do client-operations on a HBase datastore
+ */
 public class HBaseUpdateCallback extends AbstractUpdateCallback implements UpdateCallback {
 
-    private final HBaseConfiguration _configuration;
-
-    private final HBaseDataContext _dataContext;
+    private final HBaseClient _hBaseClient;
 
     public HBaseUpdateCallback(HBaseDataContext dataContext) {
         super(dataContext);
-        _configuration = dataContext.getConfiguration();
-        _dataContext = dataContext;
+        _hBaseClient = new HBaseClient(dataContext.getConnection());
     }
 
     @Override
-    public TableCreationBuilder createTable(Schema schema, String name) throws IllegalArgumentException,
-            IllegalStateException {
-        throw new UnsupportedOperationException(
-                "Use createTable(Schema schema, String name, HBaseColumn[] outputColumns)");
+    public TableCreationBuilder createTable(Schema schema, String name) {
+        return new HBaseCreateTableBuilder(this, schema, name);
     }
 
-    public HBaseCreateTableBuilder createTable(Schema schema, String name, HBaseColumn[] outputColumns)
-            throws IllegalArgumentException, IllegalStateException {
-        return new HBaseCreateTableBuilder(this, schema, name, outputColumns);
+    /**
+     * Initiates the building of a table creation operation.
+     * @param schema the schema to create the table in
+     * @param name the name of the new table
+     * @param columnFamilies the columnFamilies of the new table
+     * @return {@link HBaseCreateTableBuilder}
+     */
+    public HBaseCreateTableBuilder createTable(Schema schema, String name, Set<String> columnFamilies) {
+        return new HBaseCreateTableBuilder(this, schema, name, columnFamilies);
     }
 
     @Override
@@ -60,78 +63,34 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
     }
 
     @Override
-    public TableDropBuilder dropTable(Table table) throws IllegalArgumentException, IllegalStateException,
-            UnsupportedOperationException {
+    public TableDropBuilder dropTable(Table table) {
         return new HBaseTableDropBuilder(table, this);
     }
 
-    public void dropTableExecute(Table table) {
-        try {
-            final HBaseWriter HbaseWriter = new HBaseWriter(HBaseDataContext.createConfig(_configuration));
-            HbaseWriter.dropTable(table.getName());
-            MutableSchema schema = (MutableSchema) table.getSchema();
-            schema.removeTable(table);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
-    public RowInsertionBuilder insertInto(Table table) throws IllegalArgumentException, IllegalStateException,
-            UnsupportedOperationException {
-        throw new UnsupportedOperationException("Use insertInto(Table table, HBaseColumn[] outputColumns)");
-    }
-
-    public HBaseRowInsertionBuilder insertInto(Table table, HBaseColumn[] columns) throws IllegalArgumentException {
+    public RowInsertionBuilder insertInto(Table table) {
         if (table instanceof HBaseTable) {
-            return new HBaseRowInsertionBuilder(this, (HBaseTable) table, columns);
-        }
-        throw new IllegalArgumentException("Not an HBase table: " + table);
-    }
-
-    protected synchronized void writeRow(HBaseTable hBaseTable, HBaseColumn[] outputColumns, Object[] values) {
-        try {
-            final HBaseWriter HbaseWriter = new HBaseWriter(HBaseDataContext.createConfig(_configuration));
-            HbaseWriter.writeRow(hBaseTable, outputColumns, values);
-        } catch (IOException e) {
-            e.printStackTrace();
+            return new HBaseRowInsertionBuilder(this, (HBaseTable) table);
+        } else {
+            throw new IllegalArgumentException("Not an HBase table: " + table);
         }
     }
 
     @Override
     public boolean isDeleteSupported() {
-        return false;
+        return true;
     }
 
     @Override
-    public RowDeletionBuilder deleteFrom(Table table) throws IllegalArgumentException, IllegalStateException,
-            UnsupportedOperationException {
-        throw new UnsupportedOperationException(
-                "Use deleteFrom(HBaseUpdateCallback updateCallback, Table table, Object key)");
-    }
-
-    public HBaseRowDeletionBuilder deleteFrom(HBaseUpdateCallback updateCallback, Table table)
-            throws IllegalArgumentException {
+    public RowDeletionBuilder deleteFrom(Table table) {
         if (table instanceof HBaseTable) {
-            return new HBaseRowDeletionBuilder(this, (HBaseTable) table);
-        }
-        throw new IllegalArgumentException("Not an HBase table: " + table);
-    }
-
-    protected synchronized void deleteRow(HBaseTable hBaseTable, Object key) {
-        try {
-            final HBaseWriter HbaseWriter = new HBaseWriter(HBaseDataContext.createConfig(_configuration));
-            HbaseWriter.deleteRow(hBaseTable, key);
-        } catch (IOException e) {
-            e.printStackTrace();
+            return new HBaseRowDeletionBuilder(_hBaseClient, (HBaseTable) table);
+        } else {
+            throw new IllegalArgumentException("Not an HBase table: " + table);
         }
     }
 
-    public HBaseConfiguration getConfiguration() {
-        return _configuration;
-    }
-
-    public HBaseDataContext getDataContext() {
-        return _dataContext;
+    public HBaseClient getHBaseClient() {
+        return _hBaseClient;
     }
 }

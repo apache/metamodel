@@ -19,53 +19,103 @@
 package org.apache.metamodel.hbase;
 
 import java.io.IOException;
-import java.util.LinkedHashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.create.AbstractTableCreationBuilder;
 import org.apache.metamodel.schema.MutableSchema;
-import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
 
+/**
+ * A builder-class to create tables in a HBase datastore
+ */
 public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseUpdateCallback> {
 
-    private Set<String> columnFamilies;
+    private Set<String> _columnFamilies;
 
+    public HBaseCreateTableBuilder(HBaseUpdateCallback updateCallback, Schema schema, String name) {
+        this(updateCallback, schema, name, null);
+    }
+
+    /**
+     * Create a {@link HBaseCreateTableBuilder}.
+     * Throws an {@link IllegalArgumentException} if the schema isn't a {@link MutableSchema}.
+     * @param updateCallback
+     * @param schema
+     * @param name
+     * @param columnFamilies
+     */
     public HBaseCreateTableBuilder(HBaseUpdateCallback updateCallback, Schema schema, String name,
-            HBaseColumn[] outputColumns) {
+            Set<String> columnFamilies) {
         super(updateCallback, schema, name);
         if (!(schema instanceof MutableSchema)) {
-            throw new IllegalArgumentException("Not a valid schema: " + schema);
+            throw new IllegalArgumentException("Not a mutable schema: " + schema);
         }
-        columnFamilies = new LinkedHashSet<String>();
-        for (int i = 0; i < outputColumns.length; i++) {
-            columnFamilies.add(outputColumns[i].getColumnFamily());
-        }
+        this._columnFamilies = columnFamilies;
     }
 
     @Override
-    public Table execute() throws MetaModelException {
-        final MutableTable table = getTable();
-        final SimpleTableDef emptyTableDef = new SimpleTableDef(table.getName(), columnFamilies.toArray(
-                new String[columnFamilies.size()]));
+    public Table execute() {
+        checkColumnFamilies(_columnFamilies);
 
-        final HBaseUpdateCallback updateCallback = (HBaseUpdateCallback) getUpdateCallback();
+        final Table table = getTable();
 
+        // Add the table to the datastore
         try {
-            final HBaseWriter HbaseWriter = new HBaseWriter(HBaseDataContext.createConfig(updateCallback
-                    .getConfiguration()));
-            HbaseWriter.createTable(table.getName(), columnFamilies);
+            final HBaseClient hBaseClient = getUpdateCallback().getHBaseClient();
+            hBaseClient.createTable(table.getName(), _columnFamilies);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new MetaModelException(e);
         }
 
-        final MutableSchema schema = (MutableSchema) table.getSchema();
-        schema.addTable(new HBaseTable(updateCallback.getDataContext(), emptyTableDef, schema,
-                HBaseConfiguration.DEFAULT_ROW_KEY_TYPE));
-        return schema.getTableByName(table.getName());
+        // Update the schema
+        addNewTableToSchema(table);
+        return getSchema().getTableByName(table.getName());
     }
 
+    /**
+     * Check if the new table has columnFamilies and if the ID-column is included.
+     * Throws a {@link MetaModelException} if a check fails.
+     * @param columnFamilies
+     */
+    private void checkColumnFamilies(Set<String> columnFamilies) {
+        if (columnFamilies == null || columnFamilies.size() == 0) {
+            throw new MetaModelException("Creating a table without columnFamilies");
+        }
+        boolean idColumnFound = false;
+        final Iterator<String> iterator = columnFamilies.iterator();
+        while (!idColumnFound && iterator.hasNext()) {
+            if (iterator.next().equals(HBaseDataContext.FIELD_ID)) {
+                idColumnFound = true;
+            }
+        }
+        if (!idColumnFound) {
+            throw new MetaModelException("ColumnFamily: " + HBaseDataContext.FIELD_ID + " not found");
+        }
+    }
+
+    /**
+     * Set the columnFamilies
+     * @param columnFamilies
+     */
+    public void setColumnFamilies(Set<String> columnFamilies) {
+        this._columnFamilies = columnFamilies;
+    }
+
+    /**
+     * Add the new {@link Table} to the {@link MutableSchema}
+     * @param table
+     * @param updateCallback
+     * @return {@link MutableSchema}
+     */
+    private void addNewTableToSchema(final Table table) {
+        final MutableSchema schema = (MutableSchema) getSchema();
+        final SimpleTableDef emptyTableDef = new SimpleTableDef(table.getName(), _columnFamilies.toArray(
+                new String[_columnFamilies.size()]));
+        schema.addTable(new HBaseTable((HBaseDataContext) getUpdateCallback().getDataContext(), emptyTableDef, schema,
+                HBaseConfiguration.DEFAULT_ROW_KEY_TYPE));
+    }
 }
