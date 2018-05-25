@@ -19,21 +19,20 @@
 package org.apache.metamodel.hbase;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Set;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
+import org.apache.metamodel.schema.Column;
 
 /**
  * A builder-class to insert rows in a HBase datastore
  */
 public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseUpdateCallback> {
-
-    private HBaseColumn[] _hbaseColumns;
-
-    public HBaseRowInsertionBuilder(final HBaseUpdateCallback updateCallback, final HBaseTable table) {
-        super(updateCallback, table);
+    public HBaseRowInsertionBuilder(final HBaseUpdateCallback updateCallback, final HBaseTable table,
+            final List<Column> columns) {
+        super(updateCallback, table, columns);
         checkTable(updateCallback, table);
     }
 
@@ -53,25 +52,9 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
         tableInSchema.checkForNotMatchingColumns(tableGettingInserts.getColumnNames());
     }
 
-    /**
-     * Set the hbaseColumns. Checks if the columnFamilies exist in the table.
-     * @param hbaseColumns a {@link IllegalArgumentException} is thrown when this parameter is null or empty
-     */
-    public void setHbaseColumns(HBaseColumn[] hbaseColumns) {
-        if (hbaseColumns == null || hbaseColumns.length == 0) {
-            throw new IllegalArgumentException("List of hbaseColumns is null or empty");
-        }
-        final Set<String> columnFamilies = HBaseColumn.getColumnFamilies(hbaseColumns);
-        final HBaseTable tableInSchema = (HBaseTable) getTable();
-        final ArrayList<String> columnFamiliesAsList = new ArrayList<String>();
-        columnFamiliesAsList.addAll(columnFamilies);
-        tableInSchema.checkForNotMatchingColumns(columnFamiliesAsList);
-        this._hbaseColumns = hbaseColumns;
-    }
-
     @Override
     public synchronized void execute() {
-        if (_hbaseColumns == null || _hbaseColumns.length == 0) {
+        if (getColumns() == null || getColumns().length == 0) {
             throw new MetaModelException("The hbaseColumns-array is null or empty");
         }
         if (getValues() == null || getValues().length == 0) {
@@ -79,9 +62,15 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
         }
         try {
             final HBaseClient hBaseClient = getUpdateCallback().getHBaseClient();
-            hBaseClient.writeRow((HBaseTable) getTable(), _hbaseColumns, getValues());
+            hBaseClient.writeRow((HBaseTable) getTable(), getColumns(), getValues());
         } catch (IOException e) {
             throw new MetaModelException(e);
         }
+    }
+
+    @Override
+    public HBaseColumn[] getColumns() {
+        return Arrays.stream(super.getColumns()).map(column -> (HBaseColumn) column).toArray(
+                size -> new HBaseColumn[size]);
     }
 }

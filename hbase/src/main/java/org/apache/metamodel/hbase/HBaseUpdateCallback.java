@@ -18,7 +18,9 @@
  */
 package org.apache.metamodel.hbase;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.AbstractUpdateCallback;
 import org.apache.metamodel.UpdateCallback;
@@ -26,6 +28,7 @@ import org.apache.metamodel.create.TableCreationBuilder;
 import org.apache.metamodel.delete.RowDeletionBuilder;
 import org.apache.metamodel.drop.TableDropBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
@@ -68,9 +71,18 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
     }
 
     @Override
-    public RowInsertionBuilder insertInto(Table table) {
+    public RowInsertionBuilder insertInto(final Table table) {
+        throw new UnsupportedOperationException(
+                "We need an explicit list of columns when inserting into an HBase table.");
+    }
+
+    public RowInsertionBuilder insertInto(final Table table, final List<HBaseColumn> columns) {
         if (table instanceof HBaseTable) {
-            return new HBaseRowInsertionBuilder(this, (HBaseTable) table);
+            return new HBaseRowInsertionBuilder(this, (HBaseTable) table, columns
+                    .stream()
+                    .map(obj -> (Column) obj)
+                    .collect(
+                    Collectors.toList()));
         } else {
             throw new IllegalArgumentException("Not an HBase table: " + table);
         }
