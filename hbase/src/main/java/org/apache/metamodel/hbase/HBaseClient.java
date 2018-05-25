@@ -142,10 +142,6 @@ public final class HBaseClient {
                 }
             }
             admin.createTable(tableDescriptor);
-            final HTableDescriptor[] tables = admin.listTables();
-            if (tables.length != 1 && Bytes.equals(hBasetableName.getName(), tables[0].getTableName().getName())) {
-                throw new IOException("Failed create of table");
-            }
         }
     }
 
