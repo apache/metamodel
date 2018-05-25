@@ -32,64 +32,66 @@ import org.slf4j.LoggerFactory;
 
 public class ColumnTypeResolver {
     private static final Logger logger = LoggerFactory.getLogger(ColumnTypeResolver.class);
-    
-    public ColumnType[] getColumnTypes(final JSONObject jsonObject, final String[] columnNamesArray) {
-        final List<String> columnNames = new ArrayList<>(Arrays.asList(columnNamesArray)); 
-        final List<ColumnType> columnTypes = new ArrayList<>();
+    private final JSONObject _jsonObject;
+    private final List<String> _columnNames = new ArrayList<>();
+    private final List<ColumnType> _columnTypes = new ArrayList<>();
 
+    public ColumnTypeResolver(final JSONObject jsonObject, final String[] columnNamesArray) {
+        _jsonObject = jsonObject;
+        _columnNames.addAll(Arrays.asList(columnNamesArray));
+    }
+    
+    public ColumnType[] getColumnTypes() {
         try {
-            fillColumnTypesFromMetadata(jsonObject, columnNames, columnTypes);
-            fillColumnTypesFromData(jsonObject, columnNames, columnTypes);
+            fillColumnTypesFromMetadata();
+            fillColumnTypesFromData();
         } catch (final JSONException e) {
             // ignore missing data
         }
 
-        fillColumnTypesFromRemainingColumns(columnNames, columnTypes);
-        return columnTypes.toArray(new ColumnType[columnTypes.size()]);
+        fillColumnTypesFromRemainingColumns();
+        return _columnTypes.toArray(new ColumnType[_columnTypes.size()]);
     }
 
-    private void fillColumnTypesFromData(final JSONObject jsonObject, final List<String> columnNames,
-            final List<ColumnType> columnTypes) throws JSONException {
+    private void fillColumnTypesFromData() throws JSONException { 
         final String dataKey = "data";
 
-        if (jsonObject.has(dataKey)) {
-            final JSONObject data = jsonObject.getJSONObject(dataKey);
+        if (_jsonObject.has(dataKey)) {
+            final JSONObject data = _jsonObject.getJSONObject(dataKey);
             final Iterator<?> keysIterator = data.keys();
 
             while (keysIterator.hasNext()) {
                 final String key = (String) keysIterator.next();
                 final ColumnType type = getTypeFromValue(data, key);
-                columnTypes.add(type);
-                removeIfAvailable(columnNames, key);
+                _columnTypes.add(type);
+                removeIfAvailable(_columnNames, key);
             }
         }
     }
 
-    private void fillColumnTypesFromMetadata(final JSONObject jsonObject, final List<String> columnNames,
-            final List<ColumnType> columnTypes) throws JSONException {
+    private void fillColumnTypesFromMetadata() throws JSONException {
         final String metadataKey = "metadata";
 
-        if (jsonObject.has(metadataKey)) {
-            final JSONObject metadata = jsonObject.getJSONObject(metadataKey);
+        if (_jsonObject.has(metadataKey)) {
+            final JSONObject metadata = _jsonObject.getJSONObject(metadataKey);
 
             if (metadata.has("id")) {
-                columnTypes.add(ColumnType.BIGINT);
-                removeIfAvailable(columnNames, "_id");
+                _columnTypes.add(ColumnType.BIGINT);
+                removeIfAvailable(_columnNames, "_id");
             }
         }
     }
 
-    private void fillColumnTypesFromRemainingColumns(final List<String> columnNames,
-            final List<ColumnType> columnTypes) {
-        for (final String remainingColumnName : columnNames) {
+    private void fillColumnTypesFromRemainingColumns() {
+        for (final String remainingColumnName : _columnNames) {
             if (remainingColumnName.contains("rel_")) {
                 if (remainingColumnName.contains("#")) {
-                    columnTypes.add(ColumnType.ARRAY);
+                    _columnTypes.add(ColumnType.LIST);
                 } else {
-                    columnTypes.add(ColumnType.BIGINT);
+                    _columnTypes.add(ColumnType.BIGINT);
                 }
             } else {
-                columnTypes.add(ColumnType.STRING);
+                _columnTypes.add(ColumnType.STRING);
             }
         }
     }
@@ -113,9 +115,7 @@ public class ColumnTypeResolver {
             } else if (keyClass.equals(Double.class)) {
                 return ColumnType.DOUBLE;
             } else if (keyClass.equals(JSONArray.class)) {
-                return ColumnType.ARRAY;
-            } else if (keyClass.equals(JSONObject.class)) {
-                return ColumnType.MAP;
+                return ColumnType.LIST;
             }
         } catch (final JSONException e) {
             logger.error("JSON object does not contain required key '{}'. {}", key, e.getMessage());

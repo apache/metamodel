@@ -36,26 +36,24 @@ public class ColumnTypeResolverTest {
     private static final String COLUMN_LONG = "long";
     private static final String COLUMN_DOUBLE = "double";
     private static final String COLUMN_ARRAY = "array";
-    private static final String COLUMN_MAP = "map";
     private static final String COLUMN_STRING = "string";
     
     @Test
     public void testGetColumnTypes() throws Exception {
-        final ColumnTypeResolver resolver = new ColumnTypeResolver();
         final JSONObject jsonObject = createJSONObject();
         final String[] columnNames =
                 new String[] { COLUMN_ID_NEO4J, COLUMN_BOOLEAN, COLUMN_INTEGER, COLUMN_LONG, COLUMN_DOUBLE,
-                        COLUMN_ARRAY, COLUMN_MAP, COLUMN_STRING };
-        final ColumnType[] columnTypes = resolver.getColumnTypes(jsonObject, columnNames);
+                        COLUMN_ARRAY, COLUMN_STRING };
+        final ColumnTypeResolver resolver = new ColumnTypeResolver(jsonObject, columnNames);
+        final ColumnType[] columnTypes = resolver.getColumnTypes();
         assertEquals(columnTypes.length, columnNames.length); 
         assertEquals(columnTypes[0], ColumnType.BIGINT); // ID
         assertEquals(columnTypes[1], ColumnType.BOOLEAN);
         assertEquals(columnTypes[2], ColumnType.STRING);
-        assertEquals(columnTypes[3], ColumnType.ARRAY);
+        assertEquals(columnTypes[3], ColumnType.LIST);
         assertEquals(columnTypes[4], ColumnType.DOUBLE);
         assertEquals(columnTypes[5], ColumnType.INTEGER);
-        assertEquals(columnTypes[6], ColumnType.MAP);
-        assertEquals(columnTypes[7], ColumnType.BIGINT);
+        assertEquals(columnTypes[6], ColumnType.BIGINT);
     }
     
     private JSONObject createJSONObject() throws JSONException {
@@ -73,7 +71,6 @@ public class ColumnTypeResolverTest {
         data.put(COLUMN_INTEGER, 42);
         final JSONObject map = new JSONObject();
         map.put("1", "one").put("2", "two").put("3", "three");
-        data.put(COLUMN_MAP, map);
         data.put(COLUMN_LONG, 12345678910L);
         json.put(COLUMN_DATA, data);
         

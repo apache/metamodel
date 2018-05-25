@@ -198,9 +198,8 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
             return null; // Do not add a table if label has no nodes (empty tables are considered non-existent)
         } else {
             final String[] columnNames = propertiesPerLabel.toArray(new String[propertiesPerLabel.size()]);
-            final ColumnTypeResolver columnTypeResolver = new ColumnTypeResolver();
-            return new SimpleTableDef(label, columnNames,
-                    columnTypeResolver.getColumnTypes(nodesPerLabel.get(0), columnNames));
+            final ColumnTypeResolver columnTypeResolver = new ColumnTypeResolver(nodesPerLabel.get(0), columnNames);
+            return new SimpleTableDef(label, columnNames, columnTypeResolver.getColumnTypes());
         } 
     }
 
