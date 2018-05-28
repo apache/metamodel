@@ -33,7 +33,6 @@ import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DocumentSource;
-import org.apache.metamodel.neo4j.utils.ColumnTypeResolver;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
@@ -53,23 +52,24 @@ import org.slf4j.LoggerFactory;
  * DataContext implementation for Neo4j
  */
 public class Neo4jDataContext extends QueryPostprocessDataContext implements DataContext, DocumentSourceProvider {
-
-    public static final Logger logger = LoggerFactory.getLogger(Neo4jDataContext.class);
-
     public static final String SCHEMA_NAME = "neo4j";
-
     public static final int DEFAULT_PORT = 7474;
+    public static final String NEO4J_KEY_METADATA = "metadata";
+    public static final String NEO4J_KEY_METADATA_TYPE = "type";
+    public static final String NEO4J_KEY_PROPERTIES = "properties";
+    public static final String NEO4J_KEY_DATA = "data";
+    public static final String NEO4J_KEY_ID = "id";
+    public static final String NEO4J_KEY_RESPONSE_RESULTS = "results";
+    public static final String NEO4J_KEY_RESPONSE_ROW = "row";
+    public static final String NEO4J_COLUMN_NAME_ID = "_id";
+    public static final String NEO4J_COLUMN_NAME_RELATION_PREFIX = "rel_";
+    public static final String NEO4J_COLUMN_NAME_RELATION_LIST_INDICATOR = "#";
 
-    public static final String RELATIONSHIP_PREFIX = "rel_";
-
-    public static final String RELATIONSHIP_COLUMN_SEPARATOR = "#";
+    private static final Logger logger = LoggerFactory.getLogger(Neo4jDataContext.class);
 
     private final SimpleTableDef[] _tableDefs;
-
     private final Neo4jRequestWrapper _requestWrapper;
-
     private final HttpHost _httpHost;
-
     private String _serviceRoot = "/db/data";
 
     public Neo4jDataContext(String hostname, int port, String username, String password, SimpleTableDef... tableDefs) {
@@ -187,7 +187,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         final Set<String> relationshipPropertiesPerLabel = new LinkedHashSet<>();
 
         for (final JSONObject node : nodesPerLabel) {
-            final Integer nodeId = (Integer) node.getJSONObject("metadata").get("id");
+            final Integer nodeId = (Integer) node.getJSONObject(NEO4J_KEY_METADATA).get(NEO4J_KEY_ID);
             final Set<String> relationshipPropertiesForNode = createRelationshipPropertiesForNode(nodeId);
             relationshipPropertiesPerLabel.addAll(relationshipPropertiesForNode);
         }
@@ -209,8 +209,8 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
 
         for (final JSONObject relationship : relationshipsPerNode) {
             // Add the relationship as a column in the table
-            final String relationshipName = relationship.getString("type");
-            final String relationshipNameProperty = RELATIONSHIP_PREFIX + relationshipName;
+            final String relationshipName = relationship.getString(NEO4J_KEY_METADATA_TYPE);
+            final String relationshipNameProperty = NEO4J_COLUMN_NAME_RELATION_PREFIX + relationshipName;
             relationshipProperties.add(relationshipNameProperty);
             
             // Add all the relationship properties as table columns
@@ -240,15 +240,16 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
     private List<String> getAllPropertiesPerRelationship(JSONObject relationship) {
         final List<String> propertyNames = new ArrayList<>();
         try {
-            final String relationshipName =
-                    RELATIONSHIP_PREFIX + relationship.getJSONObject("metadata").getString("type");
-            final JSONObject relationshipPropertiesJSONObject = relationship.getJSONObject("data");
+            final String relationshipName = NEO4J_COLUMN_NAME_RELATION_PREFIX + relationship
+                    .getJSONObject(NEO4J_KEY_METADATA)
+                    .getString(NEO4J_KEY_METADATA_TYPE);
+            final JSONObject relationshipPropertiesJSONObject = relationship.getJSONObject(NEO4J_KEY_DATA);
             
             if (relationshipPropertiesJSONObject.length() > 0) {
                 final JSONArray relationshipPropertiesNamesJSONArray = relationshipPropertiesJSONObject.names();
-                
+
                 for (int i = 0; i < relationshipPropertiesNamesJSONArray.length(); i++) {
-                    final String propertyName = relationshipName + RELATIONSHIP_COLUMN_SEPARATOR
+                    final String propertyName = relationshipName + NEO4J_COLUMN_NAME_RELATION_LIST_INDICATOR
                             + relationshipPropertiesNamesJSONArray.getString(i);
                     if (!propertyNames.contains(propertyName)) {
                         propertyNames.add(propertyName);
@@ -306,12 +307,11 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
 
     private List<String> getAllPropertiesPerNode(JSONObject node) {
         List<String> properties = new ArrayList<String>();
-        properties.add("_id");
+        properties.add(NEO4J_COLUMN_NAME_ID);
 
         String propertiesEndpoint;
         try {
-            propertiesEndpoint = node.getString("properties");
-
+            propertiesEndpoint = node.getString(NEO4J_KEY_PROPERTIES);
             String allPropertiesPerNodeJsonString = _requestWrapper.executeRestRequest(new HttpGet(propertiesEndpoint));
 
             JSONObject allPropertiesPerNodeJsonObject = new JSONObject(allPropertiesPerNodeJsonString);
@@ -364,11 +364,11 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         JSONObject jsonResponseObject;
         try {
             jsonResponseObject = new JSONObject(jsonResponse);
-            JSONArray resultsJSONArray = jsonResponseObject.getJSONArray("results");
+            JSONArray resultsJSONArray = jsonResponseObject.getJSONArray(NEO4J_KEY_RESPONSE_RESULTS);
             JSONObject resultJSONObject = (JSONObject) resultsJSONArray.get(0);
-            JSONArray dataJSONArray = resultJSONObject.getJSONArray("data");
+            JSONArray dataJSONArray = resultJSONObject.getJSONArray(NEO4J_KEY_DATA);
             JSONObject rowJSONObject = (JSONObject) dataJSONArray.get(0);
-            JSONArray valueJSONArray = rowJSONObject.getJSONArray("row");
+            JSONArray valueJSONArray = rowJSONObject.getJSONArray(NEO4J_KEY_RESPONSE_ROW);
             Number value = (Number) valueJSONArray.get(0);
             return value;
         } catch (JSONException e) {

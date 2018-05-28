@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.neo4j;
 
+import static org.apache.metamodel.neo4j.Neo4jDataContext.NEO4J_COLUMN_NAME_ID;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,15 +43,15 @@ public class Neo4jCypherQueryBuilder {
         Map<String, String> returnClauseMap = new LinkedHashMap<>();
         Map<String, Integer> relationshipIndexMap = new LinkedHashMap<>();
         for (String columnName : columnNames) {
-            if (columnName.startsWith(Neo4jDataContext.RELATIONSHIP_PREFIX)) {
-                columnName = columnName.replace(Neo4jDataContext.RELATIONSHIP_PREFIX, "");
+            if (columnName.startsWith(Neo4jDataContext.NEO4J_COLUMN_NAME_RELATION_PREFIX)) {
+                columnName = columnName.replace(Neo4jDataContext.NEO4J_COLUMN_NAME_RELATION_PREFIX, "");
 
                 String relationshipName;
                 String relationshipPropertyName;
 
-                if (columnName.contains(Neo4jDataContext.RELATIONSHIP_COLUMN_SEPARATOR)) {
-                    String[] parsedColumnNameArray = columnName.split(Neo4jDataContext.RELATIONSHIP_COLUMN_SEPARATOR);
-
+                if (columnName.contains(Neo4jDataContext.NEO4J_COLUMN_NAME_RELATION_LIST_INDICATOR)) {
+                    String[] parsedColumnNameArray =
+                            columnName.split(Neo4jDataContext.NEO4J_COLUMN_NAME_RELATION_LIST_INDICATOR);
                     relationshipName = parsedColumnNameArray[0];
                     relationshipPropertyName = parsedColumnNameArray[1];
                 } else {
@@ -77,7 +79,7 @@ public class Neo4jCypherQueryBuilder {
                     returnClauseMap.put(columnName, relationshipAlias + "." + relationshipPropertyName);
                 }
             } else {
-                if (columnName.equals("_id")) {
+                if (columnName.equals(NEO4J_COLUMN_NAME_ID)) {
                     returnClauseMap.put(columnName, "id(n)");
                 } else {
                     returnClauseMap.put(columnName, "n." + columnName);

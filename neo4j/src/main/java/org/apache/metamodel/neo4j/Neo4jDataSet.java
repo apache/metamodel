@@ -18,6 +18,11 @@
  */
 package org.apache.metamodel.neo4j;
 
+import static org.apache.metamodel.neo4j.Neo4jDataContext.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
@@ -26,8 +31,6 @@ import org.apache.metamodel.query.SelectItem;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.List;
 
 final class Neo4jDataSet extends AbstractDataSet {
 
@@ -44,19 +47,25 @@ final class Neo4jDataSet extends AbstractDataSet {
     @Override
     public boolean next() {
         try {
-            final JSONArray resultsArray = _resultJSONObject.getJSONArray("results");
+            final JSONArray resultsArray = _resultJSONObject.getJSONArray(NEO4J_KEY_RESPONSE_RESULTS);
             
             if (resultsArray.length() > 0) {
                 final JSONObject results = resultsArray.getJSONObject(0);
-                final JSONArray data = results.getJSONArray("data");
+                final JSONArray data = results.getJSONArray(NEO4J_KEY_DATA);
                 
                 if (_currentRowIndex < data.length()) {
                     final JSONObject row = data.getJSONObject(_currentRowIndex);
-                    final JSONArray jsonValues = row.getJSONArray("row");
+                    final JSONArray jsonValues = row.getJSONArray(NEO4J_KEY_RESPONSE_ROW);
                     final Object[] objectValues = new Object[jsonValues.length()];
                     
                     for (int i = 0; i < jsonValues.length(); i++) {
-                        objectValues[i] = jsonValues.get(i);
+                        final Object value = jsonValues.get(i);
+                        
+                        if (value instanceof JSONArray) {
+                            objectValues[i] = convertJSONArrayToList((JSONArray) value);
+                        } else {
+                            objectValues[i] = value;
+                        }
                     }
                     
                     _row = new DefaultRow(new SimpleDataSetHeader(getSelectItems()), objectValues);
@@ -75,9 +84,22 @@ final class Neo4jDataSet extends AbstractDataSet {
         return false;
     }
 
+    private List<String> convertJSONArrayToList(final JSONArray jsonArray) throws JSONException {
+        final List<String> list = new ArrayList<>();
+        
+        for (int i = 0; i < jsonArray.length(); i++) {
+            final Object item = jsonArray.get(i);
+            
+            if (item != null) {
+                list.add(item.toString());
+            }
+        }
+        
+        return list;
+    }
+
     @Override
     public Row getRow() {
         return _row;
     }
-
 }
