@@ -54,16 +54,17 @@ import org.slf4j.LoggerFactory;
 public class Neo4jDataContext extends QueryPostprocessDataContext implements DataContext, DocumentSourceProvider {
     public static final String SCHEMA_NAME = "neo4j";
     public static final int DEFAULT_PORT = 7474;
-    public static final String NEO4J_KEY_METADATA = "metadata";
-    public static final String NEO4J_KEY_METADATA_TYPE = "type";
-    public static final String NEO4J_KEY_PROPERTIES = "properties";
-    public static final String NEO4J_KEY_DATA = "data";
-    public static final String NEO4J_KEY_ID = "id";
-    public static final String NEO4J_KEY_RESPONSE_RESULTS = "results";
-    public static final String NEO4J_KEY_RESPONSE_ROW = "row";
-    public static final String NEO4J_COLUMN_NAME_ID = "_id";
-    public static final String NEO4J_COLUMN_NAME_RELATION_PREFIX = "rel_";
-    public static final String NEO4J_COLUMN_NAME_RELATION_LIST_INDICATOR = "#";
+    
+    static final String NEO4J_KEY_METADATA = "metadata";
+    static final String NEO4J_KEY_METADATA_TYPE = "type";
+    static final String NEO4J_KEY_PROPERTIES = "properties";
+    static final String NEO4J_KEY_DATA = "data";
+    static final String NEO4J_KEY_ID = "id";
+    static final String NEO4J_KEY_RESPONSE_RESULTS = "results";
+    static final String NEO4J_KEY_RESPONSE_ROW = "row";
+    static final String NEO4J_COLUMN_NAME_ID = "_id";
+    static final String NEO4J_COLUMN_NAME_RELATION_PREFIX = "rel_";
+    static final String NEO4J_COLUMN_NAME_RELATION_LIST_INDICATOR = "#";
 
     private static final Logger logger = LoggerFactory.getLogger(Neo4jDataContext.class);
 
