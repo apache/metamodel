@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.hbase;
 
-import java.io.IOException;
-
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.drop.AbstractTableDropBuilder;
 import org.apache.metamodel.schema.MutableSchema;
@@ -41,16 +39,11 @@ public class HBaseTableDropBuilder extends AbstractTableDropBuilder {
 
     @Override
     public void execute() {
-        try {
-            // Remove from the datastore
-            final HBaseClient hBaseClient = _updateCallback.getHBaseClient();
-            final Table table = getTable();
-            hBaseClient.dropTable(table.getName());
+        // Remove from the datastore
+        final Table table = getTable();
+        _updateCallback.getHBaseClient().dropTable(table.getName());
 
-            // Remove from schema
-            ((MutableSchema) table.getSchema()).removeTable(table);
-        } catch (IOException e) {
-            throw new MetaModelException(e);
-        }
+        // Remove from schema
+        ((MutableSchema) table.getSchema()).removeTable(table);
     }
 }

@@ -18,38 +18,41 @@
  */
 package org.apache.metamodel.hbase;
 
-import java.io.IOException;
-
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
 import org.apache.metamodel.schema.Table;
 
 /**
- * A builder-class to delete rows in a HBase datastore
+ * A builder-class to delete rows based on their keys in a HBase datastore
  */
 public class HBaseRowDeletionBuilder extends AbstractRowDeletionBuilder {
 
     private HBaseClient _hBaseClient;
     private Object _key;
 
+    /**
+     * Creates a {@link HBaseRowDeletionBuilder}
+     * @param hBaseWriter
+     * @param table
+     * @throws IllegalArgumentException when the hBaseWriter is null
+     */
     public HBaseRowDeletionBuilder(final HBaseClient hBaseWriter, final Table table) {
         super(table);
         if (hBaseWriter == null) {
-            throw new IllegalArgumentException("UpdateCallback cannot be null");
+            throw new IllegalArgumentException("hBaseClient cannot be null");
         }
         this._hBaseClient = hBaseWriter;
     }
 
+    /** 
+     * @throws MetaModelException when value is null
+     */
     @Override
     public synchronized void execute() {
         if (_key == null) {
             throw new MetaModelException("Key cannot be null");
         }
-        try {
-            _hBaseClient.deleteRow((HBaseTable) getTable(), _key);
-        } catch (IOException e) {
-            throw new MetaModelException(e);
-        }
+        _hBaseClient.deleteRow(getTable().getName(), _key);
     }
 
     public void setKey(Object _key) {

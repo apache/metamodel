@@ -49,16 +49,22 @@ public final class HBaseClient {
     }
 
     /**
-     * Write a single row of values to a HBase table
-     * @param hBaseTable
+     * Insert a single row of values to a HBase table.
+     * @param tableName
      * @param columns
      * @param values
-     * @throws IOException
+     * @throws IllegalArgumentException when any parameter is null or the indexOfIdColumn is impossible
+     * @throws MetaModelException when no ID-column is found.
+     * @throws MetaModelException when a {@link IOException} is catched
      */
-    public void writeRow(HBaseTable hBaseTable, HBaseColumn[] columns, Object[] values) throws IOException {
-        try (final Table table = _connection.getTable(TableName.valueOf(hBaseTable.getName()))) {
-            int indexOfIdColumn = getIndexOfIdColumn(columns);
-
+    // TODO: Use the ColumnTypes to determine the inserts. Now the toString() method is called on the object.
+    public void insertRow(String tableName, HBaseColumn[] columns, Object[] values, int indexOfIdColumn) {
+        if (tableName == null || columns == null || values == null || indexOfIdColumn >= values.length
+                || values[indexOfIdColumn] == null) {
+            throw new IllegalArgumentException(
+                    "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
+        }
+        try (final Table table = _connection.getTable(TableName.valueOf(tableName))) {
             // Create a put with the values of indexOfIdColumn as rowkey
             final Put put = new Put(Bytes.toBytes(values[indexOfIdColumn].toString()));
 
@@ -71,56 +77,42 @@ public final class HBaseClient {
             }
             // Add the put to the table
             table.put(put);
+        } catch (IOException e) {
+            throw new MetaModelException(e);
         }
-    }
-
-    /**
-     * Gets the index of the ID-column
-     * Throws an {@link MetaModelException} when no ID-column is found.
-     * @param columns
-     * @return 
-     */
-    private int getIndexOfIdColumn(HBaseColumn[] columns) {
-        int indexOfIdColumn = 0;
-        boolean idColumnFound = false;
-        while (!idColumnFound && indexOfIdColumn < columns.length) {
-            if (columns[indexOfIdColumn].getColumnFamily().equals(HBaseDataContext.FIELD_ID)) {
-                idColumnFound = true;
-            } else {
-                indexOfIdColumn++;
-            }
-        }
-        if (!idColumnFound) {
-            throw new MetaModelException("The ID Column family was not found");
-        }
-        return indexOfIdColumn;
     }
 
     /**
      * Delete 1 row based on the key
-     * @param hBaseTable
-     * @param key
-     * @throws IOException
+     * @param tableName
+     * @param rowKey
+     * @throws IllegalArgumentException when any parameter is null
+     * @throws MetaModelException when a {@link IOException} is catched
      */
-    public void deleteRow(HBaseTable hBaseTable, Object key) throws IOException {
-        try (final Table table = _connection.getTable(TableName.valueOf(hBaseTable.getName()));) {
-            if (rowExists(table, key) == true) {
-                table.delete(new Delete(Bytes.toBytes(key.toString())));
+    public void deleteRow(String tableName, Object rowKey) {
+        if (tableName == null || rowKey == null) {
+            throw new IllegalArgumentException("Can't delete a row without having tableName or rowKey");
+        }
+        try (final Table table = _connection.getTable(TableName.valueOf(tableName));) {
+            if (rowExists(table, rowKey) == true) {
+                table.delete(new Delete(Bytes.toBytes(rowKey.toString())));
             } else {
-                logger.warn("Rowkey with value " + key.toString() + " doesn't exist in the table");
+                logger.warn("Rowkey with value " + rowKey.toString() + " doesn't exist in the table");
             }
+        } catch (IOException e) {
+            throw new MetaModelException(e);
         }
     }
 
     /**
      * Checks in the HBase datastore if a row exists based on the key
      * @param table
-     * @param key
+     * @param rowKey
      * @return boolean
      * @throws IOException
      */
-    private boolean rowExists(Table table, Object key) throws IOException {
-        final Get get = new Get(Bytes.toBytes(key.toString()));
+    private boolean rowExists(Table table, Object rowKey) throws IOException {
+        final Get get = new Get(Bytes.toBytes(rowKey.toString()));
         return !table.get(get).isEmpty();
     }
 
@@ -128,9 +120,13 @@ public final class HBaseClient {
      * Creates a HBase table based on a tableName and it's columnFamilies
      * @param tableName
      * @param columnFamilies
-     * @throws IOException
+     * @throws IllegalArgumentException when any parameter is null
+     * @throws MetaModelException when a {@link IOException} is catched
      */
-    public void createTable(String tableName, Set<String> columnFamilies) throws IOException {
+    public void createTable(String tableName, Set<String> columnFamilies) {
+        if (tableName == null || columnFamilies == null || columnFamilies.isEmpty()) {
+            throw new IllegalArgumentException("Can't create a table without having the tableName or columnFamilies");
+        }
         try (final Admin admin = _connection.getAdmin()) {
             final TableName hBasetableName = TableName.valueOf(tableName);
             final HTableDescriptor tableDescriptor = new HTableDescriptor(hBasetableName);
@@ -142,19 +138,27 @@ public final class HBaseClient {
                 }
             }
             admin.createTable(tableDescriptor);
+        } catch (IOException e) {
+            throw new MetaModelException(e);
         }
     }
 
     /**
      * Disable and drop a table from a HBase datastore
      * @param tableName
-     * @throws IOException
+     * @throws IllegalArgumentException when tableName is null
+     * @throws MetaModelException when a {@link IOException} is catched
      */
-    public void dropTable(String tableName) throws IOException {
+    public void dropTable(String tableName) {
+        if (tableName == null) {
+            throw new IllegalArgumentException("Can't drop a table without having the tableName");
+        }
         try (final Admin admin = _connection.getAdmin()) {
             final TableName hBasetableName = TableName.valueOf(tableName);
             admin.disableTable(hBasetableName); // A table must be disabled first, before it can be deleted
             admin.deleteTable(hBasetableName);
+        } catch (IOException e) {
+            throw new MetaModelException(e);
         }
     }
 }

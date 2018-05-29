@@ -54,14 +54,13 @@ public class HBaseDataContextTest extends HBaseTestCase {
         assertEquals("[" + HBaseDataContext.FIELD_ID + ", " + CF_BAR + ", " + CF_FOO + "]", Arrays.toString(table
                 .getColumnNames()
                 .toArray()));
-        assertEquals(ColumnType.MAP, table.getColumn(1).getType());
+        assertEquals(HBaseColumn.DEFAULT_COLUMN_TYPE_FOR_COLUMN_FAMILIES, table.getColumn(1).getType());
 
         // insert two records
         insertRecordsNatively();
 
         // query using regular configuration
-        final DataSet dataSet1 = getDataContext().query().from(TABLE_NAME).selectAll().execute();
-        try {
+        try (final DataSet dataSet1 = getDataContext().query().from(TABLE_NAME).selectAll().execute()) {
             assertTrue(dataSet1.next());
             assertEquals("Row[values=[" + RK_1 + ", {" + Q_HEY + "=" + V_YO + "," + Q_HI + "=" + V_THERE + "}, {"
                     + Q_HELLO + "=" + V_WORLD + "}]]", dataSet1.getRow().toString());
@@ -69,8 +68,6 @@ public class HBaseDataContextTest extends HBaseTestCase {
             assertEquals("Row[values=[" + RK_2 + ", {" + Q_BAH + "=" + new String(V_123_BYTE_ARRAY) + "," + Q_HI + "="
                     + V_YOU + "}, {}]]", dataSet1.getRow().toString());
             assertFalse(dataSet1.next());
-        } finally {
-            dataSet1.close();
         }
 
         // query using custom table definitions
@@ -79,17 +76,16 @@ public class HBaseDataContextTest extends HBaseTestCase {
         final String columnName3 = CF_BAR + ":" + Q_HEY;
         final String[] columnNames = new String[] { columnName1, columnName2, columnName3 };
         final ColumnType[] columnTypes = new ColumnType[] { ColumnType.MAP, ColumnType.VARCHAR, ColumnType.VARCHAR };
-        final SimpleTableDef[] tableDefinitions = new SimpleTableDef[] { new SimpleTableDef(TABLE_NAME,
-                columnNames, columnTypes) };
+        final SimpleTableDef[] tableDefinitions = new SimpleTableDef[] { new SimpleTableDef(TABLE_NAME, columnNames,
+                columnTypes) };
         setDataContext(new HBaseDataContext(new HBaseConfiguration("SCH", getZookeeperHostname(), getZookeeperPort(),
                 tableDefinitions, ColumnType.VARCHAR)));
 
-        final DataSet dataSet2 = getDataContext()
+        try (final DataSet dataSet2 = getDataContext()
                 .query()
                 .from(TABLE_NAME)
                 .select(columnName1, columnName2, columnName3)
-                .execute();
-        try {
+                .execute()) {
             assertTrue(dataSet2.next());
             assertEquals("Row[values=[{" + Q_HELLO + "=" + V_WORLD + "}, " + V_THERE + ", " + V_YO + "]]", dataSet2
                     .getRow()
@@ -97,52 +93,39 @@ public class HBaseDataContextTest extends HBaseTestCase {
             assertTrue(dataSet2.next());
             assertEquals("Row[values=[{}, " + V_YOU + ", null]]", dataSet2.getRow().toString());
             assertFalse(dataSet2.next());
-        } finally {
-            dataSet2.close();
         }
 
         // query count
-        final DataSet dataSet3 = getDataContext().query().from(TABLE_NAME).selectCount().execute();
-        try {
+        try (final DataSet dataSet3 = getDataContext().query().from(TABLE_NAME).selectCount().execute()) {
             assertTrue(dataSet3.next());
             assertEquals("Row[values=[" + NUMBER_OF_ROWS + "]]", dataSet3.getRow().toString());
             assertFalse(dataSet3.next());
-        } finally {
-            dataSet3.close();
         }
 
         // query only id
-        final DataSet dataSet4 = getDataContext()
+        try (final DataSet dataSet4 = getDataContext()
                 .query()
                 .from(TABLE_NAME)
                 .select(HBaseDataContext.FIELD_ID)
-                .execute();
-
-        try {
+                .execute()) {
             assertTrue(dataSet4.next());
             assertEquals("Row[values=[" + RK_1 + "]]", dataSet4.getRow().toString());
             assertTrue(dataSet4.next());
             assertEquals("Row[values=[" + RK_2 + "]]", dataSet4.getRow().toString());
             assertFalse(dataSet4.next());
-        } finally {
-            dataSet4.close();
         }
 
         // primary key lookup query - using GET
-        final DataSet dataSet5 = getDataContext()
+        try (final DataSet dataSet5 = getDataContext()
                 .query()
                 .from(TABLE_NAME)
                 .select(HBaseDataContext.FIELD_ID)
                 .where(HBaseDataContext.FIELD_ID)
                 .eq(RK_1)
-                .execute();
-
-        try {
+                .execute()) {
             assertTrue(dataSet5.next());
             assertEquals("Row[values=[" + RK_1 + "]]", dataSet5.getRow().toString());
             assertFalse(dataSet5.next());
-        } finally {
-            dataSet5.close();
         }
     }
 

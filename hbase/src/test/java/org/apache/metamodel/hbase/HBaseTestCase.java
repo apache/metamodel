@@ -20,9 +20,11 @@ package org.apache.metamodel.hbase;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.metamodel.schema.ColumnType;
+import org.junit.AfterClass;
 
 import junit.framework.TestCase;
 
@@ -59,31 +61,42 @@ public abstract class HBaseTestCase extends TestCase {
     private String zookeeperHostname;
     private int zookeeperPort;
     private boolean _configured;
-    private HBaseDataContext _dataContext;
+    private static HBaseDataContext _dataContext;
+
+    private boolean setUpIsDone = false;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
 
-        Properties properties = new Properties();
-        File file = new File(getPropertyFilePath());
-        if (file.exists()) {
-            properties.load(new FileReader(file));
-            zookeeperHostname = properties.getProperty("hbase.zookeeper.hostname");
-            String zookeeperPortPropertyValue = properties.getProperty("hbase.zookeeper.port");
-            if (zookeeperPortPropertyValue != null && !zookeeperPortPropertyValue.isEmpty()) {
-                zookeeperPort = Integer.parseInt(zookeeperPortPropertyValue);
-            }
+        if (!setUpIsDone) {
+            Properties properties = new Properties();
+            File file = new File(getPropertyFilePath());
+            if (file.exists()) {
+                properties.load(new FileReader(file));
+                zookeeperHostname = properties.getProperty("hbase.zookeeper.hostname");
+                String zookeeperPortPropertyValue = properties.getProperty("hbase.zookeeper.port");
+                if (zookeeperPortPropertyValue != null && !zookeeperPortPropertyValue.isEmpty()) {
+                    zookeeperPort = Integer.parseInt(zookeeperPortPropertyValue);
+                }
 
-            _configured = (zookeeperHostname != null && !zookeeperHostname.isEmpty());
-        } else {
-            _configured = false;
+                _configured = (zookeeperHostname != null && !zookeeperHostname.isEmpty());
+            } else {
+                _configured = false;
+            }
+            if (isConfigured()) {
+                final HBaseConfiguration configuration = new HBaseConfiguration(zookeeperHostname, zookeeperPort,
+                        ColumnType.VARCHAR);
+                setDataContext(new HBaseDataContext(configuration));
+            }
+            setUpIsDone = true;
         }
-        if (isConfigured()) {
-            final HBaseConfiguration configuration = new HBaseConfiguration(zookeeperHostname, zookeeperPort,
-                    ColumnType.VARCHAR);
-            setDataContext(new HBaseDataContext(configuration));
-        }
+    }
+
+    @AfterClass
+    public static void oneTimeTeardown() throws IOException {
+        _dataContext.getConnection().close();
+        ;
     }
 
     private String getPropertyFilePath() {
@@ -113,12 +126,6 @@ public abstract class HBaseTestCase extends TestCase {
     }
 
     public void setDataContext(HBaseDataContext dataContext) {
-        this._dataContext = dataContext;
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        _dataContext.getConnection().close();
+        HBaseTestCase._dataContext = dataContext;
     }
 }

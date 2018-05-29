@@ -18,13 +18,14 @@
  */
 package org.apache.metamodel.hbase;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.TableType;
@@ -44,8 +45,8 @@ final class HBaseTable extends MutableTable {
     private final transient ColumnType _defaultRowKeyColumnType;
 
     /**
-     * Creates an HBaseTable. If the tableDef variable doesn't include the ID column (see {@link HBaseDataContext#FIELD_ID}). 
-     * Then it's first inserted.
+     * Creates an HBaseTable. If the tableDef variable doesn't include the ID-column (see {@link HBaseDataContext#FIELD_ID}). 
+     * Then it's first added.
      * @param dataContext
      * @param tableDef Table definition. The tableName, columnNames and columnTypes variables are used.
      * @param schema {@link MutableSchema} where the table belongs to.
@@ -57,7 +58,15 @@ final class HBaseTable extends MutableTable {
         super(tableDef.getName(), TableType.TABLE, schema);
         _dataContext = dataContext;
         _defaultRowKeyColumnType = defaultRowKeyColumnType;
+        addColumns(tableDef, defaultRowKeyColumnType);
+    }
 
+    /**
+     * Add multiple columns to this table
+     * @param tableDef
+     * @param defaultRowKeyColumnType
+     */
+    private void addColumns(SimpleTableDef tableDef, ColumnType defaultRowKeyColumnType) {
         // Add the columns
         final String[] columnNames = tableDef.getColumnNames();
         if (columnNames == null || columnNames.length == 0) {
@@ -66,79 +75,55 @@ final class HBaseTable extends MutableTable {
             final ColumnType[] columnTypes = tableDef.getColumnTypes();
 
             // Find the ID-Column
-            boolean idColumnFound = false;
-            int indexOfIDColumn = 0;
-            while (!idColumnFound && indexOfIDColumn < columnNames.length) {
-                if (columnNames[indexOfIDColumn].equals(HBaseDataContext.FIELD_ID)) {
-                    idColumnFound = true;
-                } else {
-                    indexOfIDColumn++;
-                }
-            }
+            Integer indexOfIDColumn = HBaseColumn.findIndexOfIdColumn(columnNames);
+            boolean idColumnFound = indexOfIDColumn != null;
 
-            int columnNumber = indexOfIDColumn + 1; // ColumnNumbers start from 1
-
-            // Add the ID-Column, even if the column wasn't included in columnNames
-            ColumnType columnType;
+            // ColumnNumbers start from 1
             if (idColumnFound) {
-                columnType = columnTypes[indexOfIDColumn];
+                addColumn(HBaseDataContext.FIELD_ID, columnTypes[indexOfIDColumn.intValue()], indexOfIDColumn.intValue()
+                        + 1);
             } else {
-                columnType = defaultRowKeyColumnType;
+                addColumn(HBaseDataContext.FIELD_ID, defaultRowKeyColumnType, 1);
             }
-            final MutableColumn idColumn = new MutableColumn(HBaseDataContext.FIELD_ID, columnType)
-                    .setPrimaryKey(true)
-                    .setColumnNumber(columnNumber)
-                    .setTable(this);
-            addColumn(idColumn);
 
             // Add the other columns
             for (int i = 0; i < columnNames.length; i++) {
-                final String columnName = columnNames[i];
-                if (idColumnFound) {
-                    columnNumber = i + 1; // ColumnNumbers start from 1
-                } else {
-                    columnNumber = i + 2; // ColumnNumbers start from 1 + the ID-column has just been created
-                }
-                if (!HBaseDataContext.FIELD_ID.equals(columnName)) {
-                    final ColumnType type = columnTypes[i];
-                    final MutableColumn column = new MutableColumn(columnName, type);
-                    column.setTable(this);
-                    column.setColumnNumber(columnNumber);
-                    addColumn(column);
-                    columnNumber++;
+                if (!HBaseDataContext.FIELD_ID.equals(columnNames[i])) {
+                    if (idColumnFound) {
+                        addColumn(columnNames[i], columnTypes[i], i + 1);
+                    } else {
+                        addColumn(columnNames[i], columnTypes[i], i + 2);
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Add a column to this table
+     * @param columnName
+     * @param columnType
+     * @param columnNumber
+     */
+    private void addColumn(final String columnName, final ColumnType columnType, final int columnNumber) {
+        addColumn(new HBaseColumn(columnName, null, this, columnNumber, columnType));
     }
 
     @Override
     protected synchronized List<Column> getColumnsInternal() {
         final List<Column> columnsInternal = super.getColumnsInternal();
         if (columnsInternal.isEmpty() && _dataContext != null) {
-            try {
-                final org.apache.hadoop.hbase.client.Table table = _dataContext.getHTable(getName());
-                int columnNumber = 1;
-
-                final MutableColumn idColumn = new MutableColumn(HBaseDataContext.FIELD_ID, _defaultRowKeyColumnType)
-                        .setPrimaryKey(true)
-                        .setColumnNumber(columnNumber)
-                        .setTable(this);
-                addColumn(idColumn);
-                columnNumber++;
+            try (final org.apache.hadoop.hbase.client.Table table = _dataContext.getHTable(getName())) {
+                // Add the ID-Column (with columnNumber = 1)
+                addColumn(HBaseDataContext.FIELD_ID, _defaultRowKeyColumnType, 1);
 
                 // What about timestamp?
 
+                // Add the other column (with columnNumbers starting from 2)
                 final HColumnDescriptor[] columnFamilies = table.getTableDescriptor().getColumnFamilies();
                 for (int i = 0; i < columnFamilies.length; i++) {
-                    final HColumnDescriptor columnDescriptor = columnFamilies[i];
-                    final String columnFamilyName = columnDescriptor.getNameAsString();
-                    // HBase column families are always unstructured maps.
-                    final ColumnType type = ColumnType.MAP;
-                    final MutableColumn column = new MutableColumn(columnFamilyName, type);
-                    column.setTable(this);
-                    column.setColumnNumber(columnNumber);
-                    columnNumber++;
-                    addColumn(column);
+                    addColumn(columnFamilies[i].getNameAsString(), HBaseColumn.DEFAULT_COLUMN_TYPE_FOR_COLUMN_FAMILIES,
+                            i + 2);
                 }
             } catch (Exception e) {
                 throw new MetaModelException("Could not resolve table ", e);
@@ -149,19 +134,18 @@ final class HBaseTable extends MutableTable {
 
     /**
      * Check if a list of columnNames all exist in this table
-     * If a column doesn't exist, then a {@link MetaModelException} is thrown
      * @param columnNamesOfCheckedTable
+     * @throws MetaModelException If a column doesn't exist
      */
-    public void checkForNotMatchingColumns(final List<String> columnNamesOfCheckedTable) {
-        final List<String> columnsNamesOfExistingTable = getColumnNames();
+    public void checkForNotMatchingColumnFamilies(final Set<String> columnNamesOfCheckedTable) {
+        Set<String> columnFamilyNamesOfExistingTable = HBaseColumn.getColumnFamilies(getHBaseColumnsInternal());
+
         for (String columnNameOfCheckedTable : columnNamesOfCheckedTable) {
             boolean matchingColumnFound = false;
-            int i = 0;
-            while (!matchingColumnFound && i < columnsNamesOfExistingTable.size()) {
-                if (columnNameOfCheckedTable.equals(columnsNamesOfExistingTable.get(i))) {
+            Iterator<String> iterator = columnFamilyNamesOfExistingTable.iterator();
+            while (!matchingColumnFound && iterator.hasNext()) {
+                if (columnNameOfCheckedTable.equals(iterator.next())) {
                     matchingColumnFound = true;
-                } else {
-                    i++;
                 }
             }
             if (!matchingColumnFound) {
@@ -169,5 +153,14 @@ final class HBaseTable extends MutableTable {
                         columnNameOfCheckedTable));
             }
         }
+    }
+
+    /**
+     * Returns a list of {@link HBaseColumn}'s from {@link HBaseTable#getColumnsInternal()}, 
+     * which returns a list of {@link Column}'s
+     * @return {@link List}<{@link HBaseColumn}>
+     */
+    public List<HBaseColumn> getHBaseColumnsInternal() {
+        return HBaseColumn.convertToHBaseColumnsList(getColumnsInternal());
     }
 }

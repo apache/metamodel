@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.hbase;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.metamodel.MetaModelException;
@@ -27,20 +25,44 @@ import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
 import org.apache.metamodel.schema.Column;
 
 /**
- * A builder-class to insert rows in a HBase datastore
+ * A builder-class to insert rows in a HBase datastore.
  */
+// TODO: Possible future improvement: Make it possible to change the columns for each execute.
+// Now each row will get exactly the same columns.
 public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseUpdateCallback> {
+    final Integer _indexOfIdColumn;
+
+    /**
+     * Creates a {@link HBaseRowInsertionBuilder}. The table and the column's columnFamilies are checked to exist in the schema.
+     * @param updateCallback
+     * @param table
+     * @param columns
+     * @throws IllegalArgumentException the columns list can't be null or empty
+     * @throws MetaModelException when no ID-column is found.
+     */
     public HBaseRowInsertionBuilder(final HBaseUpdateCallback updateCallback, final HBaseTable table,
             final List<Column> columns) {
         super(updateCallback, table, columns);
+        if (columns.isEmpty()) { // TODO: Columns null will already result in a NullPointer at the super. Should the
+                                 // super get a extra check?
+            throw new IllegalArgumentException("The hbaseColumns list is null or empty");
+        }
+
+        this._indexOfIdColumn = HBaseColumn.findIndexOfIdColumn(HBaseColumn.convertToHBaseColumnsList(columns));
+        if (_indexOfIdColumn == null) {
+            throw new MetaModelException("The ID-Column was not found");
+        }
+
         checkTable(updateCallback, table);
+        table.checkForNotMatchingColumnFamilies(HBaseColumn.getColumnFamilies(HBaseColumn.convertToHBaseColumnsList(
+                columns)));
     }
 
     /**
-     * Check if the table exits and it's columnFamilies exist
-     * If the table doesn't exist, then a {@link MetaModelException} is thrown
+     * Check if the table and it's columnFamilies exist in the schema
      * @param updateCallback
      * @param tableGettingInserts
+     * @throws MetaModelException If the table or the columnFamilies don't exist
      */
     private void checkTable(final HBaseUpdateCallback updateCallback, final HBaseTable tableGettingInserts) {
         final HBaseTable tableInSchema = (HBaseTable) updateCallback.getDataContext().getDefaultSchema().getTableByName(
@@ -49,28 +71,18 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
             throw new MetaModelException("Trying to insert data into table: " + tableGettingInserts.getName()
                     + ", which doesn't exist yet");
         }
-        tableInSchema.checkForNotMatchingColumns(tableGettingInserts.getColumnNames());
+        tableInSchema.checkForNotMatchingColumnFamilies(HBaseColumn.getColumnFamilies(tableGettingInserts
+                .getHBaseColumnsInternal()));
     }
 
     @Override
     public synchronized void execute() {
-        if (getColumns() == null || getColumns().length == 0) {
-            throw new MetaModelException("The hbaseColumns-array is null or empty");
-        }
-        if (getValues() == null || getValues().length == 0) {
-            throw new MetaModelException("The values-array is null or empty");
-        }
-        try {
-            final HBaseClient hBaseClient = getUpdateCallback().getHBaseClient();
-            hBaseClient.writeRow((HBaseTable) getTable(), getColumns(), getValues());
-        } catch (IOException e) {
-            throw new MetaModelException(e);
-        }
+        getUpdateCallback().getHBaseClient().insertRow(getTable().getName(), getColumns(), getValues(), _indexOfIdColumn
+                .intValue());
     }
 
     @Override
     public HBaseColumn[] getColumns() {
-        return Arrays.stream(super.getColumns()).map(column -> (HBaseColumn) column).toArray(
-                size -> new HBaseColumn[size]);
+        return HBaseColumn.convertToHBaseColumnsArray(super.getColumns());
     }
 }

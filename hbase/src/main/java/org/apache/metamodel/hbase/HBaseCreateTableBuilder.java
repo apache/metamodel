@@ -18,7 +18,6 @@
  */
 package org.apache.metamodel.hbase;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -64,12 +63,7 @@ public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseU
         final Table table = getTable();
 
         // Add the table to the datastore
-        try {
-            final HBaseClient hBaseClient = getUpdateCallback().getHBaseClient();
-            hBaseClient.createTable(table.getName(), _columnFamilies);
-        } catch (IOException e) {
-            throw new MetaModelException(e);
-        }
+        getUpdateCallback().getHBaseClient().createTable(table.getName(), _columnFamilies);
 
         // Update the schema
         addNewTableToSchema(table);
@@ -108,7 +102,7 @@ public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseU
     /**
      * Add the new {@link Table} to the {@link MutableSchema}
      * @param table
-     * @param updateCallback
+     * @param data.updateCallback
      * @return {@link MutableSchema}
      */
     private void addNewTableToSchema(final Table table) {

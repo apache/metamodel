@@ -20,56 +20,62 @@ package org.apache.metamodel.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
-import org.apache.metamodel.MetaModelException;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.schema.ImmutableSchema;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class HBaseUpdateCallbackTest extends HBaseTestCase {
+public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
+
+    private static final Logger logger = LoggerFactory.getLogger(HBaseClient.class);
 
     private HBaseUpdateCallback updateCallback;
     private MutableSchema schema;
+
+    private boolean setUpIsDone = false;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         if (isConfigured()) {
-            updateCallback = new HBaseUpdateCallback(getDataContext());
-            schema = (MutableSchema) getDataContext().getDefaultSchema();
-
-            if (schema.getTableByName(TABLE_NAME) != null) {
+            if (setUpIsDone) {
                 dropTableIfItExists();
+            } else {
+                updateCallback = new HBaseUpdateCallback(getDataContext());
+                schema = (MutableSchema) getDataContext().getDefaultSchema();
+                dropTableIfItExists();
+                setUpIsDone = true;
             }
         }
     }
 
-    public void testDropTable() throws IOException {
-        dropTableIfItExists();
-
-        try {
-            HBaseTable table = createHBaseTable();
-            updateCallback.dropTable(table).execute();
-            fail("Should get an exception that the table doesn't exist in the datastore");
-        } catch (MetaModelException e) {
-            assertEquals("Trying to delete a table that doesn't exist in the datastore.", e.getMessage());
+    @Override
+    public void tearDown() throws Exception {
+        if (isConfigured()) {
+            dropTableIfItExists();
         }
+        super.tearDown();
     }
 
-    private void dropTableIfItExists() {
-        Table table = schema.getTableByName(TABLE_NAME);
+    protected void dropTableIfItExists() {
+        final Table table = schema.getTableByName(TABLE_NAME);
         if (table != null) {
             updateCallback.dropTable(table).execute();
             // Check schema
             assertNull(schema.getTableByName(TABLE_NAME));
             // Check in the datastore
-            try (Admin admin = getDataContext().getAdmin()) {
+            try (final Admin admin = getDataContext().getAdmin()) {
                 assertFalse(admin.tableExists(TableName.valueOf(TABLE_NAME)));
             } catch (IOException e) {
                 fail("Should not an exception checking if the table exists");
@@ -77,137 +83,121 @@ public class HBaseUpdateCallbackTest extends HBaseTestCase {
         }
     }
 
-    public void testCreateTable() {
-        // Drop the table if it exists
-        dropTableIfItExists();
-
-        // Test 1: Create a table with an immutableSchema, should throw a IllegalArgumentException
-        ImmutableSchema immutableSchema = new ImmutableSchema(schema);
-        try {
-            updateCallback.createTable(immutableSchema, TABLE_NAME).execute();
-            fail("Should get an exception that the schema isn't mutable");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Not a mutable schema: " + immutableSchema, e.getMessage());
-        }
-
-        // Test 2: Create a table without columnFamilies, should throw a MetaModelException
-        try {
-            updateCallback.createTable(schema, TABLE_NAME).execute();
-            fail("Should get an exception that the columnFamilies haven't been set");
-        } catch (MetaModelException e) {
-            assertEquals("Creating a table without columnFamilies", e.getMessage());
-        }
-
-        // Test 3: Create a table with columnFamilies null, should throw a MetaModelException
-        try {
-            updateCallback.createTable(schema, TABLE_NAME, null).execute();
-            fail("Should get an exception that the columnFamilies haven't been set");
-        } catch (MetaModelException e) {
-            assertEquals("Creating a table without columnFamilies", e.getMessage());
-        }
-
-        // Test 4: Create a table with columnFamilies empty, should throw a MetaModelException
-        try {
-            final LinkedHashSet<String> columnFamilies = new LinkedHashSet<String>();
-            updateCallback.createTable(schema, TABLE_NAME, columnFamilies).execute();
-            fail("Should get an exception that the columnFamilies haven't been set");
-        } catch (MetaModelException e) {
-            assertEquals("Creating a table without columnFamilies", e.getMessage());
-        }
-
-        HBaseTable table = createHBaseTable();
-
-        // Test 5: Create a table without the ID-Column, should throw a MetaModelException
-        ArrayList<HBaseColumn> hBaseColumnsAsArrayList = createListWithHBaseColumnsExcludingIDColumn(table);
-        HBaseColumn[] hBaseColumnsAsArray = convertToHBaseColumnArray(hBaseColumnsAsArrayList);
-        Set<String> columnFamilies = HBaseColumn.getColumnFamilies(hBaseColumnsAsArray);
-        try {
-            HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) updateCallback.createTable(
-                    schema, TABLE_NAME);
-
-            hBaseCreateTableBuilder.setColumnFamilies(columnFamilies);
-            hBaseCreateTableBuilder.execute();
-            fail("Should get an exception that the ID-colum is missing");
-        } catch (MetaModelException e) {
-            assertEquals("ColumnFamily: " + HBaseDataContext.FIELD_ID + " not found", e.getMessage());
-        }
-
-        // Test 6: Create a table including the ID-Column (columnFamilies not in constructor), should work
-        hBaseColumnsAsArrayList = createListWithHBaseColumnsIncludingIDColumn(table);
-        hBaseColumnsAsArray = convertToHBaseColumnArray(hBaseColumnsAsArrayList);
-        columnFamilies = HBaseColumn.getColumnFamilies(hBaseColumnsAsArray);
-        try {
-            HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) updateCallback.createTable(
-                    schema, TABLE_NAME);
-
-            hBaseCreateTableBuilder.setColumnFamilies(HBaseColumn.getColumnFamilies(hBaseColumnsAsArray));
-            hBaseCreateTableBuilder.execute();
-            checkSuccesfullyInsertedTable();
-        } catch (Exception e) {
-            fail("Should not get an exception");
-        }
-        dropTableIfItExists();
-
-        // Test 7: Create a table including the ID-Column (columnFamilies in constructor), should work
-        try {
-            updateCallback.createTable(schema, TABLE_NAME, columnFamilies).execute();
-            checkSuccesfullyInsertedTable();
-        } catch (Exception e) {
-            fail("Should not get an exception");
-        }
-        dropTableIfItExists();
-    }
-
-    private void checkSuccesfullyInsertedTable() throws IOException {
+    protected void checkSuccesfullyInsertedTable() throws IOException {
         // Check the schema
         assertNotNull(schema.getTableByName(TABLE_NAME));
         // Check in the datastore
-        try (Admin admin = getDataContext().getAdmin()) {
+        try (final Admin admin = getDataContext().getAdmin()) {
             assertTrue(admin.tableExists(TableName.valueOf(TABLE_NAME)));
         } catch (IOException e) {
             fail("Should not an exception checking if the table exists");
         }
     }
 
-    // public void testInsertRows() throws IOException {
-    // // Drop the table if it exists
-    // dropTableIfItExists();
-    //
-    // insertTable();
-    // }
-
-    private void insertTable() throws IOException {
-        HBaseTable table = createHBaseTable();
-        ArrayList<HBaseColumn> hBaseColumnsAsArrayList = createListWithHBaseColumnsIncludingIDColumn(table);
-        HBaseColumn[] hBaseColumnsAsArray = convertToHBaseColumnArray(hBaseColumnsAsArrayList);
-        Set<String> columnFamilies = HBaseColumn.getColumnFamilies(hBaseColumnsAsArray);
-        updateCallback.createTable(schema, TABLE_NAME, columnFamilies).execute();
+    protected HBaseTable createAndInsertTable(final String tableName, final String idColumn, final String columnFamily1,
+            final String columnFamily2) throws IOException {
+        final LinkedHashSet<String> columnFamilies = new LinkedHashSet<>();
+        columnFamilies.add(idColumn);
+        columnFamilies.add(columnFamily1);
+        columnFamilies.add(columnFamily2);
+        updateCallback.createTable(schema, tableName, columnFamilies).execute();
         checkSuccesfullyInsertedTable();
+        return (HBaseTable) getDataContext().getDefaultSchema().getTableByName(tableName);
     }
 
-    private HBaseTable createHBaseTable() {
-        String[] columnNames = new String[] { CF_FOO, CF_BAR };
-        ColumnType[] columnTypes = new ColumnType[] { ColumnType.STRING, ColumnType.STRING };
-        SimpleTableDef tableDef = new SimpleTableDef(TABLE_NAME, columnNames, columnTypes);
+    protected HBaseTable createHBaseTable(final String tableName, final String idColumn, final String columnFamily1,
+            final String columnFamily2, final String columnFamily3) {
+        String[] columnNames;
+        ColumnType[] columnTypes;
+        if (columnFamily3 == null) {
+            columnNames = new String[] { idColumn, columnFamily1, columnFamily2 };
+            columnTypes = new ColumnType[] { ColumnType.STRING, ColumnType.STRING, ColumnType.STRING };
+        } else {
+            columnNames = new String[] { idColumn, columnFamily1, columnFamily2, columnFamily3 };
+            columnTypes = new ColumnType[] { ColumnType.STRING, ColumnType.STRING, ColumnType.STRING,
+                    ColumnType.STRING };
+        }
+        final SimpleTableDef tableDef = new SimpleTableDef(tableName, columnNames, columnTypes);
         return new HBaseTable(getDataContext(), tableDef, schema, ColumnType.STRING);
     }
 
-    private static ArrayList<HBaseColumn> createListWithHBaseColumnsExcludingIDColumn(final HBaseTable table) {
-        ArrayList<HBaseColumn> hbaseColumns = new ArrayList<HBaseColumn>();
-        hbaseColumns.add(new HBaseColumn(CF_FOO, Q_HELLO, table));
-        hbaseColumns.add(new HBaseColumn(CF_FOO, Q_HI, table));
-        hbaseColumns.add(new HBaseColumn(CF_BAR, Q_HEY, table));
-        hbaseColumns.add(new HBaseColumn(CF_BAR, Q_BAH, table));
-        return hbaseColumns;
+    protected static LinkedHashMap<HBaseColumn, Object> createRow(final HBaseTable table, final String idColumn,
+            final String columnFamily1, final String columnFamily2) {
+        final LinkedHashMap<HBaseColumn, Object> map = new LinkedHashMap<>();
+
+        // Columns
+        final ArrayList<HBaseColumn> columns = new ArrayList<>();
+        if (idColumn != null) {
+            columns.add(new HBaseColumn(idColumn, table));
+        }
+        columns.add(new HBaseColumn(columnFamily1, Q_HELLO, table));
+        columns.add(new HBaseColumn(columnFamily1, Q_HI, table));
+        columns.add(new HBaseColumn(columnFamily2, Q_HEY, table));
+        columns.add(new HBaseColumn(columnFamily2, Q_BAH, table));
+
+        // Values
+        final ArrayList<Object> values = new ArrayList<>();
+        if (idColumn != null) {
+            values.add(RK_1);
+        }
+        values.add(V_WORLD);
+        values.add(V_THERE);
+        values.add(V_YO);
+        values.add(V_123_BYTE_ARRAY);
+
+        // Fill the map
+        for (int i = 0; i < columns.size(); i++) {
+            map.put(columns.get(i), values.get(i));
+        }
+
+        return map;
     }
 
-    private static ArrayList<HBaseColumn> createListWithHBaseColumnsIncludingIDColumn(final HBaseTable table) {
-        ArrayList<HBaseColumn> hbaseColumns = createListWithHBaseColumnsExcludingIDColumn(table);
-        hbaseColumns.add(new HBaseColumn(HBaseDataContext.FIELD_ID, table));
-        return hbaseColumns;
+    protected static List<HBaseColumn> getHBaseColumnsFromMap(final LinkedHashMap<HBaseColumn, Object> map) {
+        final List<HBaseColumn> columns = new ArrayList<>();
+        columns.addAll(map.keySet());
+        return columns;
     }
 
-    private static HBaseColumn[] convertToHBaseColumnArray(final ArrayList<HBaseColumn> hBaseColumnsAsArrayList) {
-        return hBaseColumnsAsArrayList.toArray(new HBaseColumn[hBaseColumnsAsArrayList.size()]);
+    protected void setValuesInInsertionBuilder(final LinkedHashMap<HBaseColumn, Object> row,
+            final HBaseRowInsertionBuilder rowInsertionBuilder) {
+        int i = 0;
+        for (Object value : row.values()) {
+            rowInsertionBuilder.value(i, value);
+            i++;
+        }
+    }
+
+    protected void checkRows(final boolean rowsExist) throws IOException {
+        try (org.apache.hadoop.hbase.client.Table table = getDataContext().getConnection().getTable(TableName.valueOf(
+                TABLE_NAME))) {
+            final Get get = new Get(Bytes.toBytes(RK_1));
+            final Result result = table.get(get);
+            if (rowsExist) {
+                assertFalse(result.isEmpty());
+                assertEquals(V_WORLD, new String(result.getValue(Bytes.toBytes(CF_FOO), Bytes.toBytes(Q_HELLO))));
+                assertEquals(V_THERE, new String(result.getValue(Bytes.toBytes(CF_FOO), Bytes.toBytes(Q_HI))));
+                assertEquals(V_YO, new String(result.getValue(Bytes.toBytes(CF_BAR), Bytes.toBytes(Q_HEY))));
+                assertEquals(V_123_BYTE_ARRAY.toString(), new String(result.getValue(Bytes.toBytes(CF_BAR), Bytes
+                        .toBytes(Q_BAH))));
+            } else {
+                assertTrue(result.isEmpty());
+            }
+        }
+    }
+
+    protected void warnAboutANotExecutedTest(String className, String methodName) {
+        String logWarning = "Test(method) \"" + className + "#" + methodName
+                + "\" is not executed, because the HBasetest is not configured.";
+        // System.out.println(logWarning);
+        logger.warn(logWarning);
+    }
+
+    protected HBaseUpdateCallback getUpdateCallback() {
+        return updateCallback;
+    }
+
+    protected MutableSchema getSchema() {
+        return schema;
     }
 }

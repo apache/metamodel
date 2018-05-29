@@ -20,7 +20,6 @@ package org.apache.metamodel.hbase;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.metamodel.AbstractUpdateCallback;
 import org.apache.metamodel.UpdateCallback;
@@ -28,7 +27,6 @@ import org.apache.metamodel.create.TableCreationBuilder;
 import org.apache.metamodel.delete.RowDeletionBuilder;
 import org.apache.metamodel.drop.TableDropBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
-import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
@@ -70,19 +68,28 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
         return new HBaseTableDropBuilder(table, this);
     }
 
+    /**
+     * @throws IllegalArgumentException when table isn't a {@link HBaseTable}
+     */
     @Override
     public RowInsertionBuilder insertInto(final Table table) {
         throw new UnsupportedOperationException(
                 "We need an explicit list of columns when inserting into an HBase table.");
     }
 
-    public RowInsertionBuilder insertInto(final Table table, final List<HBaseColumn> columns) {
+    /**
+     * Initiates the building of a row insertion operation. 
+     * @param table Table to get inserts.
+     * @param columns List of {@link HBaseColumn} to insert on.
+     * @return {@link HBaseRowInsertionBuilder}
+     * @throws IllegalArgumentException The table must be an {@link HBaseTable} and the columns list can't be null or empty
+     */
+    public HBaseRowInsertionBuilder insertInto(final Table table, final List<HBaseColumn> columns) {
+        if (columns == null || columns.isEmpty()) {
+            throw new IllegalArgumentException("The hbaseColumns list is null or empty");
+        }
         if (table instanceof HBaseTable) {
-            return new HBaseRowInsertionBuilder(this, (HBaseTable) table, columns
-                    .stream()
-                    .map(obj -> (Column) obj)
-                    .collect(
-                    Collectors.toList()));
+            return new HBaseRowInsertionBuilder(this, (HBaseTable) table, HBaseColumn.convertToColumnsList(columns));
         } else {
             throw new IllegalArgumentException("Not an HBase table: " + table);
         }
@@ -93,6 +100,9 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
         return true;
     }
 
+    /**
+     * @throws IllegalArgumentException when table isn't a {@link HBaseTable}
+     */
     @Override
     public RowDeletionBuilder deleteFrom(Table table) {
         if (table instanceof HBaseTable) {
