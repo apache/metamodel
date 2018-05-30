@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 public class Neo4jDataContext extends QueryPostprocessDataContext implements DataContext, DocumentSourceProvider {
     public static final String SCHEMA_NAME = "neo4j";
     public static final int DEFAULT_PORT = 7474;
-    
+
     static final String NEO4J_KEY_METADATA = "metadata";
     static final String NEO4J_KEY_METADATA_TYPE = "type";
     static final String NEO4J_KEY_PROPERTIES = "properties";
@@ -73,7 +73,8 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
     private final HttpHost _httpHost;
     private String _serviceRoot = "/db/data";
 
-    public Neo4jDataContext(String hostname, int port, String username, String password, SimpleTableDef... tableDefs) {
+    public Neo4jDataContext(final String hostname, final int port, final String username, final String password,
+            final SimpleTableDef... tableDefs) {
         super(false);
         _httpHost = new HttpHost(hostname, port);
         final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
@@ -81,8 +82,8 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         _tableDefs = tableDefs;
     }
 
-    public Neo4jDataContext(String hostname, int port, String username, String password, String serviceRoot,
-            SimpleTableDef... tableDefs) {
+    public Neo4jDataContext(final String hostname, final int port, final String username, final String password,
+            final String serviceRoot, final SimpleTableDef... tableDefs) {
         super(false);
         _httpHost = new HttpHost(hostname, port);
         final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
@@ -91,7 +92,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         _serviceRoot = serviceRoot;
     }
 
-    public Neo4jDataContext(String hostname, int port, String username, String password) {
+    public Neo4jDataContext(final String hostname, final int port, final String username, final String password) {
         super(false);
         _httpHost = new HttpHost(hostname, port);
         final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
@@ -99,7 +100,8 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         _tableDefs = detectTableDefs();
     }
 
-    public Neo4jDataContext(String hostname, int port, String username, String password, String serviceRoot) {
+    public Neo4jDataContext(final String hostname, final int port, final String username, final String password,
+            final String serviceRoot) {
         super(false);
         _httpHost = new HttpHost(hostname, port);
         final CloseableHttpClient httpClient = HttpClientBuilder.create().build();
@@ -108,14 +110,15 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         _serviceRoot = serviceRoot;
     }
 
-    public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient) {
+    public Neo4jDataContext(final String hostname, final int port, final CloseableHttpClient httpClient) {
         super(false);
         _httpHost = new HttpHost(hostname, port);
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, _serviceRoot);
         _tableDefs = detectTableDefs();
     }
 
-    public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient, String serviceRoot) {
+    public Neo4jDataContext(final String hostname, final int port, final CloseableHttpClient httpClient,
+            final String serviceRoot) {
         super(false);
         _httpHost = new HttpHost(hostname, port);
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, _serviceRoot);
@@ -123,15 +126,16 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         _serviceRoot = serviceRoot;
     }
 
-    public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient, SimpleTableDef... tableDefs) {
+    public Neo4jDataContext(final String hostname, final int port, final CloseableHttpClient httpClient,
+            final SimpleTableDef... tableDefs) {
         super(false);
         _httpHost = new HttpHost(hostname, port);
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, _serviceRoot);
         _tableDefs = tableDefs;
     }
 
-    public Neo4jDataContext(String hostname, int port, CloseableHttpClient httpClient, String serviceRoot,
-            SimpleTableDef... tableDefs) {
+    public Neo4jDataContext(final String hostname, final int port, final CloseableHttpClient httpClient,
+            final String serviceRoot, final SimpleTableDef... tableDefs) {
         super(false);
         _httpHost = new HttpHost(hostname, port);
         _requestWrapper = new Neo4jRequestWrapper(httpClient, _httpHost, _serviceRoot);
@@ -146,8 +150,8 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
 
     @Override
     protected Schema getMainSchema() throws MetaModelException {
-        MutableSchema schema = new MutableSchema(getMainSchemaName());
-        for (SimpleTableDef tableDef : _tableDefs) {
+        final MutableSchema schema = new MutableSchema(getMainSchemaName());
+        for (final SimpleTableDef tableDef : _tableDefs) {
             MutableTable table = tableDef.toTable().setSchema(schema);
             schema.addTable(table);
         }
@@ -163,25 +167,25 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         final List<SimpleTableDef> tableDefs = new ArrayList<>();
         final String labelsJsonString = _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot + "/labels"));
         final JSONArray labelsJsonArray;
-        
+
         try {
             labelsJsonArray = new JSONArray(labelsJsonString);
-            
+
             for (int i = 0; i < labelsJsonArray.length(); i++) {
                 final SimpleTableDef tableDefFromLabel = createTableDefFromLabel(labelsJsonArray.getString(i));
-                
+
                 if (tableDefFromLabel != null) {
                     tableDefs.add(tableDefFromLabel);
                 }
             }
-            
+
             return tableDefs.toArray(new SimpleTableDef[tableDefs.size()]);
         } catch (final JSONException e) {
             logger.error("Error occurred in parsing JSON while detecting the schema: ", e);
             throw new IllegalStateException(e);
         }
     }
-    
+
     private SimpleTableDef createTableDefFromLabel(final String label) throws JSONException {
         final List<JSONObject> nodesPerLabel = getAllNodesPerLabel(label);
         final List<String> propertiesPerLabel = getPropertiesFromLabelNodes(nodesPerLabel);
@@ -192,16 +196,16 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
             final Set<String> relationshipPropertiesForNode = createRelationshipPropertiesForNode(nodeId);
             relationshipPropertiesPerLabel.addAll(relationshipPropertiesForNode);
         }
-        
+
         propertiesPerLabel.addAll(relationshipPropertiesPerLabel);
 
-        if (nodesPerLabel.isEmpty()) { 
+        if (nodesPerLabel.isEmpty()) {
             return null; // Do not add a table if label has no nodes (empty tables are considered non-existent)
         } else {
             final String[] columnNames = propertiesPerLabel.toArray(new String[propertiesPerLabel.size()]);
             final ColumnTypeResolver columnTypeResolver = new ColumnTypeResolver(nodesPerLabel.get(0), columnNames);
             return new SimpleTableDef(label, columnNames, columnTypeResolver.getColumnTypes());
-        } 
+        }
     }
 
     private Set<String> createRelationshipPropertiesForNode(final Integer nodeId) throws JSONException {
@@ -213,18 +217,18 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
             final String relationshipName = relationship.getString(NEO4J_KEY_METADATA_TYPE);
             final String relationshipNameProperty = NEO4J_COLUMN_NAME_RELATION_PREFIX + relationshipName;
             relationshipProperties.add(relationshipNameProperty);
-            
+
             // Add all the relationship properties as table columns
             final List<String> propertiesPerRelationship = getAllPropertiesPerRelationship(relationship);
             relationshipProperties.addAll(propertiesPerRelationship);
         }
-        
+
         return relationshipProperties;
     }
 
     private List<String> getPropertiesFromLabelNodes(final List<JSONObject> nodesPerLabel) {
         final List<String> propertiesPerLabel = new ArrayList<>();
-        
+
         for (final JSONObject node : nodesPerLabel) {
             final List<String> propertiesPerNode = getAllPropertiesPerNode(node);
 
@@ -234,7 +238,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
                 }
             }
         }
-        
+
         return propertiesPerLabel;
     }
 
@@ -245,7 +249,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
                     .getJSONObject(NEO4J_KEY_METADATA)
                     .getString(NEO4J_KEY_METADATA_TYPE);
             final JSONObject relationshipPropertiesJSONObject = relationship.getJSONObject(NEO4J_KEY_DATA);
-            
+
             if (relationshipPropertiesJSONObject.length() > 0) {
                 final JSONArray relationshipPropertiesNamesJSONArray = relationshipPropertiesJSONObject.names();
 
@@ -269,7 +273,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
         final String outgoingRelationshipsPerNodeJsonString = _requestWrapper.executeRestRequest(
                 new HttpGet(_serviceRoot + "/node/" + nodeId + "/relationships/out"));
         final JSONArray outgoingRelationshipsPerNodeJsonArray;
-        
+
         try {
             outgoingRelationshipsPerNodeJsonArray = new JSONArray(outgoingRelationshipsPerNodeJsonString);
             for (int i = 0; i < outgoingRelationshipsPerNodeJsonArray.length(); i++) {
@@ -287,60 +291,60 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
     }
 
     private List<JSONObject> getAllNodesPerLabel(String label) {
-        List<JSONObject> allNodesPerLabel = new ArrayList<JSONObject>();
+        final List<JSONObject> allNodesPerLabel = new ArrayList<>();
+        final String allNodesForLabelJsonString =
+                _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot + "/label/" + label + "/nodes"));
+        final JSONArray allNodesForLabelJsonArray;
 
-        String allNodesForLabelJsonString = _requestWrapper.executeRestRequest(new HttpGet(_serviceRoot + "/label/"
-                + label + "/nodes"));
-
-        JSONArray allNodesForLabelJsonArray;
         try {
             allNodesForLabelJsonArray = new JSONArray(allNodesForLabelJsonString);
             for (int i = 0; i < allNodesForLabelJsonArray.length(); i++) {
-                JSONObject node = allNodesForLabelJsonArray.getJSONObject(i);
+                final JSONObject node = allNodesForLabelJsonArray.getJSONObject(i);
                 allNodesPerLabel.add(node);
             }
             return allNodesPerLabel;
-        } catch (JSONException e) {
+        } catch (final JSONException e) {
             logger.error("Error occurred in parsing JSON while detecting the nodes for a label: " + label, e);
             throw new IllegalStateException(e);
         }
     }
 
-    private List<String> getAllPropertiesPerNode(JSONObject node) {
-        List<String> properties = new ArrayList<String>();
+    private List<String> getAllPropertiesPerNode(final JSONObject node) {
+        final List<String> properties = new ArrayList<>();
         properties.add(NEO4J_COLUMN_NAME_ID);
-
-        String propertiesEndpoint;
+        final String propertiesEndpoint;
         try {
             propertiesEndpoint = node.getString(NEO4J_KEY_PROPERTIES);
-            String allPropertiesPerNodeJsonString = _requestWrapper.executeRestRequest(new HttpGet(propertiesEndpoint));
+            final String allPropertiesPerNodeJsonString =
+                    _requestWrapper.executeRestRequest(new HttpGet(propertiesEndpoint));
+            final JSONObject allPropertiesPerNodeJsonObject = new JSONObject(allPropertiesPerNodeJsonString);
 
-            JSONObject allPropertiesPerNodeJsonObject = new JSONObject(allPropertiesPerNodeJsonString);
             for (int j = 0; j < allPropertiesPerNodeJsonObject.length(); j++) {
-                JSONArray propertiesJsonArray = allPropertiesPerNodeJsonObject.names();
+                final JSONArray propertiesJsonArray = allPropertiesPerNodeJsonObject.names();
                 for (int k = 0; k < propertiesJsonArray.length(); k++) {
-                    String property = propertiesJsonArray.getString(k);
+                    final String property = propertiesJsonArray.getString(k);
                     properties.add(property);
                 }
             }
             return properties;
-        } catch (JSONException e) {
+        } catch (final JSONException e) {
             logger.error("Error occurred in parsing JSON while detecting the properties of a node: " + node, e);
             throw new IllegalStateException(e);
         }
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int firstRow, int maxRows) {
+    protected DataSet materializeMainSchemaTable(final Table table, final List<Column> columns, final int firstRow,
+            final int maxRows) {
         if ((columns != null) && (columns.size() > 0)) {
-            Neo4jDataSet dataSet = null;
+            final Neo4jDataSet dataSet;
             try {
-                String selectQuery = Neo4jCypherQueryBuilder.buildSelectQuery(table, columns, firstRow, maxRows);
-                String responseJSONString = _requestWrapper.executeCypherQuery(selectQuery);
-                JSONObject resultJSONObject = new JSONObject(responseJSONString);
+                final String selectQuery = Neo4jCypherQueryBuilder.buildSelectQuery(table, columns, firstRow, maxRows);
+                final String responseJSONString = _requestWrapper.executeCypherQuery(selectQuery);
+                final JSONObject resultJSONObject = new JSONObject(responseJSONString);
                 final List<SelectItem> selectItems = columns.stream().map(SelectItem::new).collect(Collectors.toList());
                 dataSet = new Neo4jDataSet(selectItems, resultJSONObject);
-            } catch (JSONException e) {
+            } catch (final JSONException e) {
                 logger.error("Error occurred in parsing JSON while materializing the schema: ", e);
                 throw new IllegalStateException(e);
             }
@@ -353,26 +357,27 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
     }
 
     @Override
-    protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
+    protected DataSet materializeMainSchemaTable(final Table table, final List<Column> columns, final int maxRows) {
         return materializeMainSchemaTable(table, columns, 1, maxRows);
     }
 
     @Override
-    protected Number executeCountQuery(Table table, List<FilterItem> whereItems, boolean functionApproximationAllowed) {
-        String countQuery = Neo4jCypherQueryBuilder.buildCountQuery(table.getName(), whereItems);
-        String jsonResponse = _requestWrapper.executeCypherQuery(countQuery);
+    protected Number executeCountQuery(final Table table, final List<FilterItem> whereItems,
+            final boolean functionApproximationAllowed) {
+        final String countQuery = Neo4jCypherQueryBuilder.buildCountQuery(table.getName(), whereItems);
+        final String jsonResponse = _requestWrapper.executeCypherQuery(countQuery);
+        final JSONObject jsonResponseObject;
 
-        JSONObject jsonResponseObject;
         try {
             jsonResponseObject = new JSONObject(jsonResponse);
-            JSONArray resultsJSONArray = jsonResponseObject.getJSONArray(NEO4J_KEY_RESPONSE_RESULTS);
-            JSONObject resultJSONObject = (JSONObject) resultsJSONArray.get(0);
-            JSONArray dataJSONArray = resultJSONObject.getJSONArray(NEO4J_KEY_DATA);
-            JSONObject rowJSONObject = (JSONObject) dataJSONArray.get(0);
-            JSONArray valueJSONArray = rowJSONObject.getJSONArray(NEO4J_KEY_RESPONSE_ROW);
-            Number value = (Number) valueJSONArray.get(0);
+            final JSONArray resultsJSONArray = jsonResponseObject.getJSONArray(NEO4J_KEY_RESPONSE_RESULTS);
+            final JSONObject resultJSONObject = (JSONObject) resultsJSONArray.get(0);
+            final JSONArray dataJSONArray = resultJSONObject.getJSONArray(NEO4J_KEY_DATA);
+            final JSONObject rowJSONObject = (JSONObject) dataJSONArray.get(0);
+            final JSONArray valueJSONArray = rowJSONObject.getJSONArray(NEO4J_KEY_RESPONSE_ROW);
+            final Number value = (Number) valueJSONArray.get(0);
             return value;
-        } catch (JSONException e) {
+        } catch (final JSONException e) {
             logger.error("Error occurred in parsing JSON response: ", e);
             // Do not throw an exception here. Returning null here will make
             // MetaModel attempt to count records manually and therefore recover
@@ -387,7 +392,7 @@ public class Neo4jDataContext extends QueryPostprocessDataContext implements Dat
     }
 
     @Override
-    public DocumentSource getDocumentSourceForTable(String sourceCollectionName) {
+    public DocumentSource getDocumentSourceForTable(final String sourceCollectionName) {
         return null;
     }
 }

@@ -44,7 +44,7 @@ class ColumnTypeResolver {
 
     public ColumnType[] getColumnTypes() {
         final List<ColumnType> columnTypes = new ArrayList<>();
-        
+
         try {
             columnTypes.addAll(getColumnTypesFromMetadata());
             columnTypes.addAll(getColumnTypesFromData());
@@ -58,7 +58,7 @@ class ColumnTypeResolver {
 
     private List<ColumnType> getColumnTypesFromData() throws JSONException {
         final List<ColumnType> columnTypes = new ArrayList<>();
-        
+       
         if (_jsonObject.has(NEO4J_KEY_DATA)) {
             final JSONObject data = _jsonObject.getJSONObject(NEO4J_KEY_DATA);
             final Iterator<?> keysIterator = data.keys();
@@ -70,13 +70,13 @@ class ColumnTypeResolver {
                 removeIfAvailable(_columnNames, key);
             }
         }
-        
+
         return columnTypes;
     }
 
     private List<ColumnType> getColumnTypesFromMetadata() throws JSONException {
         final List<ColumnType> columnTypes = new ArrayList<>();
-        
+
         if (_jsonObject.has(NEO4J_KEY_METADATA)) {
             final JSONObject metadata = _jsonObject.getJSONObject(NEO4J_KEY_METADATA);
 
@@ -85,13 +85,13 @@ class ColumnTypeResolver {
                 removeIfAvailable(_columnNames, NEO4J_COLUMN_NAME_ID);
             }
         }
-        
+
         return columnTypes;
     }
 
     private List<ColumnType> getColumnTypesFromRemainingColumns() {
         final List<ColumnType> columnTypes = new ArrayList<>();
-        
+
         for (final String remainingColumnName : _columnNames) {
             if (remainingColumnName.contains(NEO4J_COLUMN_NAME_RELATION_PREFIX)) {
                 if (remainingColumnName.contains(NEO4J_COLUMN_NAME_RELATION_LIST_INDICATOR)) {
@@ -103,7 +103,7 @@ class ColumnTypeResolver {
                 columnTypes.add(ColumnType.STRING);
             }
         }
-        
+
         return columnTypes;
     }
 
