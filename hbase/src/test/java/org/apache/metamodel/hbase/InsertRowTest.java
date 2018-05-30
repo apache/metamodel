@@ -34,7 +34,12 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
      * @throws IOException
      */
     public void testInsertSupported() throws IOException {
-        assertTrue(getUpdateCallback().isInsertSupported());
+        if (isConfigured()) {
+            assertTrue(getUpdateCallback().isInsertSupported());
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
+        }
     }
 
     /**
@@ -63,7 +68,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
      */
     public void testWrongTableType() throws IOException {
         if (isConfigured()) {
-            MutableTable mutableTable = new MutableTable();
+            final MutableTable mutableTable = new MutableTable();
             try {
                 final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);

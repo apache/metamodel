@@ -63,40 +63,34 @@ public abstract class HBaseTestCase extends TestCase {
     private boolean _configured;
     private static HBaseDataContext _dataContext;
 
-    private boolean setUpIsDone = false;
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();
 
-        if (!setUpIsDone) {
-            Properties properties = new Properties();
-            File file = new File(getPropertyFilePath());
-            if (file.exists()) {
-                properties.load(new FileReader(file));
-                zookeeperHostname = properties.getProperty("hbase.zookeeper.hostname");
-                String zookeeperPortPropertyValue = properties.getProperty("hbase.zookeeper.port");
-                if (zookeeperPortPropertyValue != null && !zookeeperPortPropertyValue.isEmpty()) {
-                    zookeeperPort = Integer.parseInt(zookeeperPortPropertyValue);
-                }
+        Properties properties = new Properties();
+        File file = new File(getPropertyFilePath());
+        if (file.exists()) {
+            properties.load(new FileReader(file));
+            zookeeperHostname = properties.getProperty("hbase.zookeeper.hostname");
+            String zookeeperPortPropertyValue = properties.getProperty("hbase.zookeeper.port");
+            if (zookeeperPortPropertyValue != null && !zookeeperPortPropertyValue.isEmpty()) {
+                zookeeperPort = Integer.parseInt(zookeeperPortPropertyValue);
+            }
 
-                _configured = (zookeeperHostname != null && !zookeeperHostname.isEmpty());
-            } else {
-                _configured = false;
-            }
-            if (isConfigured()) {
-                final HBaseConfiguration configuration = new HBaseConfiguration(zookeeperHostname, zookeeperPort,
-                        ColumnType.VARCHAR);
-                setDataContext(new HBaseDataContext(configuration));
-            }
-            setUpIsDone = true;
+            _configured = (zookeeperHostname != null && !zookeeperHostname.isEmpty());
+        } else {
+            _configured = false;
+        }
+        if (isConfigured()) {
+            final HBaseConfiguration configuration = new HBaseConfiguration(zookeeperHostname, zookeeperPort,
+                    ColumnType.VARCHAR);
+            setDataContext(new HBaseDataContext(configuration));
         }
     }
 
     @AfterClass
     public static void oneTimeTeardown() throws IOException {
         _dataContext.getConnection().close();
-        ;
     }
 
     private String getPropertyFilePath() {

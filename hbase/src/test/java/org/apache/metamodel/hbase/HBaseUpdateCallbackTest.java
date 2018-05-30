@@ -43,19 +43,19 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
     private HBaseUpdateCallback updateCallback;
     private MutableSchema schema;
 
-    private boolean setUpIsDone = false;
+    private static boolean warningGiven = false;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         if (isConfigured()) {
-            if (setUpIsDone) {
-                dropTableIfItExists();
-            } else {
-                updateCallback = new HBaseUpdateCallback(getDataContext());
-                schema = (MutableSchema) getDataContext().getDefaultSchema();
-                dropTableIfItExists();
-                setUpIsDone = true;
+            updateCallback = new HBaseUpdateCallback(getDataContext());
+            schema = (MutableSchema) getDataContext().getDefaultSchema();
+            dropTableIfItExists();
+        } else {
+            if (!warningGiven) {
+                System.err.println(getInvalidConfigurationMessage());
+                warningGiven = true;
             }
         }
     }
@@ -187,9 +187,9 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
     }
 
     protected void warnAboutANotExecutedTest(String className, String methodName) {
-        String logWarning = "Test(method) \"" + className + "#" + methodName
-                + "\" is not executed, because the HBasetest is not configured.";
-        // System.out.println(logWarning);
+        String logWarning = "Test \"" + className + "#" + methodName
+                + "()\" is not executed, because the HBasetest is not configured.";
+        System.err.println(logWarning);
         logger.warn(logWarning);
     }
 

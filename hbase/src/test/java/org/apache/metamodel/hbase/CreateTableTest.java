@@ -31,19 +31,29 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
      * Check if creating table is supported
      */
     public void testDropTableSupported() {
-        assertTrue(getUpdateCallback().isCreateTableSupported());
+        if (isConfigured()) {
+            assertTrue(getUpdateCallback().isCreateTableSupported());
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
+        }
     }
 
     /**
      * Create a table with an immutableSchema, should throw a IllegalArgumentException
      */
     public void testWrongSchema() {
-        final ImmutableSchema immutableSchema = new ImmutableSchema(getSchema());
-        try {
-            getUpdateCallback().createTable(immutableSchema, TABLE_NAME).execute();
-            fail("Should get an exception that the schema isn't mutable");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Not a mutable schema: " + immutableSchema, e.getMessage());
+        if (isConfigured()) {
+            final ImmutableSchema immutableSchema = new ImmutableSchema(getSchema());
+            try {
+                getUpdateCallback().createTable(immutableSchema, TABLE_NAME).execute();
+                fail("Should get an exception that the schema isn't mutable");
+            } catch (IllegalArgumentException e) {
+                assertEquals("Not a mutable schema: " + immutableSchema, e.getMessage());
+            }
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
         }
     }
 
@@ -51,11 +61,16 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
      * Create a table without columnFamilies, should throw a MetaModelException
      */
     public void testCreateTableWithoutColumnFamilies() {
-        try {
-            getUpdateCallback().createTable(getSchema(), TABLE_NAME).execute();
-            fail("Should get an exception that the columnFamilies haven't been set");
-        } catch (MetaModelException e) {
-            assertEquals("Creating a table without columnFamilies", e.getMessage());
+        if (isConfigured()) {
+            try {
+                getUpdateCallback().createTable(getSchema(), TABLE_NAME).execute();
+                fail("Should get an exception that the columnFamilies haven't been set");
+            } catch (MetaModelException e) {
+                assertEquals("Creating a table without columnFamilies", e.getMessage());
+            }
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
         }
     }
 
@@ -63,11 +78,16 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
      * Create a table with columnFamilies null, should throw a MetaModelException
      */
     public void testColumnFamiliesNull() {
-        try {
-            getUpdateCallback().createTable(getSchema(), TABLE_NAME, null).execute();
-            fail("Should get an exception that the columnFamilies haven't been set");
-        } catch (MetaModelException e) {
-            assertEquals("Creating a table without columnFamilies", e.getMessage());
+        if (isConfigured()) {
+            try {
+                getUpdateCallback().createTable(getSchema(), TABLE_NAME, null).execute();
+                fail("Should get an exception that the columnFamilies haven't been set");
+            } catch (MetaModelException e) {
+                assertEquals("Creating a table without columnFamilies", e.getMessage());
+            }
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
         }
     }
 
@@ -75,12 +95,17 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
      * Create a table with columnFamilies empty, should throw a MetaModelException
      */
     public void testColumnFamiliesEmpty() {
-        try {
-            final LinkedHashSet<String> columnFamilies = new LinkedHashSet<String>();
-            getUpdateCallback().createTable(getSchema(), TABLE_NAME, columnFamilies).execute();
-            fail("Should get an exception that the columnFamilies haven't been set");
-        } catch (MetaModelException e) {
-            assertEquals("Creating a table without columnFamilies", e.getMessage());
+        if (isConfigured()) {
+            try {
+                final LinkedHashSet<String> columnFamilies = new LinkedHashSet<String>();
+                getUpdateCallback().createTable(getSchema(), TABLE_NAME, columnFamilies).execute();
+                fail("Should get an exception that the columnFamilies haven't been set");
+            } catch (MetaModelException e) {
+                assertEquals("Creating a table without columnFamilies", e.getMessage());
+            }
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
         }
     }
 
@@ -112,13 +137,18 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
      * Creating a HBaseClient with the tableName null, should throw a exception
      */
     public void testCreatingTheHBaseClientWithTableNameNull() {
-        try {
-            final LinkedHashSet<String> columnFamilies = new LinkedHashSet<>();
-            columnFamilies.add("1");
-            new HBaseClient(getDataContext().getConnection()).createTable(null, columnFamilies);
-            fail("Should get an exception that tableName is null");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Can't create a table without having the tableName or columnFamilies", e.getMessage());
+        if (isConfigured()) {
+            try {
+                final LinkedHashSet<String> columnFamilies = new LinkedHashSet<>();
+                columnFamilies.add("1");
+                new HBaseClient(getDataContext().getConnection()).createTable(null, columnFamilies);
+                fail("Should get an exception that tableName is null");
+            } catch (IllegalArgumentException e) {
+                assertEquals("Can't create a table without having the tableName or columnFamilies", e.getMessage());
+            }
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
         }
     }
 
@@ -126,11 +156,16 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
      * Creating a HBaseClient with the tableName null, should throw a exception
      */
     public void testCreatingTheHBaseClientWithColumnFamiliesNull() {
-        try {
-            new HBaseClient(getDataContext().getConnection()).createTable("1", null);
-            fail("Should get an exception that columnFamilies is null");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Can't create a table without having the tableName or columnFamilies", e.getMessage());
+        if (isConfigured()) {
+            try {
+                new HBaseClient(getDataContext().getConnection()).createTable("1", null);
+                fail("Should get an exception that columnFamilies is null");
+            } catch (IllegalArgumentException e) {
+                assertEquals("Can't create a table without having the tableName or columnFamilies", e.getMessage());
+            }
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
         }
     }
 
@@ -138,12 +173,17 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
      * Creating a HBaseClient with the tableName null, should throw a exception
      */
     public void testCreatingTheHBaseClientWithColumnFamiliesEmpty() {
-        try {
-            final LinkedHashSet<String> columnFamilies = new LinkedHashSet<>();
-            new HBaseClient(getDataContext().getConnection()).createTable("1", columnFamilies);
-            fail("Should get an exception that columnFamilies is empty");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Can't create a table without having the tableName or columnFamilies", e.getMessage());
+        if (isConfigured()) {
+            try {
+                final LinkedHashSet<String> columnFamilies = new LinkedHashSet<>();
+                new HBaseClient(getDataContext().getConnection()).createTable("1", columnFamilies);
+                fail("Should get an exception that columnFamilies is empty");
+            } catch (IllegalArgumentException e) {
+                assertEquals("Can't create a table without having the tableName or columnFamilies", e.getMessage());
+            }
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
         }
     }
 

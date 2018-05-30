@@ -30,7 +30,12 @@ public class DropTableTest extends HBaseUpdateCallbackTest {
      * Check if drop table is supported
      */
     public void testDropTableSupported() {
-        assertTrue(getUpdateCallback().isDropTableSupported());
+        if (isConfigured()) {
+            assertTrue(getUpdateCallback().isDropTableSupported());
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
+        }
     }
 
     /**
@@ -55,11 +60,16 @@ public class DropTableTest extends HBaseUpdateCallbackTest {
      * Creating a HBaseClient with the tableName null, should throw a exception
      */
     public void testCreatingTheHBaseClientWithTableNameNull() {
-        try {
-            new HBaseClient(getDataContext().getConnection()).dropTable(null);
-            fail("Should get an exception that tableName is null");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Can't drop a table without having the tableName", e.getMessage());
+        if (isConfigured()) {
+            try {
+                new HBaseClient(getDataContext().getConnection()).dropTable(null);
+                fail("Should get an exception that tableName is null");
+            } catch (IllegalArgumentException e) {
+                assertEquals("Can't drop a table without having the tableName", e.getMessage());
+            }
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
         }
     }
 

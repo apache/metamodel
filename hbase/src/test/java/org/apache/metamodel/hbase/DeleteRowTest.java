@@ -31,19 +31,29 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
      * Delete is supported
      */
     public void testDeleteSupported() {
-        assertTrue(getUpdateCallback().isDeleteSupported());
+        if (isConfigured()) {
+            assertTrue(getUpdateCallback().isDeleteSupported());
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
+        }
     }
 
     /**
      * Having the table type wrong, should throw an exception
      */
     public void testTableWrongType() {
-        final MutableTable mutableTable = new MutableTable();
-        try {
-            getUpdateCallback().deleteFrom(mutableTable);
-            fail("Should get an exception that the type of the table is wrong.");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Not an HBase table: " + mutableTable, e.getMessage());
+        if (isConfigured()) {
+            final MutableTable mutableTable = new MutableTable();
+            try {
+                getUpdateCallback().deleteFrom(mutableTable);
+                fail("Should get an exception that the type of the table is wrong.");
+            } catch (IllegalArgumentException e) {
+                assertEquals("Not an HBase table: " + mutableTable, e.getMessage());
+            }
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
         }
     }
 
@@ -91,11 +101,16 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
      * Creating a HBaseClient with the tableName null, should throw a exception
      */
     public void testCreatingTheHBaseClientWithTableNameNull() {
-        try {
-            new HBaseClient(getDataContext().getConnection()).deleteRow(null, new String("1"));
-            fail("Should get an exception that tableName is null");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Can't delete a row without having tableName or rowKey", e.getMessage());
+        if (isConfigured()) {
+            try {
+                new HBaseClient(getDataContext().getConnection()).deleteRow(null, new String("1"));
+                fail("Should get an exception that tableName is null");
+            } catch (IllegalArgumentException e) {
+                assertEquals("Can't delete a row without having tableName or rowKey", e.getMessage());
+            }
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
         }
     }
 
@@ -103,11 +118,16 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
      * Creating a HBaseClient with the rowKey null, should throw a exception
      */
     public void testCreatingTheHBaseClientWithRowKeyNull() {
-        try {
-            new HBaseClient(getDataContext().getConnection()).deleteRow("tableName", null);
-            fail("Should get an exception that rowKey is null");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Can't delete a row without having tableName or rowKey", e.getMessage());
+        if (isConfigured()) {
+            try {
+                new HBaseClient(getDataContext().getConnection()).deleteRow("tableName", null);
+                fail("Should get an exception that rowKey is null");
+            } catch (IllegalArgumentException e) {
+                assertEquals("Can't delete a row without having tableName or rowKey", e.getMessage());
+            }
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
         }
     }
 
