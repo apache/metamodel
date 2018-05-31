@@ -18,9 +18,9 @@
  */
 package org.apache.metamodel.hbase;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.metamodel.MetaModelException;
@@ -45,16 +45,16 @@ final class HBaseTable extends MutableTable {
     private final transient ColumnType _defaultRowKeyColumnType;
 
     /**
-     * Creates an HBaseTable. If the tableDef variable doesn't include the ID-column (see {@link HBaseDataContext#FIELD_ID}). 
+     * Creates an HBaseTable. If the tableDef variable doesn't include the ID-column (see {@link HBaseDataContext#FIELD_ID}).
      * Then it's first added.
      * @param dataContext
      * @param tableDef Table definition. The tableName, columnNames and columnTypes variables are used.
      * @param schema {@link MutableSchema} where the table belongs to.
-     * @param defaultRowKeyColumnType This variable determines the {@link ColumnType}, 
-     * used when the tableDef doesn't include the ID column (see {@link HBaseDataContext#FIELD_ID}). 
+     * @param defaultRowKeyColumnType This variable determines the {@link ColumnType},
+     * used when the tableDef doesn't include the ID column (see {@link HBaseDataContext#FIELD_ID}).
      */
-    public HBaseTable(HBaseDataContext dataContext, SimpleTableDef tableDef, MutableSchema schema,
-            ColumnType defaultRowKeyColumnType) {
+    public HBaseTable(final HBaseDataContext dataContext, final SimpleTableDef tableDef, final MutableSchema schema,
+            final ColumnType defaultRowKeyColumnType) {
         super(tableDef.getName(), TableType.TABLE, schema);
         _dataContext = dataContext;
         _defaultRowKeyColumnType = defaultRowKeyColumnType;
@@ -66,7 +66,7 @@ final class HBaseTable extends MutableTable {
      * @param tableDef
      * @param defaultRowKeyColumnType
      */
-    private void addColumns(SimpleTableDef tableDef, ColumnType defaultRowKeyColumnType) {
+    private void addColumns(final SimpleTableDef tableDef, final ColumnType defaultRowKeyColumnType) {
         // Add the columns
         final String[] columnNames = tableDef.getColumnNames();
         if (columnNames == null || columnNames.length == 0) {
@@ -75,13 +75,12 @@ final class HBaseTable extends MutableTable {
             final ColumnType[] columnTypes = tableDef.getColumnTypes();
 
             // Find the ID-Column
-            Integer indexOfIDColumn = HBaseColumn.findIndexOfIdColumn(columnNames);
-            boolean idColumnFound = indexOfIDColumn != null;
+            int indexOfIDColumn = getIndexOfIdColumn(columnNames);
+            boolean idColumnFound = indexOfIDColumn != -1;
 
             // ColumnNumbers start from 1
             if (idColumnFound) {
-                addColumn(HBaseDataContext.FIELD_ID, columnTypes[indexOfIDColumn.intValue()], indexOfIDColumn.intValue()
-                        + 1);
+                addColumn(HBaseDataContext.FIELD_ID, columnTypes[indexOfIDColumn], indexOfIDColumn + 1);
             } else {
                 addColumn(HBaseDataContext.FIELD_ID, defaultRowKeyColumnType, 1);
             }
@@ -100,7 +99,24 @@ final class HBaseTable extends MutableTable {
     }
 
     /**
+     * Returns the index of the ID-column (see {@link HBaseDataContext#FIELD_ID}) in an array of columnNames. When no
+     * ID-column is found, then -1 is returned.
+     *
+     * @param columnNames
+     * @return {@link Integer}
+     */
+    private static int getIndexOfIdColumn(final String[] columnNames) {
+        for (int i = 0; i < columnNames.length; i++) {
+            if (HBaseDataContext.FIELD_ID.equals(columnNames[i])) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Add a column to this table
+     *
      * @param columnName
      * @param columnType
      * @param columnNumber
@@ -133,34 +149,16 @@ final class HBaseTable extends MutableTable {
     }
 
     /**
-     * Check if a list of columnNames all exist in this table
-     * @param columnNamesOfCheckedTable
-     * @throws MetaModelException If a column doesn't exist
+     * Returns the column families for this HBase table.
+     *
+     * @return {@link Set}
      */
-    public void checkForNotMatchingColumnFamilies(final Set<String> columnNamesOfCheckedTable) {
-        Set<String> columnFamilyNamesOfExistingTable = HBaseColumn.getColumnFamilies(getHBaseColumnsInternal());
-
-        for (String columnNameOfCheckedTable : columnNamesOfCheckedTable) {
-            boolean matchingColumnFound = false;
-            Iterator<String> iterator = columnFamilyNamesOfExistingTable.iterator();
-            while (!matchingColumnFound && iterator.hasNext()) {
-                if (columnNameOfCheckedTable.equals(iterator.next())) {
-                    matchingColumnFound = true;
-                }
-            }
-            if (!matchingColumnFound) {
-                throw new MetaModelException(String.format("ColumnFamily: %s doesn't exist in the schema of the table",
-                        columnNameOfCheckedTable));
-            }
-        }
-    }
-
-    /**
-     * Returns a list of {@link HBaseColumn}'s from {@link HBaseTable#getColumnsInternal()}, 
-     * which returns a list of {@link Column}'s
-     * @return {@link List}<{@link HBaseColumn}>
-     */
-    public List<HBaseColumn> getHBaseColumnsInternal() {
-        return HBaseColumn.convertToHBaseColumnsList(getColumnsInternal());
+    Set<String> getColumnFamilies() {
+        return getColumnsInternal()
+                .stream()
+                .map(column -> (HBaseColumn) column)
+                .map(HBaseColumn::getColumnFamily)
+                .distinct()
+                .collect(Collectors.toSet());
     }
 }

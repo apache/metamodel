@@ -37,13 +37,13 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
 
     private final HBaseClient _hBaseClient;
 
-    public HBaseUpdateCallback(HBaseDataContext dataContext) {
+    public HBaseUpdateCallback(final HBaseDataContext dataContext) {
         super(dataContext);
         _hBaseClient = new HBaseClient(dataContext.getConnection());
     }
 
     @Override
-    public TableCreationBuilder createTable(Schema schema, String name) {
+    public TableCreationBuilder createTable(final Schema schema, final String name) {
         return new HBaseCreateTableBuilder(this, schema, name);
     }
 
@@ -54,7 +54,8 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
      * @param columnFamilies the columnFamilies of the new table
      * @return {@link HBaseCreateTableBuilder}
      */
-    public HBaseCreateTableBuilder createTable(Schema schema, String name, Set<String> columnFamilies) {
+    public HBaseCreateTableBuilder createTable(final Schema schema, final String name,
+            final Set<String> columnFamilies) {
         return new HBaseCreateTableBuilder(this, schema, name, columnFamilies);
     }
 
@@ -64,7 +65,7 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
     }
 
     @Override
-    public TableDropBuilder dropTable(Table table) {
+    public TableDropBuilder dropTable(final Table table) {
         return new HBaseTableDropBuilder(table, this);
     }
 
@@ -78,7 +79,7 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
     }
 
     /**
-     * Initiates the building of a row insertion operation. 
+     * Initiates the building of a row insertion operation.
      * @param table Table to get inserts.
      * @param columns List of {@link HBaseColumn} to insert on.
      * @return {@link HBaseRowInsertionBuilder}
@@ -89,7 +90,7 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
             throw new IllegalArgumentException("The hbaseColumns list is null or empty");
         }
         if (table instanceof HBaseTable) {
-            return new HBaseRowInsertionBuilder(this, (HBaseTable) table, HBaseColumn.convertToColumnsList(columns));
+            return new HBaseRowInsertionBuilder(this, (HBaseTable) table, columns);
         } else {
             throw new IllegalArgumentException("Not an HBase table: " + table);
         }
@@ -104,9 +105,9 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
      * @throws IllegalArgumentException when table isn't a {@link HBaseTable}
      */
     @Override
-    public RowDeletionBuilder deleteFrom(Table table) {
+    public RowDeletionBuilder deleteFrom(final Table table) {
         if (table instanceof HBaseTable) {
-            return new HBaseRowDeletionBuilder(_hBaseClient, (HBaseTable) table);
+            return new HBaseRowDeletionBuilder(_hBaseClient, table);
         } else {
             throw new IllegalArgumentException("Not an HBase table: " + table);
         }
