@@ -80,7 +80,7 @@ public class DropTableTest extends HBaseUpdateCallbackTest {
     public void testDropTableSuccesfully() throws IOException {
         if (isConfigured()) {
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
                 getUpdateCallback().dropTable(existingTable).execute();
                 try (final Admin admin = getDataContext().getAdmin()) {

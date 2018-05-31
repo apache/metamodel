@@ -28,6 +28,10 @@ import org.junit.AfterClass;
 
 import junit.framework.TestCase;
 
+/**
+ * Properly configure before executing these tests. 
+ * See the {@link HBaseTestCase#setUp()} and {@link HBaseTestCase#getPropertyFilePath()} methods.
+ */
 public abstract class HBaseTestCase extends TestCase {
 
     // TableName
@@ -93,7 +97,11 @@ public abstract class HBaseTestCase extends TestCase {
         _dataContext.getConnection().close();
     }
 
-    private String getPropertyFilePath() {
+    /**
+     * Get's the test configuration file. An example file can be found at the root folder of this project.
+     * @return Location of the configuration file.
+     */
+    protected String getPropertyFilePath() {
         String userHome = System.getProperty("user.home");
         return userHome + "/metamodel-integrationtest-configuration.properties";
     }

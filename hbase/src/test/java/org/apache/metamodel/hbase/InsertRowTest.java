@@ -48,7 +48,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     public void testOnlyUsingTableParameter() throws IOException {
         if (isConfigured()) {
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
                 getUpdateCallback().insertInto(existingTable);
                 fail("Should get an exception that this method is not supported");
@@ -69,11 +69,11 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
         if (isConfigured()) {
             final MutableTable mutableTable = new MutableTable();
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID,
                         CF_FOO, CF_BAR);
-                final List<HBaseColumn> columns = getHBaseColumnsFromMap(row);
+                final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
                 getUpdateCallback().insertInto(mutableTable, columns);
                 fail("Should get an exception that the type of the table is wrong.");
             } catch (IllegalArgumentException e) {
@@ -92,7 +92,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     public void testColumnsNullAtUpdateCallBack() throws IOException {
         if (isConfigured()) {
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
                 getUpdateCallback().insertInto(existingTable, null);
                 fail("Should get an exception that the columns list is null.");
@@ -112,7 +112,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     public void testColumnsEmptyAtUpdateCallBack() throws IOException {
         if (isConfigured()) {
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
                 getUpdateCallback().insertInto(existingTable, new ArrayList<HBaseColumn>());
                 fail("Should get an exception that the columns list is empty.");
@@ -132,7 +132,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     public void testColumnsEmptyAtBuilder() throws IOException {
         if (isConfigured()) {
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
                 List<HBaseColumn> emptyList = new ArrayList<>();
                 new HBaseRowInsertionBuilder(getUpdateCallback(), existingTable, emptyList);
@@ -155,11 +155,11 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
             final HBaseTable wrongTable = createHBaseTable("NewTableNotInSchema", HBaseDataContext.FIELD_ID, "cf1",
                     "cf2", null);
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID,
                         CF_FOO, CF_BAR);
-                final List<HBaseColumn> columns = getHBaseColumnsFromMap(row);
+                final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
                 getUpdateCallback().insertInto(wrongTable, columns);
                 fail("Should get an exception that the table isn't in the schema.");
             } catch (MetaModelException e) {
@@ -179,10 +179,10 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     public void testIDColumnDoesntExistInColumnsArray() throws IOException {
         if (isConfigured()) {
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, null, CF_FOO, CF_BAR);
-                final List<HBaseColumn> columns = getHBaseColumnsFromMap(row);
+                final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
                 getUpdateCallback().insertInto(existingTable, columns);
                 fail("Should get an exception that ID-column doesn't exist.");
             } catch (MetaModelException e) {
@@ -202,11 +202,11 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
         if (isConfigured()) {
             final String wrongColumnFamily = "wrongColumnFamily";
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID,
                         CF_FOO, CF_BAR);
-                final List<HBaseColumn> columns = getHBaseColumnsFromMap(row);
+                final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
                 final HBaseTable wrongTable = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         wrongColumnFamily, null);
                 getUpdateCallback().insertInto(wrongTable, columns);
@@ -229,11 +229,11 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
         if (isConfigured()) {
             final String wrongColumnFamily = "newColumnFamily";
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID,
                         CF_FOO, CF_BAR);
-                final List<HBaseColumn> columns = getHBaseColumnsFromMap(row);
+                final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
                 final HBaseTable wrongTable = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR,
                         wrongColumnFamily);
                 getUpdateCallback().insertInto(wrongTable, columns);
@@ -257,7 +257,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
                 final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
-                final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromMap(row));
+                final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
                 final Object[] values = new String[] { "Values" };
                 new HBaseClient(getDataContext().getConnection()).insertRow(null, columns, values, 0);
                 fail("Should get an exception that tableName is null");
@@ -301,7 +301,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
                 final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
-                final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromMap(row));
+                final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
                 new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, null, 0);
                 fail("Should get an exception that values is null");
             } catch (IllegalArgumentException e) {
@@ -324,7 +324,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
                 final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
-                final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromMap(row));
+                final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
                 final Object[] values = new String[] { "Values" };
                 new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, values, 10);
                 fail("Should get an exception that the indexOfIdColumn is incorrect");
@@ -348,7 +348,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
                 final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
-                final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromMap(row));
+                final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
                 final Object[] values = new String[] { null };
                 new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, values, 0);
                 fail("Should get an exception that the indexOfIdColumn is incorrect");
@@ -369,11 +369,11 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     public void testInsertIntoWithoutExecute() {
         if (isConfigured()) {
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID,
                         CF_FOO, CF_BAR);
-                final List<HBaseColumn> columns = getHBaseColumnsFromMap(row);
+                final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
                 getUpdateCallback().insertInto(existingTable, columns);
             } catch (Exception e) {
                 fail("No exception should be thrown, when inserting into an existing table.");
@@ -416,11 +416,11 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     public void testInsertingSuccesfully() {
         if (isConfigured()) {
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID,
                         CF_FOO, CF_BAR);
-                final List<HBaseColumn> columns = getHBaseColumnsFromMap(row);
+                final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
 
                 checkRows(false);
                 final HBaseRowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable,

@@ -93,14 +93,19 @@ public final class HBaseClient {
         if (tableName == null || rowKey == null) {
             throw new IllegalArgumentException("Can't delete a row without having tableName or rowKey");
         }
-        try (final Table table = _connection.getTable(TableName.valueOf(tableName));) {
-            if (rowExists(table, rowKey) == true) {
-                table.delete(new Delete(Bytes.toBytes(rowKey.toString())));
-            } else {
-                logger.warn("Rowkey with value " + rowKey.toString() + " doesn't exist in the table");
+        byte[] rowKeyAsByteArray = Bytes.toBytes(rowKey.toString());
+        if (rowKeyAsByteArray.length > 0) {
+            try (final Table table = _connection.getTable(TableName.valueOf(tableName));) {
+                if (rowExists(table, rowKeyAsByteArray) == true) {
+                    table.delete(new Delete(rowKeyAsByteArray));
+                } else {
+                    logger.warn("Rowkey with value " + rowKey.toString() + " doesn't exist in the table");
+                }
+            } catch (IOException e) {
+                throw new MetaModelException(e);
             }
-        } catch (IOException e) {
-            throw new MetaModelException(e);
+        } else {
+            logger.info("Have not deleted a row, which has an empty (\"\") rowKey.");
         }
     }
 
@@ -111,8 +116,8 @@ public final class HBaseClient {
      * @return boolean
      * @throws IOException
      */
-    private boolean rowExists(Table table, Object rowKey) throws IOException {
-        final Get get = new Get(Bytes.toBytes(rowKey.toString()));
+    private boolean rowExists(Table table, byte[] rowKey) throws IOException {
+        final Get get = new Get(rowKey);
         return !table.get(get).isEmpty();
     }
 

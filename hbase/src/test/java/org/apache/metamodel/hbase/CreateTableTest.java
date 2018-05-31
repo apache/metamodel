@@ -118,7 +118,7 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
         if (isConfigured()) {
             final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
             final LinkedHashMap<HBaseColumn, Object> row = createRow(table, null, CF_FOO, CF_BAR);
-            final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromMap(row));
+            final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromRow(row));
             try {
                 final HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) getUpdateCallback()
                         .createTable(getSchema(), TABLE_NAME);
@@ -196,7 +196,7 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
         if (isConfigured()) {
             final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
             final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
-            final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromMap(row));
+            final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromRow(row));
             try {
                 final HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) getUpdateCallback()
                         .createTable(getSchema(), TABLE_NAME);
@@ -220,7 +220,7 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
         if (isConfigured()) {
             final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
             final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
-            final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromMap(row));
+            final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromRow(row));
             try {
                 getUpdateCallback().createTable(getSchema(), TABLE_NAME, columnFamilies).execute();
                 checkSuccesfullyInsertedTable();
@@ -237,7 +237,7 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
      * Creates a set of columnFamilies out of a list of hbaseColumns
      *
      * @param columns
-     * @return {@link LinkedHashSet}
+     * @return {@link Set}<{@link String}> of columnFamilies
      */
     private static Set<String> getColumnFamilies(List<HBaseColumn> columns) {
         return columns.stream().map(HBaseColumn::getColumnFamily).distinct().collect(Collectors.toSet());

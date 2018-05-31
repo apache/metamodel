@@ -64,8 +64,8 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
     public void testHBaseClientNullAtBuilder() throws IOException {
         if (isConfigured()) {
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                        CF_BAR);
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID,
+                        CF_FOO, CF_BAR);
                 new HBaseRowDeletionBuilder(null, existingTable);
                 fail("Should get an exception that hBaseClient can't be null.");
             } catch (IllegalArgumentException e) {
@@ -84,8 +84,8 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
     public void testNotSettingRowkey() throws IOException {
         if (isConfigured()) {
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                        CF_BAR);
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID,
+                        CF_FOO, CF_BAR);
                 getUpdateCallback().deleteFrom(existingTable).execute();
                 fail("Should get an exception that the columnFamily doesn't exist.");
             } catch (MetaModelException e) {
@@ -137,8 +137,8 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
     public void testDeletingNotExistingRow() {
         if (isConfigured()) {
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                        CF_BAR);
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID,
+                        CF_FOO, CF_BAR);
 
                 checkRows(false);
                 final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback()
@@ -156,16 +156,40 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
     }
 
     /**
+     * Goodflow. Deleting a row, which has an empty rowKey value, should not throw an exception
+     */
+    public void testUsingAnEmptyRowKeyValue() {
+        if (isConfigured()) {
+            try {
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID,
+                        CF_FOO, CF_BAR);
+
+                checkRows(false);
+                final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback()
+                        .deleteFrom(existingTable);
+                rowDeletionBuilder.setKey("");
+                rowDeletionBuilder.execute();
+                checkRows(false);
+            } catch (Exception e) {
+                fail("Should not get an exception that the rowkey is empty.");
+            }
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
+        }
+    }
+
+    /**
      * Goodflow. Deleting a row succesfully.
      */
     public void testDeleteRowSuccesfully() {
         if (isConfigured()) {
             try {
-                final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                        CF_BAR);
+                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID,
+                        CF_FOO, CF_BAR);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID,
                         CF_FOO, CF_BAR);
-                final List<HBaseColumn> columns = getHBaseColumnsFromMap(row);
+                final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
 
                 checkRows(false);
                 final HBaseRowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable,

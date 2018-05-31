@@ -63,13 +63,12 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
     }
 
     /**
-     * Returns the index of the ID-column (see {@link HBaseDataContext#FIELD_ID}) in an array of HBaseColumns. When no
-     * ID-column is found, then null is returned.
+     * Returns the index of the ID-column (see {@link HBaseDataContext#FIELD_ID}) in an array of HBaseColumns.
      *
      * @param columns
-     * @return {@link Integer}
+     * @return index of the ID-column
      */
-    private static Integer getIndexOfIdColumn(final List<HBaseColumn> columns) {
+    private static int getIndexOfIdColumn(final List<HBaseColumn> columns) {
         for (int i = 0; i < columns.size(); i++) {
             if (HBaseDataContext.FIELD_ID.equals(columns.get(i).getColumnFamily())) {
                 return i;

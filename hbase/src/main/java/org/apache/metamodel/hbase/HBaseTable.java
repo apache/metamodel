@@ -151,7 +151,7 @@ final class HBaseTable extends MutableTable {
     /**
      * Returns the column families for this HBase table.
      *
-     * @return {@link Set}
+     * @return {@link Set}<{@link String}> of columnFamilies
      */
     Set<String> getColumnFamilies() {
         return getColumnsInternal()
