@@ -24,7 +24,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.MutableTable;
 
 public class InsertRowTest extends HBaseUpdateCallbackTest {
@@ -135,7 +134,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
             try {
                 final HBaseTable existingTable = createAndInsertTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
-                List<Column> emptyList = new ArrayList<>();
+                List<HBaseColumn> emptyList = new ArrayList<>();
                 new HBaseRowInsertionBuilder(getUpdateCallback(), existingTable, emptyList);
                 fail("Should get an exception that the columns list is empty.");
             } catch (IllegalArgumentException e) {
@@ -258,7 +257,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
                 final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
-                final HBaseColumn[] columns = HBaseColumn.convertToHBaseColumnsArray(getHBaseColumnsFromMap(row));
+                final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromMap(row));
                 final Object[] values = new String[] { "Values" };
                 new HBaseClient(getDataContext().getConnection()).insertRow(null, columns, values, 0);
                 fail("Should get an exception that tableName is null");
@@ -302,7 +301,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
                 final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
-                final HBaseColumn[] columns = HBaseColumn.convertToHBaseColumnsArray(getHBaseColumnsFromMap(row));
+                final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromMap(row));
                 new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, null, 0);
                 fail("Should get an exception that values is null");
             } catch (IllegalArgumentException e) {
@@ -325,7 +324,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
                 final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
-                final HBaseColumn[] columns = HBaseColumn.convertToHBaseColumnsArray(getHBaseColumnsFromMap(row));
+                final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromMap(row));
                 final Object[] values = new String[] { "Values" };
                 new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, values, 10);
                 fail("Should get an exception that the indexOfIdColumn is incorrect");
@@ -349,7 +348,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
                 final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
                 final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO,
                         CF_BAR);
-                final HBaseColumn[] columns = HBaseColumn.convertToHBaseColumnsArray(getHBaseColumnsFromMap(row));
+                final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromMap(row));
                 final Object[] values = new String[] { null };
                 new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, values, 0);
                 fail("Should get an exception that the indexOfIdColumn is incorrect");
@@ -437,4 +436,15 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
             }.getClass().getEnclosingMethod().getName());
         }
     }
+
+    /**
+     * Converts a list of {@link HBaseColumn}'s to an array of {@link HBaseColumn}'s
+     *
+     * @param columns
+     * @return Array of {@link HBaseColumn}
+     */
+    private static HBaseColumn[] convertToHBaseColumnsArray(List<HBaseColumn> columns) {
+        return columns.toArray(new HBaseColumn[columns.size()]);
+    }
+
 }

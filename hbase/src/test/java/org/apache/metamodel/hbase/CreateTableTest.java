@@ -20,7 +20,9 @@ package org.apache.metamodel.hbase;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.schema.ImmutableSchema;
@@ -116,7 +118,7 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
         if (isConfigured()) {
             final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
             final LinkedHashMap<HBaseColumn, Object> row = createRow(table, null, CF_FOO, CF_BAR);
-            final Set<String> columnFamilies = HBaseColumn.getColumnFamilies(getHBaseColumnsFromMap(row));
+            final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromMap(row));
             try {
                 final HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) getUpdateCallback()
                         .createTable(getSchema(), TABLE_NAME);
@@ -194,7 +196,7 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
         if (isConfigured()) {
             final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
             final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
-            final Set<String> columnFamilies = HBaseColumn.getColumnFamilies(getHBaseColumnsFromMap(row));
+            final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromMap(row));
             try {
                 final HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) getUpdateCallback()
                         .createTable(getSchema(), TABLE_NAME);
@@ -218,7 +220,7 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
         if (isConfigured()) {
             final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
             final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
-            final Set<String> columnFamilies = HBaseColumn.getColumnFamilies(getHBaseColumnsFromMap(row));
+            final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromMap(row));
             try {
                 getUpdateCallback().createTable(getSchema(), TABLE_NAME, columnFamilies).execute();
                 checkSuccesfullyInsertedTable();
@@ -229,5 +231,15 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
             warnAboutANotExecutedTest(getClass().getName(), new Object() {
             }.getClass().getEnclosingMethod().getName());
         }
+    }
+
+    /**
+     * Creates a set of columnFamilies out of a list of hbaseColumns
+     *
+     * @param columns
+     * @return {@link LinkedHashSet}
+     */
+    private static Set<String> getColumnFamilies(List<HBaseColumn> columns) {
+        return columns.stream().map(HBaseColumn::getColumnFamily).distinct().collect(Collectors.toSet());
     }
 }

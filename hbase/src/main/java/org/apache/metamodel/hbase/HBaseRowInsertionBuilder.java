@@ -18,7 +18,12 @@
  */
 package org.apache.metamodel.hbase;
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
@@ -30,7 +35,7 @@ import org.apache.metamodel.schema.Column;
 // TODO: Possible future improvement: Make it possible to change the columns for each execute.
 // Now each row will get exactly the same columns.
 public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseUpdateCallback> {
-    final Integer _indexOfIdColumn;
+    final int _indexOfIdColumn;
 
     /**
      * Creates a {@link HBaseRowInsertionBuilder}. The table and the column's columnFamilies are checked to exist in the schema.
@@ -41,25 +46,41 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
      * @throws MetaModelException when no ID-column is found.
      */
     public HBaseRowInsertionBuilder(final HBaseUpdateCallback updateCallback, final HBaseTable table,
-            final List<Column> columns) {
-        super(updateCallback, table, columns);
+            final List<HBaseColumn> columns) {
+        super(updateCallback, table, columns.stream().map(column -> (Column) column).collect(Collectors.toList()));
         if (columns.isEmpty()) { // TODO: Columns null will already result in a NullPointer at the super. Should the
                                  // super get a extra check?
             throw new IllegalArgumentException("The hbaseColumns list is null or empty");
         }
 
-        this._indexOfIdColumn = HBaseColumn.findIndexOfIdColumn(HBaseColumn.convertToHBaseColumnsList(columns));
-        if (_indexOfIdColumn == null) {
+        this._indexOfIdColumn = getIndexOfIdColumn(columns);
+        if (_indexOfIdColumn == -1) {
             throw new MetaModelException("The ID-Column was not found");
         }
 
         checkTable(updateCallback, table);
-        table.checkForNotMatchingColumnFamilies(HBaseColumn.getColumnFamilies(HBaseColumn.convertToHBaseColumnsList(
-                columns)));
+        checkForNotMatchingColumnFamilies(table, getColumnFamilies(columns));
+    }
+
+    /**
+     * Returns the index of the ID-column (see {@link HBaseDataContext#FIELD_ID}) in an array of HBaseColumns. When no
+     * ID-column is found, then null is returned.
+     *
+     * @param columns
+     * @return {@link Integer}
+     */
+    private static Integer getIndexOfIdColumn(final List<HBaseColumn> columns) {
+        for (int i = 0; i < columns.size(); i++) {
+            if (HBaseDataContext.FIELD_ID.equals(columns.get(i).getColumnFamily())) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /**
      * Check if the table and it's columnFamilies exist in the schema
+     *
      * @param updateCallback
      * @param tableGettingInserts
      * @throws MetaModelException If the table or the columnFamilies don't exist
@@ -71,18 +92,52 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
             throw new MetaModelException("Trying to insert data into table: " + tableGettingInserts.getName()
                     + ", which doesn't exist yet");
         }
-        tableInSchema.checkForNotMatchingColumnFamilies(HBaseColumn.getColumnFamilies(tableGettingInserts
-                .getHBaseColumnsInternal()));
+        checkForNotMatchingColumnFamilies(tableInSchema, tableGettingInserts.getColumnFamilies());
+    }
+
+    /**
+     * Check if a list of columnNames all exist in this table
+     *
+     * @param columnNamesOfCheckedTable
+     * @throws MetaModelException If a column doesn't exist
+     */
+    public void checkForNotMatchingColumnFamilies(final HBaseTable table, final Set<String> columnNamesOfCheckedTable) {
+        Set<String> columnFamilyNamesOfExistingTable = table.getColumnFamilies();
+
+        for (String columnNameOfCheckedTable : columnNamesOfCheckedTable) {
+            boolean matchingColumnFound = false;
+            Iterator<String> iterator = columnFamilyNamesOfExistingTable.iterator();
+            while (!matchingColumnFound && iterator.hasNext()) {
+                if (columnNameOfCheckedTable.equals(iterator.next())) {
+                    matchingColumnFound = true;
+                }
+            }
+            if (!matchingColumnFound) {
+                throw new MetaModelException(String.format("ColumnFamily: %s doesn't exist in the schema of the table",
+                        columnNameOfCheckedTable));
+            }
+        }
+    }
+
+    /**
+     * Creates a set of columnFamilies out of a list of hbaseColumns
+     *
+     * @param columns
+     * @return {@link LinkedHashSet}
+     */
+    private static Set<String> getColumnFamilies(final List<HBaseColumn> columns) {
+        return columns.stream().map(HBaseColumn::getColumnFamily).distinct().collect(Collectors.toSet());
     }
 
     @Override
     public synchronized void execute() {
-        getUpdateCallback().getHBaseClient().insertRow(getTable().getName(), getColumns(), getValues(), _indexOfIdColumn
-                .intValue());
+        getUpdateCallback().getHBaseClient().insertRow(getTable().getName(), getColumns(), getValues(),
+                _indexOfIdColumn);
     }
 
     @Override
     public HBaseColumn[] getColumns() {
-        return HBaseColumn.convertToHBaseColumnsArray(super.getColumns());
+        return Arrays.stream(super.getColumns()).map(column -> (HBaseColumn) column).toArray(
+                size -> new HBaseColumn[size]);
     }
 }
