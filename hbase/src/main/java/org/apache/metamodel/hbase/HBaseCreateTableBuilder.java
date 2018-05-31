@@ -18,7 +18,6 @@
  */
 package org.apache.metamodel.hbase;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.metamodel.MetaModelException;
@@ -58,7 +57,9 @@ public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseU
 
     @Override
     public Table execute() {
-        checkColumnFamilies(_columnFamilies);
+        if (_columnFamilies == null || _columnFamilies.size() == 0) {
+            throw new MetaModelException("Creating a table without columnFamilies");
+        }
 
         final Table table = getTable();
 
@@ -68,27 +69,6 @@ public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseU
         // Update the schema
         addNewTableToSchema(table);
         return getSchema().getTableByName(table.getName());
-    }
-
-    /**
-     * Check if the new table has columnFamilies and if the ID-column is included.
-     * Throws a {@link MetaModelException} if a check fails.
-     * @param columnFamilies
-     */
-    private void checkColumnFamilies(Set<String> columnFamilies) {
-        if (columnFamilies == null || columnFamilies.size() == 0) {
-            throw new MetaModelException("Creating a table without columnFamilies");
-        }
-        boolean idColumnFound = false;
-        final Iterator<String> iterator = columnFamilies.iterator();
-        while (!idColumnFound && iterator.hasNext()) {
-            if (iterator.next().equals(HBaseDataContext.FIELD_ID)) {
-                idColumnFound = true;
-            }
-        }
-        if (!idColumnFound) {
-            throw new MetaModelException("ColumnFamily: " + HBaseDataContext.FIELD_ID + " not found");
-        }
     }
 
     /**

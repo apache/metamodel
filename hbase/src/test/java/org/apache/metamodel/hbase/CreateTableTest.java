@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.hbase;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,7 +33,7 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
     /**
      * Check if creating table is supported
      */
-    public void testDropTableSupported() {
+    public void testCreateTableSupported() {
         if (isConfigured()) {
             assertTrue(getUpdateCallback().isCreateTableSupported());
         } else {
@@ -112,30 +113,6 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
     }
 
     /**
-     * Create a table without the ID-Column, should throw a MetaModelException
-     */
-    public void testCreateTableWithoutIDColumn() {
-        if (isConfigured()) {
-            final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(table, null, CF_FOO, CF_BAR);
-            final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromRow(row));
-            try {
-                final HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) getUpdateCallback()
-                        .createTable(getSchema(), TABLE_NAME);
-
-                hBaseCreateTableBuilder.setColumnFamilies(columnFamilies);
-                hBaseCreateTableBuilder.execute();
-                fail("Should get an exception that the ID-colum is missing");
-            } catch (MetaModelException e) {
-                assertEquals("ColumnFamily: " + HBaseDataContext.FIELD_ID + " not found", e.getMessage());
-            }
-        } else {
-            warnAboutANotExecutedTest(getClass().getName(), new Object() {
-            }.getClass().getEnclosingMethod().getName());
-        }
-    }
-
-    /**
      * Creating a HBaseClient with the tableName null, should throw a exception
      */
     public void testCreatingTheHBaseClientWithTableNameNull() {
@@ -182,6 +159,31 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
                 fail("Should get an exception that columnFamilies is empty");
             } catch (IllegalArgumentException e) {
                 assertEquals("Can't create a table without having the tableName or columnFamilies", e.getMessage());
+            }
+        } else {
+            warnAboutANotExecutedTest(getClass().getName(), new Object() {
+            }.getClass().getEnclosingMethod().getName());
+        }
+    }
+
+    /**
+     * Goodflow. Create a table without the ID-Column, should work
+     * @throws IOException 
+     */
+    public void testCreateTableWithoutIDColumn() throws IOException {
+        if (isConfigured()) {
+            final HBaseTable table = createHBaseTable(TABLE_NAME, null, CF_FOO, CF_BAR, null);
+            final LinkedHashMap<HBaseColumn, Object> row = createRow(table, null, CF_FOO, CF_BAR);
+            final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromRow(row));
+            try {
+                final HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) getUpdateCallback()
+                        .createTable(getSchema(), TABLE_NAME);
+
+                hBaseCreateTableBuilder.setColumnFamilies(columnFamilies);
+                hBaseCreateTableBuilder.execute();
+                checkSuccesfullyInsertedTable();
+            } catch (Exception e) {
+                fail("Should not get an exception (that the ID-column is missing)");
             }
         } else {
             warnAboutANotExecutedTest(getClass().getName(), new Object() {

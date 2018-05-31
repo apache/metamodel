@@ -126,7 +126,7 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
     /**
      * Create a test HBase table
      * @param tableName name of the table
-     * @param idColumn required ID-column
+     * @param idColumn ID-column, can be set to null to create a table without this column
      * @param columnFamily1 required columnFamily 1
      * @param columnFamily2 required columnFamily 2
      * @param columnFamily3 columnFamily 3 is not required and can be used to test errors
@@ -136,8 +136,15 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
             final String columnFamily2, final String columnFamily3) {
         String[] columnNames;
         ColumnType[] columnTypes;
-        if (columnFamily3 == null) {
+
+        if (idColumn == null && columnFamily3 == null) {
+            columnNames = new String[] { columnFamily1, columnFamily2 };
+            columnTypes = new ColumnType[] { ColumnType.STRING, ColumnType.STRING };
+        } else if (idColumn != null && columnFamily3 == null) {
             columnNames = new String[] { idColumn, columnFamily1, columnFamily2 };
+            columnTypes = new ColumnType[] { ColumnType.STRING, ColumnType.STRING, ColumnType.STRING };
+        } else if (idColumn == null && columnFamily3 != null) {
+            columnNames = new String[] { columnFamily1, columnFamily2, columnFamily3 };
             columnTypes = new ColumnType[] { ColumnType.STRING, ColumnType.STRING, ColumnType.STRING };
         } else {
             columnNames = new String[] { idColumn, columnFamily1, columnFamily2, columnFamily3 };
@@ -151,7 +158,7 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
     /**
      * Creates a map that represents a row
      * @param table HBaseTable
-     * @param idColumn required ID-column
+     * @param idColumn ID-column, can be set to null to create a row without this column
      * @param columnFamily1 required columnFamily 1
      * @param columnFamily2 required columnFamily 1
      * @return {@link LinkedHashMap}<{@link HBaseColumn}, {@link Object}>
