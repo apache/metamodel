@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.hbase;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,6 +35,8 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.junit.After;
+import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,46 +47,37 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
     private HBaseUpdateCallback updateCallback;
     private MutableSchema schema;
 
-    private static boolean warningGiven = false;
-
     @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         super.setUp();
-        if (isConfigured()) {
-            updateCallback = new HBaseUpdateCallback(getDataContext());
-            schema = (MutableSchema) getDataContext().getDefaultSchema();
-            dropTableIfItExists();
-        } else {
-            if (!warningGiven) {
-                System.err.println(getInvalidConfigurationMessage());
-                warningGiven = true;
-            }
-        }
+        updateCallback = new HBaseUpdateCallback(getDataContext());
+        schema = (MutableSchema) getDataContext().getDefaultSchema();
+        dropTableIfItExists();
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
-        if (isConfigured()) {
-            dropTableIfItExists();
-        }
-        super.tearDown();
+        dropTableIfItExists();
     }
 
     /**
-     * Drop the table if it exists. 
+     * Drop the table if it exists.
      * After that check in the schema and the datastore if the actions have been executed succesfully.
      */
     protected void dropTableIfItExists() {
-        final Table table = schema.getTableByName(TABLE_NAME);
-        if (table != null) {
-            updateCallback.dropTable(table).execute();
-            // Check schema
-            assertNull(schema.getTableByName(TABLE_NAME));
-            // Check in the datastore
-            try (final Admin admin = getDataContext().getAdmin()) {
-                assertFalse(admin.tableExists(TableName.valueOf(TABLE_NAME)));
-            } catch (IOException e) {
-                fail("Should not an exception checking if the table exists");
+        if (schema != null) {
+            final Table table = schema.getTableByName(TABLE_NAME);
+            if (table != null) {
+                updateCallback.dropTable(table).execute();
+                // Check schema
+                assertNull(schema.getTableByName(TABLE_NAME));
+                // Check in the datastore
+                try (final Admin admin = getDataContext().getAdmin()) {
+                    assertFalse(admin.tableExists(TableName.valueOf(TABLE_NAME)));
+                } catch (IOException e) {
+                    fail("Should not an exception checking if the table exists");
+                }
             }
         }
     }
@@ -245,8 +240,8 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
 
     /**
      * Warn that the test(method) of a class is not executed, because the test-file hasn't been set.
-     * See {@link HBaseTestCase#getPropertyFilePath} 
-     * @param className 
+     * See {@link HBaseTestCase#getPropertyFilePath}
+     * @param className
      * @param methodName
      */
     protected void warnAboutANotExecutedTest(String className, String methodName) {

@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.hbase;
 
+import static org.junit.Assume.assumeTrue;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -26,13 +28,11 @@ import java.util.Properties;
 import org.apache.metamodel.schema.ColumnType;
 import org.junit.AfterClass;
 
-import junit.framework.TestCase;
-
 /**
- * Properly configure before executing these tests. 
+ * Properly configure before executing these tests.
  * See the {@link HBaseTestCase#setUp()} and {@link HBaseTestCase#getPropertyFilePath()} methods.
  */
-public abstract class HBaseTestCase extends TestCase {
+public abstract class HBaseTestCase {
 
     // TableName
     protected static final String TABLE_NAME = "table_for_junit";
@@ -64,12 +64,10 @@ public abstract class HBaseTestCase extends TestCase {
 
     private String zookeeperHostname;
     private int zookeeperPort;
-    private boolean _configured;
     private static HBaseDataContext _dataContext;
 
-    @Override
     protected void setUp() throws Exception {
-        super.setUp();
+        boolean configured = false;
 
         Properties properties = new Properties();
         File file = new File(getPropertyFilePath());
@@ -81,20 +79,20 @@ public abstract class HBaseTestCase extends TestCase {
                 zookeeperPort = Integer.parseInt(zookeeperPortPropertyValue);
             }
 
-            _configured = (zookeeperHostname != null && !zookeeperHostname.isEmpty());
-        } else {
-            _configured = false;
+            configured = (zookeeperHostname != null && !zookeeperHostname.isEmpty());
         }
-        if (isConfigured()) {
-            final HBaseConfiguration configuration = new HBaseConfiguration(zookeeperHostname, zookeeperPort,
-                    ColumnType.VARCHAR);
-            setDataContext(new HBaseDataContext(configuration));
-        }
+        assumeTrue(configured);
+
+        final HBaseConfiguration configuration = new HBaseConfiguration(zookeeperHostname, zookeeperPort,
+                ColumnType.VARCHAR);
+        setDataContext(new HBaseDataContext(configuration));
     }
 
     @AfterClass
     public static void oneTimeTeardown() throws IOException {
-        _dataContext.getConnection().close();
+        if (_dataContext != null) {
+            _dataContext.getConnection().close();
+        }
     }
 
     /**
@@ -109,10 +107,6 @@ public abstract class HBaseTestCase extends TestCase {
     protected String getInvalidConfigurationMessage() {
         return "!!! WARN !!! HBase module ignored\r\n" + "Please configure HBase properties locally ("
                 + getPropertyFilePath() + "), to run integration tests";
-    }
-
-    public boolean isConfigured() {
-        return _configured;
     }
 
     public String getZookeeperHostname() {
