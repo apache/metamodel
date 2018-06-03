@@ -57,14 +57,15 @@ public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseU
 
     @Override
     public Table execute() {
-        if (_columnFamilies == null || _columnFamilies.size() == 0) {
+        if (_columnFamilies == null || _columnFamilies.isEmpty()) {
             throw new MetaModelException("Creating a table without columnFamilies");
         }
 
         final Table table = getTable();
 
         // Add the table to the datastore
-        getUpdateCallback().getHBaseClient().createTable(table.getName(), _columnFamilies);
+        ((HBaseDataContext) getUpdateCallback().getDataContext()).getHBaseClient().createTable(table.getName(),
+                _columnFamilies);
 
         // Update the schema
         addNewTableToSchema(table);
@@ -72,7 +73,9 @@ public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseU
     }
 
     /**
-     * Set the columnFamilies
+     * Set the columnFamilies. This should be used when creating this object using the 
+     * {@link HBaseCreateTableBuilder#HBaseCreateTableBuilder(HBaseUpdateCallback, Schema, String)} 
+     * constructor
      * @param columnFamilies
      */
     public void setColumnFamilies(Set<String> columnFamilies) {

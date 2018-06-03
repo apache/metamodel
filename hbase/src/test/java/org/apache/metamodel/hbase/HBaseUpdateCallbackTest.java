@@ -22,6 +22,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -156,10 +157,11 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
      * @param idColumn ID-column, can be set to null to create a row without this column
      * @param columnFamily1 required columnFamily 1
      * @param columnFamily2 required columnFamily 1
+     * @param qualifiersNull true will create all {@link HBaseColumn}'s with qualifier null
      * @return {@link LinkedHashMap}<{@link HBaseColumn}, {@link Object}>
      */
     protected static LinkedHashMap<HBaseColumn, Object> createRow(final HBaseTable table, final String idColumn,
-            final String columnFamily1, final String columnFamily2) {
+            final String columnFamily1, final String columnFamily2, final boolean qualifiersNull) {
         final LinkedHashMap<HBaseColumn, Object> map = new LinkedHashMap<>();
 
         // Columns
@@ -167,10 +169,17 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
         if (idColumn != null) {
             columns.add(new HBaseColumn(idColumn, table));
         }
-        columns.add(new HBaseColumn(columnFamily1, Q_HELLO, table));
-        columns.add(new HBaseColumn(columnFamily1, Q_HI, table));
-        columns.add(new HBaseColumn(columnFamily2, Q_HEY, table));
-        columns.add(new HBaseColumn(columnFamily2, Q_BAH, table));
+        if (!qualifiersNull) {
+            columns.add(new HBaseColumn(columnFamily1, Q_HELLO, table));
+            columns.add(new HBaseColumn(columnFamily1, Q_HI, table));
+            columns.add(new HBaseColumn(columnFamily2, Q_HEY, table));
+            columns.add(new HBaseColumn(columnFamily2, Q_BAH, table));
+        } else {
+            columns.add(new HBaseColumn(columnFamily1, null, table));
+            columns.add(new HBaseColumn(columnFamily1, null, table));
+            columns.add(new HBaseColumn(columnFamily2, null, table));
+            columns.add(new HBaseColumn(columnFamily2, null, table));
+        }
 
         // Values
         final ArrayList<Object> values = new ArrayList<>();
@@ -205,6 +214,7 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
      * Set the values of a {@link HBaseRowInsertionBuilder} from the values in the mapped row
      * @param row {@link LinkedHashMap}<{@link HBaseColumn}, {@link Object}> containing the values
      * @param rowInsertionBuilder insertionBuilder to be set
+     * @param enoughMatchingValues if true, the amount of columns match the amount of values
      */
     protected void setValuesInInsertionBuilder(final LinkedHashMap<HBaseColumn, Object> row,
             final HBaseRowInsertionBuilder rowInsertionBuilder) {
@@ -215,23 +225,35 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
         }
     }
 
+    protected Collection<Object> getToLittleValues(final LinkedHashMap<HBaseColumn, Object> row) {
+        Collection<Object> values = row.values();
+        values.remove(V_123_BYTE_ARRAY);
+        return values;
+    }
+
     /**
      * Checks that the table does or doesn't have rows, depending on the rowsExists parameter
      * @param rowsExist true, check that the rows exists. false, check that the result is empty.
+     * @param qualifierNull true, check the results when the qualifier was set to null
      * @throws IOException
      */
-    protected void checkRows(final boolean rowsExist) throws IOException {
+    protected void checkRows(final boolean rowsExist, final boolean qualifierNull) throws IOException {
         try (org.apache.hadoop.hbase.client.Table table = getDataContext().getConnection().getTable(TableName.valueOf(
                 TABLE_NAME))) {
             final Get get = new Get(Bytes.toBytes(RK_1));
             final Result result = table.get(get);
+
             if (rowsExist) {
                 assertFalse(result.isEmpty());
-                assertEquals(V_WORLD, new String(result.getValue(Bytes.toBytes(CF_FOO), Bytes.toBytes(Q_HELLO))));
-                assertEquals(V_THERE, new String(result.getValue(Bytes.toBytes(CF_FOO), Bytes.toBytes(Q_HI))));
-                assertEquals(V_YO, new String(result.getValue(Bytes.toBytes(CF_BAR), Bytes.toBytes(Q_HEY))));
-                assertEquals(V_123_BYTE_ARRAY.toString(), new String(result.getValue(Bytes.toBytes(CF_BAR), Bytes
-                        .toBytes(Q_BAH))));
+                if (!qualifierNull) {
+                    assertEquals(V_WORLD, new String(result.getValue(Bytes.toBytes(CF_FOO), Bytes.toBytes(Q_HELLO))));
+                    assertEquals(V_THERE, new String(result.getValue(Bytes.toBytes(CF_FOO), Bytes.toBytes(Q_HI))));
+                    assertEquals(V_YO, new String(result.getValue(Bytes.toBytes(CF_BAR), Bytes.toBytes(Q_HEY))));
+                    assertArrayEquals(V_123_BYTE_ARRAY, result.getValue(Bytes.toBytes(CF_BAR), Bytes.toBytes(Q_BAH)));
+                } else {
+                    assertEquals(V_THERE, new String(result.getValue(Bytes.toBytes(CF_FOO), null)));
+                    assertArrayEquals(V_123_BYTE_ARRAY, result.getValue(Bytes.toBytes(CF_BAR), null));
+                }
             } else {
                 assertTrue(result.isEmpty());
             }

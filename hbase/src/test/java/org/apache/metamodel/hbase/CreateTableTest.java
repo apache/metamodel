@@ -145,7 +145,7 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
     @Test
     public void testCreateTableWithoutIDColumn() throws IOException {
         final HBaseTable table = createHBaseTable(TABLE_NAME, null, CF_FOO, CF_BAR, null);
-        final LinkedHashMap<HBaseColumn, Object> row = createRow(table, null, CF_FOO, CF_BAR);
+        final LinkedHashMap<HBaseColumn, Object> row = createRow(table, null, CF_FOO, CF_BAR, false);
         final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromRow(row));
         try {
             final HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) getUpdateCallback()
@@ -165,7 +165,8 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
     @Test
     public void testSettingColumnFamiliesAfterConstrutor() {
         final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
-        final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
+        final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR,
+                false);
         final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromRow(row));
         try {
             final HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) getUpdateCallback()
@@ -185,7 +186,8 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
     @Test
     public void testCreateTableColumnFamiliesInConstrutor() {
         final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
-        final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
+        final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR,
+                false);
         final Set<String> columnFamilies = getColumnFamilies(getHBaseColumnsFromRow(row));
         try {
             getUpdateCallback().createTable(getSchema(), TABLE_NAME, columnFamilies).execute();

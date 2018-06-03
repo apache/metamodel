@@ -58,15 +58,14 @@ final class HBaseTable extends MutableTable {
         super(tableDef.getName(), TableType.TABLE, schema);
         _dataContext = dataContext;
         _defaultRowKeyColumnType = defaultRowKeyColumnType;
-        addColumns(tableDef, defaultRowKeyColumnType);
+        addColumns(tableDef);
     }
 
     /**
      * Add multiple columns to this table
      * @param tableDef
-     * @param defaultRowKeyColumnType
      */
-    private void addColumns(final SimpleTableDef tableDef, final ColumnType defaultRowKeyColumnType) {
+    private void addColumns(final SimpleTableDef tableDef) {
         // Add the columns
         final String[] columnNames = tableDef.getColumnNames();
         if (columnNames == null || columnNames.length == 0) {
@@ -82,7 +81,7 @@ final class HBaseTable extends MutableTable {
             if (idColumnFound) {
                 addColumn(HBaseDataContext.FIELD_ID, columnTypes[indexOfIDColumn], indexOfIDColumn + 1);
             } else {
-                addColumn(HBaseDataContext.FIELD_ID, defaultRowKeyColumnType, 1);
+                addColumn(HBaseDataContext.FIELD_ID, _defaultRowKeyColumnType, 1);
             }
 
             // Add the other columns

@@ -35,7 +35,7 @@ import org.apache.metamodel.schema.Column;
 // TODO: Possible future improvement: Make it possible to change the columns for each execute.
 // Now each row will get exactly the same columns.
 public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseUpdateCallback> {
-    final int _indexOfIdColumn;
+    private final int _indexOfIdColumn;
 
     /**
      * Creates a {@link HBaseRowInsertionBuilder}. The table and the column's columnFamilies are checked to exist in the schema.
@@ -48,10 +48,6 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
     public HBaseRowInsertionBuilder(final HBaseUpdateCallback updateCallback, final HBaseTable table,
             final List<HBaseColumn> columns) {
         super(updateCallback, table, columns.stream().map(column -> (Column) column).collect(Collectors.toList()));
-        if (columns.isEmpty()) { // TODO: Columns null will already result in a NullPointer at the super. Should the
-                                 // super get a extra check?
-            throw new IllegalArgumentException("The hbaseColumns list is null or empty");
-        }
 
         this._indexOfIdColumn = getIndexOfIdColumn(columns);
         if (_indexOfIdColumn == -1) {
@@ -59,7 +55,8 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
         }
 
         checkTable(updateCallback, table);
-        checkForNotMatchingColumnFamilies(table, getColumnFamilies(columns));
+        // The columns parameter should match the table's columns, just to be sure, this is checked again
+        checkColumnFamilies(table, getColumnFamilies(columns));
     }
 
     /**
@@ -91,23 +88,23 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
             throw new MetaModelException("Trying to insert data into table: " + tableGettingInserts.getName()
                     + ", which doesn't exist yet");
         }
-        checkForNotMatchingColumnFamilies(tableInSchema, tableGettingInserts.getColumnFamilies());
+        checkColumnFamilies(tableInSchema, tableGettingInserts.getColumnFamilies());
     }
 
     /**
      * Check if a list of columnNames all exist in this table
-     *
-     * @param columnNamesOfCheckedTable
+     * @param table Checked tabled
+     * @param columnFamilyNamesOfCheckedTable
      * @throws MetaModelException If a column doesn't exist
      */
-    public void checkForNotMatchingColumnFamilies(final HBaseTable table, final Set<String> columnNamesOfCheckedTable) {
+    public void checkColumnFamilies(final HBaseTable table, final Set<String> columnFamilyNamesOfCheckedTable) {
         Set<String> columnFamilyNamesOfExistingTable = table.getColumnFamilies();
 
-        for (String columnNameOfCheckedTable : columnNamesOfCheckedTable) {
+        for (String columnNameOfCheckedTable : columnFamilyNamesOfCheckedTable) {
             boolean matchingColumnFound = false;
-            Iterator<String> iterator = columnFamilyNamesOfExistingTable.iterator();
-            while (!matchingColumnFound && iterator.hasNext()) {
-                if (columnNameOfCheckedTable.equals(iterator.next())) {
+            Iterator<String> columnFamilies = columnFamilyNamesOfExistingTable.iterator();
+            while (!matchingColumnFound && columnFamilies.hasNext()) {
+                if (columnNameOfCheckedTable.equals(columnFamilies.next())) {
                     matchingColumnFound = true;
                 }
             }
@@ -130,8 +127,8 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
 
     @Override
     public synchronized void execute() {
-        getUpdateCallback().getHBaseClient().insertRow(getTable().getName(), getColumns(), getValues(),
-                _indexOfIdColumn);
+        ((HBaseDataContext) getUpdateCallback().getDataContext()).getHBaseClient().insertRow(getTable().getName(),
+                getColumns(), getValues(), _indexOfIdColumn);
     }
 
     @Override

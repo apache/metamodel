@@ -41,7 +41,7 @@ public class HBaseTableDropBuilder extends AbstractTableDropBuilder {
     public void execute() {
         // Remove from the datastore
         final Table table = getTable();
-        _updateCallback.getHBaseClient().dropTable(table.getName());
+        ((HBaseDataContext) _updateCallback.getDataContext()).getHBaseClient().dropTable(table.getName());
 
         // Remove from schema
         ((MutableSchema) table.getSchema()).removeTable(table);

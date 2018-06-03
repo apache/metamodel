@@ -121,12 +121,12 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
             final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                     CF_BAR);
 
-            checkRows(false);
+            checkRows(false, false);
             final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback().deleteFrom(
                     existingTable);
             rowDeletionBuilder.setKey(RK_1);
             rowDeletionBuilder.execute();
-            checkRows(false);
+            checkRows(false, false);
         } catch (Exception e) {
             fail("Should not get an exception that the row doesn't exist.");
         }
@@ -141,12 +141,12 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
             final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                     CF_BAR);
 
-            checkRows(false);
+            checkRows(false, false);
             final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback().deleteFrom(
                     existingTable);
             rowDeletionBuilder.setKey("");
             rowDeletionBuilder.execute();
-            checkRows(false);
+            checkRows(false, false);
         } catch (Exception e) {
             fail("Should not get an exception that the rowkey is empty.");
         }
@@ -161,19 +161,19 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
             final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                     CF_BAR);
             final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
+                    CF_BAR, false);
             final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
 
-            checkRows(false);
+            checkRows(false, false);
             final HBaseRowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable, columns);
             setValuesInInsertionBuilder(row, rowInsertionBuilder);
             rowInsertionBuilder.execute();
-            checkRows(true);
+            checkRows(true, false);
             final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback().deleteFrom(
                     existingTable);
             rowDeletionBuilder.setKey(RK_1);
             rowDeletionBuilder.execute();
-            checkRows(false);
+            checkRows(false, false);
         } catch (Exception e) {
             fail("Should not get an exception on deleting a row.");
         }

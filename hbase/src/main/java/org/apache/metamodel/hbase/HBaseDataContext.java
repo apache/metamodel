@@ -50,15 +50,11 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.SimpleTableDef;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * MetaModel adaptor for Apache HBase.
  */
 public class HBaseDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
-
-    private static final Logger logger = LoggerFactory.getLogger(HBaseDataContext.class);
 
     public static final String FIELD_ID = "_id";
 
@@ -97,7 +93,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext implements Upd
         }
     }
 
-    static protected Configuration createConfig(HBaseConfiguration configuration) {
+    protected static Configuration createConfig(HBaseConfiguration configuration) {
         Configuration config = org.apache.hadoop.hbase.HBaseConfiguration.create();
         config.set("hbase.zookeeper.quorum", configuration.getZookeeperHostname());
         config.set("hbase.zookeeper.property.clientPort", Integer.toString(configuration.getZookeeperPort()));
@@ -125,7 +121,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext implements Upd
     }
 
     @Override
-    public Schema getMainSchema() throws MetaModelException {
+    protected Schema getMainSchema() throws MetaModelException {
         final MutableSchema schema = new MutableSchema(_configuration.getSchemaName());
 
         SimpleTableDef[] tableDefinitions = _configuration.getTableDefinitions();
@@ -137,7 +133,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext implements Upd
                     SimpleTableDef emptyTableDef = new SimpleTableDef(tables[i].getNameAsString(), new String[0]);
                     tableDefinitions[i] = emptyTableDef;
                 }
-            } catch (IllegalArgumentException | IOException e) {
+            } catch (IOException e) {
                 throw new MetaModelException(e);
             }
         }
@@ -253,5 +249,9 @@ public class HBaseDataContext extends QueryPostprocessDataContext implements Upd
         update.run(callback);
 
         return callback.getUpdateSummary();
+    }
+
+    public HBaseClient getHBaseClient() {
+        return new HBaseClient(this.getConnection());
     }
 }

@@ -38,13 +38,13 @@ import org.slf4j.LoggerFactory;
 /**
  * This class can perform client-operations on a HBase datastore
  */
-public final class HBaseClient {
+final class HBaseClient {
 
     private static final Logger logger = LoggerFactory.getLogger(HBaseClient.class);
 
     private final Connection _connection;
 
-    public HBaseClient(Connection connection) {
+    public HBaseClient(final Connection connection) {
         this._connection = connection;
     }
 
@@ -55,24 +55,37 @@ public final class HBaseClient {
      * @param values
      * @throws IllegalArgumentException when any parameter is null or the indexOfIdColumn is impossible
      * @throws MetaModelException when no ID-column is found.
-     * @throws MetaModelException when a {@link IOException} is catched
+     * @throws MetaModelException when a {@link IOException} is caught
      */
-    // TODO: Use the ColumnTypes to determine the inserts. Now the toString() method is called on the object.
-    public void insertRow(String tableName, HBaseColumn[] columns, Object[] values, int indexOfIdColumn) {
+    public void insertRow(final String tableName, final HBaseColumn[] columns, final Object[] values,
+            final int indexOfIdColumn) {
         if (tableName == null || columns == null || values == null || indexOfIdColumn >= values.length
                 || values[indexOfIdColumn] == null) {
             throw new IllegalArgumentException(
                     "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
         }
+        if (columns.length != values.length) {
+            throw new IllegalArgumentException("The amount of columns don't match the amount of values");
+        }
         try (final Table table = _connection.getTable(TableName.valueOf(tableName))) {
             // Create a put with the values of indexOfIdColumn as rowkey
-            final Put put = new Put(Bytes.toBytes(values[indexOfIdColumn].toString()));
+            final Put put = new Put(getValueAsByteArray(values[indexOfIdColumn]));
 
             // Add the other values to the put
             for (int i = 0; i < columns.length; i++) {
                 if (i != indexOfIdColumn) {
-                    put.addColumn(Bytes.toBytes(columns[i].getColumnFamily()), Bytes.toBytes(columns[i].getQualifier()),
-                            Bytes.toBytes(values[i].toString()));
+                    // NullChecker is already forced within the HBaseColumn class
+                    final byte[] columnFamily = Bytes.toBytes(columns[i].getColumnFamily());
+                    // An HBaseColumn doesn't need a qualifier, this only works when the qualifier is empty (not null).
+                    // Otherwise NullPointer exceptions will happen
+                    byte[] qualifier = null;
+                    if (columns[i].getQualifier() != null) {
+                        qualifier = Bytes.toBytes(columns[i].getQualifier());
+                    } else {
+                        qualifier = Bytes.toBytes(new String(""));
+                    }
+                    final byte[] value = getValueAsByteArray(values[i]);
+                    put.addColumn(columnFamily, qualifier, value);
                 }
             }
             // Add the put to the table
@@ -87,13 +100,13 @@ public final class HBaseClient {
      * @param tableName
      * @param rowKey
      * @throws IllegalArgumentException when any parameter is null
-     * @throws MetaModelException when a {@link IOException} is catched
+     * @throws MetaModelException when a {@link IOException} is caught
      */
-    public void deleteRow(String tableName, Object rowKey) {
+    public void deleteRow(final String tableName, final Object rowKey) {
         if (tableName == null || rowKey == null) {
             throw new IllegalArgumentException("Can't delete a row without having tableName or rowKey");
         }
-        byte[] rowKeyAsByteArray = Bytes.toBytes(rowKey.toString());
+        byte[] rowKeyAsByteArray = getValueAsByteArray(rowKey);
         if (rowKeyAsByteArray.length > 0) {
             try (final Table table = _connection.getTable(TableName.valueOf(tableName));) {
                 if (rowExists(table, rowKeyAsByteArray) == true) {
@@ -116,7 +129,7 @@ public final class HBaseClient {
      * @return boolean
      * @throws IOException
      */
-    private boolean rowExists(Table table, byte[] rowKey) throws IOException {
+    private boolean rowExists(final Table table, final byte[] rowKey) throws IOException {
         final Get get = new Get(rowKey);
         return !table.get(get).isEmpty();
     }
@@ -126,7 +139,7 @@ public final class HBaseClient {
      * @param tableName
      * @param columnFamilies
      * @throws IllegalArgumentException when any parameter is null
-     * @throws MetaModelException when a {@link IOException} is catched
+     * @throws MetaModelException when a {@link IOException} is caught
      */
     public void createTable(String tableName, Set<String> columnFamilies) {
         if (tableName == null || columnFamilies == null || columnFamilies.isEmpty()) {
@@ -152,9 +165,9 @@ public final class HBaseClient {
      * Disable and drop a table from a HBase datastore
      * @param tableName
      * @throws IllegalArgumentException when tableName is null
-     * @throws MetaModelException when a {@link IOException} is catched
+     * @throws MetaModelException when a {@link IOException} is caught
      */
-    public void dropTable(String tableName) {
+    public void dropTable(final String tableName) {
         if (tableName == null) {
             throw new IllegalArgumentException("Can't drop a table without having the tableName");
         }
@@ -165,5 +178,20 @@ public final class HBaseClient {
         } catch (IOException e) {
             throw new MetaModelException(e);
         }
+    }
+
+    /**
+     * Converts a Object value into a byte array, if it isn't a byte array already
+     * @param value
+     * @return value as a byte array
+     */
+    private byte[] getValueAsByteArray(final Object value) {
+        byte[] valueAsByteArray;
+        if (value instanceof byte[]) {
+            valueAsByteArray = (byte[]) value;
+        } else {
+            valueAsByteArray = Bytes.toBytes(value.toString());
+        }
+        return valueAsByteArray;
     }
 }

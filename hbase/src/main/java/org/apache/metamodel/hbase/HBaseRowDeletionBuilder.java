@@ -27,7 +27,7 @@ import org.apache.metamodel.schema.Table;
  */
 public class HBaseRowDeletionBuilder extends AbstractRowDeletionBuilder {
 
-    private HBaseClient _hBaseClient;
+    private HBaseDataContext _dataContext;
     private Object _key;
 
     /**
@@ -36,12 +36,12 @@ public class HBaseRowDeletionBuilder extends AbstractRowDeletionBuilder {
      * @param table
      * @throws IllegalArgumentException when the hBaseWriter is null
      */
-    public HBaseRowDeletionBuilder(final HBaseClient hBaseWriter, final Table table) {
+    public HBaseRowDeletionBuilder(final HBaseDataContext dataContext, final Table table) {
         super(table);
-        if (hBaseWriter == null) {
+        if (dataContext == null) {
             throw new IllegalArgumentException("hBaseClient cannot be null");
         }
-        this._hBaseClient = hBaseWriter;
+        this._dataContext = dataContext;
     }
 
     /** 
@@ -52,10 +52,10 @@ public class HBaseRowDeletionBuilder extends AbstractRowDeletionBuilder {
         if (_key == null) {
             throw new MetaModelException("Key cannot be null");
         }
-        _hBaseClient.deleteRow(getTable().getName(), _key);
+        _dataContext.getHBaseClient().deleteRow(getTable().getName(), _key);
     }
 
-    public void setKey(Object _key) {
-        this._key = _key;
+    public void setKey(Object key) {
+        this._key = key;
     }
 }

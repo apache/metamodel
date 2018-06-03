@@ -35,11 +35,8 @@ import org.apache.metamodel.schema.Table;
  */
 public class HBaseUpdateCallback extends AbstractUpdateCallback implements UpdateCallback {
 
-    private final HBaseClient _hBaseClient;
-
     public HBaseUpdateCallback(final HBaseDataContext dataContext) {
         super(dataContext);
-        _hBaseClient = new HBaseClient(dataContext.getConnection());
     }
 
     @Override
@@ -70,7 +67,7 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
     }
 
     /**
-     * @throws IllegalArgumentException when table isn't a {@link HBaseTable}
+     * @throws UnsupportedOperationException use {@link HBaseUpdateCallback#insertInto(String, String)}
      */
     @Override
     public RowInsertionBuilder insertInto(final Table table) {
@@ -107,13 +104,9 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
     @Override
     public RowDeletionBuilder deleteFrom(final Table table) {
         if (table instanceof HBaseTable) {
-            return new HBaseRowDeletionBuilder(_hBaseClient, table);
+            return new HBaseRowDeletionBuilder(((HBaseDataContext) getDataContext()), table);
         } else {
             throw new IllegalArgumentException("Not an HBase table: " + table);
         }
-    }
-
-    public HBaseClient getHBaseClient() {
-        return _hBaseClient;
     }
 }

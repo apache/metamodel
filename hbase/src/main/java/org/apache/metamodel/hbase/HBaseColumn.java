@@ -25,9 +25,9 @@ import org.apache.metamodel.schema.SuperColumnType;
 import org.apache.metamodel.schema.Table;
 
 public final class HBaseColumn extends MutableColumn {
-    public final static ColumnType DEFAULT_COLUMN_TYPE_FOR_ID_COLUMN = new ColumnTypeImpl("BYTE[]",
+    public static final ColumnType DEFAULT_COLUMN_TYPE_FOR_ID_COLUMN = new ColumnTypeImpl("BYTE[]",
             SuperColumnType.LITERAL_TYPE);
-    public final static ColumnType DEFAULT_COLUMN_TYPE_FOR_COLUMN_FAMILIES = ColumnType.LIST;
+    public static final ColumnType DEFAULT_COLUMN_TYPE_FOR_COLUMN_FAMILIES = ColumnType.LIST;
 
     private final String columnFamily;
     private final String qualifier;
@@ -59,6 +59,7 @@ public final class HBaseColumn extends MutableColumn {
 
         this.columnFamily = columnFamily;
         this.qualifier = qualifier;
+
         setColumnNumber(columnNumber);
         setPrimaryKey(HBaseDataContext.FIELD_ID.equals(columnFamily));
 
