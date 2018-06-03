@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.hbase;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -30,23 +32,20 @@ import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.junit.Before;
+import org.junit.Test;
 
 public class HBaseDataContextTest extends HBaseTestCase {
 
     @Override
-    protected void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         super.setUp();
-        if (isConfigured()) {
-            createTableNatively();
-        }
+        createTableNatively();
     }
 
+    @Test
     public void testCreateInsertQueryAndDrop() throws Exception {
-        if (!isConfigured()) {
-            System.err.println(getInvalidConfigurationMessage());
-            return;
-        }
-
         // test the schema exploration
         final Table table = getDataContext().getDefaultSchema().getTableByName(TABLE_NAME);
         assertNotNull(table);
