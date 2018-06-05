@@ -36,6 +36,7 @@ import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.annotations.InterfaceStability;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.FirstRowDataSet;
 import org.apache.metamodel.data.MaxRowsDataSet;
@@ -51,6 +52,7 @@ import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 
+@InterfaceStability.Unstable
 public class KafkaDataContext<K, V> extends QueryPostprocessDataContext implements UpdateableDataContext {
 
     public static final String SYSTEM_PROPERTY_CONSUMER_POLL_TIMEOUT = "metamodel.kafka.consumer.poll.timeout";

@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.metamodel.annotations.InterfaceStability;
+
 /**
  * Represents a table and it's metadata description. Tables reside within a
  * schema and contains columns and relationships to other tables.
@@ -29,6 +31,7 @@ import java.util.List;
  * @see Schema
  * @see Column
  */
+@InterfaceStability.Stable
 public interface Table extends Comparable<Table>, Serializable, NamedStructure {
 
     /**

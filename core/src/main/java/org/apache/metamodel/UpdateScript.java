@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel;
 
+import org.apache.metamodel.annotations.InterfaceStability;
+
 /**
  * Represents any updating operation or update script that can be executed on a
  * {@link UpdateableDataContext}. Users of MetaModel should implement their own
@@ -26,6 +28,7 @@ package org.apache.metamodel;
  * execution.
  */
 @FunctionalInterface
+@InterfaceStability.Stable
 public interface UpdateScript {
 
 	/**
