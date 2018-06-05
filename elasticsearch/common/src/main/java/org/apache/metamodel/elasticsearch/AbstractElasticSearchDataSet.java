@@ -65,7 +65,6 @@ public abstract class AbstractElasticSearchDataSet extends AbstractDataSet {
     
     @Override
     protected void finalize() throws Throwable {
-        super.finalize();
         if (!_closed.get()) {
             logger.warn("finalize() invoked, but DataSet is not closed. Invoking close() on {}", this);
             close();

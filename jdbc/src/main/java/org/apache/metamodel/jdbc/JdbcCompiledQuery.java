@@ -148,7 +148,6 @@ final class JdbcCompiledQuery extends DefaultCompiledQuery implements CompiledQu
 
     @Override
     protected void finalize() throws Throwable {
-        super.finalize();
         if (!_closed) {
             logger.warn("finalize() invoked, but DataSet is not closed. Invoking close() on {}", this);
             close();

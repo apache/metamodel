@@ -53,7 +53,6 @@ class FixedWidthDataSet extends AbstractDataSet {
 
 	@Override
 	protected void finalize() throws Throwable {
-		super.finalize();
 		// close is always safe to invoke
 		close();
 	}
