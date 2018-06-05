@@ -24,7 +24,7 @@ under the License.
 		<sshwagon.version>2.6</sshwagon.version>
 		<javadoc.version>2.10.3</javadoc.version>
 		<slf4j.version>1.7.7</slf4j.version>
-		<junit.version>4.11</junit.version>
+		<junit.version>4.12</junit.version>
 		<guava.version>16.0.1</guava.version>
 		<hadoop.version>2.6.0</hadoop.version>
 		<jackson.version>2.6.3</jackson.version>
