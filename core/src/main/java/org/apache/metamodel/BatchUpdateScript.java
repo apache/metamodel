@@ -18,12 +18,15 @@
  */
 package org.apache.metamodel;
 
+import org.apache.metamodel.annotations.InterfaceStability;
+
 /**
  * Indicator sub-interface of {@link UpdateScript}. Implementing your updates
  * using this interface indicates to the underlying
  * {@link UpdateableDataContext} that the update script represents a large batch
  * update and that appropriate optimizations may be taken into use if available.
  */
+@InterfaceStability.Stable
 public interface BatchUpdateScript extends UpdateScript {
 
 }

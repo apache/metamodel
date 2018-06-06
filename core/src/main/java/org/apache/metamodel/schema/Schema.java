@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.metamodel.DataContext;
+import org.apache.metamodel.annotations.InterfaceStability;
 
 /**
  * Represents a schema and it's metadata description. Schemas represent a
@@ -31,6 +32,7 @@ import org.apache.metamodel.DataContext;
  * @see DataContext
  * @see Table
  */
+@InterfaceStability.Stable
 public interface Schema extends Comparable<Schema>, Serializable, NamedStructure {
 
 	/**

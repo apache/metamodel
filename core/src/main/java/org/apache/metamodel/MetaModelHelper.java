@@ -769,7 +769,7 @@ public final class MetaModelHelper {
     }
 
     public static SelectItem[] createSelectItems(Column... columns) {
-        SelectItem[] items = new SelectItem[columns.length];
+        final SelectItem[] items = new SelectItem[columns.length];
         for (int i = 0; i < items.length; i++) {
             items[i] = new SelectItem(columns[i]);
         }
