@@ -20,12 +20,15 @@ package org.apache.metamodel.schema;
 
 import java.io.Serializable;
 
+import org.apache.metamodel.annotations.InterfaceStability;
+
 /**
  * Represents a column and it's metadata description. Columns reside within a
  * Table and can be used as keys for relationships between tables.
  * 
  * @see Table
  */
+@InterfaceStability.Stable
 public interface Column extends Comparable<Column>, Serializable, NamedStructure {
 
     /**

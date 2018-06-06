@@ -21,6 +21,8 @@ package org.apache.metamodel.schema;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.metamodel.annotations.InterfaceStability;
+
 /**
  * Represents a relationship between two tables where one set of columns is the
  * primary key, and another set is the foreign key.
@@ -28,6 +30,7 @@ import java.util.List;
  * @see Table
  * @see Column
  */
+@InterfaceStability.Stable
 public interface Relationship extends Serializable, Comparable<Relationship> {
 
 	/**

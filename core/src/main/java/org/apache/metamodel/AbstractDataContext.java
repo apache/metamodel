@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.metamodel.annotations.InterfaceStability;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.DefaultCompiledQuery;
@@ -40,6 +41,7 @@ import org.apache.metamodel.schema.TableType;
  * Abstract implementation of the DataContext interface. Provides convenient implementations of all trivial and
  * datastore-independent methods.
  */
+@InterfaceStability.Evolving
 public abstract class AbstractDataContext implements DataContext {
 
     private static final String NULL_SCHEMA_NAME_TOKEN = "<metamodel.schema.name.null>";

@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.neo4j;
 
+import static org.apache.metamodel.neo4j.Neo4jDataContext.NEO4J_COLUMN_NAME_ID;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,26 +32,26 @@ import org.apache.metamodel.schema.Table;
 
 public class Neo4jCypherQueryBuilder {
 
-    public static String buildSelectQuery(Table table, List<Column> columns, int firstRow, int maxRows) {
-        List<String> columnNames = columns.stream()
-                .map(col -> col.getName())
-                .collect(Collectors.toList());
+    public static String buildSelectQuery(final Table table, final List<Column> columns, final int firstRow,
+            final int maxRows) {
+        List<String> columnNames = columns.stream().map(Column::getName).collect(Collectors.toList());
         return buildSelectQuery(table.getName(), columnNames, firstRow, maxRows);
     }
 
-    public static String buildSelectQuery(String tableName, List<String> columnNames, int firstRow, int maxRows) {
-        Map<String, String> returnClauseMap = new LinkedHashMap<>();
-        Map<String, Integer> relationshipIndexMap = new LinkedHashMap<>();
+    public static String buildSelectQuery(final String tableName, final List<String> columnNames, final int firstRow,
+            final int maxRows) {
+        final Map<String, String> returnClauseMap = new LinkedHashMap<>();
+        final Map<String, Integer> relationshipIndexMap = new LinkedHashMap<>();
         for (String columnName : columnNames) {
-            if (columnName.startsWith(Neo4jDataContext.RELATIONSHIP_PREFIX)) {
-                columnName = columnName.replace(Neo4jDataContext.RELATIONSHIP_PREFIX, "");
+            if (columnName.startsWith(Neo4jDataContext.NEO4J_COLUMN_NAME_RELATION_PREFIX)) {
+                columnName = columnName.replace(Neo4jDataContext.NEO4J_COLUMN_NAME_RELATION_PREFIX, "");
 
-                String relationshipName;
-                String relationshipPropertyName;
+                final String relationshipName;
+                final String relationshipPropertyName;
 
-                if (columnName.contains(Neo4jDataContext.RELATIONSHIP_COLUMN_SEPARATOR)) {
-                    String[] parsedColumnNameArray = columnName.split(Neo4jDataContext.RELATIONSHIP_COLUMN_SEPARATOR);
-
+                if (columnName.contains(Neo4jDataContext.NEO4J_COLUMN_NAME_RELATION_LIST_INDICATOR)) {
+                    String[] parsedColumnNameArray =
+                            columnName.split(Neo4jDataContext.NEO4J_COLUMN_NAME_RELATION_LIST_INDICATOR);
                     relationshipName = parsedColumnNameArray[0];
                     relationshipPropertyName = parsedColumnNameArray[1];
                 } else {
@@ -57,7 +59,7 @@ public class Neo4jCypherQueryBuilder {
                     relationshipPropertyName = "metamodel_neo4j_relationship_marker";
                 }
 
-                String relationshipAlias;
+                final String relationshipAlias;
                 if (relationshipIndexMap.containsKey(relationshipName)) {
                     relationshipAlias = "r" + relationshipIndexMap.get(relationshipName);
                 } else {
@@ -77,7 +79,7 @@ public class Neo4jCypherQueryBuilder {
                     returnClauseMap.put(columnName, relationshipAlias + "." + relationshipPropertyName);
                 }
             } else {
-                if (columnName.equals("_id")) {
+                if (columnName.equals(NEO4J_COLUMN_NAME_ID)) {
                     returnClauseMap.put(columnName, "id(n)");
                 } else {
                     returnClauseMap.put(columnName, "n." + columnName);
@@ -85,17 +87,17 @@ public class Neo4jCypherQueryBuilder {
             }
         }
 
-        StringBuilder cypherBuilder = new StringBuilder();
+        final StringBuilder cypherBuilder = new StringBuilder();
         cypherBuilder.append("MATCH (n:");
         cypherBuilder.append(tableName);
-        for (Map.Entry<String, Integer> relationshipAliasEntry : relationshipIndexMap.entrySet()) {
+        for (final Map.Entry<String, Integer> relationshipAliasEntry : relationshipIndexMap.entrySet()) {
             cypherBuilder.append(") OPTIONAL MATCH (n)-[r" + relationshipAliasEntry.getValue() + ":"
                     + relationshipAliasEntry.getKey() + "]->(r" + relationshipAliasEntry.getValue()
                     + "_relationshipEndNode");
         }
         cypherBuilder.append(") RETURN ");
         boolean addComma = false;
-        for (Map.Entry<String, String> returnClauseEntry : returnClauseMap.entrySet()) {
+        for (final Map.Entry<String, String> returnClauseEntry : returnClauseMap.entrySet()) {
             if (addComma) {
                 cypherBuilder.append(",");
             }
@@ -112,7 +114,7 @@ public class Neo4jCypherQueryBuilder {
         return cypherBuilder.toString();
     }
 
-    public static String buildCountQuery(String tableName, List<FilterItem> whereItems) {
+    public static String buildCountQuery(final String tableName, final List<FilterItem> whereItems) {
         StringBuilder cypherBuilder = new StringBuilder();
         cypherBuilder.append("MATCH (n:");
         cypherBuilder.append(tableName);
@@ -122,12 +124,12 @@ public class Neo4jCypherQueryBuilder {
         return cypherBuilder.toString();
     }
 
-    private static String buildWhereClause(List<FilterItem> whereItems, String queryObjectHandle) {
+    private static String buildWhereClause(final List<FilterItem> whereItems, final String queryObjectHandle) {
         if ((whereItems != null) && (!whereItems.isEmpty())) {
-            StringBuilder whereClauseBuilder = new StringBuilder();
+            final StringBuilder whereClauseBuilder = new StringBuilder();
             whereClauseBuilder.append("WHERE ");
 
-            FilterItem firstWhereItem = whereItems.get(0);
+            final FilterItem firstWhereItem = whereItems.get(0);
             whereClauseBuilder.append(buildWhereClauseItem(firstWhereItem, queryObjectHandle));
 
             for (int i = 1; i < whereItems.size(); i++) {
@@ -142,8 +144,8 @@ public class Neo4jCypherQueryBuilder {
         }
     }
 
-    private static String buildWhereClauseItem(FilterItem whereItem, String queryObjectHandle) {
-        StringBuilder whereClauseItemBuilder = new StringBuilder();
+    private static String buildWhereClauseItem(final FilterItem whereItem, final String queryObjectHandle) {
+        final StringBuilder whereClauseItemBuilder = new StringBuilder();
         whereClauseItemBuilder.append(queryObjectHandle);
         whereClauseItemBuilder.append(".");
         whereClauseItemBuilder.append(whereItem.getSelectItem().getColumn().getName());
@@ -158,5 +160,4 @@ public class Neo4jCypherQueryBuilder {
         }
         return whereClauseItemBuilder.toString();
     }
-
 }

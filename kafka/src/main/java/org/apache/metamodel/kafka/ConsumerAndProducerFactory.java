@@ -16,25 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel;
+package org.apache.metamodel.kafka;
 
-import org.apache.metamodel.annotations.InterfaceStability;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.producer.Producer;
 
 /**
- * Represents any updating operation or update script that can be executed on a
- * {@link UpdateableDataContext}. Users of MetaModel should implement their own
- * {@link UpdateScript} and submit them to the
- * {@link UpdateableDataContext#executeUpdate(UpdateScript)} method for
- * execution.
+ * Factory interface for Kafka {@link Consumer} and {@link Producer} objects to
+ * be used by Apache MetaModel. Since Apache MetaModel may potentially serve
+ * multiple queries at the same times, multiple consumers may be needed. This
+ * class determines how these are instantiated.
  */
-@FunctionalInterface
-@InterfaceStability.Stable
-public interface UpdateScript {
+public interface ConsumerAndProducerFactory {
 
-	/**
-	 * Invoked by MetaModel when the update script should be run. User should
-	 * implement this method and invoke update operations on the
-	 * {@link UpdateCallback}.
-	 */
-	public void run(UpdateCallback callback);
+    public <K, V> Consumer<K, V> createConsumer(String topic, Class<K> keyClass, Class<V> valueClass);
+
+    public <K, V> Producer<K, V> createProducer(Class<K> keyClass, Class<V> valueClass);
 }
