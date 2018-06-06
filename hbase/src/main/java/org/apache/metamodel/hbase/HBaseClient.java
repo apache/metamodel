@@ -108,11 +108,11 @@ final class HBaseClient {
         }
         byte[] rowKeyAsByteArray = getValueAsByteArray(rowKey);
         if (rowKeyAsByteArray.length > 0) {
-            try (final Table table = _connection.getTable(TableName.valueOf(tableName));) {
-                if (rowExists(table, rowKeyAsByteArray) == true) {
+            try (final Table table = _connection.getTable(TableName.valueOf(tableName))) {
+                if (rowExists(table, rowKeyAsByteArray)) {
                     table.delete(new Delete(rowKeyAsByteArray));
                 } else {
-                    logger.warn("Rowkey with value " + rowKey.toString() + " doesn't exist in the table");
+                    logger.warn("Rowkey with value {} doesn't exist in the table", rowKey.toString());
                 }
             } catch (IOException e) {
                 throw new MetaModelException(e);
@@ -141,7 +141,7 @@ final class HBaseClient {
      * @throws IllegalArgumentException when any parameter is null
      * @throws MetaModelException when a {@link IOException} is caught
      */
-    public void createTable(String tableName, Set<String> columnFamilies) {
+    public void createTable(final String tableName, final Set<String> columnFamilies) {
         if (tableName == null || columnFamilies == null || columnFamilies.isEmpty()) {
             throw new IllegalArgumentException("Can't create a table without having the tableName or columnFamilies");
         }

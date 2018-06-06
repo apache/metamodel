@@ -23,14 +23,18 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.schema.MutableTable;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class InsertRowTest extends HBaseUpdateCallbackTest {
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     /**
      * Check if inserting into a table is supported
@@ -49,14 +53,12 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testOnlyUsingTableParameter() throws IOException {
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+        exception.expect(UnsupportedOperationException.class);
+        exception.expectMessage("We need an explicit list of columns when inserting into an HBase table.");
+
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                     CF_BAR);
-            getUpdateCallback().insertInto(existingTable);
-            fail("Should get an exception that this method is not supported");
-        } catch (UnsupportedOperationException e) {
-            assertEquals("We need an explicit list of columns when inserting into an HBase table.", e.getMessage());
-        }
+        getUpdateCallback().insertInto(existingTable);
     }
 
     /**
@@ -67,17 +69,14 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     @Test
     public void testWrongTableType() throws IOException {
         final MutableTable mutableTable = new MutableTable();
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR, false);
-            final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
-            getUpdateCallback().insertInto(mutableTable, columns);
-            fail("Should get an exception that the type of the table is wrong.");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Not an HBase table: " + mutableTable, e.getMessage());
-        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Not an HBase table: " + mutableTable);
+
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
+        getUpdateCallback().insertInto(mutableTable, columns);
     }
 
     /**
@@ -87,14 +86,12 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testColumnsNullAtUpdateCallBack() throws IOException {
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-            getUpdateCallback().insertInto(existingTable, null);
-            fail("Should get an exception that the columns list is null.");
-        } catch (IllegalArgumentException e) {
-            assertEquals("The hbaseColumns list is null or empty", e.getMessage());
-        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("The hbaseColumns list is null or empty");
+
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        getUpdateCallback().insertInto(existingTable, null);
     }
 
     /**
@@ -104,14 +101,11 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testColumnsEmptyAtUpdateCallBack() throws IOException {
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-            getUpdateCallback().insertInto(existingTable, new ArrayList<HBaseColumn>());
-            fail("Should get an exception that the columns list is empty.");
-        } catch (IllegalArgumentException e) {
-            assertEquals("The hbaseColumns list is null or empty", e.getMessage());
-        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("The hbaseColumns list is null or empty");
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        getUpdateCallback().insertInto(existingTable, new ArrayList<HBaseColumn>());
     }
 
     /**
@@ -121,20 +115,17 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testTableThatDoesntExist() throws IOException {
-        final HBaseTable wrongTable = createHBaseTable("NewTableNotInSchema", HBaseDataContext.FIELD_ID, "cf1", "cf2",
-                null);
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR, false);
-            final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
-            getUpdateCallback().insertInto(wrongTable, columns);
-            fail("Should get an exception that the table isn't in the schema.");
-        } catch (MetaModelException e) {
-            assertEquals("Trying to insert data into table: " + wrongTable.getName() + ", which doesn't exist yet", e
-                    .getMessage());
-        }
+        final HBaseTable wrongTable = createHBaseTable("NewTableNotInSchema", HBaseDataContext.FIELD_ID, "cf1", "cf2");
+
+        exception.expect(MetaModelException.class);
+        exception.expectMessage("Trying to insert data into table: " + wrongTable.getName()
+                + ", which doesn't exist yet");
+
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
+        getUpdateCallback().insertInto(wrongTable, columns);
     }
 
     /**
@@ -144,16 +135,14 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testIDColumnDoesntExistInColumnsArray() throws IOException {
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+        exception.expect(MetaModelException.class);
+        exception.expectMessage("The ID-Column was not found");
+
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                     CF_BAR);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, null, CF_FOO, CF_BAR, false);
-            final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
-            getUpdateCallback().insertInto(existingTable, columns);
-            fail("Should get an exception that ID-column doesn't exist.");
-        } catch (MetaModelException e) {
-            assertEquals("The ID-Column was not found", e.getMessage());
-        }
+        final Map<HBaseColumn, Object> row = createRow(existingTable, null, CF_FOO, CF_BAR, false);
+        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
+        getUpdateCallback().insertInto(existingTable, columns);
     }
 
     /**
@@ -164,20 +153,18 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     @Test
     public void testColumnFamilyDoesntExistsBecauseItsNull() throws IOException {
         final String wrongColumnFamily = "wrongColumnFamily";
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR, false);
-            final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
-            final HBaseTable wrongTable = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    wrongColumnFamily, null);
-            getUpdateCallback().insertInto(wrongTable, columns);
-            fail("Should get an exception that the columnFamily doesn't exist.");
-        } catch (MetaModelException e) {
-            assertEquals(String.format("ColumnFamily: %s doesn't exist in the schema of the table", wrongColumnFamily),
-                    e.getMessage());
-        }
+
+        exception.expect(MetaModelException.class);
+        exception.expectMessage(String.format("ColumnFamily: %s doesn't exist in the schema of the table",
+                wrongColumnFamily));
+
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
+        final HBaseTable wrongTable = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                wrongColumnFamily);
+        getUpdateCallback().insertInto(wrongTable, columns);
     }
 
     /**
@@ -188,20 +175,18 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     @Test
     public void testColumnFamilyDoesntExistsBecauseItsNew() throws IOException {
         final String wrongColumnFamily = "newColumnFamily";
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR, false);
-            final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
-            final HBaseTable wrongTable = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR,
-                    wrongColumnFamily);
-            getUpdateCallback().insertInto(wrongTable, columns);
-            fail("Should get an exception that the columnFamily doesn't exist.");
-        } catch (MetaModelException e) {
-            assertEquals(String.format("ColumnFamily: %s doesn't exist in the schema of the table", wrongColumnFamily),
-                    e.getMessage());
-        }
+
+        exception.expect(MetaModelException.class);
+        exception.expectMessage(String.format("ColumnFamily: %s doesn't exist in the schema of the table",
+                wrongColumnFamily));
+
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
+        final HBaseTable wrongTable = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR,
+                wrongColumnFamily);
+        getUpdateCallback().insertInto(wrongTable, columns);
     }
 
     /**
@@ -209,18 +194,15 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testCreatingTheHBaseClientWithTableNameNull() {
-        try {
-            final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR,
-                    false);
-            final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
-            final Object[] values = new String[] { "Values" };
-            new HBaseClient(getDataContext().getConnection()).insertRow(null, columns, values, 0);
-            fail("Should get an exception that tableName is null");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn", e
-                    .getMessage());
-        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
+
+        final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
+        final Object[] values = new String[] { "Values" };
+        new HBaseClient(getDataContext().getConnection()).insertRow(null, columns, values, 0);
     }
 
     /**
@@ -228,14 +210,12 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testCreatingTheHBaseClientWithColumnsNull() {
-        try {
-            final Object[] values = new String[] { "Values" };
-            new HBaseClient(getDataContext().getConnection()).insertRow("tableName", null, values, 0);
-            fail("Should get an exception that columns is null");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn", e
-                    .getMessage());
-        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
+
+        final Object[] values = new String[] { "Values" };
+        new HBaseClient(getDataContext().getConnection()).insertRow("tableName", null, values, 0);
     }
 
     /**
@@ -243,17 +223,14 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testCreatingTheHBaseClientWithValuesNull() {
-        try {
-            final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR,
-                    false);
-            final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
-            new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, null, 0);
-            fail("Should get an exception that values is null");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn", e
-                    .getMessage());
-        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
+
+        final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
+        new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, null, 0);
     }
 
     /**
@@ -261,18 +238,15 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testCreatingTheHBaseClientWithIndexOfIdColumnOutOfBounce() {
-        try {
-            final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR,
-                    false);
-            final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
-            final Object[] values = new String[] { "Values" };
-            new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, values, 10);
-            fail("Should get an exception that the indexOfIdColumn is incorrect");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn", e
-                    .getMessage());
-        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
+
+        final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
+        final Object[] values = new String[] { "Values" };
+        new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, values, 10);
     }
 
     /**
@@ -280,102 +254,93 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testCreatingTheHBaseClientWithRowKeyNull() {
-        try {
-            final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR,
-                    false);
-            final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
-            final Object[] values = new String[] { null };
-            new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, values, 0);
-            fail("Should get an exception that the indexOfIdColumn is incorrect");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn", e
-                    .getMessage());
-        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
+
+        final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
+        final Object[] values = new String[] { null };
+        new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, values, 0);
     }
 
     /**
      * Inserting a row without setting enough values directly on the HBaseClient, should throw exception.
      * NOTE: This exception is already prevented when using the {@link HBaseRowInsertionBuilder}
-     * @throws IOException 
+     * @throws IOException
      */
     @Test
     public void testNotSettingEnoughValues() throws IOException {
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR, false);
-            final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
-            final Collection<Object> values = getToLittleValues(row);
-            final HBaseClient hBaseClient = ((HBaseDataContext) getUpdateCallback().getDataContext()).getHBaseClient();
-            hBaseClient.insertRow(TABLE_NAME, columns.toArray(new HBaseColumn[columns.size()]), values.toArray(
-                    new Object[values.size()]), 0); // TODO: find the ID-column
-            fail("Should get an exception when insering directly into the HBaseClient without having enough values.");
-        } catch (IllegalArgumentException e) {
-            assertEquals("The amount of columns don't match the amount of values", e.getMessage());
-        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("The amount of columns don't match the amount of values");
+
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
+        final Collection<Object> values = getTooLittleValues(row);
+        final HBaseClient hBaseClient = ((HBaseDataContext) getUpdateCallback().getDataContext()).getHBaseClient();
+        hBaseClient.insertRow(TABLE_NAME, columns.toArray(new HBaseColumn[columns.size()]), values.toArray(
+                new Object[values.size()]), 0); // TODO: find the ID-column
+    }
+
+    private Collection<Object> getTooLittleValues(final Map<HBaseColumn, Object> row) {
+        Collection<Object> values = row.values();
+        values.remove(V_123_BYTE_ARRAY);
+        return values;
     }
 
     /**
      * Goodflow. Using an existing table and columns, should work
+     *
+     * @throws IOException
      */
     @Test
-    public void testInsertIntoWithoutExecute() {
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR, false);
-            final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
-            getUpdateCallback().insertInto(existingTable, columns);
-        } catch (Exception e) {
-            fail("No exception should be thrown, when inserting into an existing table.");
-        }
+    public void testInsertIntoWithoutExecute() throws IOException {
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
+        getUpdateCallback().insertInto(existingTable, columns);
     }
 
     /**
      * Goodflow, creating a row with qualifiers null should work.
+     *
+     * @throws IOException
      */
     @Test
-    public void testQaulifierNull() {
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR, true);
-            final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
+    public void testQaulifierNull() throws IOException {
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, true);
+        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
 
-            checkRows(false, true);
-            final HBaseRowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable, columns);
-            setValuesInInsertionBuilder(row, rowInsertionBuilder);
-            rowInsertionBuilder.execute();
-            checkRows(true, true);
-        } catch (Exception e) {
-            fail("Inserting a row without qualifiers should work.");
-        }
+        checkRows(false, true);
+        final HBaseRowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable, columns);
+        setValuesInInsertionBuilder(row, rowInsertionBuilder);
+        rowInsertionBuilder.execute();
+        checkRows(true, true);
     }
 
     /**
      * Goodflow. Inserting a row succesfully (with values set)
+     *
+     * @throws IOException
      */
     @Test
-    public void testInsertingSuccesfully() {
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR, false);
-            final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
+    public void testInsertingSuccesfully() throws IOException {
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
 
-            checkRows(false, false);
-            final HBaseRowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable, columns);
-            setValuesInInsertionBuilder(row, rowInsertionBuilder);
-            rowInsertionBuilder.execute();
-            checkRows(true, false);
-        } catch (Exception e) {
-            fail("No exception should be thrown, when inserting with values.");
-        }
+        checkRows(false, false);
+        final HBaseRowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable, columns);
+        setValuesInInsertionBuilder(row, rowInsertionBuilder);
+        rowInsertionBuilder.execute();
+        checkRows(true, false);
     }
 
     /**

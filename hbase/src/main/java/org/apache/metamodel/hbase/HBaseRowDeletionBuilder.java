@@ -27,7 +27,7 @@ import org.apache.metamodel.schema.Table;
  */
 public class HBaseRowDeletionBuilder extends AbstractRowDeletionBuilder {
 
-    private HBaseDataContext _dataContext;
+    private final HBaseDataContext _dataContext;
     private Object _key;
 
     /**
@@ -44,7 +44,7 @@ public class HBaseRowDeletionBuilder extends AbstractRowDeletionBuilder {
         this._dataContext = dataContext;
     }
 
-    /** 
+    /**
      * @throws MetaModelException when value is null
      */
     @Override
@@ -55,7 +55,7 @@ public class HBaseRowDeletionBuilder extends AbstractRowDeletionBuilder {
         _dataContext.getHBaseClient().deleteRow(getTable().getName(), _key);
     }
 
-    public void setKey(Object key) {
+    public void setKey(final Object key) {
         this._key = key;
     }
 }

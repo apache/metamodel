@@ -25,16 +25,20 @@ import java.io.IOException;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.metamodel.MetaModelException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class DropTableTest extends HBaseUpdateCallbackTest {
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     /**
      * Check if drop table is supported
      */
     @Test
     public void testDropTableSupported() {
-            assertTrue(getUpdateCallback().isDropTableSupported());
+        assertTrue(getUpdateCallback().isDropTableSupported());
     }
 
     /**
@@ -42,13 +46,11 @@ public class DropTableTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testDropTableThatDoesntExist() {
-            try {
-                final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, null);
-                getUpdateCallback().dropTable(table).execute();
-                fail("Should get an exception that the table doesn't exist in the datastore");
-            } catch (MetaModelException e) {
-                assertEquals("Trying to delete a table that doesn't exist in the datastore.", e.getMessage());
-            }
+        exception.expect(MetaModelException.class);
+        exception.expectMessage("Trying to delete a table that doesn't exist in the datastore.");
+
+        final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
+        getUpdateCallback().dropTable(table).execute();
     }
 
     /**
@@ -56,29 +58,24 @@ public class DropTableTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testCreatingTheHBaseClientWithTableNameNull() {
-            try {
-                new HBaseClient(getDataContext().getConnection()).dropTable(null);
-                fail("Should get an exception that tableName is null");
-            } catch (IllegalArgumentException e) {
-                assertEquals("Can't drop a table without having the tableName", e.getMessage());
-            }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Can't drop a table without having the tableName");
+
+        new HBaseClient(getDataContext().getConnection()).dropTable(null);
     }
 
     /**
-     * Goodflow. Droping a table succesfully.
+     * Goodflow. Dropping a table successfully.
+     *
      * @throws IOException
      */
     @Test
     public void testDropTableSuccesfully() throws IOException {
-            try {
-                final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                        CF_BAR);
-                getUpdateCallback().dropTable(existingTable).execute();
-                try (final Admin admin = getDataContext().getAdmin()) {
-                    assertFalse(admin.tableExists(TableName.valueOf(TABLE_NAME)));
-                }
-            } catch (Exception e) {
-                fail("Should not get an exception that the table doesn't exist in the datastore");
-            }
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        getUpdateCallback().dropTable(existingTable).execute();
+        try (final Admin admin = getDataContext().getAdmin()) {
+            assertFalse(admin.tableExists(TableName.valueOf(TABLE_NAME)));
+        }
     }
 }

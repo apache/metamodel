@@ -96,7 +96,8 @@ public abstract class HBaseTestCase {
     }
 
     /**
-     * Get's the test configuration file. An example file can be found at the root folder of this project.
+     * Gets the test configuration file. An example file can be found at the root folder of this project.
+     * 
      * @return Location of the configuration file.
      */
     protected String getPropertyFilePath() {

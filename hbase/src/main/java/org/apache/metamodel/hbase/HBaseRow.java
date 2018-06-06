@@ -59,6 +59,7 @@ final class HBaseRow extends AbstractRow implements Row {
             }
             return rowKey;
         }
+
         final int colonIndex = name.indexOf(':');
         if (colonIndex != -1) {
             byte[] family = name.substring(0, colonIndex).getBytes();

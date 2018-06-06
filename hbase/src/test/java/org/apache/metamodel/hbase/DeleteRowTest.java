@@ -21,14 +21,18 @@ package org.apache.metamodel.hbase;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.schema.MutableTable;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class DeleteRowTest extends HBaseUpdateCallbackTest {
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
 
     /**
      * Delete is supported
@@ -44,12 +48,11 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
     @Test
     public void testTableWrongType() {
         final MutableTable mutableTable = new MutableTable();
-        try {
-            getUpdateCallback().deleteFrom(mutableTable);
-            fail("Should get an exception that the type of the table is wrong.");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Not an HBase table: " + mutableTable, e.getMessage());
-        }
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Not an HBase table: " + mutableTable);
+
+        getUpdateCallback().deleteFrom(mutableTable);
     }
 
     /**
@@ -59,14 +62,11 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testHBaseClientNullAtBuilder() throws IOException {
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-            new HBaseRowDeletionBuilder(null, existingTable);
-            fail("Should get an exception that hBaseClient can't be null.");
-        } catch (IllegalArgumentException e) {
-            assertEquals("hBaseClient cannot be null", e.getMessage());
-        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("hBaseClient cannot be null");
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        new HBaseRowDeletionBuilder(null, existingTable);
     }
 
     /**
@@ -76,14 +76,12 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testNotSettingRowkey() throws IOException {
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-            getUpdateCallback().deleteFrom(existingTable).execute();
-            fail("Should get an exception that the columnFamily doesn't exist.");
-        } catch (MetaModelException e) {
-            assertEquals("Key cannot be null", e.getMessage());
-        }
+        exception.expect(MetaModelException.class);
+        exception.expectMessage("Key cannot be null");
+
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        getUpdateCallback().deleteFrom(existingTable).execute();
     }
 
     /**
@@ -91,12 +89,10 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testCreatingTheHBaseClientWithTableNameNull() {
-        try {
-            new HBaseClient(getDataContext().getConnection()).deleteRow(null, new String("1"));
-            fail("Should get an exception that tableName is null");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Can't delete a row without having tableName or rowKey", e.getMessage());
-        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Can't delete a row without having tableName or rowKey");
+
+        new HBaseClient(getDataContext().getConnection()).deleteRow(null, new String("1"));
     }
 
     /**
@@ -104,78 +100,69 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testCreatingTheHBaseClientWithRowKeyNull() {
-        try {
-            new HBaseClient(getDataContext().getConnection()).deleteRow("tableName", null);
-            fail("Should get an exception that rowKey is null");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Can't delete a row without having tableName or rowKey", e.getMessage());
-        }
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Can't delete a row without having tableName or rowKey");
+
+        new HBaseClient(getDataContext().getConnection()).deleteRow("tableName", null);
     }
 
     /**
      * Goodflow. Deleting a row, that doesn't exist, should not throw an exception
+     *
+     * @throws IOException
      */
     @Test
-    public void testDeletingNotExistingRow() {
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
+    public void testDeletingNotExistingRow() throws IOException {
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
 
-            checkRows(false, false);
-            final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback().deleteFrom(
-                    existingTable);
-            rowDeletionBuilder.setKey(RK_1);
-            rowDeletionBuilder.execute();
-            checkRows(false, false);
-        } catch (Exception e) {
-            fail("Should not get an exception that the row doesn't exist.");
-        }
+        checkRows(false, false);
+        final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback().deleteFrom(
+                existingTable);
+        rowDeletionBuilder.setKey(RK_1);
+        rowDeletionBuilder.execute();
+        checkRows(false, false);
     }
 
     /**
      * Goodflow. Deleting a row, which has an empty rowKey value, should not throw an exception
+     *
+     * @throws IOException
      */
     @Test
-    public void testUsingAnEmptyRowKeyValue() {
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
+    public void testUsingAnEmptyRowKeyValue() throws IOException {
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
 
-            checkRows(false, false);
-            final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback().deleteFrom(
-                    existingTable);
-            rowDeletionBuilder.setKey("");
-            rowDeletionBuilder.execute();
-            checkRows(false, false);
-        } catch (Exception e) {
-            fail("Should not get an exception that the rowkey is empty.");
-        }
+        checkRows(false, false);
+        final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback().deleteFrom(
+                existingTable);
+        rowDeletionBuilder.setKey("");
+        rowDeletionBuilder.execute();
+        checkRows(false, false);
     }
 
     /**
      * Goodflow. Deleting a row succesfully.
+     *
+     * @throws IOException
      */
     @Test
-    public void testDeleteRowSuccesfully() {
-        try {
-            final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-            final LinkedHashMap<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR, false);
-            final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
+    public void testDeleteRowSuccesfully() throws IOException {
+        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
+                CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
 
-            checkRows(false, false);
-            final HBaseRowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable, columns);
-            setValuesInInsertionBuilder(row, rowInsertionBuilder);
-            rowInsertionBuilder.execute();
-            checkRows(true, false);
-            final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback().deleteFrom(
-                    existingTable);
-            rowDeletionBuilder.setKey(RK_1);
-            rowDeletionBuilder.execute();
-            checkRows(false, false);
-        } catch (Exception e) {
-            fail("Should not get an exception on deleting a row.");
-        }
+        checkRows(false, false);
+        final HBaseRowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable, columns);
+        setValuesInInsertionBuilder(row, rowInsertionBuilder);
+        rowInsertionBuilder.execute();
+        checkRows(true, false);
+        final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback().deleteFrom(
+                existingTable);
+        rowDeletionBuilder.setKey(RK_1);
+        rowDeletionBuilder.execute();
+        checkRows(false, false);
     }
 }

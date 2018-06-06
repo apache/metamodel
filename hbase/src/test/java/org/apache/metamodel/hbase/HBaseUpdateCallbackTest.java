@@ -22,10 +22,13 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
@@ -38,12 +41,8 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.junit.After;
 import org.junit.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
-
-    private static final Logger logger = LoggerFactory.getLogger(HBaseClient.class);
 
     private HBaseUpdateCallback updateCallback;
     private MutableSchema schema;
@@ -63,10 +62,12 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
     }
 
     /**
-     * Drop the table if it exists.
-     * After that check in the schema and the datastore if the actions have been executed succesfully.
+     * Drop the table if it exists. After that check in the schema and the datastore if the actions have been executed
+     * successfully.
+     *
+     * @throws IOException
      */
-    protected void dropTableIfItExists() {
+    protected void dropTableIfItExists() throws IOException {
         if (schema != null) {
             final Table table = schema.getTableByName(TABLE_NAME);
             if (table != null) {
@@ -76,16 +77,14 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
                 // Check in the datastore
                 try (final Admin admin = getDataContext().getAdmin()) {
                     assertFalse(admin.tableExists(TableName.valueOf(TABLE_NAME)));
-                } catch (IOException e) {
-                    fail("Should not an exception checking if the table exists");
                 }
             }
         }
     }
 
     /**
-     * Check if the table has been inserted succesfully.
-     * Checks are performed in the schema and the datastore.
+     * Check if the table has been inserted successfully. Checks are performed in the schema and the datastore.
+     * 
      * @throws IOException because the admin object needs to be created
      */
     protected void checkSuccesfullyInsertedTable() throws IOException {
@@ -94,8 +93,6 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
         // Check in the datastore
         try (final Admin admin = getDataContext().getAdmin()) {
             assertTrue(admin.tableExists(TableName.valueOf(TABLE_NAME)));
-        } catch (IOException e) {
-            fail("Should not an exception checking if the table exists");
         }
     }
 
@@ -110,7 +107,7 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
      */
     protected HBaseTable createAndAddTableToDatastore(final String tableName, final String idColumn,
             final String columnFamily1, final String columnFamily2) throws IOException {
-        final LinkedHashSet<String> columnFamilies = new LinkedHashSet<>();
+        final Set<String> columnFamilies = new LinkedHashSet<>();
         columnFamilies.add(idColumn);
         columnFamilies.add(columnFamily1);
         columnFamilies.add(columnFamily2);
@@ -128,25 +125,25 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
      * @param columnFamily3 columnFamily 3 is not required and can be used to test errors
      * @return created {@link HBaseTable}
      */
-    protected HBaseTable createHBaseTable(final String tableName, final String idColumn, final String columnFamily1,
-            final String columnFamily2, final String columnFamily3) {
+    protected HBaseTable createHBaseTable(final String tableName, final String idColumn,
+            final String... columnFamilies) {
         String[] columnNames;
-        ColumnType[] columnTypes;
 
-        if (idColumn == null && columnFamily3 == null) {
-            columnNames = new String[] { columnFamily1, columnFamily2 };
-            columnTypes = new ColumnType[] { ColumnType.STRING, ColumnType.STRING };
-        } else if (idColumn != null && columnFamily3 == null) {
-            columnNames = new String[] { idColumn, columnFamily1, columnFamily2 };
-            columnTypes = new ColumnType[] { ColumnType.STRING, ColumnType.STRING, ColumnType.STRING };
-        } else if (idColumn == null && columnFamily3 != null) {
-            columnNames = new String[] { columnFamily1, columnFamily2, columnFamily3 };
-            columnTypes = new ColumnType[] { ColumnType.STRING, ColumnType.STRING, ColumnType.STRING };
+        if (idColumn == null) {
+            columnNames = columnFamilies;
         } else {
-            columnNames = new String[] { idColumn, columnFamily1, columnFamily2, columnFamily3 };
-            columnTypes = new ColumnType[] { ColumnType.STRING, ColumnType.STRING, ColumnType.STRING,
-                    ColumnType.STRING };
+            columnNames = new String[columnFamilies.length + 1];
+
+            columnNames[0] = idColumn;
+
+            for (int i = 0; i < columnFamilies.length; i++) {
+                columnNames[i + 1] = columnFamilies[i];
+            }
         }
+
+        ColumnType[] columnTypes = new ColumnType[columnNames.length];
+        Arrays.fill(columnTypes, ColumnType.STRING);
+
         final SimpleTableDef tableDef = new SimpleTableDef(tableName, columnNames, columnTypes);
         return new HBaseTable(getDataContext(), tableDef, schema, ColumnType.STRING);
     }
@@ -160,9 +157,9 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
      * @param qualifiersNull true will create all {@link HBaseColumn}'s with qualifier null
      * @return {@link LinkedHashMap}<{@link HBaseColumn}, {@link Object}>
      */
-    protected static LinkedHashMap<HBaseColumn, Object> createRow(final HBaseTable table, final String idColumn,
+    protected static Map<HBaseColumn, Object> createRow(final HBaseTable table, final String idColumn,
             final String columnFamily1, final String columnFamily2, final boolean qualifiersNull) {
-        final LinkedHashMap<HBaseColumn, Object> map = new LinkedHashMap<>();
+        final Map<HBaseColumn, Object> map = new LinkedHashMap<>();
 
         // Columns
         final ArrayList<HBaseColumn> columns = new ArrayList<>();
@@ -204,10 +201,8 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
      * @param row {@link LinkedHashMap}<{@link HBaseColumn}, {@link Object}>
      * @return {@link List}<{@link HBaseColumn}>
      */
-    protected static List<HBaseColumn> getHBaseColumnsFromRow(final LinkedHashMap<HBaseColumn, Object> row) {
-        final List<HBaseColumn> columns = new ArrayList<>();
-        columns.addAll(row.keySet());
-        return columns;
+    protected static List<HBaseColumn> getHBaseColumnsFromRow(final Map<HBaseColumn, Object> row) {
+        return row.keySet().stream().collect(Collectors.toList());
     }
 
     /**
@@ -216,19 +211,13 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
      * @param rowInsertionBuilder insertionBuilder to be set
      * @param enoughMatchingValues if true, the amount of columns match the amount of values
      */
-    protected void setValuesInInsertionBuilder(final LinkedHashMap<HBaseColumn, Object> row,
+    protected void setValuesInInsertionBuilder(final Map<HBaseColumn, Object> row,
             final HBaseRowInsertionBuilder rowInsertionBuilder) {
         int i = 0;
         for (Object value : row.values()) {
             rowInsertionBuilder.value(i, value);
             i++;
         }
-    }
-
-    protected Collection<Object> getToLittleValues(final LinkedHashMap<HBaseColumn, Object> row) {
-        Collection<Object> values = row.values();
-        values.remove(V_123_BYTE_ARRAY);
-        return values;
     }
 
     /**
@@ -258,19 +247,6 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
                 assertTrue(result.isEmpty());
             }
         }
-    }
-
-    /**
-     * Warn that the test(method) of a class is not executed, because the test-file hasn't been set.
-     * See {@link HBaseTestCase#getPropertyFilePath}
-     * @param className
-     * @param methodName
-     */
-    protected void warnAboutANotExecutedTest(String className, String methodName) {
-        String logWarning = "Test \"" + className + "#" + methodName
-                + "()\" is not executed, because the HBasetest is not configured.";
-        System.err.println(logWarning);
-        logger.warn(logWarning);
     }
 
     protected HBaseUpdateCallback getUpdateCallback() {

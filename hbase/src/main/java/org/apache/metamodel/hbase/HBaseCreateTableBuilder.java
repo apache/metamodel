@@ -34,7 +34,7 @@ public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseU
 
     private Set<String> _columnFamilies;
 
-    public HBaseCreateTableBuilder(HBaseUpdateCallback updateCallback, Schema schema, String name) {
+    public HBaseCreateTableBuilder(final HBaseUpdateCallback updateCallback, final Schema schema, final String name) {
         this(updateCallback, schema, name, null);
     }
 
@@ -46,8 +46,8 @@ public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseU
      * @param name
      * @param columnFamilies
      */
-    public HBaseCreateTableBuilder(HBaseUpdateCallback updateCallback, Schema schema, String name,
-            Set<String> columnFamilies) {
+    public HBaseCreateTableBuilder(final HBaseUpdateCallback updateCallback, final Schema schema, final String name,
+            final Set<String> columnFamilies) {
         super(updateCallback, schema, name);
         if (!(schema instanceof MutableSchema)) {
             throw new IllegalArgumentException("Not a mutable schema: " + schema);
@@ -73,12 +73,12 @@ public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseU
     }
 
     /**
-     * Set the columnFamilies. This should be used when creating this object using the 
-     * {@link HBaseCreateTableBuilder#HBaseCreateTableBuilder(HBaseUpdateCallback, Schema, String)} 
+     * Set the columnFamilies. This should be used when creating this object using the
+     * {@link HBaseCreateTableBuilder#HBaseCreateTableBuilder(HBaseUpdateCallback, Schema, String)}
      * constructor
      * @param columnFamilies
      */
-    public void setColumnFamilies(Set<String> columnFamilies) {
+    public void setColumnFamilies(final Set<String> columnFamilies) {
         this._columnFamilies = columnFamilies;
     }
 
