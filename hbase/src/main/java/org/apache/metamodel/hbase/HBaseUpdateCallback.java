@@ -18,7 +18,6 @@
  */
 package org.apache.metamodel.hbase;
 
-import java.util.List;
 import java.util.Set;
 
 import org.apache.metamodel.AbstractUpdateCallback;
@@ -33,7 +32,7 @@ import org.apache.metamodel.schema.Table;
 /**
  * This class is used to build objects to do client-operations on a HBase datastore
  */
-public class HBaseUpdateCallback extends AbstractUpdateCallback implements UpdateCallback {
+final class HBaseUpdateCallback extends AbstractUpdateCallback implements UpdateCallback {
 
     public HBaseUpdateCallback(final HBaseDataContext dataContext) {
         super(dataContext);
@@ -71,23 +70,8 @@ public class HBaseUpdateCallback extends AbstractUpdateCallback implements Updat
      */
     @Override
     public RowInsertionBuilder insertInto(final Table table) {
-        throw new UnsupportedOperationException(
-                "We need an explicit list of columns when inserting into an HBase table.");
-    }
-
-    /**
-     * Initiates the building of a row insertion operation.
-     * @param table Table to get inserts.
-     * @param columns List of {@link HBaseColumn} to insert on.
-     * @return {@link HBaseRowInsertionBuilder}
-     * @throws IllegalArgumentException The table must be an {@link HBaseTable} and the columns list can't be null or empty
-     */
-    public HBaseRowInsertionBuilder insertInto(final Table table, final List<HBaseColumn> columns) {
-        if (columns == null || columns.isEmpty()) {
-            throw new IllegalArgumentException("The hbaseColumns list is null or empty");
-        }
         if (table instanceof HBaseTable) {
-            return new HBaseRowInsertionBuilder(this, (HBaseTable) table, columns);
+            return new HBaseRowInsertionBuilder(this, (HBaseTable) table);
         } else {
             throw new IllegalArgumentException("Not an HBase table: " + table);
         }

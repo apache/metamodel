@@ -44,12 +44,6 @@ public abstract class AbstractRowInsertionBuilder<U extends UpdateCallback> exte
         _table = table;
     }
 
-    public AbstractRowInsertionBuilder(final U updateCallback, final Table table, final List<Column> columns) {
-        super(columns);
-        _updateCallback = updateCallback;
-        _table = table;
-    }
-
     @Override
     public Table getTable() {
         return _table;

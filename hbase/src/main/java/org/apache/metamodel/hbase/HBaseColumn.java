@@ -19,38 +19,27 @@
 package org.apache.metamodel.hbase;
 
 import org.apache.metamodel.schema.ColumnType;
-import org.apache.metamodel.schema.ColumnTypeImpl;
 import org.apache.metamodel.schema.MutableColumn;
-import org.apache.metamodel.schema.SuperColumnType;
 import org.apache.metamodel.schema.Table;
 
 public final class HBaseColumn extends MutableColumn {
-    public static final ColumnType DEFAULT_COLUMN_TYPE_FOR_ID_COLUMN = new ColumnTypeImpl("BYTE[]",
-            SuperColumnType.LITERAL_TYPE);
+    public static final ColumnType DEFAULT_COLUMN_TYPE_FOR_ID_COLUMN = ColumnType.BINARY;
     public static final ColumnType DEFAULT_COLUMN_TYPE_FOR_COLUMN_FAMILIES = ColumnType.LIST;
 
     private final String columnFamily;
     private final String qualifier;
 
     public HBaseColumn(final String columnFamily, final Table table) {
-        this(columnFamily, null, table, -1);
+        this(columnFamily, null, table, -1, null);
     }
 
     public HBaseColumn(final String columnFamily, final String qualifier, final Table table) {
-        this(columnFamily, qualifier, table, -1);
-    }
-
-    public HBaseColumn(final String columnFamily, final Table table, final int columnNumber) {
-        this(columnFamily, null, table, columnNumber);
-    }
-
-    public HBaseColumn(final String columnFamily, final String qualifier, final Table table, final int columnNumber) {
-        this(columnFamily, qualifier, table, columnNumber, null);
+        this(columnFamily, qualifier, table, -1, null);
     }
 
     public HBaseColumn(final String columnFamily, final String qualifier, final Table table, final int columnNumber,
             final ColumnType columnType) {
-        super(columnFamily, table);
+        super(getName(columnFamily, qualifier), table);
         if (columnFamily == null) {
             throw new IllegalArgumentException("Column family isn't allowed to be null.");
         } else if (table == null || !(table instanceof HBaseTable)) {
@@ -83,8 +72,7 @@ public final class HBaseColumn extends MutableColumn {
         return qualifier;
     }
 
-    @Override
-    public String getName() {
+    private static String getName(final String columnFamily, final String qualifier) {
         if (qualifier == null) {
             return columnFamily;
         }

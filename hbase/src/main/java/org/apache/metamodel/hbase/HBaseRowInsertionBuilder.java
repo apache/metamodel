@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.hbase;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -26,16 +27,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.data.Style;
 import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
+import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.Column;
 
 /**
  * A builder-class to insert rows in a HBase datastore.
  */
-// TODO: Possible future improvement: Make it possible to change the columns for each execute.
-// Now each row will get exactly the same columns.
 public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseUpdateCallback> {
-    private final int _indexOfIdColumn;
+    private List<HBaseColumn> columns = new ArrayList<>();
+    private List<Object> values = new ArrayList<>();
+
+    private int _indexOfIdColumn = -1;
 
     /**
      * Creates a {@link HBaseRowInsertionBuilder}. The table and the column's columnFamilies are checked to exist in the schema.
@@ -45,33 +49,10 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
      * @throws IllegalArgumentException the columns list can't be null or empty
      * @throws MetaModelException when no ID-column is found.
      */
-    public HBaseRowInsertionBuilder(final HBaseUpdateCallback updateCallback, final HBaseTable table,
-            final List<HBaseColumn> columns) {
-        super(updateCallback, table, columns.stream().map(column -> (Column) column).collect(Collectors.toList()));
-
-        this._indexOfIdColumn = getIndexOfIdColumn(columns);
-        if (_indexOfIdColumn == -1) {
-            throw new MetaModelException("The ID-Column was not found");
-        }
+    public HBaseRowInsertionBuilder(final HBaseUpdateCallback updateCallback, final HBaseTable table) {
+        super(updateCallback, table);
 
         checkTable(updateCallback, table);
-        // The columns parameter should match the table's columns, just to be sure, this is checked again
-        checkColumnFamilies(table, getColumnFamilies(columns));
-    }
-
-    /**
-     * Returns the index of the ID-column (see {@link HBaseDataContext#FIELD_ID}) in an array of HBaseColumns.
-     *
-     * @param columns
-     * @return index of the ID-column
-     */
-    private static int getIndexOfIdColumn(final List<HBaseColumn> columns) {
-        for (int i = 0; i < columns.size(); i++) {
-            if (HBaseDataContext.FIELD_ID.equals(columns.get(i).getColumnFamily())) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     /**
@@ -121,19 +102,84 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
      * @param columns
      * @return {@link LinkedHashSet}
      */
-    private static Set<String> getColumnFamilies(final List<HBaseColumn> columns) {
-        return columns.stream().map(HBaseColumn::getColumnFamily).distinct().collect(Collectors.toSet());
+    private static Set<String> getColumnFamilies(final HBaseColumn[] columns) {
+        return Arrays.stream(columns).map(HBaseColumn::getColumnFamily).distinct().collect(Collectors.toSet());
     }
 
     @Override
     public synchronized void execute() {
+        if (_indexOfIdColumn == -1) {
+            throw new MetaModelException("The ID-Column was not found");
+        }
+
+        // The columns parameter should match the table's columns, just to be sure, this is checked again
+        checkColumnFamilies((HBaseTable) getTable(), getColumnFamilies(getColumns()));
+
         ((HBaseDataContext) getUpdateCallback().getDataContext()).getHBaseClient().insertRow(getTable().getName(),
                 getColumns(), getValues(), _indexOfIdColumn);
     }
 
     @Override
-    public HBaseColumn[] getColumns() {
-        return Arrays.stream(super.getColumns()).map(column -> (HBaseColumn) column).toArray(
-                size -> new HBaseColumn[size]);
+    protected HBaseColumn[] getColumns() {
+        return columns.toArray(new HBaseColumn[columns.size()]);
+    }
+
+    @Override
+    protected Object[] getValues() {
+        return values.toArray(new Object[values.size()]);
+    }
+
+    @Override
+    public RowInsertionBuilder value(final Column column, final Object value, final Style style) {
+        if (column == null) {
+            throw new IllegalArgumentException("Column cannot be null.");
+        }
+        if (!(column instanceof HBaseColumn)) {
+            throw new IllegalArgumentException("Column is not an HBaseColumn.");
+        }
+
+        for (int i = 0; i < columns.size(); i++) {
+            if (columns.get(i).equals(column)) {
+                values.set(i, value);
+                return this;
+            }
+        }
+
+        if (column.isPrimaryKey()) {
+            _indexOfIdColumn = columns.size();
+        }
+
+        columns.add((HBaseColumn) column);
+        values.add(value);
+
+        return this;
+    }
+
+    @Override
+    public RowInsertionBuilder value(final int columnIndex, final Object value) {
+        values.set(columnIndex, value);
+        return this;
+    }
+
+    @Override
+    public RowInsertionBuilder value(final String columnName, final Object value) {
+        for (Column column : columns) {
+            if (column.getName().equals(columnName)) {
+                return value(column, value, null);
+            }
+        }
+
+        throw new IllegalArgumentException("No such column in table: " + columnName + ", available columns are: "
+                + columns);
+    }
+
+    @Override
+    public boolean isSet(final Column column) {
+        for (int i = 0; i < columns.size(); i++) {
+            if (columns.get(i).equals(column)) {
+                return values.get(i) != null;
+            }
+        }
+        return false;
     }
 }

@@ -21,12 +21,12 @@ package org.apache.metamodel.hbase;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.MutableTable;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,21 +47,6 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     }
 
     /**
-     * Using only the table parameter, should throw an exception
-     *
-     * @throws IOException
-     */
-    @Test
-    public void testOnlyUsingTableParameter() throws IOException {
-        exception.expect(UnsupportedOperationException.class);
-        exception.expectMessage("We need an explicit list of columns when inserting into an HBase table.");
-
-        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-        getUpdateCallback().insertInto(existingTable);
-    }
-
-    /**
      * Having the table type wrong, should throw an exception
      *
      * @throws IOException
@@ -72,40 +57,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Not an HBase table: " + mutableTable);
 
-        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                CF_BAR);
-        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
-        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
-        getUpdateCallback().insertInto(mutableTable, columns);
-    }
-
-    /**
-     * Having the columns parameter null at the updateCallBack, should throw an exception
-     *
-     * @throws IOException
-     */
-    @Test
-    public void testColumnsNullAtUpdateCallBack() throws IOException {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("The hbaseColumns list is null or empty");
-
-        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                CF_BAR);
-        getUpdateCallback().insertInto(existingTable, null);
-    }
-
-    /**
-     * Having the columns parameter empty at the updateCallBack, should throw an exception
-     *
-     * @throws IOException
-     */
-    @Test
-    public void testColumnsEmptyAtUpdateCallBack() throws IOException {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("The hbaseColumns list is null or empty");
-        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                CF_BAR);
-        getUpdateCallback().insertInto(existingTable, new ArrayList<HBaseColumn>());
+        getUpdateCallback().insertInto(mutableTable);
     }
 
     /**
@@ -121,11 +73,9 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
         exception.expectMessage("Trying to insert data into table: " + wrongTable.getName()
                 + ", which doesn't exist yet");
 
-        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                CF_BAR);
-        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
-        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
-        getUpdateCallback().insertInto(wrongTable, columns);
+        createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
+
+        getUpdateCallback().insertInto(wrongTable);
     }
 
     /**
@@ -139,54 +89,10 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
         exception.expectMessage("The ID-Column was not found");
 
         final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                    CF_BAR);
-        final Map<HBaseColumn, Object> row = createRow(existingTable, null, CF_FOO, CF_BAR, false);
-        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
-        getUpdateCallback().insertInto(existingTable, columns);
-    }
-
-    /**
-     * If the column family doesn't exist in the table (wrong columnFamily), then a exception should be thrown
-     *
-     * @throws IOException
-     */
-    @Test
-    public void testColumnFamilyDoesntExistsBecauseItsNull() throws IOException {
-        final String wrongColumnFamily = "wrongColumnFamily";
-
-        exception.expect(MetaModelException.class);
-        exception.expectMessage(String.format("ColumnFamily: %s doesn't exist in the schema of the table",
-                wrongColumnFamily));
-
-        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                 CF_BAR);
-        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
-        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
-        final HBaseTable wrongTable = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                wrongColumnFamily);
-        getUpdateCallback().insertInto(wrongTable, columns);
-    }
 
-    /**
-     * If the column family doesn't exist in the table (new columnFamily), then a exception should be thrown
-     *
-     * @throws IOException
-     */
-    @Test
-    public void testColumnFamilyDoesntExistsBecauseItsNew() throws IOException {
-        final String wrongColumnFamily = "newColumnFamily";
-
-        exception.expect(MetaModelException.class);
-        exception.expectMessage(String.format("ColumnFamily: %s doesn't exist in the schema of the table",
-                wrongColumnFamily));
-
-        final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
-                CF_BAR);
-        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
-        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
-        final HBaseTable wrongTable = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR,
-                wrongColumnFamily);
-        getUpdateCallback().insertInto(wrongTable, columns);
+        final RowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable);
+        rowInsertionBuilder.execute();
     }
 
     /**
@@ -300,9 +206,7 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     public void testInsertIntoWithoutExecute() throws IOException {
         final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                 CF_BAR);
-        final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
-        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
-        getUpdateCallback().insertInto(existingTable, columns);
+        getUpdateCallback().insertInto(existingTable);
     }
 
     /**
@@ -311,14 +215,13 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
      * @throws IOException
      */
     @Test
-    public void testQaulifierNull() throws IOException {
+    public void testQualifierNull() throws IOException {
         final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                 CF_BAR);
         final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, true);
-        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
 
         checkRows(false, true);
-        final HBaseRowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable, columns);
+        final RowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable);
         setValuesInInsertionBuilder(row, rowInsertionBuilder);
         rowInsertionBuilder.execute();
         checkRows(true, true);
@@ -334,10 +237,9 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
         final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                 CF_BAR);
         final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
-        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
 
         checkRows(false, false);
-        final HBaseRowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable, columns);
+        final RowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable);
         setValuesInInsertionBuilder(row, rowInsertionBuilder);
         rowInsertionBuilder.execute();
         checkRows(true, false);

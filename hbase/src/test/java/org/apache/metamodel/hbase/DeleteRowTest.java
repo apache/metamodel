@@ -18,13 +18,13 @@
  */
 package org.apache.metamodel.hbase;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.MutableTable;
 import org.junit.Rule;
 import org.junit.Test;
@@ -152,10 +152,9 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
         final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                 CF_BAR);
         final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
-        final List<HBaseColumn> columns = getHBaseColumnsFromRow(row);
 
         checkRows(false, false);
-        final HBaseRowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable, columns);
+        final RowInsertionBuilder rowInsertionBuilder = getUpdateCallback().insertInto(existingTable);
         setValuesInInsertionBuilder(row, rowInsertionBuilder);
         rowInsertionBuilder.execute();
         checkRows(true, false);

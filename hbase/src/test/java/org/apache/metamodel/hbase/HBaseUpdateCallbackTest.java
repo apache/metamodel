@@ -35,6 +35,7 @@ import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.Table;
@@ -84,7 +85,7 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
 
     /**
      * Check if the table has been inserted successfully. Checks are performed in the schema and the datastore.
-     * 
+     *
      * @throws IOException because the admin object needs to be created
      */
     protected void checkSuccesfullyInsertedTable() throws IOException {
@@ -212,12 +213,8 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
      * @param enoughMatchingValues if true, the amount of columns match the amount of values
      */
     protected void setValuesInInsertionBuilder(final Map<HBaseColumn, Object> row,
-            final HBaseRowInsertionBuilder rowInsertionBuilder) {
-        int i = 0;
-        for (Object value : row.values()) {
-            rowInsertionBuilder.value(i, value);
-            i++;
-        }
+            final RowInsertionBuilder rowInsertionBuilder) {
+        row.entrySet().forEach(entry -> rowInsertionBuilder.value(entry.getKey(), entry.getValue()));
     }
 
     /**
