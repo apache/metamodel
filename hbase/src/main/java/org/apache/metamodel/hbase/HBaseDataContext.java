@@ -93,7 +93,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext implements Upd
         }
     }
 
-    protected static Configuration createConfig(HBaseConfiguration configuration) {
+    private static Configuration createConfig(HBaseConfiguration configuration) {
         Configuration config = org.apache.hadoop.hbase.HBaseConfiguration.create();
         config.set("hbase.zookeeper.quorum", configuration.getZookeeperHostname());
         config.set("hbase.zookeeper.property.clientPort", Integer.toString(configuration.getZookeeperPort()));
