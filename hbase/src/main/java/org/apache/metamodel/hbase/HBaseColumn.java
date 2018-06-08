@@ -22,7 +22,7 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.Table;
 
-public final class HBaseColumn extends MutableColumn {
+final class HBaseColumn extends MutableColumn {
     public static final ColumnType DEFAULT_COLUMN_TYPE_FOR_ID_COLUMN = ColumnType.BINARY;
     public static final ColumnType DEFAULT_COLUMN_TYPE_FOR_COLUMN_FAMILIES = ColumnType.LIST;
 

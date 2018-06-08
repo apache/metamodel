@@ -24,10 +24,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.hadoop.hbase.TableName;
@@ -108,11 +106,8 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
      */
     protected HBaseTable createAndAddTableToDatastore(final String tableName, final String idColumn,
             final String columnFamily1, final String columnFamily2) throws IOException {
-        final Set<String> columnFamilies = new LinkedHashSet<>();
-        columnFamilies.add(idColumn);
-        columnFamilies.add(columnFamily1);
-        columnFamilies.add(columnFamily2);
-        updateCallback.createTable(schema, tableName, columnFamilies).execute();
+        updateCallback.createTable(schema, tableName).withColumn(columnFamily1).withColumn(columnFamily2).execute();
+
         checkSuccesfullyInsertedTable();
         return (HBaseTable) getDataContext().getDefaultSchema().getTableByName(tableName);
     }

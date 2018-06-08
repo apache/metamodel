@@ -134,25 +134,40 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
         if (column == null) {
             throw new IllegalArgumentException("Column cannot be null.");
         }
-        if (!(column instanceof HBaseColumn)) {
-            throw new IllegalArgumentException("Column is not an HBaseColumn.");
-        }
+
+        final HBaseColumn hbaseColumn = getHbaseColumn(column);
 
         for (int i = 0; i < columns.size(); i++) {
-            if (columns.get(i).equals(column)) {
+            if (columns.get(i).equals(hbaseColumn)) {
                 values.set(i, value);
                 return this;
             }
         }
 
-        if (column.isPrimaryKey()) {
+        if (hbaseColumn.isPrimaryKey()) {
             _indexOfIdColumn = columns.size();
         }
 
-        columns.add((HBaseColumn) column);
+        columns.add((HBaseColumn) hbaseColumn);
         values.add(value);
 
         return this;
+    }
+
+    private HBaseColumn getHbaseColumn(final Column column) {
+        if (column instanceof HBaseColumn) {
+            return (HBaseColumn) column;
+        } else {
+            final String columnName = column.getName();
+            final String[] columnNameParts = columnName.split(":");
+            if (columnNameParts.length == 1) {
+                return new HBaseColumn(columnNameParts[0], getTable());
+            }
+            if (columnNameParts.length == 2) {
+                return new HBaseColumn(columnNameParts[0], columnNameParts[1], getTable());
+            }
+            throw new MetaModelException("Can't determine column family for column \"" + columnName + "\".");
+        }
     }
 
     @Override

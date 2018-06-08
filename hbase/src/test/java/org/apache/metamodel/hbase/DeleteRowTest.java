@@ -23,7 +23,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.MutableTable;
 import org.junit.Rule;
@@ -76,35 +75,14 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testNotSettingRowkey() throws IOException {
-        exception.expect(MetaModelException.class);
-        exception.expectMessage("Key cannot be null");
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("HBase currently only supports deleting items by their row key.");
 
         final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                 CF_BAR);
         getUpdateCallback().deleteFrom(existingTable).execute();
     }
 
-    /**
-     * Creating a HBaseClient with the tableName null, should throw a exception
-     */
-    @Test
-    public void testCreatingTheHBaseClientWithTableNameNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Can't delete a row without having tableName or rowKey");
-
-        new HBaseClient(getDataContext().getConnection()).deleteRow(null, new String("1"));
-    }
-
-    /**
-     * Creating a HBaseClient with the rowKey null, should throw a exception
-     */
-    @Test
-    public void testCreatingTheHBaseClientWithRowKeyNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Can't delete a row without having tableName or rowKey");
-
-        new HBaseClient(getDataContext().getConnection()).deleteRow("tableName", null);
-    }
 
     /**
      * Goodflow. Deleting a row, that doesn't exist, should not throw an exception
@@ -119,7 +97,7 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
         checkRows(false, false);
         final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback().deleteFrom(
                 existingTable);
-        rowDeletionBuilder.setKey(RK_1);
+        rowDeletionBuilder.where(HBaseDataContext.FIELD_ID).eq(RK_1);
         rowDeletionBuilder.execute();
         checkRows(false, false);
     }
@@ -137,13 +115,13 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
         checkRows(false, false);
         final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback().deleteFrom(
                 existingTable);
-        rowDeletionBuilder.setKey("");
+        rowDeletionBuilder.where(HBaseDataContext.FIELD_ID).eq("");
         rowDeletionBuilder.execute();
         checkRows(false, false);
     }
 
     /**
-     * Goodflow. Deleting a row succesfully.
+     * Goodflow. Deleting a row successfully.
      *
      * @throws IOException
      */
@@ -160,7 +138,7 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
         checkRows(true, false);
         final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback().deleteFrom(
                 existingTable);
-        rowDeletionBuilder.setKey(RK_1);
+        rowDeletionBuilder.where(HBaseDataContext.FIELD_ID).eq(RK_1);
         rowDeletionBuilder.execute();
         checkRows(false, false);
     }

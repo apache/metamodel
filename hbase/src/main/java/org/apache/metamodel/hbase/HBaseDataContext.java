@@ -251,7 +251,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext implements Upd
         return callback.getUpdateSummary();
     }
 
-    public HBaseClient getHBaseClient() {
+    HBaseClient getHBaseClient() {
         return new HBaseClient(this.getConnection());
     }
 }

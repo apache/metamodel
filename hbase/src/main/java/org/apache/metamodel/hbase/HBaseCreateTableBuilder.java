@@ -19,6 +19,7 @@
 package org.apache.metamodel.hbase;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.create.AbstractTableCreationBuilder;
@@ -32,12 +33,6 @@ import org.apache.metamodel.util.SimpleTableDef;
  */
 public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseUpdateCallback> {
 
-    private Set<String> _columnFamilies;
-
-    public HBaseCreateTableBuilder(final HBaseUpdateCallback updateCallback, final Schema schema, final String name) {
-        this(updateCallback, schema, name, null);
-    }
-
     /**
      * Create a {@link HBaseCreateTableBuilder}.
      * Throws an {@link IllegalArgumentException} if the schema isn't a {@link MutableSchema}.
@@ -46,40 +41,47 @@ public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseU
      * @param name
      * @param columnFamilies
      */
-    public HBaseCreateTableBuilder(final HBaseUpdateCallback updateCallback, final Schema schema, final String name,
-            final Set<String> columnFamilies) {
+    public HBaseCreateTableBuilder(final HBaseUpdateCallback updateCallback, final Schema schema, final String name) {
         super(updateCallback, schema, name);
         if (!(schema instanceof MutableSchema)) {
             throw new IllegalArgumentException("Not a mutable schema: " + schema);
         }
-        this._columnFamilies = columnFamilies;
     }
 
     @Override
     public Table execute() {
-        if (_columnFamilies == null || _columnFamilies.isEmpty()) {
-            throw new MetaModelException("Creating a table without columnFamilies");
+        Set<String> columnFamilies = getColumnFamilies();
+
+        if (columnFamilies == null || columnFamilies.isEmpty()) {
+            throw new MetaModelException("Can't create a table without column families.");
         }
 
         final Table table = getTable();
 
         // Add the table to the datastore
         ((HBaseDataContext) getUpdateCallback().getDataContext()).getHBaseClient().createTable(table.getName(),
-                _columnFamilies);
+                columnFamilies);
 
         // Update the schema
         addNewTableToSchema(table);
         return getSchema().getTableByName(table.getName());
     }
 
-    /**
-     * Set the columnFamilies. This should be used when creating this object using the
-     * {@link HBaseCreateTableBuilder#HBaseCreateTableBuilder(HBaseUpdateCallback, Schema, String)}
-     * constructor
-     * @param columnFamilies
-     */
-    public void setColumnFamilies(final Set<String> columnFamilies) {
-        this._columnFamilies = columnFamilies;
+    private Set<String> getColumnFamilies() {
+        return getTable().getColumns().stream().map(column -> {
+            if (column instanceof HBaseColumn) {
+                return ((HBaseColumn) column).getColumnFamily();
+            } else {
+                String columnName = column.getName();
+
+                String[] columnNameParts = columnName.split(":");
+                if (columnNameParts.length > 0 && columnNameParts.length < 3) {
+                    return columnNameParts[0];
+                } else {
+                    throw new MetaModelException("Can't determine column family for column \"" + columnName + "\".");
+                }
+            }
+        }).distinct().collect(Collectors.toSet());
     }
 
     /**
@@ -90,8 +92,9 @@ public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseU
      */
     private void addNewTableToSchema(final Table table) {
         final MutableSchema schema = (MutableSchema) getSchema();
-        final SimpleTableDef emptyTableDef = new SimpleTableDef(table.getName(), _columnFamilies.toArray(
-                new String[_columnFamilies.size()]));
+        final Set<String> columnFamilies = getColumnFamilies();
+        final SimpleTableDef emptyTableDef = new SimpleTableDef(table.getName(), columnFamilies.toArray(
+                new String[columnFamilies.size()]));
         schema.addTable(new HBaseTable((HBaseDataContext) getUpdateCallback().getDataContext(), emptyTableDef, schema,
                 HBaseConfiguration.DEFAULT_ROW_KEY_TYPE));
     }

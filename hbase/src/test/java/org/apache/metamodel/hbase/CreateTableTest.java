@@ -18,19 +18,17 @@
  */
 package org.apache.metamodel.hbase;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.schema.ImmutableSchema;
+import org.apache.metamodel.schema.Table;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-
-import com.google.common.collect.Sets;
 
 public class CreateTableTest extends HBaseUpdateCallbackTest {
     @Rule
@@ -58,73 +56,36 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
     }
 
     /**
-     * Create a table without columnFamilies, should throw a MetaModelException
+     * Create a table without column families, should throw a MetaModelException
      */
     @Test
-    public void testCreateTableWithoutColumnFamilies() {
+    public void testWithoutColumnFamilies() {
         exception.expect(MetaModelException.class);
-        exception.expectMessage("Creating a table without columnFamilies");
+        exception.expectMessage("Can't create a table without column families.");
 
         getUpdateCallback().createTable(getSchema(), TABLE_NAME).execute();
     }
 
     /**
-     * Create a table with columnFamilies null, should throw a MetaModelException
+     * Create a table without column families, should throw a MetaModelException
      */
     @Test
-    public void testColumnFamiliesNull() {
+    public void testWithEmptyColumn() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Family name can not be empty");
+
+        getUpdateCallback().createTable(getSchema(), TABLE_NAME).withColumn("").execute();
+    }
+
+    /**
+     * Create a table without column families, should throw a MetaModelException
+     */
+    @Test
+    public void testWithIndeterminableColumn() {
         exception.expect(MetaModelException.class);
-        exception.expectMessage("Creating a table without columnFamilies");
+        exception.expectMessage("Can't determine column family for column \"a:b:c\".");
 
-        getUpdateCallback().createTable(getSchema(), TABLE_NAME, null).execute();
-    }
-
-    /**
-     * Create a table with columnFamilies empty, should throw a MetaModelException
-     */
-    @Test
-    public void testColumnFamiliesEmpty() {
-        exception.expect(MetaModelException.class);
-        exception.expectMessage("Creating a table without columnFamilies");
-
-        final Set<String> columnFamilies = new LinkedHashSet<String>();
-        getUpdateCallback().createTable(getSchema(), TABLE_NAME, columnFamilies).execute();
-    }
-
-    /**
-     * Creating a HBaseClient with the tableName null, should throw a exception
-     */
-    @Test
-    public void testCreatingTheHBaseClientWithTableNameNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Can't create a table without having the tableName or columnFamilies");
-
-        final Set<String> columnFamilies = new LinkedHashSet<>();
-        columnFamilies.add("1");
-        new HBaseClient(getDataContext().getConnection()).createTable(null, columnFamilies);
-    }
-
-    /**
-     * Creating a HBaseClient with the tableName null, should throw a exception
-     */
-    @Test
-    public void testCreatingTheHBaseClientWithColumnFamiliesNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Can't create a table without having the tableName or columnFamilies");
-
-        new HBaseClient(getDataContext().getConnection()).createTable("1", null);
-    }
-
-    /**
-     * Creating a HBaseClient with the tableName null, should throw a exception
-     */
-    @Test
-    public void testCreatingTheHBaseClientWithColumnFamiliesEmpty() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Can't create a table without having the tableName or columnFamilies");
-
-        final Set<String> columnFamilies = new LinkedHashSet<>();
-        new HBaseClient(getDataContext().getConnection()).createTable("1", columnFamilies);
+        getUpdateCallback().createTable(getSchema(), TABLE_NAME).withColumn("a:b:c").execute();
     }
 
     /**
@@ -137,9 +98,17 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
         final HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) getUpdateCallback()
                 .createTable(getSchema(), TABLE_NAME);
 
-        hBaseCreateTableBuilder.setColumnFamilies(Sets.newHashSet(CF_FOO, CF_BAR));
+        hBaseCreateTableBuilder.withColumn(CF_FOO);
+        hBaseCreateTableBuilder.withColumn(CF_BAR);
         hBaseCreateTableBuilder.execute();
         checkSuccesfullyInsertedTable();
+
+        final Table table = getDataContext().getDefaultSchema().getTableByName(TABLE_NAME);
+        assertTrue(table instanceof HBaseTable);
+
+        // Assert that the Table has 3 column families, a default "_id" one, and two based on the column families for
+        // the columns.
+        assertEquals(3, ((HBaseTable) table).getColumnFamilies().size());
     }
 
     /**
@@ -148,13 +117,23 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
      * @throws IOException
      */
     @Test
-    public void testSettingColumnFamiliesAfterConstrutor() throws IOException {
+    public void testCreateTableWithQualifiedColumns() throws IOException {
         final HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) getUpdateCallback()
                 .createTable(getSchema(), TABLE_NAME);
 
-        hBaseCreateTableBuilder.setColumnFamilies(Sets.newHashSet(CF_FOO, CF_BAR));
+        hBaseCreateTableBuilder.withColumn(CF_FOO + ":" + Q_BAH);
+        hBaseCreateTableBuilder.withColumn(CF_FOO + ":" + Q_HELLO);
+        hBaseCreateTableBuilder.withColumn(CF_BAR + ":" + Q_HEY);
+        hBaseCreateTableBuilder.withColumn(CF_BAR + ":" + Q_HI);
         hBaseCreateTableBuilder.execute();
         checkSuccesfullyInsertedTable();
+
+        final Table table = getDataContext().getDefaultSchema().getTableByName(TABLE_NAME);
+        assertTrue(table instanceof HBaseTable);
+
+        // Assert that the Table has 3 column families, a default "_id" one, and two based on the column families for
+        // the columns.
+        assertEquals(3, ((HBaseTable) table).getColumnFamilies().size());
     }
 
     /**
@@ -164,7 +143,18 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
      */
     @Test
     public void testCreateTableColumnFamiliesInConstrutor() throws IOException {
-        getUpdateCallback().createTable(getSchema(), TABLE_NAME, Sets.newHashSet(CF_FOO, CF_BAR)).execute();
+        final HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) getUpdateCallback()
+                .createTable(getSchema(), TABLE_NAME);
+
+        hBaseCreateTableBuilder.withColumn(HBaseDataContext.FIELD_ID);
+        hBaseCreateTableBuilder.withColumn(CF_BAR);
+        hBaseCreateTableBuilder.execute();
         checkSuccesfullyInsertedTable();
+
+        final Table table = getDataContext().getDefaultSchema().getTableByName(TABLE_NAME);
+        assertTrue(table instanceof HBaseTable);
+
+        // Assert that the Table has 2 column families.
+        assertEquals(2, ((HBaseTable) table).getColumnFamilies().size());
     }
 }

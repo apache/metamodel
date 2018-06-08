@@ -18,8 +18,17 @@
  */
 package org.apache.metamodel.hbase;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.delete.AbstractRowDeletionBuilder;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.LogicalOperator;
+import org.apache.metamodel.query.OperatorType;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
 
 /**
@@ -28,7 +37,6 @@ import org.apache.metamodel.schema.Table;
 public class HBaseRowDeletionBuilder extends AbstractRowDeletionBuilder {
 
     private final HBaseDataContext _dataContext;
-    private Object _key;
 
     /**
      * Creates a {@link HBaseRowDeletionBuilder}
@@ -49,13 +57,50 @@ public class HBaseRowDeletionBuilder extends AbstractRowDeletionBuilder {
      */
     @Override
     public synchronized void execute() {
-        if (_key == null) {
-            throw new MetaModelException("Key cannot be null");
+        final List<FilterItem> whereItems = getWhereItems();
+        if (whereItems == null || whereItems.size() == 0) {
+            throw new IllegalArgumentException("HBase currently only supports deleting items by their row key.");
         }
-        _dataContext.getHBaseClient().deleteRow(getTable().getName(), _key);
+
+        final FilterItem filterItem = whereItems.get(0);
+        if (!HBaseDataContext.FIELD_ID.equals(filterItem.getSelectItem().getColumn().getName())) {
+            throw new IllegalArgumentException("HBase currently only supports deleting items by their row key.");
+        }
+
+        getRowKeys(filterItem).forEach(rowKey -> _dataContext.getHBaseClient().deleteRow(getTable().getName(), rowKey));
     }
 
-    public void setKey(final Object key) {
-        this._key = key;
+    private List<Object> getRowKeys(final FilterItem whereItem) {
+        final List<Object> rowKeys = new ArrayList<>();
+
+        if (whereItem.isCompoundFilter()) {
+            final LogicalOperator logicalOperator = whereItem.getLogicalOperator();
+            if (logicalOperator != LogicalOperator.OR) {
+                throw new IllegalStateException(
+                        "HBase currently only supports deleting items by their row key. Violated by operator between where items: "
+                                + whereItem);
+            }
+
+            Arrays.stream(whereItem.getChildItems()).forEach(childItem -> rowKeys.addAll(getRowKeys(childItem)));
+        } else {
+            final OperatorType operator = whereItem.getOperator();
+            if (!OperatorType.EQUALS_TO.equals(operator) && !OperatorType.IN.equals(operator)) {
+                throw new IllegalStateException(
+                        "HBase currently only supports deleting items by their row key. Violated by operator in where item: "
+                                + whereItem);
+            }
+
+            final SelectItem selectItem = whereItem.getSelectItem();
+            final Column column = selectItem.getColumn();
+            final Object operand = whereItem.getOperand();
+
+            if (column == null || operand == null || !column.isPrimaryKey() || selectItem.hasFunction()) {
+                throw new IllegalStateException(
+                        "HBase currently only supports deleting items by their row key. Violated by where item: "
+                                + whereItem);
+            }
+            rowKeys.add(operand);
+        }
+        return rowKeys;
     }
 }

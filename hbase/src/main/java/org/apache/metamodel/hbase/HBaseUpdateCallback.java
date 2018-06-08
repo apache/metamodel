@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.hbase;
 
-import java.util.Set;
-
 import org.apache.metamodel.AbstractUpdateCallback;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.create.TableCreationBuilder;
@@ -43,18 +41,6 @@ final class HBaseUpdateCallback extends AbstractUpdateCallback implements Update
         return new HBaseCreateTableBuilder(this, schema, name);
     }
 
-    /**
-     * Initiates the building of a table creation operation.
-     * @param schema the schema to create the table in
-     * @param name the name of the new table
-     * @param columnFamilies the columnFamilies of the new table
-     * @return {@link HBaseCreateTableBuilder}
-     */
-    public HBaseCreateTableBuilder createTable(final Schema schema, final String name,
-            final Set<String> columnFamilies) {
-        return new HBaseCreateTableBuilder(this, schema, name, columnFamilies);
-    }
-
     @Override
     public boolean isDropTableSupported() {
         return true;
@@ -65,9 +51,6 @@ final class HBaseUpdateCallback extends AbstractUpdateCallback implements Update
         return new HBaseTableDropBuilder(table, this);
     }
 
-    /**
-     * @throws UnsupportedOperationException use {@link HBaseUpdateCallback#insertInto(String, String)}
-     */
     @Override
     public RowInsertionBuilder insertInto(final Table table) {
         if (table instanceof HBaseTable) {
