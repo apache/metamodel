@@ -21,6 +21,7 @@ package org.apache.metamodel.hbase;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,6 +29,12 @@ import org.junit.rules.ExpectedException;
 public class HBaseClientTest extends HBaseTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
+
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+    }
 
     /**
      * Creating a HBaseClient with the tableName null, should throw a exception
