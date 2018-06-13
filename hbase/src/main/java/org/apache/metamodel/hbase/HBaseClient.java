@@ -118,7 +118,7 @@ final class HBaseClient {
                 throw new MetaModelException(e);
             }
         } else {
-            logger.info("Have not deleted a row, which has an empty (\"\") rowKey.");
+            throw new IllegalArgumentException("Can't delete a row without an empty rowKey.");
         }
     }
 

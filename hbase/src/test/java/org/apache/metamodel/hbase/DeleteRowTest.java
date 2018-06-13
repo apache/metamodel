@@ -103,7 +103,7 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
     }
 
     /**
-     * Goodflow. Deleting a row, which has an empty rowKey value, should not throw an exception
+     * Deleting a row, which has an empty rowKey value, should throw an exception
      *
      * @throws IOException
      */
@@ -115,9 +115,12 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
         checkRows(false, false);
         final HBaseRowDeletionBuilder rowDeletionBuilder = (HBaseRowDeletionBuilder) getUpdateCallback().deleteFrom(
                 existingTable);
+
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Can't delete a row without an empty rowKey.");
+
         rowDeletionBuilder.where(HBaseDataContext.FIELD_ID).eq("");
         rowDeletionBuilder.execute();
-        checkRows(false, false);
     }
 
     /**
