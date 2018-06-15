@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
 
+import org.apache.hadoop.hbase.util.Bytes;
+
 public class HBaseFamilyMap implements Map<Object, Object> {
 
     private final NavigableMap<byte[], byte[]> _map;
@@ -105,9 +107,9 @@ public class HBaseFamilyMap implements Map<Object, Object> {
             if (sb.length() > 1) {
                 sb.append(',');
             }
-            sb.append(new String(entry.getKey()));
+            sb.append(Bytes.toString(entry.getKey()));
             sb.append('=');
-            sb.append(new String(entry.getValue()));
+            sb.append(Bytes.toString(entry.getValue()));
         }
         sb.append('}');
         return sb.toString();

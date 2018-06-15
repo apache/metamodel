@@ -245,6 +245,20 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
         checkRows(true, false);
     }
 
+    @Test
+    public void testSqlRepresentation() throws IOException {
+        final HBaseTable table = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
+
+        RowInsertionBuilder insertBuilder = getUpdateCallback()
+                .insertInto(table)
+                .value(new HBaseColumn(CF_FOO, Q_BAH, table), V_WORLD)
+                .value(new HBaseColumn(CF_FOO, Q_HELLO, table), V_THERE)
+                .value(new HBaseColumn(CF_BAR, Q_HEY, table), V_YO);
+
+        assertEquals("INSERT INTO HBase.table_for_junit(foo:bah,foo:hello,bar:hey) "
+                + "VALUES (\"world\",\"there\",\"yo\")", insertBuilder.toSql());
+    }
+
     /**
      * Converts a list of {@link HBaseColumn}'s to an array of {@link HBaseColumn}'s
      *

@@ -27,32 +27,39 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.data.DefaultRow;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.data.SimpleDataSetHeader;
 import org.apache.metamodel.data.Style;
-import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 
 /**
  * A builder-class to insert rows in a HBase datastore.
  */
-public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseUpdateCallback> {
-    private List<HBaseColumn> columns = new ArrayList<>();
-    private List<Object> values = new ArrayList<>();
+public class HBaseRowInsertionBuilder implements RowInsertionBuilder {
+    private List<HBaseColumn> _columns = new ArrayList<>();
+    private List<Object> _values = new ArrayList<>();
 
     private int _indexOfIdColumn = -1;
+
+    private final HBaseUpdateCallback _updateCallback;
+    private final HBaseTable _table;
 
     /**
      * Creates a {@link HBaseRowInsertionBuilder}. The table and the column's columnFamilies are checked to exist in the schema.
      * @param updateCallback
      * @param table
-     * @param columns
+     * @param _columns
      * @throws IllegalArgumentException the columns list can't be null or empty
      * @throws MetaModelException when no ID-column is found.
      */
     public HBaseRowInsertionBuilder(final HBaseUpdateCallback updateCallback, final HBaseTable table) {
-        super(updateCallback, table);
+        _updateCallback = updateCallback;
+        _table = table;
 
-        checkTable(updateCallback, table);
+        checkTable(table);
     }
 
     /**
@@ -62,8 +69,11 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
      * @param tableGettingInserts
      * @throws MetaModelException If the table or the columnFamilies don't exist
      */
-    private void checkTable(final HBaseUpdateCallback updateCallback, final HBaseTable tableGettingInserts) {
-        final HBaseTable tableInSchema = (HBaseTable) updateCallback.getDataContext().getDefaultSchema().getTableByName(
+    private void checkTable(final HBaseTable tableGettingInserts) {
+        final HBaseTable tableInSchema = (HBaseTable) _updateCallback
+                .getDataContext()
+                .getDefaultSchema()
+                .getTableByName(
                 tableGettingInserts.getName());
         if (tableInSchema == null) {
             throw new MetaModelException("Trying to insert data into table: " + tableGettingInserts.getName()
@@ -113,20 +123,18 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
         }
 
         // The columns parameter should match the table's columns, just to be sure, this is checked again
-        checkColumnFamilies((HBaseTable) getTable(), getColumnFamilies(getColumns()));
+        checkColumnFamilies(getTable(), getColumnFamilies(getColumns()));
 
-        ((HBaseDataContext) getUpdateCallback().getDataContext()).getHBaseClient().insertRow(getTable().getName(),
+        ((HBaseDataContext) _updateCallback.getDataContext()).getHBaseClient().insertRow(getTable().getName(),
                 getColumns(), getValues(), _indexOfIdColumn);
     }
 
-    @Override
-    protected HBaseColumn[] getColumns() {
-        return columns.toArray(new HBaseColumn[columns.size()]);
+    private HBaseColumn[] getColumns() {
+        return _columns.toArray(new HBaseColumn[_columns.size()]);
     }
 
-    @Override
-    protected Object[] getValues() {
-        return values.toArray(new Object[values.size()]);
+    private Object[] getValues() {
+        return _values.toArray(new Object[_values.size()]);
     }
 
     @Override
@@ -137,19 +145,19 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
 
         final HBaseColumn hbaseColumn = getHbaseColumn(column);
 
-        for (int i = 0; i < columns.size(); i++) {
-            if (columns.get(i).equals(hbaseColumn)) {
-                values.set(i, value);
+        for (int i = 0; i < _columns.size(); i++) {
+            if (_columns.get(i).equals(hbaseColumn)) {
+                _values.set(i, value);
                 return this;
             }
         }
 
         if (hbaseColumn.isPrimaryKey()) {
-            _indexOfIdColumn = columns.size();
+            _indexOfIdColumn = _columns.size();
         }
 
-        columns.add((HBaseColumn) hbaseColumn);
-        values.add(value);
+        _columns.add((HBaseColumn) hbaseColumn);
+        _values.add(value);
 
         return this;
     }
@@ -171,30 +179,99 @@ public class HBaseRowInsertionBuilder extends AbstractRowInsertionBuilder<HBaseU
     }
 
     @Override
+    public boolean isSet(final Column column) {
+        for (int i = 0; i < _columns.size(); i++) {
+            if (_columns.get(i).equals(column)) {
+                return _values.get(i) != null;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public RowInsertionBuilder value(final int columnIndex, final Object value) {
-        values.set(columnIndex, value);
+        return value(columnIndex, value, null);
+    }
+
+    @Override
+    public RowInsertionBuilder value(int columnIndex, Object value, Style style) {
+        _values.set(columnIndex, value);
         return this;
     }
 
     @Override
     public RowInsertionBuilder value(final String columnName, final Object value) {
-        for (Column column : columns) {
+        return value(columnName, value, null);
+    }
+
+    @Override
+    public RowInsertionBuilder value(Column column, Object value) {
+        return value(column, value, null);
+    }
+
+    @Override
+    public RowInsertionBuilder value(String columnName, Object value, Style style) {
+        for (Column column : _columns) {
             if (column.getName().equals(columnName)) {
                 return value(column, value, null);
             }
         }
 
         throw new IllegalArgumentException("No such column in table: " + columnName + ", available columns are: "
-                + columns);
+                + _columns);
     }
 
     @Override
-    public boolean isSet(final Column column) {
-        for (int i = 0; i < columns.size(); i++) {
-            if (columns.get(i).equals(column)) {
-                return values.get(i) != null;
+    public Row toRow() {
+        return new DefaultRow(new SimpleDataSetHeader(_columns.stream().map(SelectItem::new).collect(Collectors
+                .toList())), getValues());
+    }
+
+    @Override
+    public HBaseTable getTable() {
+        return _table;
+    }
+
+    @Override
+    public RowInsertionBuilder like(Row row) {
+        List<SelectItem> selectItems = row.getSelectItems();
+        for (int i = 0; i < selectItems.size(); i++) {
+            SelectItem selectItem = selectItems.get(i);
+            Column column = selectItem.getColumn();
+            if (column != null) {
+                if (_table == column.getTable()) {
+                    value(column, row.getValue(i));
+                } else {
+                    value(column.getName(), row.getValue(i));
+                }
             }
         }
-        return false;
+        return this;
+    }
+
+    @Override
+    public String toSql() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("INSERT INTO ");
+        sb.append(_table.getQualifiedLabel());
+        sb.append("(");
+        sb.append(_columns.stream().map(Column::getName).collect(Collectors.joining(",")));
+        sb.append(") VALUES (");
+        sb.append(_values.stream().map(value -> {
+            if (value == null) {
+                return "NULL";
+            } else if (value instanceof String) {
+                return "\"" + value + "\"";
+            } else {
+                return value.toString();
+            }
+        }).collect(Collectors.joining(",")));
+        sb.append(")");
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return toSql();
     }
 }
