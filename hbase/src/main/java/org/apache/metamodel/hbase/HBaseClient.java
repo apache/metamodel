@@ -86,11 +86,11 @@ final class HBaseClient {
                     }
                     final byte[] value = getValueAsByteArray(values[i]);
                     // A NULL value, doesn't get inserted in HBase
-                    // TODO: Do we delete the cell (and therefore the qualifier) if the table get's updated?
+                    // TODO: Do we delete the cell (and therefore the qualifier) if the table get's updated by a NULL
+                    // value?
                     if (value == null) {
-                        logger.warn("The value of column '{}:{}' is null. This insertion is skipped", columns[i]
-                                .getColumnFamily()
-                                .toString(), columns[i].getQualifier().toString());
+                        logger.info("The value of column '{}' is null. This insertion is skipped", columns[i]
+                                .getName());
                     } else {
                         put.addColumn(columnFamily, qualifier, value);
                     }
