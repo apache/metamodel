@@ -38,7 +38,7 @@ import org.apache.metamodel.schema.Column;
 /**
  * A builder-class to insert rows in a HBase datastore.
  */
-public class HBaseRowInsertionBuilder implements RowInsertionBuilder {
+class HBaseRowInsertionBuilder implements RowInsertionBuilder {
     private List<HBaseColumn> _columns = new ArrayList<>();
     private List<Object> _values = new ArrayList<>();
 

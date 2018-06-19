@@ -26,7 +26,7 @@ import org.apache.metamodel.schema.Table;
 /**
  * A builder-class to drop tables in a HBase datastore
  */
-public class HBaseTableDropBuilder extends AbstractTableDropBuilder {
+class HBaseTableDropBuilder extends AbstractTableDropBuilder {
     private final HBaseUpdateCallback _updateCallback;
 
     public HBaseTableDropBuilder(final Table table, final HBaseUpdateCallback updateCallback) {

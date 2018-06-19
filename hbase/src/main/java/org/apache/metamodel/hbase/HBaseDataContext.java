@@ -38,6 +38,7 @@ import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.UpdateSummary;
 import org.apache.metamodel.UpdateableDataContext;
+import org.apache.metamodel.annotations.InterfaceStability;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Row;
@@ -54,6 +55,7 @@ import org.apache.metamodel.util.SimpleTableDef;
 /**
  * MetaModel adaptor for Apache HBase.
  */
+@InterfaceStability.Evolving
 public class HBaseDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
 
     public static final String FIELD_ID = "_id";

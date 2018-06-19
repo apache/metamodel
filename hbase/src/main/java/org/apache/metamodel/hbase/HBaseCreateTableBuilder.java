@@ -31,7 +31,7 @@ import org.apache.metamodel.util.SimpleTableDef;
 /**
  * A builder-class to create tables in a HBase datastore
  */
-public class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseUpdateCallback> {
+class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseUpdateCallback> {
 
     /**
      * Create a {@link HBaseCreateTableBuilder}.

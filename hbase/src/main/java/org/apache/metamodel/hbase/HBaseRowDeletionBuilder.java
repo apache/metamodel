@@ -34,7 +34,7 @@ import org.apache.metamodel.schema.Table;
 /**
  * A builder-class to delete rows based on their keys in a HBase datastore
  */
-public class HBaseRowDeletionBuilder extends AbstractRowDeletionBuilder {
+class HBaseRowDeletionBuilder extends AbstractRowDeletionBuilder {
 
     private final HBaseDataContext _dataContext;
 
