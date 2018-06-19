@@ -40,14 +40,14 @@ public class HBaseRowDeletionBuilder extends AbstractRowDeletionBuilder {
 
     /**
      * Creates a {@link HBaseRowDeletionBuilder}
-     * @param hBaseWriter
+     * @param dataContext
      * @param table
-     * @throws IllegalArgumentException when the hBaseWriter is null
+     * @throws IllegalArgumentException when the dataContext is null
      */
     public HBaseRowDeletionBuilder(final HBaseDataContext dataContext, final Table table) {
         super(table);
         if (dataContext == null) {
-            throw new IllegalArgumentException("hBaseClient cannot be null");
+            throw new IllegalArgumentException("DataContext cannot be null");
         }
         this._dataContext = dataContext;
     }

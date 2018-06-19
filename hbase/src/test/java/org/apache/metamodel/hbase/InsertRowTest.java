@@ -25,6 +25,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.MutableTable;
@@ -96,82 +100,6 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     }
 
     /**
-     * Creating a HBaseClient with the tableName null, should throw a exception
-     */
-    @Test
-    public void testCreatingTheHBaseClientWithTableNameNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
-
-        final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
-        final Map<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
-        final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
-        final Object[] values = new String[] { "Values" };
-        new HBaseClient(getDataContext().getConnection()).insertRow(null, columns, values, 0);
-    }
-
-    /**
-     * Creating a HBaseClient with the columns null, should throw a exception
-     */
-    @Test
-    public void testCreatingTheHBaseClientWithColumnsNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
-
-        final Object[] values = new String[] { "Values" };
-        new HBaseClient(getDataContext().getConnection()).insertRow("tableName", null, values, 0);
-    }
-
-    /**
-     * Creating a HBaseClient with the values null, should throw a exception
-     */
-    @Test
-    public void testCreatingTheHBaseClientWithValuesNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
-
-        final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
-        final Map<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
-        final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
-        new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, null, 0);
-    }
-
-    /**
-     * Creating a HBaseClient with the indexOfIdColumn out of bounce, should throw a exception
-     */
-    @Test
-    public void testCreatingTheHBaseClientWithIndexOfIdColumnOutOfBounce() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
-
-        final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
-        final Map<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
-        final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
-        final Object[] values = new String[] { "Values" };
-        new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, values, 10);
-    }
-
-    /**
-     * Creating a HBaseClient with the rowKey null, should throw a exception
-     */
-    @Test
-    public void testCreatingTheHBaseClientWithRowKeyNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
-
-        final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
-        final Map<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
-        final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
-        final Object[] values = new String[] { null };
-        new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, values, 0);
-    }
-
-    /**
      * Inserting a row without setting enough values directly on the HBaseClient, should throw exception.
      * NOTE: This exception is already prevented when using the {@link HBaseRowInsertionBuilder}
      * @throws IOException
@@ -195,6 +123,34 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
         Collection<Object> values = row.values();
         values.remove(V_123_BYTE_ARRAY);
         return values;
+    }
+
+    /**
+     * Inserting a row with with a value null, should get skipped
+     * @throws IOException 
+     */
+    @Test
+    public void testInsertRowWithValueNull() throws IOException {
+        final HBaseTable table = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
+
+        RowInsertionBuilder insertBuilder = getUpdateCallback()
+                .insertInto(table)
+                .value(new HBaseColumn(HBaseDataContext.FIELD_ID, null, table), RK_1)
+                .value(new HBaseColumn(CF_FOO, Q_BAH, table), V_WORLD)
+                .value(new HBaseColumn(CF_FOO, Q_HELLO, table), null)
+                .value(new HBaseColumn(CF_BAR, Q_HEY, table), V_YO);
+        insertBuilder.execute();
+
+        try (org.apache.hadoop.hbase.client.Table hBaseTable = getDataContext().getConnection().getTable(TableName
+                .valueOf(TABLE_NAME))) {
+            final Get get = new Get(Bytes.toBytes(RK_1));
+            final Result result = hBaseTable.get(get);
+
+            assertFalse(result.isEmpty());
+            assertEquals(V_WORLD, new String(result.getValue(Bytes.toBytes(CF_FOO), Bytes.toBytes(Q_BAH))));
+            assertNull(result.getValue(Bytes.toBytes(CF_FOO), Bytes.toBytes(Q_HELLO)));
+            assertEquals(V_YO, new String(result.getValue(Bytes.toBytes(CF_BAR), Bytes.toBytes(Q_HEY))));
+        }
     }
 
     /**
@@ -251,21 +207,12 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
 
         RowInsertionBuilder insertBuilder = getUpdateCallback()
                 .insertInto(table)
+                .value(new HBaseColumn(HBaseDataContext.FIELD_ID, null, table), RK_1)
                 .value(new HBaseColumn(CF_FOO, Q_BAH, table), V_WORLD)
                 .value(new HBaseColumn(CF_FOO, Q_HELLO, table), V_THERE)
                 .value(new HBaseColumn(CF_BAR, Q_HEY, table), V_YO);
 
-        assertEquals("INSERT INTO HBase.table_for_junit(foo:bah,foo:hello,bar:hey) "
-                + "VALUES (\"world\",\"there\",\"yo\")", insertBuilder.toSql());
-    }
-
-    /**
-     * Converts a list of {@link HBaseColumn}'s to an array of {@link HBaseColumn}'s
-     *
-     * @param columns
-     * @return Array of {@link HBaseColumn}
-     */
-    private static HBaseColumn[] convertToHBaseColumnsArray(List<HBaseColumn> columns) {
-        return columns.toArray(new HBaseColumn[columns.size()]);
+        assertEquals("INSERT INTO HBase.table_for_junit(_id,foo:bah,foo:hello,bar:hey) "
+                + "VALUES (\"junit1\",\"world\",\"there\",\"yo\")", insertBuilder.toSql());
     }
 }

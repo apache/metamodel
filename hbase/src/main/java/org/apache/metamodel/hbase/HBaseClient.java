@@ -76,8 +76,8 @@ final class HBaseClient {
                 if (i != indexOfIdColumn) {
                     // NullChecker is already forced within the HBaseColumn class
                     final byte[] columnFamily = Bytes.toBytes(columns[i].getColumnFamily());
-                    // An HBaseColumn doesn't need a qualifier, this only works when the qualifier is empty (not null).
-                    // Otherwise NullPointer exceptions will happen
+                    // An HBaseColumn doesn't need a qualifier, this only works when the qualifier is empty (not
+                    // null). Otherwise NullPointer exceptions will happen
                     byte[] qualifier = null;
                     if (columns[i].getQualifier() != null) {
                         qualifier = Bytes.toBytes(columns[i].getQualifier());
@@ -85,7 +85,15 @@ final class HBaseClient {
                         qualifier = Bytes.toBytes(new String(""));
                     }
                     final byte[] value = getValueAsByteArray(values[i]);
-                    put.addColumn(columnFamily, qualifier, value);
+                    // A NULL value, doesn't get inserted in HBase
+                    // TODO: Do we delete the cell (and therefore the qualifier) if the table get's updated?
+                    if (value == null) {
+                        logger.warn("The value of column '{}:{}' is null. This insertion is skipped", columns[i]
+                                .getColumnFamily()
+                                .toString(), columns[i].getQualifier().toString());
+                    } else {
+                        put.addColumn(columnFamily, qualifier, value);
+                    }
                 }
             }
             // Add the put to the table
@@ -187,7 +195,9 @@ final class HBaseClient {
      */
     private byte[] getValueAsByteArray(final Object value) {
         byte[] valueAsByteArray;
-        if (value instanceof byte[]) {
+        if (value == null) {
+            valueAsByteArray = null;
+        } else if (value instanceof byte[]) {
             valueAsByteArray = (byte[]) value;
         } else {
             valueAsByteArray = Bytes.toBytes(value.toString());

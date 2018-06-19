@@ -55,14 +55,14 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
     }
 
     /**
-     * Creating a HBaseRowDeletionBuilder with the hBaseClient null, should throw an exception
+     * Creating a HBaseRowDeletionBuilder with the DataContext null, should throw an exception
      *
      * @throws IOException
      */
     @Test
-    public void testHBaseClientNullAtBuilder() throws IOException {
+    public void testDataContextNullAtBuilder() throws IOException {
         exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("hBaseClient cannot be null");
+        exception.expectMessage("DataContext cannot be null");
         final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                 CF_BAR);
         new HBaseRowDeletionBuilder(null, existingTable);
@@ -82,7 +82,6 @@ public class DeleteRowTest extends HBaseUpdateCallbackTest {
                 CF_BAR);
         getUpdateCallback().deleteFrom(existingTable).execute();
     }
-
 
     /**
      * Goodflow. Deleting a row, that doesn't exist, should not throw an exception

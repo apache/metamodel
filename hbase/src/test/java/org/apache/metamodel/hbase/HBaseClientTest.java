@@ -19,6 +19,7 @@
 package org.apache.metamodel.hbase;
 
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -26,7 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class HBaseClientTest extends HBaseTestCase {
+public class HBaseClientTest extends HBaseUpdateCallbackTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -36,11 +37,75 @@ public class HBaseClientTest extends HBaseTestCase {
         super.setUp();
     }
 
+    /* Inserting a row */
+
     /**
-     * Creating a HBaseClient with the tableName null, should throw a exception
+     * Inserting a row with the columns null, should throw a exception
      */
     @Test
-    public void testCreatingTheHBaseClientWithTableNameNull() {
+    public void testInsertRowWithColumnsNull() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
+
+        final Object[] values = new String[] { "Values" };
+        new HBaseClient(getDataContext().getConnection()).insertRow("tableName", null, values, 0);
+    }
+
+    /**
+     * Inserting a row with with the values null, should throw a exception
+     */
+    @Test
+    public void testInsertRowWithValuesNull() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
+
+        final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
+        new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, null, 0);
+    }
+
+    /**
+     * Inserting a row with with the indexOfIdColumn out of bounce, should throw a exception
+     */
+    @Test
+    public void testInsertRowWithIndexOfIdColumnOutOfBounce() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
+
+        final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
+        final Object[] values = new String[] { "Values" };
+        new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, values, 10);
+    }
+
+    /**
+     * Inserting a row with with the rowKey null, should throw a exception
+     */
+    @Test
+    public void testInsertRowWithRowKeyNull() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage(
+                "Can't insert a row without having (correct) tableName, columns, values or indexOfIdColumn");
+
+        final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
+        final Map<HBaseColumn, Object> row = createRow(table, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);
+        final HBaseColumn[] columns = convertToHBaseColumnsArray(getHBaseColumnsFromRow(row));
+        final Object[] values = new String[] { null };
+        new HBaseClient(getDataContext().getConnection()).insertRow(table.getName(), columns, values, 0);
+    }
+
+    /* Creating a table */
+
+    /**
+     * Creating a table with the tableName null, should throw a exception
+     */
+    @Test
+    public void testCreateTableWithTableNameNull() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Can't create a table without having the tableName or columnFamilies");
 
@@ -50,10 +115,10 @@ public class HBaseClientTest extends HBaseTestCase {
     }
 
     /**
-     * Creating a HBaseClient with the tableName null, should throw a exception
+     * Creating a table with the columnFamilies null, should throw a exception
      */
     @Test
-    public void testCreatingTheHBaseClientWithColumnFamiliesNull() {
+    public void testCreateTableWithColumnFamiliesNull() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Can't create a table without having the tableName or columnFamilies");
 
@@ -61,10 +126,10 @@ public class HBaseClientTest extends HBaseTestCase {
     }
 
     /**
-     * Creating a HBaseClient with the tableName null, should throw a exception
+     * Creating a table with the columnFamilies empty, should throw a exception
      */
     @Test
-    public void testCreatingTheHBaseClientWithColumnFamiliesEmpty() {
+    public void testCreateTableWithColumnFamiliesEmpty() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Can't create a table without having the tableName or columnFamilies");
 
@@ -72,11 +137,13 @@ public class HBaseClientTest extends HBaseTestCase {
         new HBaseClient(getDataContext().getConnection()).createTable("1", columnFamilies);
     }
 
+    /* Deleting a row */
+
     /**
-     * Creating a HBaseClient with the tableName null, should throw a exception
+     * Deleting a row with the tableName null, should throw a exception
      */
     @Test
-    public void testDeleteRowWithoutTableName() {
+    public void testDeleteRowWithTableNameNull() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Can't delete a row without having tableName or rowKey");
 
@@ -84,13 +151,26 @@ public class HBaseClientTest extends HBaseTestCase {
     }
 
     /**
-     * Creating a HBaseClient with the rowKey null, should throw a exception
+     * Deleting a row with the rowKey null, should throw a exception
      */
     @Test
-    public void testCreatingTheHBaseClientWithRowKeyNull() {
+    public void testDeleteRowWithRowKeyNull() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Can't delete a row without having tableName or rowKey");
 
         new HBaseClient(getDataContext().getConnection()).deleteRow("tableName", null);
+    }
+
+    /* Dropping/deleting a table */
+
+    /**
+     * Dropping a table with the tableName null, should throw a exception
+     */
+    @Test
+    public void testDropTableWithTableNameNull() {
+        exception.expect(IllegalArgumentException.class);
+        exception.expectMessage("Can't drop a table without having the tableName");
+
+        new HBaseClient(getDataContext().getConnection()).dropTable(null);
     }
 }

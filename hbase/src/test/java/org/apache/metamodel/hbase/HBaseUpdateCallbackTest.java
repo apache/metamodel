@@ -241,6 +241,16 @@ public abstract class HBaseUpdateCallbackTest extends HBaseTestCase {
         }
     }
 
+    /**
+     * Converts a list of {@link HBaseColumn}'s to an array of {@link HBaseColumn}'s
+     *
+     * @param columns
+     * @return Array of {@link HBaseColumn}
+     */
+    protected static HBaseColumn[] convertToHBaseColumnsArray(List<HBaseColumn> columns) {
+        return columns.toArray(new HBaseColumn[columns.size()]);
+    }
+
     protected HBaseUpdateCallback getUpdateCallback() {
         return updateCallback;
     }

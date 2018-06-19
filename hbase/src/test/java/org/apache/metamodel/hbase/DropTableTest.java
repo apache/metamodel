@@ -18,7 +18,8 @@
  */
 package org.apache.metamodel.hbase;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
@@ -51,17 +52,6 @@ public class DropTableTest extends HBaseUpdateCallbackTest {
 
         final HBaseTable table = createHBaseTable(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR);
         getUpdateCallback().dropTable(table).execute();
-    }
-
-    /**
-     * Creating a HBaseClient with the tableName null, should throw a exception
-     */
-    @Test
-    public void testCreatingTheHBaseClientWithTableNameNull() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Can't drop a table without having the tableName");
-
-        new HBaseClient(getDataContext().getConnection()).dropTable(null);
     }
 
     /**
