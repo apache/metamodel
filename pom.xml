@@ -68,6 +68,7 @@ under the License.
 		<module>json</module>
 		<module>xml</module>
 		<module>jdbc</module>
+		<module>kafka</module>
 		<module>elasticsearch</module>
 		<module>hadoop</module>
 		<module>hbase</module>

@@ -37,11 +37,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.metamodel.annotations.InterfaceStability;
 import org.apache.metamodel.util.HasName;
 
 /**
  * Represents the data-type of columns.
  */
+@InterfaceStability.Stable
 public interface ColumnType extends HasName, Serializable {
 
     /*

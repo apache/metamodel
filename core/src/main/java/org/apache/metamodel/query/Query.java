@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.annotations.InterfaceStability;
 import org.apache.metamodel.query.OrderByItem.Direction;
 import org.apache.metamodel.query.parser.QueryParserException;
 import org.apache.metamodel.query.parser.QueryPartCollectionProcessor;
@@ -64,6 +65,7 @@ import org.apache.metamodel.util.NumberComparator;
  * 
  * @see DataContext
  */
+@InterfaceStability.Stable
 public final class Query extends BaseObject implements Cloneable, Serializable {
 
     private static final long serialVersionUID = -5976325207498574216L;

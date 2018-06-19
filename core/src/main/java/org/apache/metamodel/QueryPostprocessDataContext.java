@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.metamodel.annotations.InterfaceStability;
 import org.apache.metamodel.convert.ConvertedDataSetInterceptor;
 import org.apache.metamodel.convert.Converters;
 import org.apache.metamodel.convert.HasReadTypeConverters;
@@ -70,6 +71,7 @@ import org.slf4j.LoggerFactory;
  * Instead this superclass only requires that a subclass can materialize a single table at a time. Then the query will
  * be executed by post processing the datasets client-side.
  */
+@InterfaceStability.Evolving
 public abstract class QueryPostprocessDataContext extends AbstractDataContext implements HasReadTypeConverters {
 
     private static final Logger logger = LoggerFactory.getLogger(QueryPostprocessDataContext.class);

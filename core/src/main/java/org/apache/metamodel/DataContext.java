@@ -20,6 +20,7 @@ package org.apache.metamodel;
 
 import java.util.List;
 
+import org.apache.metamodel.annotations.InterfaceStability;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.CompiledQuery;
 import org.apache.metamodel.query.Query;
@@ -34,6 +35,7 @@ import org.apache.metamodel.schema.Table;
  * datastores. The DataContext contains of the structure of data (in the form of
  * schemas) and interactions (in the form of queries) with data.
  */
+@InterfaceStability.Stable
 public interface DataContext {
 
     /**

@@ -18,9 +18,12 @@
  */
 package org.apache.metamodel;
 
+import org.apache.metamodel.annotations.InterfaceStability;
+
 /**
  * Represents a {@link DataContext} that supports updating write-operations.
  */
+@InterfaceStability.Stable
 public interface UpdateableDataContext extends DataContext {
 
     /**
