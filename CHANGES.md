@@ -1,7 +1,10 @@
-### Apache MetaModel 5.1.0 (WIP)
+### Apache MetaModel 5.1.0
 
- * [METAMODEL-1179] - Refactored ElasticSearch REST module to use new official REST based client from Elastic.
+ * [METAMODEL-1188] - Added write-support for the Apache HBase connector.
+ * [METAMODEL-1179] - Refactored ElasticSearch REST connector to use new official REST based client from Elastic.
  * [METAMODEL-1177] - Made TableType.TABLE the default table type, replacing null values.
+ * [METAMODEL-1185] - Added a new connector for Apache Kafka.
+ * [METAMODEL-1184] - Improved support for data/column types in Neo4j connector.
 
 ### Apache MetaModel 5.0.1
 
