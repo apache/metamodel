@@ -104,12 +104,6 @@ public class MutableRelationship extends AbstractRelationship implements
 		}
 	}
 
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-		remove();
-	}
-
 	public static Relationship createRelationship(Column primaryColumn,
 			Column foreignColumn) {
 		List<Column> pcols = new ArrayList<>();

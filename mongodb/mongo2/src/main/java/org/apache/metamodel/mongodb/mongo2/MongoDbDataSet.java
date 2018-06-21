@@ -40,8 +40,6 @@ final class MongoDbDataSet extends AbstractDataSet {
     private boolean _closed;
     private volatile DBObject _dbObject;
 
-
-
     public MongoDbDataSet(DBCursor cursor, List<SelectItem> selectItems, boolean queryPostProcessed) {
         super(selectItems);
         _cursor = cursor;
@@ -62,7 +60,6 @@ final class MongoDbDataSet extends AbstractDataSet {
 
     @Override
     protected void finalize() throws Throwable {
-        super.finalize();
         if (!_closed) {
             logger.warn("finalize() invoked, but DataSet is not closed. Invoking close() on {}", this);
             close();
