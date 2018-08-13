@@ -136,6 +136,10 @@ public final class NumberComparator implements Comparator<Object> {
             } catch (NumberFormatException e) {
             }
             try {
+                return new BigInteger(stringValue);
+            } catch (NumberFormatException e) {
+            }            
+            try {
                 return Double.parseDouble(stringValue);
             } catch (NumberFormatException e) {
             }

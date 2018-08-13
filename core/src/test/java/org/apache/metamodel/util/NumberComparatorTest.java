@@ -50,7 +50,10 @@ public class NumberComparatorTest {
     public void testToNumberLong() throws Exception {
         assertEquals(4212000000l, NumberComparator.toNumber("4212000000"));
     }
-
+    @Test
+    public void testToNumberBigInteger() throws Exception {
+        assertEquals(new BigInteger("42120000000000004212"), NumberComparator.toNumber("42120000000000004212"));
+    }    
     @Test
     public void testToNumberDouble() throws Exception {
         assertEquals(42.12, NumberComparator.toNumber("42.12"));
