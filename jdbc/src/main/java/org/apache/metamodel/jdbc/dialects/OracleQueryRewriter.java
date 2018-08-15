@@ -34,13 +34,13 @@ public class OracleQueryRewriter extends OffsetFetchQueryRewriter {
     }
 
     @Override
-	public ColumnType getColumnType(int jdbcType, String nativeType, Integer columnSize) {
-		// For TIMESTAMP WITH LOCAL_TIME_ZONE/TIME_ZONE, which jdbcType is -102/-101
-		if (nativeType.contains("TIMESTAMP")) {
-			return ColumnType.TIMESTAMP;
-		}
-		return super.getColumnType(jdbcType, nativeType, columnSize);
-	}
+    public ColumnType getColumnType(int jdbcType, String nativeType, Integer columnSize) {
+        // For TIMESTAMP WITH LOCAL_TIME_ZONE/TIME_ZONE, which jdbcType is -102/-101
+        if (nativeType.contains("TIMESTAMP")) {
+            return ColumnType.TIMESTAMP;
+        }
+        return super.getColumnType(jdbcType, nativeType, columnSize);
+    }
 
     @Override
     public String rewriteColumnType(ColumnType columnType, Integer columnSize) {
