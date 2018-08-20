@@ -162,4 +162,11 @@ public interface IQueryRewriter {
      * @return
      */
     public boolean isTransactional();
+
+    /**
+     * Determines if the JDBC data source supports primary keys or not.
+     *
+     * @return
+     */
+    public boolean isPrimaryKeySupported();
 }

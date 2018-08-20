@@ -149,4 +149,34 @@ public class HiveIntegrationTest extends AbstractJdbIntegrationTest {
             dataContext.executeUpdate(new DropTable(schema, tableName));
         }
     }
+
+    /**
+     * Hive doesn't support primary keys. If a column is defined as a primary key,
+     * MetaModel should ignore that for Hive datastores when creating a table.
+     * @throws Exception
+     */
+    public void testCreateTableWithPrimaryKey() throws Exception {
+        if (!isConfigured()) {
+            return;
+        }
+        final JdbcDataContext dataContext = getDataContext();
+
+        final String tableName = "metamodel_" + System.currentTimeMillis();
+        final Schema schema = dataContext.getDefaultSchema();
+
+        dataContext.executeUpdate(new CreateTable(schema, tableName)
+                .withColumn("foo")
+                .ofType(ColumnType.STRING)
+                .asPrimaryKey()
+                .withColumn("bar")
+                .ofType(ColumnType.INTEGER)
+                .withColumn("baz")
+                .ofType(ColumnType.VARCHAR));
+        try {
+            final Table table = dataContext.getTableByQualifiedLabel(tableName);
+            assertNotNull(table);
+        } finally {
+            dataContext.executeUpdate(new DropTable(schema, tableName));
+        }
+    }
 }
