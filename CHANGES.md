@@ -1,3 +1,7 @@
+### Apache MetaModel 5.1.1 (WIP)
+
+ * [METAMODEL-1192] - Add support for Oracle "TIMESTAMP WITH (LOCAL_)TIME_ZONE" column type.
+
 ### Apache MetaModel 5.1.0
 
  * [METAMODEL-1188] - Added write-support for the Apache HBase connector.
