@@ -31,14 +31,13 @@ under the License.
 		<easymock.version>3.2</easymock.version>
 		<spring.version>4.2.6.RELEASE</spring.version>
 		<httpcomponents.version>4.4.1</httpcomponents.version>
-		<checksum-maven-plugin.version>1.2</checksum-maven-plugin.version>
 		<docker-maven-plugin.version>0.23.0</docker-maven-plugin.version>
 		<skipTests>false</skipTests>
 	</properties>
 	<parent>
 		<groupId>org.apache</groupId>
 		<artifactId>apache</artifactId>
-		<version>16</version>
+		<version>21</version>
 	</parent>
 	<scm>
 		<url>https://git-wip-us.apache.org/repos/asf?p=metamodel.git</url>
@@ -290,11 +289,6 @@ under the License.
 					<excludePackageNames>com.sugarcrm.ws.soap</excludePackageNames>
 					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>net.ju-n.maven.plugins</groupId>
-				<artifactId>checksum-maven-plugin</artifactId>
-				<version>${checksum-maven-plugin.version}</version>
 			</plugin>
 
 			<plugin>
