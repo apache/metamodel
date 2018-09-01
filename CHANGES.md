@@ -1,5 +1,6 @@
 ### Apache MetaModel 5.1.1 (WIP)
 
+ * [METAMODEL-1194] - Improved rewriting of CREATE TABLE for Apache Hive when user specifies primary key(s).
  * [METAMODEL-1192] - Add support for Oracle "TIMESTAMP WITH (LOCAL_)TIME_ZONE" column type.
 
 ### Apache MetaModel 5.1.0
