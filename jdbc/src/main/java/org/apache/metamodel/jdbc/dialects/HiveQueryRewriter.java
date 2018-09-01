@@ -52,4 +52,9 @@ public class HiveQueryRewriter extends DefaultQueryRewriter {
     public boolean isTransactional() {
         return false;
     }
+    
+	@Override
+	public boolean isPrimaryKeySupported() {
+		return false;
+	}
 }

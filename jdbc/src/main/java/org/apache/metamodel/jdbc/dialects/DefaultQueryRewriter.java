@@ -220,4 +220,9 @@ public class DefaultQueryRewriter extends AbstractQueryRewriter {
     public String escapeQuotes(String item) {
         return item.replaceAll("\\'", "\\'\\'");
     }
+
+	@Override
+	public boolean isPrimaryKeySupported() {
+		return true;
+	}
 }

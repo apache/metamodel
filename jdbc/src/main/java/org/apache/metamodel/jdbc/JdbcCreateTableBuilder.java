@@ -115,21 +115,23 @@ final class JdbcCreateTableBuilder extends AbstractTableCreationBuilder<JdbcUpda
                 sb.append(" NOT NULL");
             }
         }
-        boolean primaryKeyExists = false;
-        for (int i = 0; i < columns.size(); i++) {
-            if (columns.get(i).isPrimaryKey()) {
-                if (!primaryKeyExists) {
-                    sb.append(", PRIMARY KEY(");
-                    sb.append(columns.get(i).getName());
-                    primaryKeyExists = true;
-                } else {
-                    sb.append(",");
-                    sb.append(columns.get(i).getName());
+        if (queryRewriter.isPrimaryKeySupported()) {
+            boolean primaryKeyExists = false;
+            for (int i = 0; i < columns.size(); i++) {
+                if (columns.get(i).isPrimaryKey()) {
+                    if (!primaryKeyExists) {
+                        sb.append(", PRIMARY KEY(");
+                        sb.append(columns.get(i).getName());
+                        primaryKeyExists = true;
+                    } else {
+                        sb.append(",");
+                        sb.append(columns.get(i).getName());
+                    }
                 }
             }
-        }
-        if (primaryKeyExists) {
-            sb.append(")");
+            if (primaryKeyExists) {
+                sb.append(")");
+            }
         }
         sb.append(")");
         return sb.toString();
