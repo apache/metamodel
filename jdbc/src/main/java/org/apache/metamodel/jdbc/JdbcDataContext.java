@@ -289,6 +289,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "retrieve schema and catalog metadata", JdbcActionType.METADATA);
         } finally {
+            FileHelper.safeClose(rs);
             close(null);
         }
         return result;
@@ -513,6 +514,8 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             // otherwise
             close(connection);
             throw e;
+        } finally {
+            FileHelper.safeClose(statement);
         }
 
         return dataSet;
@@ -669,10 +672,15 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
                                 }
                                 String lastToken = st.nextToken();
 
-                                for (int i = 0; i < schemaNames.size() && !found; i++) {
+                                for (int i = 0; i < schemaNames.size(); i++) {
                                     String schemaName = schemaNames.get(i);
                                     if (lastToken.indexOf(schemaName) != -1) {
-                                        result = schemaName;
+                                        // Fixes #1191: find the best matching schema name
+                                        if (result == null) {
+                                            result = schemaName;
+                                        } else {
+                                            result = schemaName.length() > result.length() ? schemaName : result;
+                                        }
                                         found = true;
                                     }
                                 }
