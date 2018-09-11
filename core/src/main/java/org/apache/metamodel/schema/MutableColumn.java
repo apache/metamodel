@@ -56,6 +56,12 @@ public class MutableColumn extends AbstractColumn implements Serializable {
         setType(type);
     }
 
+    public MutableColumn(String name, ColumnType type, Table table) {
+        this(name);
+        setType(type);
+        setTable(table);
+    }
+
     public MutableColumn(String name, ColumnType type, Table table, int columnNumber, Boolean nullable) {
         this(name, type);
         setColumnNumber(columnNumber);
