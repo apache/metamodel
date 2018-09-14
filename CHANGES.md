@@ -3,6 +3,7 @@
  * [METAMODEL-1194] - Improved rewriting of CREATE TABLE for Apache Hive when user specifies primary key(s).
  * [METAMODEL-1192] - Add support for Oracle "TIMESTAMP WITH (LOCAL_)TIME_ZONE" column type.
  * [METAMODEL-1193] - Updated release process to produce SHA-512 signature files.
+ * [METAMODEL-1197] - Fixed references in Kafka module's Columns to Tables.
 
 ### Apache MetaModel 5.1.0
 

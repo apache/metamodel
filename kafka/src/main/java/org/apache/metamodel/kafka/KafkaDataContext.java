@@ -94,11 +94,11 @@ public class KafkaDataContext<K, V> extends QueryPostprocessDataContext implemen
 
         for (String topic : topics) {
             final MutableTable table = new MutableTable(topic, schema);
-            table.addColumn(new MutableColumn(COLUMN_PARTITION, ColumnType.INTEGER));
-            table.addColumn(new MutableColumn(COLUMN_OFFSET, ColumnType.BIGINT));
-            table.addColumn(new MutableColumn(COLUMN_TIMESTAMP, ColumnType.TIMESTAMP));
-            table.addColumn(new MutableColumn(COLUMN_KEY, ColumnTypeImpl.convertColumnType(keyClass)));
-            table.addColumn(new MutableColumn(COLUMN_VALUE, ColumnTypeImpl.convertColumnType(valueClass)));
+            table.addColumn(new MutableColumn(COLUMN_PARTITION, ColumnType.INTEGER, table).setPrimaryKey(true));
+            table.addColumn(new MutableColumn(COLUMN_OFFSET, ColumnType.BIGINT, table).setPrimaryKey(true));
+            table.addColumn(new MutableColumn(COLUMN_TIMESTAMP, ColumnType.TIMESTAMP, table));
+            table.addColumn(new MutableColumn(COLUMN_KEY, ColumnTypeImpl.convertColumnType(keyClass), table));
+            table.addColumn(new MutableColumn(COLUMN_VALUE, ColumnTypeImpl.convertColumnType(valueClass), table));
             schema.addTable(table);
         }
         return schema;
