@@ -107,8 +107,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
 
     /**
      * Constructs a {@link ElasticSearchRestDataContext} and automatically
-     * detects the schema structure/view on all indexes (see
-     * {@link #detectTable(JsonObject, String)}).
+     * detects the schema structure/view on an index.
      *
      * @param client
      *            the ElasticSearch client
@@ -163,9 +162,8 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
     }
 
     /**
-     * Performs an analysis of an available index type in an ElasticSearch
-     * {@link JestClient} client and tries to detect the index structure based
-     * on the metadata provided by the java client.
+     * Performs an analysis of an available metadata properties/mapping
+     * for a particula document type.
      *
      * @param metadataProperties
      *            the ElasticSearch mapping
@@ -295,7 +293,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
     }
 
     /**
-     * Gets the {@link JestClient} that this {@link DataContext} is wrapping.
+     * Gets the {@link ElasticSearchRestClient} that this {@link DataContext} is wrapping.
      */
     public ElasticSearchRestClient getElasticSearchClient() {
         return elasticSearchClient;

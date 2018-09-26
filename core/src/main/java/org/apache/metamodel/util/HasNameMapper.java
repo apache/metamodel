@@ -22,9 +22,7 @@ import java.io.Serializable;
 import java.util.function.Function;
 
 /**
- * {@link Func} useful for mapping {@link HasName} instances to names, using
- * {@link CollectionUtils#map(Object[], Func)} and
- * {@link CollectionUtils#map(Iterable, Func)}.
+ * Useful {@link Function} for mapping {@link HasName} instances to names.
  */
 public final class HasNameMapper implements Function<HasName, String>, Serializable {
 

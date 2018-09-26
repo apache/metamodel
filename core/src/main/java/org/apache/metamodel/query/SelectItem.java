@@ -255,7 +255,7 @@ public class SelectItem extends BaseObject implements QueryItem, Cloneable {
     }
 
     /**
-     * Gets any parameters to the {@link #getFunction()} used.
+     * Gets any parameters to the {@link #getAggregateFunction()} or {@link #getScalarFunction()} used.
      * 
      * @return
      */

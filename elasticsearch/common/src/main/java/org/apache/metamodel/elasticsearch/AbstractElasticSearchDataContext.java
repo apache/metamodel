@@ -51,7 +51,7 @@ public abstract class AbstractElasticSearchDataContext extends QueryPostprocessD
     protected final List<SimpleTableDef> dynamicTableDefinitions = new ArrayList<>();
 
     /**
-     * Constructs a {@link ElasticSearchRestDataContext}. This constructor
+     * Constructs a {@link AbstractElasticSearchDataContext}. This constructor
      * accepts a custom array of {@link SimpleTableDef}s which allows the user
      * to define his own view on the indexes in the engine.
      *
@@ -72,11 +72,10 @@ public abstract class AbstractElasticSearchDataContext extends QueryPostprocessD
     }
 
     /**
-     * Performs an analysis of the available indexes in an ElasticSearch cluster
-     * {@link JestClient} instance and detects the elasticsearch types structure
+     * Performs an analysis of the available indexes in an ElasticSearch
+     * cluster instance and detects the elasticsearch types structure
      * based on the metadata provided by the ElasticSearch java client.
      *
-     * @see {@link #detectTable(JsonObject, String)}
      * @return a mutable schema instance, useful for further fine tuning by the
      *         user.
      */

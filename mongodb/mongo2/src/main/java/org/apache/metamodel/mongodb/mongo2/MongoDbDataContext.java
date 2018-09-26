@@ -72,7 +72,7 @@ import com.mongodb.WriteConcern;
  * Since MongoDB has no schema, a virtual schema will be used in this
  * DataContext. This implementation supports either automatic discovery of a
  * schema or manual specification of a schema, through the
- * {@link MongoDbTableDef} class.
+ * {@link SimpleTableDef} class.
  */
 public class MongoDbDataContext extends QueryPostprocessDataContext implements UpdateableDataContext {
 
@@ -85,13 +85,13 @@ public class MongoDbDataContext extends QueryPostprocessDataContext implements U
 
     /**
      * Constructs a {@link MongoDbDataContext}. This constructor accepts a
-     * custom array of {@link MongoDbTableDef}s which allows the user to define
+     * custom array of {@link SimpleTableDef}s which allows the user to define
      * his own view on the collections in the database.
      *
      * @param mongoDb
      *            the mongo db connection
      * @param tableDefs
-     *            an array of {@link MongoDbTableDef}s, which define the table
+     *            an array of {@link SimpleTableDef}s, which define the table
      *            and column model of the mongo db collections. (consider using
      *            {@link #detectSchema(DB)} or {@link #detectTable(DB, String)}
      *            ).
