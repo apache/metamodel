@@ -43,11 +43,11 @@ under the License.
 		<url>https://git-wip-us.apache.org/repos/asf?p=metamodel.git</url>
 		<connection>scm:git:http://git-wip-us.apache.org/repos/asf/metamodel.git</connection>
 		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/metamodel.git</developerConnection>
-		<tag>MetaModel-5.1.1</tag>
+		<tag>HEAD</tag>
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
 	<artifactId>MetaModel</artifactId>
-	<version>5.1.1</version>
+	<version>5.1.2-SNAPSHOT</version>
 	<name>MetaModel</name>
 	<description>MetaModel is a library that encapsulates the differences and enhances 
 		the capabilities of different datastores. Rich querying abilities are
