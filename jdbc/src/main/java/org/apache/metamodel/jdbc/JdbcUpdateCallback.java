@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.metamodel.AbstractUpdateCallback;
 import org.apache.metamodel.DataContext;
@@ -42,18 +43,35 @@ import org.apache.metamodel.util.FileHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import javafx.util.Pair;
+
 abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements UpdateCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(JdbcUpdateCallback.class);
 
     private Connection _connection;
-    private String _preparedStatementSql;
-    private PreparedStatement _preparedStatement;
     private final UpdateSummaryBuilder _updateSummaryBuilder;
+    private final LoadingCache<Pair<String, Boolean>, PreparedStatement> _preparedStatementCache;
 
     public JdbcUpdateCallback(JdbcDataContext dataContext) {
         super(dataContext);
         _updateSummaryBuilder = new UpdateSummaryBuilder();
+        int maxCacheSize = JdbcDataContext.getSystemPropertyValue(JdbcDataContext.SYSTEM_PROPERTY_PREPARED_STATEMENT_CACHE_SIZE, 10);
+        _preparedStatementCache = CacheBuilder.newBuilder()
+                .maximumSize(maxCacheSize)
+                .initialCapacity(1)
+                .removalListener((removalNotification) -> {
+                    closePreparedStatement((PreparedStatement) removalNotification.getValue());
+                })
+                .build(new CacheLoader<Pair<String, Boolean>, PreparedStatement>(){
+                    @Override
+                    public PreparedStatement load(Pair<String, Boolean> sql) throws Exception {
+                        return createPreparedStatement(sql.getKey(), sql.getValue());
+                    }
+                });
     }
 
     protected final UpdateSummaryBuilder getUpdateSummaryBuilder() {
@@ -112,8 +130,8 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
 
     public final void close(boolean success) {
         if (_connection != null) {
-            if (success && _preparedStatement != null) {
-                closePreparedStatement(_preparedStatement);
+            if (success) {
+                _preparedStatementCache.invalidateAll();
             }
 
             if (getJdbcDataContext().getQueryRewriter().isTransactional()) {
@@ -197,29 +215,17 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
 
     public final PreparedStatement getPreparedStatement(String sql, boolean reuseStatement,
             boolean returnGeneratedKeys) {
-        final PreparedStatement preparedStatement;
         if (reuseStatement) {
-            if (sql.equals(_preparedStatementSql)) {
-                preparedStatement = _preparedStatement;
-            } else {
-                if (_preparedStatement != null) {
-                    try {
-                        closePreparedStatement(_preparedStatement);
-                    } catch (RuntimeException e) {
-                        logger.error("Exception occurred while closing prepared statement: " + _preparedStatementSql);
-                        throw e;
-                    }
-                }
-                preparedStatement = createPreparedStatement(sql, returnGeneratedKeys);
-                _preparedStatement = preparedStatement;
-                _preparedStatementSql = sql;
+            try {
+                return _preparedStatementCache.get(new Pair(sql, returnGeneratedKeys));
+            } catch (ExecutionException e) {
+                throw toRuntimeException(e.getCause());
             }
         } else {
-            preparedStatement = createPreparedStatement(sql, returnGeneratedKeys);
+            return createPreparedStatement(sql, returnGeneratedKeys);
         }
-        return preparedStatement;
     }
-    
+
     private final PreparedStatement createPreparedStatement(String sql, boolean returnGeneratedKeys) {
         try {
             if (returnGeneratedKeys && isGeneratedKeysCollectionEnabled()) {
@@ -286,6 +292,10 @@ abstract class JdbcUpdateCallback extends AbstractUpdateCallback implements Upda
     @Override
     public UpdateSummary getUpdateSummary() {
         return _updateSummaryBuilder.build();
+    }
+
+    private static RuntimeException toRuntimeException(Throwable e) {
+        return (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
     }
 
 }

@@ -83,6 +83,8 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             "metamodel.jdbc.compiledquery.pool.idle.timeout";
     public static final String SYSTEM_PROPERTY_COMPILED_QUERY_POOL_TIME_BETWEEN_EVICTION_RUNS_MILLIS =
             "metamodel.jdbc.compiledquery.pool.eviction.period.millis";
+    public static final String SYSTEM_PROPERTY_PREPARED_STATEMENT_CACHE_SIZE =
+            "metamodel.jdbc.prepared.statement.cache.size";
 
     public static final String DATABASE_PRODUCT_POSTGRESQL = "PostgreSQL";
     public static final String DATABASE_PRODUCT_MYSQL = "MySQL";
@@ -902,5 +904,18 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
 
     public String getDatabaseVersion() {
         return _databaseVersion;
+    }
+
+    public static int getSystemPropertyValue(String property, int defaultValue) {
+        String str = System.getProperty(property);
+        if (str == null) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(str);
+        } catch (NumberFormatException e) {
+            logger.debug("Failed to parse system property '{}': '{}'", property, str);
+            return defaultValue;
+        }
     }
 }

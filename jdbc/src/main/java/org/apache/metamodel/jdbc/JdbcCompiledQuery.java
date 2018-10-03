@@ -52,29 +52,16 @@ final class JdbcCompiledQuery extends DefaultCompiledQuery implements CompiledQu
         _sql = dc.getQueryRewriter().rewriteQuery(query);
 
         final Config config = new Config();
-        config.maxActive = getSystemPropertyValue(JdbcDataContext.SYSTEM_PROPERTY_COMPILED_QUERY_POOL_MAX_SIZE, -1);
-        config.minEvictableIdleTimeMillis = getSystemPropertyValue(
+        config.maxActive = JdbcDataContext.getSystemPropertyValue(JdbcDataContext.SYSTEM_PROPERTY_COMPILED_QUERY_POOL_MAX_SIZE, -1);
+        config.minEvictableIdleTimeMillis = JdbcDataContext.getSystemPropertyValue(
                 JdbcDataContext.SYSTEM_PROPERTY_COMPILED_QUERY_POOL_MIN_EVICTABLE_IDLE_TIME_MILLIS, 500);
-        config.timeBetweenEvictionRunsMillis = getSystemPropertyValue(
+        config.timeBetweenEvictionRunsMillis = JdbcDataContext.getSystemPropertyValue(
                 JdbcDataContext.SYSTEM_PROPERTY_COMPILED_QUERY_POOL_TIME_BETWEEN_EVICTION_RUNS_MILLIS, 1000);
 
         _pool = new GenericObjectPool<JdbcCompiledQueryLease>(new JdbcCompiledQueryLeaseFactory(dc, _sql), config);
         _closed = false;
 
         logger.debug("Created compiled JDBC query: {}", _sql);
-    }
-
-    private int getSystemPropertyValue(String property, int defaultValue) {
-        String str = System.getProperty(property);
-        if (str == null) {
-            return defaultValue;
-        }
-        try {
-            return Integer.parseInt(str);
-        } catch (NumberFormatException e) {
-            logger.debug("Failed to parse system property '{}': '{}'", property, str);
-            return defaultValue;
-        }
     }
 
     public JdbcCompiledQueryLease borrowLease() {
