@@ -26,15 +26,19 @@ import java.util.ServiceLoader;
 
 import org.apache.metamodel.DataContext;
 
-public class DataContextFactoryRegistryImpl implements DataContextFactoryRegistry {
+public class DataContextFactoryRegistryImpl implements DataContextFactoryRegistry, Cloneable {
 
     private static final DataContextFactoryRegistry DEFAULT_INSTANCE;
 
     static {
+        DEFAULT_INSTANCE = createFromClasspath();
+    }
+    
+    public static DataContextFactoryRegistry createFromClasspath() {
         final ResourceFactoryRegistry resourceFactoryRegistry = ResourceFactoryRegistryImpl.getDefaultInstance();
         final DataContextFactoryRegistryImpl registry = new DataContextFactoryRegistryImpl(resourceFactoryRegistry);
         registry.discoverFromClasspath();
-        DEFAULT_INSTANCE = registry;
+        return registry;
     }
 
     public static DataContextFactoryRegistry getDefaultInstance() {
@@ -47,6 +51,17 @@ public class DataContextFactoryRegistryImpl implements DataContextFactoryRegistr
     public DataContextFactoryRegistryImpl(ResourceFactoryRegistry resourceFactoryRegistry) {
         this.factories = new ArrayList<>();
         this.resourceFactoryRegistry = resourceFactoryRegistry;
+    }
+
+    public DataContextFactoryRegistryImpl(Collection<DataContextFactory> factories,
+            ResourceFactoryRegistry resourceFactoryRegistry) {
+        this.factories = new ArrayList<>(factories);
+        this.resourceFactoryRegistry = resourceFactoryRegistry;
+    }
+
+    @Override
+    public DataContextFactoryRegistryImpl clone() {
+        return new DataContextFactoryRegistryImpl(factories, resourceFactoryRegistry);
     }
 
     @Override
