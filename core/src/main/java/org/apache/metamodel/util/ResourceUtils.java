@@ -76,12 +76,14 @@ public class ResourceUtils {
      * @return
      */
     public static String getParentName(Resource resource) {
-        String name = resource.getName();
-        String qualifiedPath = resource.getQualifiedPath();
+        final String name = resource.getName();
+        final String qualifiedPath = resource.getQualifiedPath();
 
-        assert qualifiedPath.endsWith(name);
+        if (!qualifiedPath.endsWith(name)) {
+            return "";
+        }
 
-        int indexOfChild = qualifiedPath.length() - name.length();
+        final int indexOfChild = qualifiedPath.length() - name.length();
 
         if (indexOfChild <= 0) {
             return "";
@@ -95,9 +97,9 @@ public class ResourceUtils {
 
         parentQualifiedPath = parentQualifiedPath.substring(0, parentQualifiedPath.length() - 1);
 
-        int lastIndexOfSlash = parentQualifiedPath.lastIndexOf('/');
-        int lastIndexOfBackSlash = parentQualifiedPath.lastIndexOf('\\');
-        int lastIndexToUse = Math.max(lastIndexOfSlash, lastIndexOfBackSlash);
+        final int lastIndexOfSlash = parentQualifiedPath.lastIndexOf('/');
+        final int lastIndexOfBackSlash = parentQualifiedPath.lastIndexOf('\\');
+        final int lastIndexToUse = Math.max(lastIndexOfSlash, lastIndexOfBackSlash);
 
         if (lastIndexToUse == -1) {
             return parentQualifiedPath;
@@ -106,7 +108,7 @@ public class ResourceUtils {
         // add one because of the slash/backslash itself
         // lastIndexToUse++;
 
-        String parentName = parentQualifiedPath.substring(lastIndexToUse + 1);
+        final String parentName = parentQualifiedPath.substring(lastIndexToUse + 1);
         return parentName;
     }
 }
