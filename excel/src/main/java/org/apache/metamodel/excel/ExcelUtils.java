@@ -189,7 +189,7 @@ final class ExcelUtils {
 
         final String result;
 
-        switch (cell.getCellTypeEnum()) {
+        switch (cell.getCellType()) {
         case BLANK:
         case _NONE:
             result = null;
@@ -238,7 +238,7 @@ final class ExcelUtils {
             result = cell.getRichStringCellValue().getString();
             break;
         default:
-            throw new IllegalStateException("Unknown cell type: " + cell.getCellTypeEnum());
+            throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
         }
 
         logger.debug("cell {} resolved to value: {}", cellCoordinate, result);
@@ -296,7 +296,7 @@ final class ExcelUtils {
         }
         final CellStyle cellStyle = cell.getCellStyle();
 
-        final short fontIndex = cellStyle.getFontIndex();
+        final int fontIndex = cellStyle.getFontIndexAsInt();
         final Font font = workbook.getFontAt(fontIndex);
         final StyleBuilder styleBuilder = new StyleBuilder();
 
@@ -312,7 +312,7 @@ final class ExcelUtils {
         }
 
         // Font size
-        final Font stdFont = workbook.getFontAt((short) 0);
+        final Font stdFont = workbook.getFontAt(0);
         final short fontSize = font.getFontHeightInPoints();
         if (stdFont.getFontHeightInPoints() != fontSize) {
             styleBuilder.fontSize(fontSize, SizeUnit.PT);
@@ -344,7 +344,7 @@ final class ExcelUtils {
         }
 
         // Background color
-        if (cellStyle.getFillPatternEnum() == FillPatternType.SOLID_FOREGROUND) {
+        if (cellStyle.getFillPattern() == FillPatternType.SOLID_FOREGROUND) {
             Color color = cellStyle.getFillForegroundColorColor();
             if (color instanceof HSSFColor) {
                 short[] triplet = ((HSSFColor) color).getTriplet();
@@ -363,7 +363,7 @@ final class ExcelUtils {
         }
 
         // alignment
-        switch (cellStyle.getAlignmentEnum()) {
+        switch (cellStyle.getAlignment()) {
         case LEFT:
             styleBuilder.leftAligned();
             break;
