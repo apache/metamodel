@@ -39,6 +39,7 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -50,7 +51,7 @@ public class CassandraDataContextTest {
     private static CassandraSimpleClient client = new CassandraSimpleClient();
     private static Cluster cluster;
     private static CassandraDataContext dc;
-    
+
     private static final int defaultCassandraPort = 9142;
     private static final String cassandraNode = "127.0.0.1";
     private static String keyspaceName = "my_keyspace";
@@ -63,10 +64,16 @@ public class CassandraDataContextTest {
     private static String secondRowTitle = "My second song";
     private static String thirdRowTitle = "My third song";
     private static String urlName = "my_url";
-
+    
     @BeforeClass
     public static void setUpCluster() throws Exception {
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+        try {
+            EmbeddedCassandraServerHelper.startEmbeddedCassandra(EmbeddedCassandraServerHelper.DEFAULT_CASSANDRA_YML_FILE);
+        } catch (Throwable e) {
+            // CassandraUnit not working working on JDK 9+, see https://github.com/jsevellec/cassandra-unit/issues/249
+            Assume.assumeTrue("Embedded Cassandra server didn't come up: " + e.getMessage(), false);
+            return;
+        }
         client.connect(cassandraNode, defaultCassandraPort);
         cluster = client.getCluster();
         Session session = cluster.connect();
@@ -126,11 +133,11 @@ public class CassandraDataContextTest {
             ds.close();
         }
     }
-    
+
     @Test
     public void testPrimaryKeyLookup() throws Exception {
-        DataSet ds = dc.query().from(testTableName).select("id").and("title").where("id").isEquals(firstRowId)
-                .execute();
+        DataSet ds =
+                dc.query().from(testTableName).select("id").and("title").where("id").isEquals(firstRowId).execute();
 
         assertEquals(InMemoryDataSet.class, ds.getClass());
         try {
