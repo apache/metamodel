@@ -26,13 +26,17 @@ under the License.
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>MetaModel-sugarcrm</artifactId>
 	<name>MetaModel module for SugarCRM</name>
+	
+	<properties>
+		<jaxws.version>2.3.1</jaxws.version>
+	</properties>
 
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.jvnet.jax-ws-commons</groupId>
+				<groupId>com.helger.maven</groupId>
 				<artifactId>jaxws-maven-plugin</artifactId>
-				<version>2.2</version>
+				<version>2.6</version>
 				<executions>
 					<execution>
 						<id>import-sugarcrm-wsdl</id>
@@ -54,24 +58,17 @@ under the License.
 					<dependency>
 						<groupId>com.sun.xml.ws</groupId>
 						<artifactId>jaxws-tools</artifactId>
-						<version>2.1.7</version>
-						<exclusions>
-							<exclusion>
-								<groupId>org.jvnet.staxex</groupId>
-								<artifactId>stax-ex</artifactId>
-							</exclusion>
-						</exclusions>
+						<version>2.3.0.2</version>
 					</dependency>
 					<dependency>
-						<groupId>org.jvnet.staxex</groupId>
-						<artifactId>stax-ex</artifactId>
-						<version>1.2</version>
-						<exclusions>
-							<exclusion>
-								<groupId>javax.xml.stream</groupId>
-								<artifactId>stax-api</artifactId>
-							</exclusion>
-						</exclusions>
+						<groupId>javax.xml.ws</groupId>
+						<artifactId>jaxws-api</artifactId>
+						<version>${jaxws.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>javax.activation</groupId>
+						<artifactId>activation</artifactId>
+						<version>1.1.1</version>
 					</dependency>
 				</dependencies>
 			</plugin>
@@ -139,12 +136,16 @@ under the License.
 			<artifactId>commons-codec</artifactId>
 		</dependency>
 
-		<!-- provided -->
+		<!-- JAX WS -->
 		<dependency>
 			<groupId>javax.xml.ws</groupId>
 			<artifactId>jaxws-api</artifactId>
-			<version>2.0</version>
-			<scope>provided</scope>
+			<version>${jaxws.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.ws</groupId>
+			<artifactId>jaxws-rt</artifactId>
+			<version>${jaxws.version}</version>
 		</dependency>
 
 		<!-- test -->
