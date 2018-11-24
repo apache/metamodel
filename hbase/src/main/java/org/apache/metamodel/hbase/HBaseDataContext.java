@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
@@ -31,6 +30,7 @@ import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.TableDescriptor;
 import org.apache.hadoop.hbase.filter.PageFilter;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
@@ -129,10 +129,11 @@ public class HBaseDataContext extends QueryPostprocessDataContext implements Upd
         SimpleTableDef[] tableDefinitions = _configuration.getTableDefinitions();
         if (tableDefinitions == null) {
             try {
-                final HTableDescriptor[] tables = getAdmin().listTables();
-                tableDefinitions = new SimpleTableDef[tables.length];
-                for (int i = 0; i < tables.length; i++) {
-                    SimpleTableDef emptyTableDef = new SimpleTableDef(tables[i].getNameAsString(), new String[0]);
+                final List<TableDescriptor> tables = getAdmin().listTableDescriptors();
+                tableDefinitions = new SimpleTableDef[tables.size()];
+                for (int i = 0; i < tables.size(); i++) {
+                    final String tableName = tables.get(i).getTableName().getNameAsString();
+                    final SimpleTableDef emptyTableDef = new SimpleTableDef(tableName, new String[0]);
                     tableDefinitions[i] = emptyTableDef;
                 }
             } catch (IOException e) {

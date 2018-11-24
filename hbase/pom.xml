@@ -20,7 +20,7 @@
 	<name>MetaModel module for Apache HBase</name>
 
 	<properties>
-		<hbase.version>1.1.1</hbase.version>
+		<hbase.version>2.1.1</hbase.version>
 	</properties>
 
 	<dependencies>
@@ -28,10 +28,6 @@
 			<groupId>org.apache.metamodel</groupId>
 			<artifactId>MetaModel-hadoop</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-common</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hbase</groupId>
@@ -63,9 +59,9 @@
 					<groupId>org.mortbay.jetty</groupId>
 				</exclusion>
 				<exclusion>
-						<groupId>com.github.stephenc.findbugs</groupId>
-						<artifactId>findbugs-annotations</artifactId>
-					</exclusion>
+					<groupId>com.github.stephenc.findbugs</groupId>
+					<artifactId>findbugs-annotations</artifactId>
+				</exclusion>
 				<exclusion>
 					<groupId>tomcat</groupId>
 					<artifactId>jasper-runtime</artifactId>
@@ -139,10 +135,6 @@
 					<artifactId>jackson-xc</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>net.sourceforge.findbugs</groupId>
-			<artifactId>annotations</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

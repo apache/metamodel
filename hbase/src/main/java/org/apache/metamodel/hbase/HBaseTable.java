@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.client.ColumnFamilyDescriptor;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
@@ -45,13 +45,14 @@ final class HBaseTable extends MutableTable {
     private final transient ColumnType _defaultRowKeyColumnType;
 
     /**
-     * Creates an HBaseTable. If the tableDef variable doesn't include the ID-column (see {@link HBaseDataContext#FIELD_ID}).
-     * Then it's first added.
+     * Creates an HBaseTable. If the tableDef variable doesn't include the ID-column (see
+     * {@link HBaseDataContext#FIELD_ID}). Then it's first added.
+     * 
      * @param dataContext
      * @param tableDef Table definition. The tableName, columnNames and columnTypes variables are used.
      * @param schema {@link MutableSchema} where the table belongs to.
-     * @param defaultRowKeyColumnType This variable determines the {@link ColumnType},
-     * used when the tableDef doesn't include the ID column (see {@link HBaseDataContext#FIELD_ID}).
+     * @param defaultRowKeyColumnType This variable determines the {@link ColumnType}, used when the tableDef doesn't
+     *            include the ID column (see {@link HBaseDataContext#FIELD_ID}).
      */
     public HBaseTable(final HBaseDataContext dataContext, final SimpleTableDef tableDef, final MutableSchema schema,
             final ColumnType defaultRowKeyColumnType) {
@@ -63,6 +64,7 @@ final class HBaseTable extends MutableTable {
 
     /**
      * Add multiple columns to this table
+     * 
      * @param tableDef
      */
     private void addColumns(final SimpleTableDef tableDef) {
@@ -135,7 +137,7 @@ final class HBaseTable extends MutableTable {
                 // What about timestamp?
 
                 // Add the other column (with columnNumbers starting from 2)
-                final HColumnDescriptor[] columnFamilies = table.getTableDescriptor().getColumnFamilies();
+                final ColumnFamilyDescriptor[] columnFamilies = table.getDescriptor().getColumnFamilies();
                 for (int i = 0; i < columnFamilies.length; i++) {
                     addColumn(columnFamilies[i].getNameAsString(), HBaseColumn.DEFAULT_COLUMN_TYPE_FOR_COLUMN_FAMILIES,
                             i + 2);
@@ -153,11 +155,7 @@ final class HBaseTable extends MutableTable {
      * @return {@link Set}<{@link String}> of columnFamilies
      */
     Set<String> getColumnFamilies() {
-        return getColumnsInternal()
-                .stream()
-                .map(column -> (HBaseColumn) column)
-                .map(HBaseColumn::getColumnFamily)
-                .distinct()
-                .collect(Collectors.toSet());
+        return getColumnsInternal().stream().map(column -> (HBaseColumn) column).map(HBaseColumn::getColumnFamily)
+                .distinct().collect(Collectors.toSet());
     }
 }

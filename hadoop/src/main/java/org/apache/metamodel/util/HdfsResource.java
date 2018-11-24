@@ -201,7 +201,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
     public long getSize() {
         final FileSystem fs = getHadoopFileSystem();
         try {
-            if (fs.isFile(getHadoopPath())) {
+            if (fs.getFileStatus(getHadoopPath()).isFile()) {
                 return fs.getFileStatus(getHadoopPath()).getLen();
             } else {
                 return fs.getContentSummary(getHadoopPath()).getLength();
@@ -258,7 +258,7 @@ public class HdfsResource extends AbstractResource implements Serializable {
         try {
             final Path hadoopPath = getHadoopPath();
             // return a wrapper InputStream which manages the 'fs' closeable
-            if (fs.isFile(hadoopPath)) {
+            if (fs.getFileStatus(hadoopPath).isFile()) {
                 in = fs.open(hadoopPath);
                 return new HdfsFileInputStream(in, fs);
             } else {
