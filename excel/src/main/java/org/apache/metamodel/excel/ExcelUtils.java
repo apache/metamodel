@@ -19,7 +19,6 @@
 package org.apache.metamodel.excel;
 
 import java.io.File;
-import java.io.OutputStream;
 import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -39,7 +38,6 @@ import org.apache.metamodel.data.Style.SizeUnit;
 import org.apache.metamodel.data.StyleBuilder;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.util.Action;
 import org.apache.metamodel.util.DateUtils;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
@@ -95,7 +93,15 @@ final class ExcelUtils {
         }
     }
 
-    public static Workbook readWorkbook(Resource resource) {
+    /**
+     * Opens a {@link Workbook} based on a {@link Resource}.
+     * 
+     * @param resource
+     * @param allowFileOptimization whether or not to allow POI to use file handles which supposedly speeds things up,
+     *            but creates issues when writing multiple times to the same file in short bursts of time.
+     * @return
+     */
+    public static Workbook readWorkbook(Resource resource, boolean allowFileOptimization) {
         if (!resource.isExists()) {
             // resource does not exist- create a blank workbook
             if (isXlsxFile(resource)) {
@@ -105,10 +111,11 @@ final class ExcelUtils {
             }
         }
 
-        if (resource instanceof FileResource) {
+        if (allowFileOptimization && resource instanceof FileResource) {
             final File file = ((FileResource) resource).getFile();
             try {
-                return WorkbookFactory.create(file);
+                // open read-only mode
+                return WorkbookFactory.create(file, null, true);
             } catch (Exception e) {
                 logger.error("Could not open workbook", e);
                 throw new IllegalStateException("Could not open workbook", e);
@@ -137,9 +144,9 @@ final class ExcelUtils {
      * 
      * @return a workbook instance based on the ExcelDataContext.
      */
-    public static Workbook readWorkbook(ExcelDataContext dataContext) {
+    public static Workbook readWorkbookForUpdate(ExcelDataContext dataContext) {
         Resource resource = dataContext.getResource();
-        return readWorkbook(resource);
+        return readWorkbook(resource, false);
     }
 
     /**
@@ -156,28 +163,12 @@ final class ExcelUtils {
         final Resource realResource = dataContext.getResource();
         final Resource tempResource = new InMemoryResource(realResource.getQualifiedPath());
 
-        tempResource.write(new Action<OutputStream>() {
-            @Override
-            public void run(OutputStream outputStream) throws Exception {
-                wb.write(outputStream);
-            }
-        });
-
-        if (wb instanceof HSSFWorkbook && realResource instanceof FileResource && realResource.isExists()) {
-            // TODO POI has a problem with closing a file-reference/channel
-            // after wb.write() is invoked. See POI issue to be fixed:
-            // https://bz.apache.org/bugzilla/show_bug.cgi?id=58480
-            System.gc();
-            System.runFinalization();
-            try {
-                Thread.sleep(800);
-            } catch (InterruptedException e) {
-            }
-        }
+        tempResource.write(out -> wb.write(out));
 
         FileHelper.safeClose(wb);
 
         FileHelper.copy(tempResource, realResource);
+
     }
 
     public static String getCellValue(Workbook wb, Cell cell) {
@@ -189,7 +180,7 @@ final class ExcelUtils {
 
         final String result;
 
-        switch (cell.getCellTypeEnum()) {
+        switch (cell.getCellType()) {
         case BLANK:
         case _NONE:
             result = null;
@@ -238,7 +229,7 @@ final class ExcelUtils {
             result = cell.getRichStringCellValue().getString();
             break;
         default:
-            throw new IllegalStateException("Unknown cell type: " + cell.getCellTypeEnum());
+            throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
         }
 
         logger.debug("cell {} resolved to value: {}", cellCoordinate, result);
@@ -296,7 +287,7 @@ final class ExcelUtils {
         }
         final CellStyle cellStyle = cell.getCellStyle();
 
-        final short fontIndex = cellStyle.getFontIndex();
+        final int fontIndex = cellStyle.getFontIndexAsInt();
         final Font font = workbook.getFontAt(fontIndex);
         final StyleBuilder styleBuilder = new StyleBuilder();
 
@@ -312,7 +303,7 @@ final class ExcelUtils {
         }
 
         // Font size
-        final Font stdFont = workbook.getFontAt((short) 0);
+        final Font stdFont = workbook.getFontAt(0);
         final short fontSize = font.getFontHeightInPoints();
         if (stdFont.getFontHeightInPoints() != fontSize) {
             styleBuilder.fontSize(fontSize, SizeUnit.PT);
@@ -344,7 +335,7 @@ final class ExcelUtils {
         }
 
         // Background color
-        if (cellStyle.getFillPatternEnum() == FillPatternType.SOLID_FOREGROUND) {
+        if (cellStyle.getFillPattern() == FillPatternType.SOLID_FOREGROUND) {
             Color color = cellStyle.getFillForegroundColorColor();
             if (color instanceof HSSFColor) {
                 short[] triplet = ((HSSFColor) color).getTriplet();
@@ -363,7 +354,7 @@ final class ExcelUtils {
         }
 
         // alignment
-        switch (cellStyle.getAlignmentEnum()) {
+        switch (cellStyle.getAlignment()) {
         case LEFT:
             styleBuilder.leftAligned();
             break;

@@ -66,7 +66,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     @Override
     public Schema createSchema(String schemaName) {
         final MutableSchema schema = new MutableSchema(schemaName);
-        final Workbook wb = ExcelUtils.readWorkbook(_resource);
+        final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
         try {
             for (int i = 0; i < wb.getNumberOfSheets(); i++) {
                 final Sheet currentSheet = wb.getSheetAt(i);
@@ -83,7 +83,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
 
     @Override
     public DataSet executeQuery(Table table, List<Column> columns, int maxRows) {
-        final Workbook wb = ExcelUtils.readWorkbook(_resource);
+        final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
         final Sheet sheet = wb.getSheet(table.getName());
 
         if (sheet == null || sheet.getPhysicalNumberOfRows() == 0) {

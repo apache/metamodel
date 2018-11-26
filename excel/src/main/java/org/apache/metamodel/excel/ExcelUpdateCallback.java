@@ -95,7 +95,7 @@ final class ExcelUpdateCallback extends AbstractUpdateCallback implements Update
             if (_workbook != null) {
                 ExcelUtils.writeAndCloseWorkbook(_dataContext, _workbook);
             }
-            _workbook = ExcelUtils.readWorkbook(_dataContext);
+            _workbook = ExcelUtils.readWorkbookForUpdate(_dataContext);
             if (streamingAllowed && _workbook instanceof XSSFWorkbook) {
                 _workbook = new SXSSFWorkbook((XSSFWorkbook) _workbook);
             }

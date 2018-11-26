@@ -29,6 +29,7 @@ import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.FontUnderline;
+import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.model.StylesTable;
@@ -47,15 +48,19 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * XML handler for transforming a sheet into rows. Uses an
- * {@link XlsxRowCallback} to publish identified rows.
+ * XML handler for transforming a sheet into rows. Uses an {@link XlsxRowCallback} to publish identified rows.
  */
 final class XlsxSheetToRowsHandler extends DefaultHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(XlsxSheetToRowsHandler.class);
 
     private static enum XssfDataType {
-        BOOL, ERROR, FORMULA, INLINESTR, SSTINDEX, NUMBER,
+        BOOL,
+        ERROR,
+        FORMULA,
+        INLINESTR,
+        SSTINDEX,
+        NUMBER,
     }
 
     // global variables
@@ -150,12 +155,12 @@ final class XlsxSheetToRowsHandler extends DefaultHandler {
                 _dataType = XssfDataType.FORMULA;
             }
 
-            String cellStyleStr = attributes.getValue("s");
+            final String cellStyleStr = attributes.getValue("s");
             if (cellStyleStr != null) {
                 // It's a number, but almost certainly one
                 // with a special style or format
-                int styleIndex = Integer.parseInt(cellStyleStr);
-                XSSFCellStyle style = _stylesTable.getStyleAt(styleIndex);
+                final int styleIndex = Integer.parseInt(cellStyleStr);
+                final XSSFCellStyle style = _stylesTable.getStyleAt(styleIndex);
 
                 configureStyle(style);
 
@@ -186,8 +191,8 @@ final class XlsxSheetToRowsHandler extends DefaultHandler {
         }
 
         if (style.getFillPatternEnum() == FillPatternType.SOLID_FOREGROUND) {
-            XSSFColor fillForegroundXSSFColor = style.getFillForegroundXSSFColor();
-            String argb = fillForegroundXSSFColor.getARGBHex();
+            final XSSFColor fillForegroundXSSFColor = style.getFillForegroundXSSFColor();
+            final String argb = fillForegroundXSSFColor.getARGBHex();
             if (argb != null) {
                 _style.background(argb.substring(2));
             }
@@ -199,7 +204,7 @@ final class XlsxSheetToRowsHandler extends DefaultHandler {
             _style.fontSize(fontHeight, SizeUnit.PT);
         }
 
-        XSSFColor fontColor = style.getFont().getXSSFColor();
+        final XSSFColor fontColor = style.getFont().getXSSFColor();
         if (fontColor != null) {
             String argbHex = fontColor.getARGBHex();
             if (argbHex != null) {
@@ -265,7 +270,7 @@ final class XlsxSheetToRowsHandler extends DefaultHandler {
         switch (_dataType) {
 
         case BOOL:
-            char first = _value.charAt(0);
+            final char first = _value.charAt(0);
             return first == '0' ? "false" : "true";
         case ERROR:
             logger.warn("Error-cell occurred: {}", _value);
@@ -273,19 +278,19 @@ final class XlsxSheetToRowsHandler extends DefaultHandler {
         case FORMULA:
             return _value.toString();
         case INLINESTR:
-            XSSFRichTextString rtsi = new XSSFRichTextString(_value.toString());
+            final XSSFRichTextString rtsi = new XSSFRichTextString(_value.toString());
             return rtsi.toString();
         case SSTINDEX:
-            String sstIndex = _value.toString();
-            int idx = Integer.parseInt(sstIndex);
-            XSSFRichTextString rtss = new XSSFRichTextString(_sharedStringTable.getEntryAt(idx));
-            return rtss.toString();
+            final String sstIndex = _value.toString();
+            final int idx = Integer.parseInt(sstIndex);
+            final RichTextString item = _sharedStringTable.getItemAt(idx);
+            return item.getString();
         case NUMBER:
             final String numberString = _value.toString();
             if (_formatString != null) {
-                DataFormatter formatter = getDataFormatter();
+                final DataFormatter formatter = getDataFormatter();
                 if (HSSFDateUtil.isADateFormat(_formatIndex, _formatString)) {
-                    Date date = DateUtil.getJavaDate(Double.parseDouble(numberString));
+                    final Date date = DateUtil.getJavaDate(Double.parseDouble(numberString));
                     return DateUtils.createDateFormat().format(date);
                 }
                 return formatter.formatRawCellContents(Double.parseDouble(numberString), _formatIndex, _formatString);
