@@ -18,16 +18,19 @@
  */
 package org.apache.metamodel.hbase;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.ColumnFamilyDescriptorBuilder;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.TableDescriptorBuilder;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
@@ -50,9 +53,8 @@ public class HBaseDataContextTest extends HBaseTestCase {
         final Table table = getDataContext().getDefaultSchema().getTableByName(TABLE_NAME);
         assertNotNull(table);
 
-        assertEquals("[" + HBaseDataContext.FIELD_ID + ", " + CF_BAR + ", " + CF_FOO + "]", Arrays.toString(table
-                .getColumnNames()
-                .toArray()));
+        assertEquals("[" + HBaseDataContext.FIELD_ID + ", " + CF_BAR + ", " + CF_FOO + "]",
+                Arrays.toString(table.getColumnNames().toArray()));
         assertEquals(HBaseColumn.DEFAULT_COLUMN_TYPE_FOR_COLUMN_FAMILIES, table.getColumn(1).getType());
 
         // insert two records
@@ -75,20 +77,16 @@ public class HBaseDataContextTest extends HBaseTestCase {
         final String columnName3 = CF_BAR + ":" + Q_HEY;
         final String[] columnNames = new String[] { columnName1, columnName2, columnName3 };
         final ColumnType[] columnTypes = new ColumnType[] { ColumnType.MAP, ColumnType.VARCHAR, ColumnType.VARCHAR };
-        final SimpleTableDef[] tableDefinitions = new SimpleTableDef[] { new SimpleTableDef(TABLE_NAME, columnNames,
-                columnTypes) };
+        final SimpleTableDef[] tableDefinitions =
+                new SimpleTableDef[] { new SimpleTableDef(TABLE_NAME, columnNames, columnTypes) };
         setDataContext(new HBaseDataContext(new HBaseConfiguration("SCH", getZookeeperHostname(), getZookeeperPort(),
                 tableDefinitions, ColumnType.VARCHAR)));
 
-        try (final DataSet dataSet2 = getDataContext()
-                .query()
-                .from(TABLE_NAME)
-                .select(columnName1, columnName2, columnName3)
-                .execute()) {
+        try (final DataSet dataSet2 =
+                getDataContext().query().from(TABLE_NAME).select(columnName1, columnName2, columnName3).execute()) {
             assertTrue(dataSet2.next());
-            assertEquals("Row[values=[{" + Q_HELLO + "=" + V_WORLD + "}, " + V_THERE + ", " + V_YO + "]]", dataSet2
-                    .getRow()
-                    .toString());
+            assertEquals("Row[values=[{" + Q_HELLO + "=" + V_WORLD + "}, " + V_THERE + ", " + V_YO + "]]",
+                    dataSet2.getRow().toString());
             assertTrue(dataSet2.next());
             assertEquals("Row[values=[{}, " + V_YOU + ", null]]", dataSet2.getRow().toString());
             assertFalse(dataSet2.next());
@@ -102,11 +100,8 @@ public class HBaseDataContextTest extends HBaseTestCase {
         }
 
         // query only id
-        try (final DataSet dataSet4 = getDataContext()
-                .query()
-                .from(TABLE_NAME)
-                .select(HBaseDataContext.FIELD_ID)
-                .execute()) {
+        try (final DataSet dataSet4 =
+                getDataContext().query().from(TABLE_NAME).select(HBaseDataContext.FIELD_ID).execute()) {
             assertTrue(dataSet4.next());
             assertEquals("Row[values=[" + RK_1 + "]]", dataSet4.getRow().toString());
             assertTrue(dataSet4.next());
@@ -115,13 +110,8 @@ public class HBaseDataContextTest extends HBaseTestCase {
         }
 
         // primary key lookup query - using GET
-        try (final DataSet dataSet5 = getDataContext()
-                .query()
-                .from(TABLE_NAME)
-                .select(HBaseDataContext.FIELD_ID)
-                .where(HBaseDataContext.FIELD_ID)
-                .eq(RK_1)
-                .execute()) {
+        try (final DataSet dataSet5 = getDataContext().query().from(TABLE_NAME).select(HBaseDataContext.FIELD_ID)
+                .where(HBaseDataContext.FIELD_ID).eq(RK_1).execute()) {
             assertTrue(dataSet5.next());
             assertEquals("Row[values=[" + RK_1 + "]]", dataSet5.getRow().toString());
             assertFalse(dataSet5.next());
@@ -155,10 +145,10 @@ public class HBaseDataContextTest extends HBaseTestCase {
             } else {
                 // Create table
                 System.out.println("Creating table");
-                final HTableDescriptor tableDescriptor = new HTableDescriptor(tableName);
-                tableDescriptor.addFamily(new HColumnDescriptor(CF_FOO.getBytes()));
-                tableDescriptor.addFamily(new HColumnDescriptor(CF_BAR.getBytes()));
-                admin.createTable(tableDescriptor);
+                final TableDescriptorBuilder tableDescriptor = TableDescriptorBuilder.newBuilder(tableName);
+                tableDescriptor.setColumnFamily(ColumnFamilyDescriptorBuilder.of(CF_FOO.getBytes()));
+                tableDescriptor.setColumnFamily(ColumnFamilyDescriptorBuilder.of(CF_BAR.getBytes()));
+                admin.createTable(tableDescriptor.build());
                 System.out.println("Created table");
             }
         }

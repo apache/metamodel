@@ -21,15 +21,16 @@ package org.apache.metamodel.hbase;
 import java.io.IOException;
 import java.util.Set;
 
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.ColumnFamilyDescriptor;
+import org.apache.hadoop.hbase.client.ColumnFamilyDescriptorBuilder;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.client.TableDescriptorBuilder;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.metamodel.MetaModelException;
 import org.slf4j.Logger;
@@ -155,15 +156,16 @@ final class HBaseClient {
         }
         try (final Admin admin = _connection.getAdmin()) {
             final TableName hBasetableName = TableName.valueOf(tableName);
-            final HTableDescriptor tableDescriptor = new HTableDescriptor(hBasetableName);
+            final TableDescriptorBuilder tableBuilder = TableDescriptorBuilder.newBuilder(hBasetableName);
             // Add all columnFamilies to the tableDescriptor.
-            for (final String columnFamilie : columnFamilies) {
+            for (final String columnFamily : columnFamilies) {
                 // The ID-column isn't needed because, it will automatically be created.
-                if (!columnFamilie.equals(HBaseDataContext.FIELD_ID)) {
-                    tableDescriptor.addFamily(new HColumnDescriptor(columnFamilie));
+                if (!columnFamily.equals(HBaseDataContext.FIELD_ID)) {
+                    final ColumnFamilyDescriptor columnDescriptor = ColumnFamilyDescriptorBuilder.of(columnFamily);
+                    tableBuilder.setColumnFamily(columnDescriptor);
                 }
             }
-            admin.createTable(tableDescriptor);
+            admin.createTable(tableBuilder.build());
         } catch (IOException e) {
             throw new MetaModelException(e);
         }

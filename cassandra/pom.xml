@@ -9,7 +9,9 @@
 	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
 	OF ANY KIND, either express or implied. See the License for the specific 
 	language governing permissions and limitations under the License. -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<parent>
 		<artifactId>MetaModel</artifactId>
 		<groupId>org.apache.metamodel</groupId>
@@ -20,8 +22,8 @@
 	<name>MetaModel module for Apache Cassandra database</name>
 
 	<properties>
-		<cassandra.driver.latest.version>3.0.2</cassandra.driver.latest.version>
-		<cassandraunit.latest.version>2.2.2.1</cassandraunit.latest.version>
+		<cassandra.driver.latest.version>3.6.0</cassandra.driver.latest.version>
+		<cassandraunit.latest.version>3.5.0.1</cassandraunit.latest.version>
 	</properties>
 
 	<dependencies>
@@ -49,8 +51,9 @@
 		</dependency>
 		<!-- test -->
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.2.3</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

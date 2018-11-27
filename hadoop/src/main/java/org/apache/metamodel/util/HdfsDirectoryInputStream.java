@@ -46,7 +46,7 @@ class HdfsDirectoryInputStream extends AbstractDirectoryInputStream<FileStatus> 
                 @Override
                 public boolean accept(final Path path) {
                     try {
-                        return _fs.isFile(path);
+                        return _fs.getFileStatus(path).isFile();
                     } catch (IOException e) {
                         return false;
                     }

@@ -23,6 +23,9 @@ import org.apache.metamodel.schema.MutableColumn;
 import org.apache.metamodel.schema.Table;
 
 final class HBaseColumn extends MutableColumn {
+    
+    private static final long serialVersionUID = 1L;
+    
     public static final ColumnType DEFAULT_COLUMN_TYPE_FOR_ID_COLUMN = ColumnType.BINARY;
     public static final ColumnType DEFAULT_COLUMN_TYPE_FOR_COLUMN_FAMILIES = ColumnType.LIST;
 

@@ -66,7 +66,6 @@ public class OracleQueryRewriterTest {
     public void testOffsetFetchConstruct() {
         final int offset = 1000;
         final int rows = 100;
-        final String where = "x > 1";
 
         final String offsetClause = " OFFSET " + (offset - 1) + " ROWS";
         final String fetchClause = " FETCH NEXT " + rows + " ROWS ONLY";

@@ -17,17 +17,19 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sshwagon.version>2.6</sshwagon.version>
 		<javadoc.version>2.10.3</javadoc.version>
-		<slf4j.version>1.7.7</slf4j.version>
+		<slf4j.version>1.7.25</slf4j.version>
 		<junit.version>4.12</junit.version>
-		<guava.version>16.0.1</guava.version>
-		<hadoop.version>2.6.0</hadoop.version>
-		<jackson.version>2.6.3</jackson.version>
+		<guava.version>27.0.1-jre</guava.version>
+		<hadoop.version>3.1.1</hadoop.version>
+		<jackson.version>2.6.7</jackson.version>
 		<easymock.version>3.2</easymock.version>
 		<spring.version>4.2.6.RELEASE</spring.version>
 		<httpcomponents.version>4.4.1</httpcomponents.version>
@@ -316,8 +318,11 @@ under the License.
 										<exclude>stax:stax-api:*</exclude>
 										<exclude>javax.xml.stream:stax-api</exclude>
 
-										<!-- findbugs-annotations is overlapping with annotations -->
+										<!-- findbugs-annotations is overlapping with net.sourceforge.findbugs:annotations -->
 										<exclude>com.github.stephenc.findbugs:findbugs-annotations:*</exclude>
+
+										<!-- net.jcip:jcip-annotations is overlapping with net.sourceforge.findbugs:annotations -->
+										<exclude>net.jcip:jcip-annotations</exclude>
 									</excludes>
 								</bannedDependencies>
 							</rules>
@@ -389,7 +394,8 @@ under the License.
 					<artifactId>apache-rat-plugin</artifactId>
 					<configuration>
 						<licenses>
-							<license implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
+							<license
+								implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
 								<licenseFamilyCategory>ASL20</licenseFamilyCategory>
 								<licenseFamilyName>Apache Software License, 2.0</licenseFamilyName>
 								<notes>Single licensed ASL v2.0</notes>
@@ -577,28 +583,28 @@ under the License.
 				<artifactId>hsqldb</artifactId>
 				<version>1.8.0.10</version>
 			</dependency>
-			
+
 			<!-- Spring -->
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-core</artifactId>
 				<version>${spring.version}</version>
-			    <exclusions>
-			    	<exclusion>
-			    		<groupId>commons-logging</groupId>
-			    		<artifactId>commons-logging</artifactId>
-			    	</exclusion>
-			    </exclusions>
+				<exclusions>
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
-			    <groupId>org.springframework</groupId>
-			    <artifactId>spring-context</artifactId>
-			    <version>${spring.version}</version>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>${spring.version}</version>
 			</dependency>
 			<dependency>
-			    <groupId>org.springframework</groupId>
-			    <artifactId>spring-test</artifactId>
-			    <version>${spring.version}</version>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-test</artifactId>
+				<version>${spring.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
@@ -615,6 +621,10 @@ under the License.
 					<exclusion>
 						<artifactId>jetty-util</artifactId>
 						<groupId>org.mortbay.jetty</groupId>
+					</exclusion>
+					<exclusion>
+						<groupId>net.jcip</groupId>
+						<artifactId>jcip-annotations</artifactId>
 					</exclusion>
 					<exclusion>
 						<groupId>com.github.stephenc.findbugs</groupId>
