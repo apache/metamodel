@@ -317,6 +317,9 @@ under the License.
 										<!-- stax-api is overlapping with xml-apis -->
 										<exclude>stax:stax-api:*</exclude>
 										<exclude>javax.xml.stream:stax-api</exclude>
+										
+										<!-- codehaus woodstox is overlapping with FasterXML woodstox -->
+										<exclude>org.codehaus.woodstox:woodstox-core-asl:*</exclude>
 
 										<!-- findbugs-annotations is overlapping with net.sourceforge.findbugs:annotations -->
 										<exclude>com.github.stephenc.findbugs:findbugs-annotations:*</exclude>
