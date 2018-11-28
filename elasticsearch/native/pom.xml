@@ -19,6 +19,20 @@
 
 	<artifactId>MetaModel-elasticsearch-native</artifactId>
 	<name>MetaModel module for ElasticSearch via native (Node or Transport) client</name>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<configuration>
+						<runOrder>alphabetical</runOrder>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>	
+	</build>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
