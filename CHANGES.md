@@ -1,6 +1,7 @@
 ### Apache MetaModel 5.x (WIP)
 
  * [METAMODEL-1205] - Updated build and dependencies to be JDK8-11 compatible. Important updates include Guava, POI, Cassandra, Hadoop.
+ * [METAMODEL-1206] - Solved Maven version dependent unit test issues in ElasticSearch-native module.
 
 ### Apache MetaModel 5.1.1
 
