@@ -16,15 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.metamodel.elasticsearch.nativeclient;
+package org.apache.metamodel.elasticsearch.common;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.apache.metamodel.elasticsearch.common.ElasticSearchMetaData;
-import org.apache.metamodel.elasticsearch.common.ElasticSearchMetaDataParser;
 import org.apache.metamodel.schema.ColumnType;
 import org.elasticsearch.common.collect.MapBuilder;
 
