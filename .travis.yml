@@ -1,7 +1,10 @@
 sudo: false
 language: java
 jdk:
+  - openjdk8
   - oraclejdk8
+  - oraclejdk9
+  - oraclejdk11
   
 before_install:
   # copy integration test config
