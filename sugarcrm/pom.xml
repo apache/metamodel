@@ -172,6 +172,10 @@ under the License.
 					<artifactId>stax-api</artifactId>
 				</exclusion>
 				<exclusion>
+					<groupId>com.sun.activation</groupId>
+					<artifactId>javax.activation</artifactId>
+				</exclusion>
+				<exclusion>
 					<groupId>org.codehaus.woodstox</groupId>
 					<artifactId>woodstox-core-asl</artifactId>
 				</exclusion>

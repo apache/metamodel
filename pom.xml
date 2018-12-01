@@ -326,6 +326,9 @@ under the License.
 
 										<!-- net.jcip:jcip-annotations is overlapping with net.sourceforge.findbugs:annotations -->
 										<exclude>net.jcip:jcip-annotations</exclude>
+										
+										<!-- com.sun.activation:javax.activation is overlapping with javax.activation:javax.activation-api -->
+										<exclude>com.sun.activation:javax.activation</exclude>
 									</excludes>
 								</bannedDependencies>
 							</rules>
