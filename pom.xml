@@ -17,9 +17,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,11 +43,11 @@ under the License.
 		<url>https://git-wip-us.apache.org/repos/asf?p=metamodel.git</url>
 		<connection>scm:git:http://git-wip-us.apache.org/repos/asf/metamodel.git</connection>
 		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/metamodel.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>MetaModel-5.2.0</tag>
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
 	<artifactId>MetaModel</artifactId>
-	<version>5.1.2-SNAPSHOT</version>
+	<version>5.2.0</version>
 	<name>MetaModel</name>
 	<description>MetaModel is a library that encapsulates the differences and enhances 
 		the capabilities of different datastores. Rich querying abilities are
@@ -400,8 +398,7 @@ under the License.
 					<artifactId>apache-rat-plugin</artifactId>
 					<configuration>
 						<licenses>
-							<license
-								implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
+							<license implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
 								<licenseFamilyCategory>ASL20</licenseFamilyCategory>
 								<licenseFamilyName>Apache Software License, 2.0</licenseFamilyName>
 								<notes>Single licensed ASL v2.0</notes>
