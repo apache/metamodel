@@ -289,13 +289,6 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "retrieve schema and catalog metadata", JdbcActionType.METADATA);
         } finally {
-            if(rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
             close(null);
         }
         return result;
@@ -587,13 +580,6 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } catch (SQLException e) {
             logger.error("Error retrieving catalog metadata", e);
         } finally {
-            if(rs != null){
-                try {
-                    rs.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
             close(connection);
             logger.debug("Retrieved {} catalogs", catalogs.size());
         }
@@ -769,9 +755,6 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         ResultSet rs = metaData.getTables(_catalogName, null, null, JdbcUtils.getTableTypesAsStrings(_tableTypes));
         while (rs.next()) {
             schemas.add(rs.getString("TABLE_SCHEM"));
-        }
-        if(rs != null){
-            rs.close();
         }
         return schemas;
     }
