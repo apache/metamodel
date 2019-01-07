@@ -1,3 +1,7 @@
+### Apache MetaModel 5.2.1 (WIP)
+
+ * [METAMODEL-1208] - Fixed closing of JDBC ResultSets when getting certain metadata.
+
 ### Apache MetaModel 5.2.0
 
  * [METAMODEL-1205] - Support for Java / JDK versions 8, 9, 10 and 11.
