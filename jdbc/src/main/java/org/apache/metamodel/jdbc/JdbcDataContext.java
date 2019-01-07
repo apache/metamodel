@@ -289,7 +289,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "retrieve schema and catalog metadata", JdbcActionType.METADATA);
         } finally {
-            close(null);
+            FileHelper.safeClose(rs);
         }
         return result;
     }
@@ -580,6 +580,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } catch (SQLException e) {
             logger.error("Error retrieving catalog metadata", e);
         } finally {
+            FileHelper.safeClose(rs);
             close(connection);
             logger.debug("Retrieved {} catalogs", catalogs.size());
         }
@@ -752,9 +753,14 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         // Distinct schema names. metaData.getTables() is a denormalized
         // resultset
         Set<String> schemas = new HashSet<>();
-        ResultSet rs = metaData.getTables(_catalogName, null, null, JdbcUtils.getTableTypesAsStrings(_tableTypes));
-        while (rs.next()) {
-            schemas.add(rs.getString("TABLE_SCHEM"));
+        ResultSet rs = null;
+        try {
+            rs = metaData.getTables(_catalogName, null, null, JdbcUtils.getTableTypesAsStrings(_tableTypes));
+            while (rs.next()) {
+                schemas.add(rs.getString("TABLE_SCHEM"));
+            }
+        }finally {
+            FileHelper.safeClose(rs);
         }
         return schemas;
     }
@@ -791,13 +797,17 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
                     result.add(name);
                 }
             } else {
-                ResultSet rs = metaData.getSchemas();
-                while (rs.next()) {
-                    String schemaName = rs.getString(1);
-                    logger.debug("Found schemaName: {}", schemaName);
-                    result.add(schemaName);
+                ResultSet rs = null;
+                try {
+                    rs = metaData.getSchemas();
+                    while (rs.next()) {
+                        String schemaName = rs.getString(1);
+                        logger.debug("Found schemaName: {}", schemaName);
+                        result.add(schemaName);
+                    }
+                }finally {
+                    FileHelper.safeClose(rs);
                 }
-                rs.close();
             }
 
             if (DATABASE_PRODUCT_MYSQL.equals(_databaseProductName)) {
