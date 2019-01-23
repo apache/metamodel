@@ -759,7 +759,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             while (rs.next()) {
                 schemas.add(rs.getString("TABLE_SCHEM"));
             }
-        }finally {
+        } finally {
             FileHelper.safeClose(rs);
         }
         return schemas;
@@ -805,7 +805,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
                         logger.debug("Found schemaName: {}", schemaName);
                         result.add(schemaName);
                     }
-                }finally {
+                } finally {
                     FileHelper.safeClose(rs);
                 }
             }
