@@ -106,18 +106,20 @@ public class PostgresqlQueryRewriter extends LimitOffsetQueryRewriter {
 
     @Override
     public Object getResultSetValue(ResultSet resultSet, int columnIndex, Column column) throws SQLException {
-        switch (column.getNativeType()) {
-        case "json":
-        case "jsonb":
-            assert column.getType() == ColumnType.MAP;
-            final String stringValue = resultSet.getString(columnIndex);
-            if (stringValue == null) {
-                return null;
-            }
-            try {
-                return jsonObjectMapper.readValue(stringValue, Map.class);
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Unable to read string as JSON: " + stringValue);
+        if (column.getNativeType() != null) {
+            switch (column.getNativeType()) {
+            case "json":
+            case "jsonb":
+                assert column.getType() == ColumnType.MAP;
+                final String stringValue = resultSet.getString(columnIndex);
+                if (stringValue == null) {
+                    return null;
+                }
+                try {
+                    return jsonObjectMapper.readValue(stringValue, Map.class);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Unable to read string as JSON: " + stringValue);
+                }
             }
         }
         return super.getResultSetValue(resultSet, columnIndex, column);
