@@ -18,7 +18,12 @@
  */
 package org.apache.metamodel.jdbc.dialects;
 
+import java.util.List;
+import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.query.FromItem;
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.ColumnType;
 
 /**
@@ -26,8 +31,139 @@ import org.apache.metamodel.schema.ColumnType;
  */
 public class HiveQueryRewriter extends DefaultQueryRewriter {
 
+    private int majorVersion;
+
     public HiveQueryRewriter(JdbcDataContext dataContext) {
         super(dataContext);
+        String version = dataContext.getDatabaseVersion();
+        String[] parts = version.split("\\.");
+        if(parts.length < 2) {
+            throw new RuntimeException("Illegal Hive Version: " + version + " (expected A.B.* format)");
+        } else {
+            majorVersion = Integer.valueOf(parts[0]);
+        }
+    }
+
+    @Override
+    public final boolean isFirstRowSupported(final Query query) {
+        switch (majorVersion){
+            case 2:
+            case 3:
+                return true;
+            default:
+                return super.isFirstRowSupported(query);
+        }
+    }
+
+    @Override
+    public final boolean isMaxRowsSupported() {
+        switch (majorVersion){
+            case 2:
+            case 3:
+                return true;
+            default:
+                return super.isMaxRowsSupported();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * If the Max rows and/or First row property of the query is set, then we
+     * will use the database's LIMIT and OFFSET functions.
+     */
+    @Override
+    public String rewriteQuery(Query query) {
+        switch (majorVersion){
+            case 2:
+            case 3:
+                return rewriteQueryForHive2(query);
+            default:
+                return rewriteQueryForHive1(query);
+        }
+
+    }
+
+    private String rewriteQueryForHive1(Query query){
+
+        Integer maxRows = query.getMaxRows();
+        Integer firstRow = query.getFirstRow();
+
+        if(firstRow != null && firstRow > 1){
+            if(query.getOrderByClause().getItemCount() == 0){
+                throw new MetaModelException("OFFSET requires an ORDER BY clause");
+            }
+        }
+
+
+        if (maxRows == null && (firstRow == null || firstRow.intValue() == 1)) {
+            return super.rewriteQuery(query);
+        }
+
+        if ((firstRow == null || firstRow.intValue() == 1) && maxRows != null && maxRows > 0) {
+            // We prefer to use the "LIMIT n" approach, if
+            // firstRow is not specified.
+            return super.rewriteQuery(query) + " LIMIT " + maxRows;
+        }
+
+        final Query innerQuery = query.clone();
+        innerQuery.setFirstRow(null);
+        innerQuery.setMaxRows(null);
+
+        final Query outerQuery = new Query();
+        final FromItem subQuerySelectItem = new FromItem(innerQuery).setAlias("metamodel_subquery");
+        outerQuery.from(subQuerySelectItem);
+
+        final List<SelectItem> innerSelectItems = innerQuery.getSelectClause().getItems();
+        for (SelectItem selectItem : innerSelectItems) {
+            outerQuery.select(new SelectItem(selectItem, subQuerySelectItem));
+        }
+
+
+        final String rewrittenOrderByClause = rewriteOrderByClause(innerQuery, innerQuery.getOrderByClause());
+        final String rowOver = "ROW_NUMBER() " + "OVER(" + rewrittenOrderByClause + ")";
+        innerQuery.select(new SelectItem(rowOver, "metamodel_row_number"));
+        innerQuery.getOrderByClause().removeItems();
+
+        final String baseQueryString = rewriteQuery(outerQuery);
+
+        if (maxRows == null) {
+            return baseQueryString + " WHERE metamodel_row_number > " + (firstRow - 1);
+        }
+
+        return baseQueryString + " WHERE metamodel_row_number BETWEEN " + firstRow + " AND "
+                + (firstRow - 1 + maxRows);
+
+    }
+
+    private String rewriteQueryForHive2(Query query){
+        Integer maxRows = query.getMaxRows();
+        Integer firstRow = query.getFirstRow();
+
+        if(firstRow != null && firstRow > 1){
+            if(query.getOrderByClause().getItemCount() == 0){
+                throw new MetaModelException("OFFSET requires an ORDER BY clause");
+            }
+        }
+
+        String queryString = super.rewriteQuery(query);
+
+        if (maxRows != null || firstRow != null) {
+
+            if (maxRows == null) {
+                maxRows = Integer.MAX_VALUE;
+            }
+            queryString = queryString + " LIMIT " + maxRows;
+
+            if (firstRow != null && firstRow > 1) {
+                // offset is 0-based
+                int offset = firstRow - 1;
+                queryString = queryString + " OFFSET " + offset;
+            }
+        }
+
+        return queryString;
+
     }
 
     @Override
