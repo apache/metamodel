@@ -46,7 +46,7 @@ public class HiveQueryRewriter extends DefaultQueryRewriter {
 
     @Override
     public final boolean isFirstRowSupported(final Query query) {
-        switch (majorVersion){
+        switch (majorVersion) {
             case 2:
             case 3:
                 return true;
@@ -57,7 +57,7 @@ public class HiveQueryRewriter extends DefaultQueryRewriter {
 
     @Override
     public final boolean isMaxRowsSupported() {
-        switch (majorVersion){
+        switch (majorVersion) {
             case 2:
             case 3:
                 return true;
@@ -74,7 +74,7 @@ public class HiveQueryRewriter extends DefaultQueryRewriter {
      */
     @Override
     public String rewriteQuery(Query query) {
-        switch (majorVersion){
+        switch (majorVersion) {
             case 2:
             case 3:
                 return rewriteQueryForHive2(query);
@@ -84,13 +84,13 @@ public class HiveQueryRewriter extends DefaultQueryRewriter {
 
     }
 
-    private String rewriteQueryForHive1(Query query){
+    private String rewriteQueryForHive1(Query query) {
 
         Integer maxRows = query.getMaxRows();
         Integer firstRow = query.getFirstRow();
 
-        if(firstRow != null && firstRow > 1){
-            if(query.getOrderByClause().getItemCount() == 0){
+        if(firstRow != null && firstRow > 1) {
+            if(query.getOrderByClause().getItemCount() == 0) {
                 throw new MetaModelException("OFFSET requires an ORDER BY clause");
             }
         }
@@ -136,11 +136,11 @@ public class HiveQueryRewriter extends DefaultQueryRewriter {
 
     }
 
-    private String rewriteQueryForHive2(Query query){
+    private String rewriteQueryForHive2(Query query) {
         Integer maxRows = query.getMaxRows();
         Integer firstRow = query.getFirstRow();
 
-        if(firstRow != null && firstRow > 1){
+        if(firstRow != null && firstRow > 1) {
             if(query.getOrderByClause().getItemCount() == 0){
                 throw new MetaModelException("OFFSET requires an ORDER BY clause");
             }
