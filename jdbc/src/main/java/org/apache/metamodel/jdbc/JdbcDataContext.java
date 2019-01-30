@@ -48,6 +48,7 @@ import org.apache.metamodel.jdbc.JdbcUtils.JdbcActionType;
 import org.apache.metamodel.jdbc.dialects.DB2QueryRewriter;
 import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.H2QueryRewriter;
+import org.apache.metamodel.jdbc.dialects.Hive2QueryRewriter;
 import org.apache.metamodel.jdbc.dialects.HiveQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.HsqldbQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
@@ -231,7 +232,27 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } else if (DATABASE_PRODUCT_H2.equals(_databaseProductName)) {
             setQueryRewriter(new H2QueryRewriter(this));
         } else if (DATABASE_PRODUCT_HIVE.equals(_databaseProductName)) {
-            setQueryRewriter(new HiveQueryRewriter(this));
+            int majorVersion = 0;
+            String[] parts = databaseVersion.split("\\.");
+            if(parts.length < 2) {
+                logger.warn("Illegal Hive Version: " + databaseVersion + " (expected A.B.* format)");
+                parts[0] = "0";
+            } else {
+                majorVersion = Integer.valueOf(parts[0]);
+            }
+            switch (majorVersion){
+                case 1:
+                    setQueryRewriter(new HiveQueryRewriter(this));
+                    break;
+                case 2:
+                case 3:
+                    setQueryRewriter(new Hive2QueryRewriter(this));
+                    break;
+                default:
+                    setQueryRewriter(new HiveQueryRewriter(this));
+                    break;
+            }
+
         } else if (DATABASE_PRODUCT_SQLITE.equals(_databaseProductName)) {
             setQueryRewriter(new SQLiteQueryRewriter(this));
         } else {

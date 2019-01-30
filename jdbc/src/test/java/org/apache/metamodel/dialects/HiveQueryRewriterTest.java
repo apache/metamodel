@@ -21,8 +21,12 @@ package org.apache.metamodel.dialects;
 import static org.apache.metamodel.jdbc.JdbcDataContext.DATABASE_PRODUCT_HIVE;
 import static org.apache.metamodel.jdbc.JdbcDataContext.DATABASE_PRODUCT_SQLSERVER;
 
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
 import junit.framework.TestCase;
 import org.apache.metamodel.jdbc.JdbcDataContext;
+import org.apache.metamodel.jdbc.dialects.Hive2QueryRewriter;
 import org.apache.metamodel.jdbc.dialects.HiveQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.MysqlQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.SQLServerQueryRewriter;
@@ -45,8 +49,6 @@ public class HiveQueryRewriterTest extends TestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
-
     }
 
     public void testHive1SqlWithPagination() {
@@ -73,7 +75,7 @@ public class HiveQueryRewriterTest extends TestCase {
         EasyMock.expect(mockContext.getIdentifierQuoteString()).andReturn("quoteString").anyTimes();
 
         EasyMock.replay(mockContext);
-        HiveQueryRewriter qr = new HiveQueryRewriter(mockContext);
+        Hive2QueryRewriter qr = new Hive2QueryRewriter(mockContext);
 
         MutableColumn col1 = new MutableColumn("kkbh");
         MutableColumn col2 = new MutableColumn("kkmc");
