@@ -232,27 +232,27 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         } else if (DATABASE_PRODUCT_H2.equals(_databaseProductName)) {
             setQueryRewriter(new H2QueryRewriter(this));
         } else if (DATABASE_PRODUCT_HIVE.equals(_databaseProductName)) {
-            int majorVersion = 0;
+            int majorVersion = -1;
             String[] parts = databaseVersion.split("\\.");
-            if(parts.length < 2) {
+            if (parts.length < 2) {
                 logger.warn("Illegal Hive Version: " + databaseVersion + " (expected A.B.* format)");
-                parts[0] = "0";
             } else {
-                majorVersion = Integer.valueOf(parts[0]);
+                try {
+                    majorVersion = Integer.valueOf(parts[0]);
+                } catch (NumberFormatException ne) {
+                    logger.warn("Illegal Hive Major Version: " + databaseVersion + " (can not get major version)");
+                }
             }
-            switch (majorVersion){
-                case 1:
-                    setQueryRewriter(new HiveQueryRewriter(this));
-                    break;
-                case 2:
-                case 3:
-                    setQueryRewriter(new Hive2QueryRewriter(this));
-                    break;
-                default:
-                    setQueryRewriter(new HiveQueryRewriter(this));
-                    break;
+            if (majorVersion == -1) {
+                logger.warn("Illegal Hive Major Version :" + majorVersion + " can not decide which QueryRewrite to use, use DefaultQueryRewriter");
+                setQueryRewriter(new DefaultQueryRewriter(this));
+            } else if (majorVersion == 0 || majorVersion == 1) {
+                //version 0 or 1 use HiveQueryRewriter
+                setQueryRewriter(new HiveQueryRewriter(this));
+            } else if (majorVersion >= 2) {
+                //from version 2 support limit offset
+                setQueryRewriter(new Hive2QueryRewriter(this));
             }
-
         } else if (DATABASE_PRODUCT_SQLITE.equals(_databaseProductName)) {
             setQueryRewriter(new SQLiteQueryRewriter(this));
         } else {

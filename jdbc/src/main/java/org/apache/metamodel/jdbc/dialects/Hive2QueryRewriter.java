@@ -31,8 +31,6 @@ import org.apache.metamodel.schema.ColumnType;
  */
 public class Hive2QueryRewriter extends LimitOffsetQueryRewriter {
 
-    private int majorVersion;
-
     public Hive2QueryRewriter(JdbcDataContext dataContext) {
         super(dataContext);
     }
@@ -43,7 +41,7 @@ public class Hive2QueryRewriter extends LimitOffsetQueryRewriter {
             return "INT";
         }
 
-        if(columnType == ColumnType.STRING) {
+        if (columnType == ColumnType.STRING) {
             return "STRING";
         }
 
@@ -60,8 +58,8 @@ public class Hive2QueryRewriter extends LimitOffsetQueryRewriter {
         return false;
     }
     
-	@Override
-	public boolean isPrimaryKeySupported() {
-		return false;
-	}
+    @Override
+    public boolean isPrimaryKeySupported() {
+        return false;
+    }
 }

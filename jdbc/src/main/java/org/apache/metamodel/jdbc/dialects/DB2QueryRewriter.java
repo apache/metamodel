@@ -34,7 +34,7 @@ import org.apache.metamodel.util.TimeComparator;
 /**
  * Query rewriter for IBM DB2
  */
-public class DB2QueryRewriter extends DefaultQueryRewriter {
+public class DB2QueryRewriter extends RowNumberQueryRewriter {
 
     public DB2QueryRewriter(JdbcDataContext dataContext) {
         super(dataContext);
@@ -86,33 +86,7 @@ public class DB2QueryRewriter extends DefaultQueryRewriter {
             // ROW_NUMBER() AS metamodel_row_number
             // FROM [remainder of regular query])
             // WHERE metamodel_row_number BETWEEN [firstRow] and [maxRows];
-
-            final Query innerQuery = query.clone();
-            innerQuery.setFirstRow(null);
-            innerQuery.setMaxRows(null);
-
-            final Query outerQuery = new Query();
-            final FromItem subQuerySelectItem = new FromItem(innerQuery).setAlias("metamodel_subquery");
-            outerQuery.from(subQuerySelectItem);
-
-            final List<SelectItem> innerSelectItems = innerQuery.getSelectClause().getItems();
-            for (SelectItem selectItem : innerSelectItems) {
-                outerQuery.select(new SelectItem(selectItem, subQuerySelectItem));
-            }
-
-            final String rewrittenOrderByClause = rewriteOrderByClause(innerQuery, innerQuery.getOrderByClause());
-            final String rowOver = "ROW_NUMBER() " + "OVER(" + rewrittenOrderByClause + ")";
-            innerQuery.select(new SelectItem(rowOver, "metamodel_row_number"));
-            innerQuery.getOrderByClause().removeItems();
-
-            final String baseQueryString = rewriteQuery(outerQuery);
-
-            if (maxRows == null) {
-                return baseQueryString + " WHERE metamodel_row_number > " + (firstRow - 1);
-            }
-
-            return baseQueryString + " WHERE metamodel_row_number BETWEEN " + firstRow + " AND "
-                    + (firstRow - 1 + maxRows);
+            return getRowNumberSql(query, maxRows, firstRow);
         }
     }
 
