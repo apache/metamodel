@@ -25,6 +25,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -669,7 +671,17 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
                                     st.nextToken();
                                 }
                                 String lastToken = st.nextToken();
+                                if (lastToken.indexOf("?") != -1) {
+                                    lastToken = lastToken.substring(0, lastToken.indexOf("?"));
+                                }
+                                // Sorting schema names in order of decreasing length
 
+                                Collections.sort(schemaNames, new Comparator<String>() {
+                                    @Override
+                                    public int compare(String s1, String s2) {
+                                        return s2.length() - s1.length();
+                                    }
+                                });
                                 for (int i = 0; i < schemaNames.size() && !found; i++) {
                                     String schemaName = schemaNames.get(i);
                                     if (lastToken.indexOf(schemaName) != -1) {
