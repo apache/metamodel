@@ -35,7 +35,7 @@ under the License.
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-dynamodb</artifactId>
-			<version>1.11.81</version>
+			<version>1.11.500</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
