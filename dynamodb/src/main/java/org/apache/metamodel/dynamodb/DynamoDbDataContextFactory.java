@@ -40,8 +40,14 @@ public class DynamoDbDataContextFactory extends AbstractDataContextFactory {
 
     @Override
     public DataContext create(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry) {
-        final AmazonDynamoDB client =
-                AmazonDynamoDBClientBuilder.standard().withCredentials(getCredentials(properties)).build();
+        final AmazonDynamoDBClientBuilder clientBuilder =
+                AmazonDynamoDBClientBuilder.standard().withCredentials(getCredentials(properties));
+        final Object region = properties.toMap().get("region");
+        if (region != null && region instanceof String) {
+            clientBuilder.setRegion(region.toString());
+        }
+        
+        final AmazonDynamoDB client = clientBuilder.build();
         final SimpleTableDef[] tableDefs = properties.getTableDefs();
         return new DynamoDbDataContext(client, tableDefs);
     }
