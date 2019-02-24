@@ -43,8 +43,8 @@ public class DynamoDbDataContextFactory extends AbstractDataContextFactory {
         final AmazonDynamoDBClientBuilder clientBuilder =
                 AmazonDynamoDBClientBuilder.standard().withCredentials(getCredentials(properties));
         final Object region = properties.toMap().get("region");
-        if (region != null && region instanceof String) {
-            clientBuilder.setRegion(region.toString());
+        if (region instanceof String) {
+            clientBuilder.setRegion((String) region);
         }
         
         final AmazonDynamoDB client = clientBuilder.build();
