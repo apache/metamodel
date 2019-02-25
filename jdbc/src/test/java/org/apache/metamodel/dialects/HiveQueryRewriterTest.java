@@ -45,7 +45,6 @@ import org.junit.Assert;
 
 public class HiveQueryRewriterTest extends TestCase {
 
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -65,6 +64,7 @@ public class HiveQueryRewriterTest extends TestCase {
         Query q = new Query().from(new MutableTable("5_t_kk_kkxx")).select(col1).select(col2)
                 .where(col1, OperatorType.EQUALS_TO, "5207281832").orderBy(col1).setFirstRow(5).setMaxRows(9);
         String sql = qr.rewriteQuery(q);
+
         assertEquals(sql,"SELECT metamodel_subquery.kkbh, metamodel_subquery.kkmc FROM (SELECT kkbh, kkmc, ROW_NUMBER() OVER( ORDER BY kkbh ASC) AS metamodel_row_number FROM 5_t_kk_kkxx WHERE kkbh = '5207281832') metamodel_subquery WHERE metamodel_row_number BETWEEN 5 AND 13");
     }
 
@@ -82,6 +82,7 @@ public class HiveQueryRewriterTest extends TestCase {
         Query q = new Query().from(new MutableTable("5_t_kk_kkxx")).select(col1).select(col2)
                 .where(col1, OperatorType.EQUALS_TO, "5207281832").orderBy(col1).setFirstRow(5).setMaxRows(9);
         String sql = qr.rewriteQuery(q);
+
         assertEquals(sql,"SELECT kkbh, kkmc FROM 5_t_kk_kkxx WHERE kkbh = '5207281832' ORDER BY kkbh ASC LIMIT 9 OFFSET 4");
     }
 }

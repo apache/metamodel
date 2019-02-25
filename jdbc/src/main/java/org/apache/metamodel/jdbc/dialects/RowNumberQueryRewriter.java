@@ -49,7 +49,6 @@ public class RowNumberQueryRewriter extends DefaultQueryRewriter {
             outerQuery.select(new SelectItem(selectItem, subQuerySelectItem));
         }
 
-
         final String rewrittenOrderByClause = rewriteOrderByClause(innerQuery, innerQuery.getOrderByClause());
         final String rowOver = "ROW_NUMBER() OVER(" + rewrittenOrderByClause + ")";
         innerQuery.select(new SelectItem(rowOver, "metamodel_row_number"));
@@ -64,5 +63,4 @@ public class RowNumberQueryRewriter extends DefaultQueryRewriter {
         return baseQueryString + " WHERE metamodel_row_number BETWEEN " + firstRow + " AND "
                 + (firstRow - 1 + maxRows);
     }
-
 }

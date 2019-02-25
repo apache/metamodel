@@ -55,9 +55,6 @@ public class HiveQueryRewriter extends RowNumberQueryRewriter {
 
     }
 
-
-
-
     @Override
     public String rewriteColumnType(ColumnType columnType, Integer columnSize) {
         if (columnType == ColumnType.INTEGER) {
