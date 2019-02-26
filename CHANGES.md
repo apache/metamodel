@@ -2,6 +2,8 @@
 
  * [METAMODEL-1208] - Fixed closing of JDBC ResultSets when getting certain metadata.
  * [METAMODEL-156] - Fixed issue in selection of default schema when multiple schema names match substring of connection string.
+ * Improvement to Hive SQL dialect to support limit/offset pagination.
+ * Added DataContextFactory for DynamoDB connections. 
 
 ### Apache MetaModel 5.2.0
 
