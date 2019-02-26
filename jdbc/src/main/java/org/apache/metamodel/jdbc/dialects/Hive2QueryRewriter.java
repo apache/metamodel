@@ -29,30 +29,10 @@ import org.apache.metamodel.schema.ColumnType;
 /**
  * Query rewriter for Apache Hive
  */
-public class HiveQueryRewriter extends RowNumberQueryRewriter {
+public class Hive2QueryRewriter extends LimitOffsetQueryRewriter {
 
-    public HiveQueryRewriter(JdbcDataContext dataContext) {
+    public Hive2QueryRewriter(JdbcDataContext dataContext) {
         super(dataContext);
-    }
-
-    @Override
-    public String rewriteQuery(Query query) {
-
-        Integer maxRows = query.getMaxRows();
-        Integer firstRow = query.getFirstRow();
-
-        if (maxRows == null && (firstRow == null || firstRow.intValue() == 1)) {
-            return super.rewriteQuery(query);
-        }
-
-        if ((firstRow == null || firstRow.intValue() == 1) && maxRows != null && maxRows > 0) {
-            // We prefer to use the "LIMIT n" approach, if
-            // firstRow is not specified.
-            return super.rewriteQuery(query) + " LIMIT " + maxRows;
-        } else {
-            return getRowNumberSql(query, maxRows, firstRow);
-        }
-
     }
 
     @Override
@@ -61,7 +41,7 @@ public class HiveQueryRewriter extends RowNumberQueryRewriter {
             return "INT";
         }
 
-        if(columnType == ColumnType.STRING) {
+        if (columnType == ColumnType.STRING) {
             return "STRING";
         }
 
@@ -78,8 +58,8 @@ public class HiveQueryRewriter extends RowNumberQueryRewriter {
         return false;
     }
     
-	@Override
-	public boolean isPrimaryKeySupported() {
-		return false;
-	}
+    @Override
+    public boolean isPrimaryKeySupported() {
+        return false;
+    }
 }
