@@ -22,6 +22,10 @@ import org.apache.metamodel.jdbc.JdbcDataContext;
 
 /**
  * Query rewriter for Apache Impala
+ *
+ * Because Impala uses the same metadata store as Hive to record information about table structure and properties，
+ * so Impala provides a high degree of compatibility with the Hive Query Language (HiveQL) ;
+ * @see <a href="http://impala.apache.org/docs/build/html/topics/impala_langref.html">impala.apache.org</a>
  **/
 public class ImpalaQueryRewriter extends Hive2QueryRewriter{
 
