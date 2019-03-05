@@ -1,4 +1,4 @@
-### Apache MetaModel 5.2.1 (WIP)
+### Apache MetaModel 5.2.1
 
  * [METAMODEL-1208] - Fixed closing of JDBC ResultSets when getting certain metadata.
  * [METAMODEL-156] - Fixed issue in selection of default schema when multiple schema names match substring of connection string.
