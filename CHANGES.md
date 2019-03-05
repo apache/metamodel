@@ -4,6 +4,7 @@
  * [METAMODEL-156] - Fixed issue in selection of default schema when multiple schema names match substring of connection string.
  * Improvement to Hive SQL dialect to support limit/offset pagination.
  * Added DataContextFactory for DynamoDB connections. 
+ * Added SQL rewriting rules for Impala.
 
 ### Apache MetaModel 5.2.0
 
