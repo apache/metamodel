@@ -40,9 +40,9 @@ under the License.
 		<version>21</version>
 	</parent>
 	<scm>
-		<url>https://git-wip-us.apache.org/repos/asf?p=metamodel.git</url>
-		<connection>scm:git:http://git-wip-us.apache.org/repos/asf/metamodel.git</connection>
-		<developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/metamodel.git</developerConnection>
+		<url>https://gitbox.apache.org/repos/asf/metamodel.git</url>
+		<connection>https://gitbox.apache.org/repos/asf/metamodel.git</connection>
+		<developerConnection>scm:git:https://gitbox.apache.org/repos/asf/metamodel.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
