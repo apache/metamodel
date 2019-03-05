@@ -54,6 +54,7 @@ import org.apache.metamodel.jdbc.dialects.Hive2QueryRewriter;
 import org.apache.metamodel.jdbc.dialects.HiveQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.HsqldbQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
+import org.apache.metamodel.jdbc.dialects.ImpalaQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.MysqlQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.OracleQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.PostgresqlQueryRewriter;
@@ -97,6 +98,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     public static final String DATABASE_PRODUCT_ORACLE = "Oracle";
     public static final String DATABASE_PRODUCT_HIVE = "Apache Hive";
     public static final String DATABASE_PRODUCT_SQLITE = "SQLite";
+    public static final String DATABASE_PRODUCT_IMPALA = "Impala";
 
     public static final ColumnType COLUMN_TYPE_CLOB_AS_STRING =
             new ColumnTypeImpl("CLOB", SuperColumnType.LITERAL_TYPE, String.class, true);
@@ -257,7 +259,9 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             }
         } else if (DATABASE_PRODUCT_SQLITE.equals(_databaseProductName)) {
             setQueryRewriter(new SQLiteQueryRewriter(this));
-        } else {
+        } else if (DATABASE_PRODUCT_IMPALA.equals(_databaseProductName)) {
+            setQueryRewriter(new ImpalaQueryRewriter(this));
+        }else {
             setQueryRewriter(new DefaultQueryRewriter(this));
         }
 
