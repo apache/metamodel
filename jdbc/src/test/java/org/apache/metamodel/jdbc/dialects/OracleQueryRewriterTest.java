@@ -93,6 +93,14 @@ public class OracleQueryRewriterTest {
     }
 
     @Test
+    public void testOffsetFetchVersionSpecialCaseCheck() throws SQLException {
+        setMetaData(DATABASE_PRODUCT_ORACLE, "Oracle Database 11g Enterprise Edition Release 11.2.0.1.0 - 64bit Production");
+
+        Query query = new Query().from(table).select(column).setFirstRow(1000).setMaxRows(100);
+        Assert.assertEquals("The query shouldn't be rewritten.", query.toSql(), qr.rewriteQuery(query));
+    }
+
+    @Test
     public void testOffsetFetchVersionIsNull() throws SQLException {
         setMetaData(DATABASE_PRODUCT_ORACLE, null);
 
