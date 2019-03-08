@@ -31,8 +31,6 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.query.AbstractQueryClause;
@@ -466,25 +464,9 @@ public abstract class AbstractQueryRewriter implements IQueryRewriter {
     protected boolean isSupportedVersion(String databaseProductName, int databaseVersion) {
 
         if(databaseProductName.equals(_dataContext.getDatabaseProductName())
-                && databaseVersion <= getDatabaseMajorVersion(_dataContext.getDatabaseVersion())) {
+                && databaseVersion <= VersionParser.getMajorVersion(_dataContext.getDatabaseVersion())) {
             return true;
         }
         return false;
-    }
-
-    private int getDatabaseMajorVersion(String version) {
-        int firstDot = -1;
-        if(version != null) {
-            Matcher matcher = Pattern.compile("[0-9]+(\\.[0-9]+)+").matcher(version);
-            if (matcher.find()){
-                version = matcher.group();
-                firstDot = version.indexOf('.');
-            }
-        }
-        if(firstDot >= 0) {
-            return Integer.valueOf(version.substring(0, firstDot));
-        } else {
-            return 0;
-        }
     }
 }
