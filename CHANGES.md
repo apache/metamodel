@@ -1,3 +1,7 @@
+### Apache MetaModel [WIP]
+
+ * [METAMODEL-1207] - Fix JDBC Database version parser edge cases.
+
 ### Apache MetaModel 5.2.1
 
  * [METAMODEL-1208] - Fixed closing of JDBC ResultSets when getting certain metadata.
