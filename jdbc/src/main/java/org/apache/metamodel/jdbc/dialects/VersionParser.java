@@ -23,12 +23,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Responsible to parse an input string and return a substring that
- * represents the version based on {@link VERSION_REGEX}.
+ * This class is responsible for parsing version numbers in software products.
+ * Version strings are expected to be numeric and dot-separated.
  */
 class VersionParser {
-    private static final String VERSION_REGEX = "[0-9]+(\\.[0-9]+)+";
+    private static final Pattern versionPattern = Pattern.compile( "[0-9]+(\\.[0-9]+)+");
 
+    private VersionParser(){}
 
     /**
      * @param stringToParse the string that contains the version.
@@ -36,7 +37,7 @@ class VersionParser {
      */
     public static String getVersion(String stringToParse){
         if(stringToParse != null) {
-            Matcher matcher = Pattern.compile(VERSION_REGEX).matcher(stringToParse);
+            Matcher matcher = versionPattern.matcher(stringToParse);
             if (matcher.find()){
                 return matcher.group();
             }
@@ -56,6 +57,6 @@ class VersionParser {
                 return Integer.valueOf(fullVersion.substring(0, firstDot));
             }
         }
-        return 0;
+        return -1;
     }
 }
