@@ -17,15 +17,17 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<parent>
 		<artifactId>MetaModel</artifactId>
 		<groupId>org.apache.metamodel</groupId>
 		<version>5.2.2-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>MetaModel-kafka</artifactId>
-	<name>MetaModel module for Apache Kafka</name>
+	<artifactId>MetaModel-arff</artifactId>
+	<name>MetaModel module for ARFF files</name>
 
 	<dependencies>
 		<dependency>
@@ -34,9 +36,8 @@ under the License.
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.kafka</groupId>
-			<artifactId>kafka-clients</artifactId>
-			<version>1.0.0</version>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
 		</dependency>
 
 		<!-- Test dependencies -->
