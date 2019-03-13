@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.QueryPostprocessDataContext;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.MaxRowsDataSet;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
@@ -49,9 +50,12 @@ public class ArffDataContext extends QueryPostprocessDataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ArffDataContext.class);
 
+    private static final String SECTION_ANNOTATION_RELATION = "@relation";
+    private static final String SECTION_ANNOTATION_ATTRIBUTE = "@attribute";
+    private static final String SECTION_ANNOTATION_DATA = "@data";
     private static final Charset CHARSET = FileHelper.UTF_8_CHARSET;
     private static final Pattern ATTRIBUTE_DEF_W_DATATYPE_PARAM =
-            Pattern.compile("\\'?(.+)\\'? ([a-zA-Z]+) \\'?(.+)\\'?");
+            Pattern.compile("\\'?(.+)\\'?\\s+([a-zA-Z]+)\\s+\\'?(.+)\\'?");
 
     private final Splitter whitespaceSplitter = Splitter.on(CharMatcher.whitespace()).trimResults().omitEmptyStrings();
 
@@ -70,36 +74,36 @@ public class ArffDataContext extends QueryPostprocessDataContext {
         try (BufferedReader reader = createReader()) {
             boolean inHeader = true;
             for (String line = reader.readLine(); inHeader && line != null; line = reader.readLine()) {
-                if (line.startsWith("%")) {
-                    continue; // comment
+                if (isIgnoreLine(line)) {
+                    continue;
                 }
                 final List<String> split = whitespaceSplitter.limit(2).splitToList(line);
-                if (split.isEmpty()) {
-                    continue; // empty line
-                }
                 switch (split.get(0).toLowerCase()) {
-                case "@relation":
+                case SECTION_ANNOTATION_RELATION:
                     // table name
                     final String tableName = trimString(split.get(1));
                     table.setName(tableName);
                     break;
-                case "@attribute":
+                case SECTION_ANNOTATION_ATTRIBUTE:
                     // column(s)
                     final String attributeDef = split.get(1).trim();
 
                     final String attributeName;
                     final String attributeType;
+                    final String attributeParam;
                     final ColumnType columnType;
 
                     final int indexOfCurly = attributeDef.indexOf('{');
                     if (indexOfCurly != -1) {
-                        attributeName = trimString(attributeDef.substring(0, indexOfCurly));
+                        attributeName = trimString(attributeDef.substring(0, indexOfCurly).trim());
                         attributeType = attributeDef.substring(indexOfCurly);
+                        attributeParam = null;
                     } else {
                         final Matcher matcher = ATTRIBUTE_DEF_W_DATATYPE_PARAM.matcher(attributeDef);
                         if (matcher.find()) {
                             attributeName = matcher.group(1);
-                            attributeType = matcher.group(2) + ' ' + matcher.group(3);
+                            attributeType = matcher.group(2);
+                            attributeParam = matcher.group(3);
                         } else {
                             // simple attribute definition "[name] [type]"
                             final List<String> attributeDefSplit = whitespaceSplitter.splitToList(attributeDef);
@@ -109,6 +113,7 @@ public class ArffDataContext extends QueryPostprocessDataContext {
                             }
                             attributeName = trimString(attributeDefSplit.get(0));
                             attributeType = attributeDefSplit.get(1);
+                            attributeParam = null;
                         }
                     }
                     switch (attributeType.toLowerCase()) {
@@ -128,6 +133,9 @@ public class ArffDataContext extends QueryPostprocessDataContext {
                     case "string":
                         columnType = ColumnType.STRING;
                         break;
+                    case "date":
+                        columnType = ColumnType.DATE;
+                        break;
                     default:
                         if (indexOfCurly == -1) {
                             logger.info(
@@ -139,10 +147,11 @@ public class ArffDataContext extends QueryPostprocessDataContext {
                     }
 
                     final MutableColumn column = new MutableColumn(attributeName, columnType, table);
-                    column.setRemarks(attributeType);
+                    column.setRemarks(attributeParam == null ? attributeType : attributeType + " " + attributeParam);
+                    column.setColumnNumber(table.getColumnCount());
                     table.addColumn(column);
                     break;
-                case "@data":
+                case SECTION_ANNOTATION_DATA:
                     // the header part of the file is done, no more schema to build up
                     inHeader = false;
                     break;
@@ -155,7 +164,6 @@ public class ArffDataContext extends QueryPostprocessDataContext {
     }
 
     private String trimString(String string) {
-        string = string.trim();
         if (string.startsWith("'") && string.endsWith("'")) {
             string = string.substring(1, string.length() - 1);
         }
@@ -173,8 +181,37 @@ public class ArffDataContext extends QueryPostprocessDataContext {
 
     @Override
     protected DataSet materializeMainSchemaTable(Table table, List<Column> columns, int maxRows) {
-        // TODO Auto-generated method stub
-        return null;
+        BufferedReader reader = createReader();
+        try {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                line = line.trim();
+                if (isIgnoreLine(line)) {
+                    continue;
+                }
+                if (line.equals(SECTION_ANNOTATION_DATA)) {
+                    // start of the data
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        final ArffDataSet dataSet = new ArffDataSet(columns, reader);
+        if (maxRows > -1) {
+            return new MaxRowsDataSet(dataSet, maxRows);
+        } else {
+            return dataSet;
+        }
+    }
+
+    protected static boolean isIgnoreLine(String line) {
+        if (line.trim().isEmpty()) {
+            return true;
+        }
+        if (line.startsWith("%")) {
+            return true; // comment
+        }
+        return false;
     }
 
 }

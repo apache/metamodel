@@ -39,6 +39,10 @@ under the License.
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>

@@ -28,7 +28,9 @@ import java.io.FilenameFilter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.ColumnTypeImpl;
@@ -54,6 +56,7 @@ public class ArffDataContextTest {
 
         assertTrue(files.length > 1);
 
+        final AtomicInteger rowCounter = new AtomicInteger();
         final Set<ColumnType> observedColumnTypes = new HashSet<>();
 
         for (File file : files) {
@@ -67,16 +70,24 @@ public class ArffDataContextTest {
             for (Column column : columns) {
                 observedColumnTypes.add(column.getType());
             }
+
+            try (DataSet dataSet = dc.query().from(tables.get(0)).selectAll().execute()) {
+                while (dataSet.next()) {
+                    assertNotNull(dataSet.getRow());
+                    rowCounter.incrementAndGet();
+                }
+            }
         }
 
         assertTrue(observedColumnTypes.size() > 1);
         assertTrue(observedColumnTypes.contains(ColumnTypeImpl.STRING));
         assertTrue(observedColumnTypes.contains(ColumnTypeImpl.NUMBER));
+        assertTrue(rowCounter.get() > 10_000);
     }
 
     // test case that checks our ability to parse column types and names from a specific file.
     @Test
-    public void testReadTableOfHypothyroid() {
+    public void testReadStructureOfHypothyroid() {
         final File file = new File(wekaDataDir, "hypothyroid.arff");
         final ArffDataContext dc = new ArffDataContext(new FileResource(file));
         final Schema schema = dc.getDefaultSchema();
@@ -92,5 +103,32 @@ public class ArffDataContextTest {
         assertNotNull(sexColumn);
         assertEquals(ColumnType.STRING, sexColumn.getType());
         assertEquals("{ F, M}", sexColumn.getRemarks());
+
+        final Column tshColumn = table.getColumnByName("TSH measured");
+        assertNotNull(tshColumn);
+        assertEquals(ColumnType.STRING, tshColumn.getType());
+        assertEquals("{ t, f}", tshColumn.getRemarks());
+    }
+
+    @Test
+    public void testReadDataOfHypothyroid() {
+        final File file = new File(wekaDataDir, "hypothyroid.arff");
+        final ArffDataContext dc = new ArffDataContext(new FileResource(file));
+
+        final DataSet dataSet =
+                dc.query().from("hypothyroid").select("Class", "age", "sex", "TSH measured").limit(3).execute();
+        try {
+            assertTrue(dataSet.next());
+            assertEquals("Row[values=[negative, 41, F, t]]", dataSet.getRow().toString());
+            assertTrue(dataSet.next());
+            assertEquals("Row[values=[negative, 23, F, t]]", dataSet.getRow().toString());
+            assertTrue(dataSet.next());
+            assertEquals("Row[values=[negative, 46, M, t]]", dataSet.getRow().toString());
+            final Object ageValue = dataSet.getRow().getValue(1);
+            assertEquals(Integer.class, ageValue.getClass());
+            assertFalse(dataSet.next());
+        } finally {
+            dataSet.close();
+        }
     }
 }
