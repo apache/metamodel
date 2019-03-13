@@ -46,6 +46,10 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 
+/**
+ * DataContext implementation for ARFF (.arff) files, which can be loosely described a specialized type of CSV files
+ * with schema information, comments and data types in the header section of the file.
+ */
 public class ArffDataContext extends QueryPostprocessDataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ArffDataContext.class);
