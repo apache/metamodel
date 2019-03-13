@@ -55,7 +55,7 @@ public class ArffDataContext extends QueryPostprocessDataContext {
     private static final String SECTION_ANNOTATION_DATA = "@data";
     private static final Charset CHARSET = FileHelper.UTF_8_CHARSET;
     private static final Pattern ATTRIBUTE_DEF_W_DATATYPE_PARAM =
-            Pattern.compile("\\'?(.+)\\'?\\s+([a-zA-Z]+)\\s+\\'?(.+)\\'?");
+            Pattern.compile("\\'?(.+)\\'?\\s+([a-zA-Z]+)\\s+\\'(.+)\\'");
 
     private final Splitter whitespaceSplitter = Splitter.on(CharMatcher.whitespace()).trimResults().omitEmptyStrings();
 
@@ -188,7 +188,7 @@ public class ArffDataContext extends QueryPostprocessDataContext {
                 if (isIgnoreLine(line)) {
                     continue;
                 }
-                if (line.equals(SECTION_ANNOTATION_DATA)) {
+                if (line.toLowerCase().equals(SECTION_ANNOTATION_DATA)) {
                     // start of the data
                     break;
                 }
@@ -196,7 +196,7 @@ public class ArffDataContext extends QueryPostprocessDataContext {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        final ArffDataSet dataSet = new ArffDataSet(columns, reader);
+        final ArffDataSet dataSet = new ArffDataSet(resource, columns, reader);
         if (maxRows > -1) {
             return new MaxRowsDataSet(dataSet, maxRows);
         } else {

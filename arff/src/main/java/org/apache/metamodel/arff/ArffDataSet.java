@@ -15,6 +15,7 @@ import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.NumberComparator;
+import org.apache.metamodel.util.Resource;
 
 import com.opencsv.CSVParser;
 import com.opencsv.ICSVParser;
@@ -22,16 +23,16 @@ import com.opencsv.ICSVParser;
 public class ArffDataSet extends AbstractDataSet {
 
     private final ICSVParser csvParser = new CSVParser(',', '\'');
+    private final Resource resource;
     private final BufferedReader reader;
-    private final int[] valueIndices;
-    private final ColumnType[] valueTypes;
+    private final List<Column> columns;
 
     private String line;
 
-    public ArffDataSet(List<Column> columns, BufferedReader reader) {
+    public ArffDataSet(Resource resource, List<Column> columns, BufferedReader reader) {
         super(columns.stream().map(c -> new SelectItem(c)).collect(Collectors.toList()));
-        this.valueIndices = columns.stream().mapToInt(Column::getColumnNumber).toArray();
-        this.valueTypes = columns.stream().map(Column::getType).toArray(ColumnType[]::new);
+        this.resource = resource;
+        this.columns = columns;
         this.reader = reader;
     }
 
@@ -57,38 +58,51 @@ public class ArffDataSet extends AbstractDataSet {
         try {
             stringValues = csvParser.parseLine(line);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw new UncheckedIOException(resource.getName() + ": Failed to CSV-parse data line: " + line, e);
         }
 
-        final Object[] values = new Object[valueIndices.length];
-        for (int i = 0; i < valueIndices.length; i++) {
-            final int index = valueIndices[i];
+        final Object[] values = new Object[columns.size()];
+        for (int i = 0; i < values.length; i++) {
+            final Column column = columns.get(i);
+            final int index = column.getColumnNumber();
             final String stringValue = stringValues[index];
-            final ColumnType type = valueTypes[i];
-            if (type.isNumber()) {
-                if (stringValue.isEmpty() || "?".equals(stringValue)) {
-                    values[i] = null;
-                } else {
-                    final Number n = NumberComparator.toNumber(stringValue);
-                    if (type == ColumnType.INTEGER) {
-                        values[i] = n.intValue();
-                    } else {
-                        values[i] = n;
-                    }
-                }
-            } else if (type.isTimeBased()) {
-                // TODO: extract format from column remarks
-                try {
-                    values[i] = new SimpleDateFormat("yyyy-MM-dd").parse(stringValue);
-                } catch (ParseException e) {
-                    throw new IllegalStateException(e);
-                }
-            } else {
-                values[i] = stringValue;
-            }
+            values[i] = convertValue(stringValue, column);
         }
-
         return new DefaultRow(getHeader(), values);
+    }
+
+    private Object convertValue(String stringValue, Column column) {
+        final ColumnType type = column.getType();
+        if (type.isNumber()) {
+            if (stringValue.isEmpty() || "?".equals(stringValue)) {
+                return null;
+            } else {
+                final Number n = NumberComparator.toNumber(stringValue);
+                if (type == ColumnType.INTEGER) {
+                    return n.intValue();
+                } else {
+                    return n;
+                }
+            }
+        } else if (type.isTimeBased()) {
+            final String columnRemarks = column.getRemarks();
+            final SimpleDateFormat dateFormat;
+            if (columnRemarks.toLowerCase().startsWith("date ")) {
+                // date format follows "date "
+                dateFormat = new SimpleDateFormat(columnRemarks.substring(5));
+            } else {
+                // assume standard date format
+                dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            }
+            try {
+                return dateFormat.parse(stringValue);
+            } catch (ParseException e) {
+                throw new IllegalStateException(resource.getName() + ": Failed to parse '" + stringValue
+                        + "' using format '" + dateFormat.toPattern() + "'", e);
+            }
+        } else {
+            return stringValue;
+        }
     }
 
     @Override
