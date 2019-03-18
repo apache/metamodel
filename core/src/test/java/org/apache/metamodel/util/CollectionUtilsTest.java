@@ -56,6 +56,86 @@ public class CollectionUtilsTest extends TestCase {
         assertEquals(null, CollectionUtils.find(map, "Interests[2]"));
     }
 
+    public void testFindWithNestedTripleListsAndMaps() throws Exception {
+        final Map<String, Object> map3 = new HashMap<>();
+        map3.put("opt.ion1", "W");
+        final List nestedList = Arrays.asList(Arrays.asList("G", "H", map3), "K");
+        final List tripleNestedList = Arrays.asList(Arrays.asList("L", nestedList), "O");
+
+        final Map<String, Object> nestedMap= new HashMap<>();
+        nestedMap.put("option1", "F");
+        nestedMap.put("option2",  nestedList);
+        nestedMap.put("option3",  tripleNestedList);
+
+        final Map<String, Object> map= new HashMap<>();
+        map.put("option1", "A");
+        map.put("option2", "B");
+        map.put("option3", nestedMap);
+
+        final Map<String, Object> map2 = new HashMap<>();
+        map2.put("option1", "C");
+
+        List list =  Arrays.asList(map, map2);
+
+        final Map<String, Object> options4 = new HashMap<>();
+        options4.put("list", list);
+
+        assertEquals(map, CollectionUtils.find(list, "[0]"));
+        assertEquals("B", CollectionUtils.find(list, "[0].option2"));
+        assertEquals("B", CollectionUtils.find(options4, "list[0].option2"));
+        assertEquals("C", CollectionUtils.find(options4, "list[1].option1"));
+        assertEquals("F", CollectionUtils.find(list, "[0].option3.option1"));
+        assertEquals( nestedList, CollectionUtils.find(list, "[0].option3.option2"));
+        assertEquals( "K", CollectionUtils.find(list, "[0].option3.option2[1]"));
+        assertEquals("G", CollectionUtils.find(list, "[0].option3.option2[0][0]"));
+        assertEquals("H", CollectionUtils.find(list, "[0].option3.option2[0][1]"));
+        assertEquals("K", CollectionUtils.find(list, "[0].option3.option3[0][1][1]"));
+        assertEquals(map3, CollectionUtils.find(list, "[0].option3.option3[0][1][0][2]"));
+        assertEquals("W", CollectionUtils.find(list, "[0].option3.option3[0][1][0][2].opt.ion1"));
+        assertEquals(null, CollectionUtils.find(list, "[0].option3.option3[0][1][0][2].opt.ion2"));
+    }
+
+    public void testFindWithNestedArraysAndMaps() throws Exception {
+        final Map<String, Object> map3 = new HashMap<>();
+        map3.put("opt.ion1", "W");
+        final Object nestedList[] = {"G", "H", map3, "K"};
+        final Object twoDimensionalArray[][] = {{"L", nestedList},
+                                                {"M", nestedList, "L"},};
+
+        final Map<String, Object> nestedMap= new HashMap<>();
+        nestedMap.put("option1", "F");
+        nestedMap.put("option2",  nestedList);
+        nestedMap.put("option3",  twoDimensionalArray);
+
+        final Map<String, Object> map= new HashMap<>();
+        map.put("option1", "A");
+        map.put("option2", "B");
+        map.put("option3", nestedMap);
+
+        final Map<String, Object> map2 = new HashMap<>();
+        map2.put("option1", "C");
+
+        Object list[] =  {map, map2};
+
+        final Map<String, Object> options4 = new HashMap<>();
+        options4.put("list", list);
+
+        assertEquals(map, CollectionUtils.find(list, "[0]"));
+        assertEquals("B", CollectionUtils.find(list, "[0].option2"));
+        assertEquals("B", CollectionUtils.find(options4, "list[0].option2"));
+        assertEquals("C", CollectionUtils.find(options4, "list[1].option1"));
+        assertEquals("F", CollectionUtils.find(list, "[0].option3.option1"));
+        assertEquals( nestedList, CollectionUtils.find(list, "[0].option3.option2"));
+        assertEquals( "H", CollectionUtils.find(list, "[0].option3.option2[1]"));
+        assertEquals("H", CollectionUtils.find(list, "[0].option3.option3[0][1][1]"));
+        assertEquals("L", CollectionUtils.find(list, "[0].option3.option3[1][2]"));
+        assertEquals(map3, CollectionUtils.find(list, "[0].option3.option3[0][1][2]"));
+        assertEquals("W", CollectionUtils.find(list, "[0].option3.option3[0][1][2].opt.ion1"));
+        assertEquals(map3, CollectionUtils.find(list, "[0].option3.option3[0][1][2]"));
+        assertEquals(null, CollectionUtils.find(list, "[0].option3.option3[0][1][2].opt.ion2"));
+    }
+
+
     public void testFindWithNestedListsAndMaps() throws Exception {
         final Map<String, Object> address1 = new LinkedHashMap<String, Object>();
         address1.put("city", "Stockholm");
