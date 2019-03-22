@@ -1,6 +1,7 @@
 ### Apache MetaModel [WIP]
 
  * [METAMODEL-1207] - Fix JDBC Database version parser edge cases.
+ * [METAMODEL-1172] - Made MAP_VALUE function capable of also navigating lists using square bracket notations.
 
 ### Apache MetaModel 5.2.1
 
