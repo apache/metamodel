@@ -33,19 +33,28 @@ import org.apache.metamodel.util.SimpleTableDef;
  */
 class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseUpdateCallback> {
 
+    private byte[][] splitKeys;
+
     /**
      * Create a {@link HBaseCreateTableBuilder}.
      * Throws an {@link IllegalArgumentException} if the schema isn't a {@link MutableSchema}.
      * @param updateCallback
      * @param schema
      * @param name
-     * @param columnFamilies
      */
     public HBaseCreateTableBuilder(final HBaseUpdateCallback updateCallback, final Schema schema, final String name) {
         super(updateCallback, schema, name);
         if (!(schema instanceof MutableSchema)) {
             throw new IllegalArgumentException("Not a mutable schema: " + schema);
         }
+    }
+
+    public byte[][] getSplitKeys() {
+        return splitKeys;
+    }
+
+    public void setSplitKeys(byte[][] splitKeys) {
+        this.splitKeys = splitKeys;
     }
 
     @Override
@@ -59,8 +68,13 @@ class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseUpdateCa
         final Table table = getTable();
 
         // Add the table to the datastore
-        ((HBaseDataContext) getUpdateCallback().getDataContext()).getHBaseClient().createTable(table.getName(),
-                columnFamilies);
+        if (this.getSplitKeys() != null) {
+            ((HBaseDataContext) getUpdateCallback().getDataContext()).getHBaseClient().createTable(table.getName(),
+                    columnFamilies,this.getSplitKeys());
+        } else {
+            ((HBaseDataContext) getUpdateCallback().getDataContext()).getHBaseClient().createTable(table.getName(),
+                    columnFamilies);
+        }
 
         // Update the schema
         addNewTableToSchema(table);
@@ -87,7 +101,6 @@ class HBaseCreateTableBuilder extends AbstractTableCreationBuilder<HBaseUpdateCa
     /**
      * Add the new {@link Table} to the {@link MutableSchema}
      * @param table
-     * @param data.updateCallback
      * @return {@link MutableSchema}
      */
     private void addNewTableToSchema(final Table table) {

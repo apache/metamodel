@@ -151,23 +151,50 @@ final class HBaseClient {
      * @throws MetaModelException when a {@link IOException} is caught
      */
     public void createTable(final String tableName, final Set<String> columnFamilies) {
-        if (tableName == null || columnFamilies == null || columnFamilies.isEmpty()) {
-            throw new IllegalArgumentException("Can't create a table without having the tableName or columnFamilies");
-        }
+        checkTableAndCf(tableName, columnFamilies);
         try (final Admin admin = _connection.getAdmin()) {
-            final TableName hBasetableName = TableName.valueOf(tableName);
-            final TableDescriptorBuilder tableBuilder = TableDescriptorBuilder.newBuilder(hBasetableName);
-            // Add all columnFamilies to the tableDescriptor.
-            for (final String columnFamily : columnFamilies) {
-                // The ID-column isn't needed because, it will automatically be created.
-                if (!columnFamily.equals(HBaseDataContext.FIELD_ID)) {
-                    final ColumnFamilyDescriptor columnDescriptor = ColumnFamilyDescriptorBuilder.of(columnFamily);
-                    tableBuilder.setColumnFamily(columnDescriptor);
-                }
-            }
+            final TableDescriptorBuilder tableBuilder = getTableDescriptorBuilder(tableName, columnFamilies);
             admin.createTable(tableBuilder.build());
         } catch (IOException e) {
             throw new MetaModelException(e);
+        }
+    }
+
+    /**
+     * Creates a HBase table based on a tableName and it's columnFamilies and splitKeys
+     * @param tableName
+     * @param columnFamilies
+     * @param splitKeys
+     * @throws IllegalArgumentException when any parameter is null
+     * @throws MetaModelException when a {@link IOException} is caught
+     */
+    public void createTable(final String tableName, final Set<String> columnFamilies, byte[][] splitKeys) {
+        checkTableAndCf(tableName, columnFamilies);
+        try (final Admin admin = _connection.getAdmin()) {
+            final TableDescriptorBuilder tableBuilder = getTableDescriptorBuilder(tableName, columnFamilies);
+            admin.createTable(tableBuilder.build(),splitKeys);
+        } catch (IOException e) {
+            throw new MetaModelException(e);
+        }
+    }
+
+    private TableDescriptorBuilder getTableDescriptorBuilder(String tableName, Set<String> columnFamilies) {
+        final TableName hBasetableName = TableName.valueOf(tableName);
+        final TableDescriptorBuilder tableBuilder = TableDescriptorBuilder.newBuilder(hBasetableName);
+        // Add all columnFamilies to the tableDescriptor.
+        for (final String columnFamily : columnFamilies) {
+            // The ID-column isn't needed because, it will automatically be created.
+            if (!columnFamily.equals(HBaseDataContext.FIELD_ID)) {
+                final ColumnFamilyDescriptor columnDescriptor = ColumnFamilyDescriptorBuilder.of(columnFamily);
+                tableBuilder.setColumnFamily(columnDescriptor);
+            }
+        }
+        return tableBuilder;
+    }
+
+    private void checkTableAndCf(String tableName, Set<String> columnFamilies) {
+        if (tableName == null || columnFamilies == null || columnFamilies.isEmpty()) {
+            throw new IllegalArgumentException("Can't create a table without having the tableName or columnFamilies");
         }
     }
 

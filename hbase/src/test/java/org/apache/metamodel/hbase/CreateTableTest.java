@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hbase.TableName;
 import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.schema.ImmutableSchema;
 import org.apache.metamodel.schema.Table;
@@ -109,6 +110,38 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
         // Assert that the Table has 3 column families, a default "_id" one, and two based on the column families for
         // the columns.
         assertEquals(3, ((HBaseTable) table).getColumnFamilies().size());
+    }
+
+    /**
+     * Goodflow. Create a table without the ID-Column, should work
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testCreateTableWithSplitRegion() throws IOException {
+
+        int numOfRegions = 3;
+        int keyLength = 5;
+        byte[][] splitRegion = new byte[numOfRegions-1][keyLength];
+        for (int i = 0 ; i< numOfRegions-1 ; i++) {
+            splitRegion[i] = ("0000"+i).getBytes();
+        }
+
+        final HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) getUpdateCallback()
+                .createTable(getSchema(), TABLE_NAME);
+
+        hBaseCreateTableBuilder.withColumn(CF_FOO);
+        hBaseCreateTableBuilder.withColumn(CF_BAR);
+        hBaseCreateTableBuilder.setSplitKeys(splitRegion);
+        hBaseCreateTableBuilder.execute();
+        checkSuccesfullyInsertedTable();
+
+        final Table table = getDataContext().getDefaultSchema().getTableByName(TABLE_NAME);
+        assertTrue(table instanceof HBaseTable);
+
+        // Assert that the Table has 3 column families, a default "_id" one, and two based on the column families for
+        // the columns.
+        assertEquals(numOfRegions,getDataContext().getAdmin().getRegions(TableName.valueOf(TABLE_NAME)).size());
     }
 
     /**
