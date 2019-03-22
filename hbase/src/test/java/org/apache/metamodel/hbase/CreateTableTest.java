@@ -113,7 +113,7 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
     }
 
     /**
-     * Goodflow. Create a table without the ID-Column, should work
+     * Goodflow. Create a table with splitKey, should work
      *
      * @throws IOException
      */
