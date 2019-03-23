@@ -151,7 +151,7 @@ final class HBaseClient {
      * @throws MetaModelException when a {@link IOException} is caught
      */
     public void createTable(final String tableName, final Set<String> columnFamilies) {
-        checkTableAndCf(tableName, columnFamilies);
+        checkTableAndColumnFamilies(tableName, columnFamilies);
         try (final Admin admin = _connection.getAdmin()) {
             final TableDescriptorBuilder tableBuilder = getTableDescriptorBuilder(tableName, columnFamilies);
             admin.createTable(tableBuilder.build());
@@ -169,7 +169,7 @@ final class HBaseClient {
      * @throws MetaModelException when a {@link IOException} is caught
      */
     public void createTable(final String tableName, final Set<String> columnFamilies, byte[][] splitKeys) {
-        checkTableAndCf(tableName, columnFamilies);
+        checkTableAndColumnFamilies(tableName, columnFamilies);
         try (final Admin admin = _connection.getAdmin()) {
             final TableDescriptorBuilder tableBuilder = getTableDescriptorBuilder(tableName, columnFamilies);
             admin.createTable(tableBuilder.build(),splitKeys);
@@ -192,7 +192,7 @@ final class HBaseClient {
         return tableBuilder;
     }
 
-    private void checkTableAndCf(String tableName, Set<String> columnFamilies) {
+    private void checkTableAndColumnFamilies(String tableName, Set<String> columnFamilies) {
         if (tableName == null || columnFamilies == null || columnFamilies.isEmpty()) {
             throw new IllegalArgumentException("Can't create a table without having the tableName or columnFamilies");
         }
