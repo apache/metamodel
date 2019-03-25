@@ -69,7 +69,7 @@ public class FileHelperTest extends TestCase {
 
     public void testCannotAppendAndInsertBom() throws Exception {
         try {
-            FileHelper.getWriter(new File("foo"), "foo", true, true);
+            FileHelper.getWriter(new File("foo"), "UTF-8", true, true);
             fail("Exception expected");
         } catch (IllegalArgumentException e) {
             assertEquals("Can not insert BOM into appending writer", e.getMessage());

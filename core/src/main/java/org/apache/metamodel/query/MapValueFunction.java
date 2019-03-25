@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.query;
 
-import java.util.Map;
-
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.util.CollectionUtils;
@@ -38,11 +36,7 @@ public final class MapValueFunction extends DefaultScalarFunction {
             throw new IllegalArgumentException("Expecting path parameter to MAP_VALUE function");
         }
         final Object value = row.getValue(operandItem);
-        if (value instanceof Map) {
-            final Map<?, ?> map = (Map<?, ?>) value;
-            return CollectionUtils.find(map, (String) parameters[0]);
-        }
-        return null;
+        return CollectionUtils.find(value, (String) parameters[0]);
     }
 
     @Override

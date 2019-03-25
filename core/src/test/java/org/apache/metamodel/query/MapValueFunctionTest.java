@@ -20,7 +20,9 @@ package org.apache.metamodel.query;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.metamodel.data.DefaultRow;
@@ -42,6 +44,32 @@ public class MapValueFunctionTest {
         final Row row = new DefaultRow(new SimpleDataSetHeader(new SelectItem[] { operandItem }),
                 new Object[] { value });
         final Object v1 = function.evaluate(row, new Object[] { "foo.bar" }, operandItem);
+        assertEquals("baz", v1.toString());
+    }
+
+    @Test
+    public void testGetValueFromList() throws Exception {
+        final List<Map<String, Object>> value = new ArrayList<>();
+        final Map<String, Object> innerMap = new HashMap<>();
+        innerMap.put("bar", "baz");
+        value.add(innerMap);
+        final SelectItem operandItem = new SelectItem("foo", "f");
+        final Row row = new DefaultRow(new SimpleDataSetHeader(new SelectItem[] { operandItem }),
+                new Object[] { value });
+        final Object v1 = function.evaluate(row, new Object[] { "[0]bar" }, operandItem);
+        assertEquals("baz", v1.toString());
+    }
+
+    @Test
+    public void testGetValueFromArray() throws Exception {
+
+        final Map<String, Object> innerMap = new HashMap<>();
+        innerMap.put("bar", "baz");
+        final Object[] value = {innerMap};
+        final SelectItem operandItem = new SelectItem("foo", "f");
+        final Row row = new DefaultRow(new SimpleDataSetHeader(new SelectItem[] { operandItem }),
+                new Object[] { value });
+        final Object v1 = function.evaluate(row, new Object[] { "[0]bar" }, operandItem);
         assertEquals("baz", v1.toString());
     }
 

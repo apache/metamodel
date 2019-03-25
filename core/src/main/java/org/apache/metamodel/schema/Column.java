@@ -40,8 +40,9 @@ public interface Column extends Comparable<Column>, Serializable, NamedStructure
     public String getName();
 
     /**
-     * Returns the column number or index. Note: This column number is 0-based
-     * whereas the JDBC is 1-based.
+     * Returns the column number or index.
+     * 
+     * Note: This column number is 0-based whereas JDBC's column numbers are 1-based.
      * 
      * @return the number of this column.
      */
