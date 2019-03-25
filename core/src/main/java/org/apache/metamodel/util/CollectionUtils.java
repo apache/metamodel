@@ -39,8 +39,9 @@ public final class CollectionUtils {
     }
 
     /**
-     * Searches a map for a given key. The key can be a regular map key, or a
-     * simple expression of the form:
+     * Searches a map, a list or array for a given key.
+     * Also can be used with nested lists and multidimensional arrays.
+     * The key can be a regular map key, or a simple expression of the form:
      * 
      * <ul>
      * <li>foo.bar (will lookup 'foo', and then 'bar' in a potential nested map)
@@ -48,27 +49,39 @@ public final class CollectionUtils {
      * <li>foo.bar[0].baz (will lookup 'foo', then 'bar' in a potential nested
      * map, then pick the first element in case it is a list/array and then pick
      * 'baz' from the potential map at that position).
+     * </li>
+     *  <li>[1]foo.bar[0][1].baz (pick the second element in list/array and then
+     *  lookup 'foo' then 'bar' in a potential nested map, then pick the second
+     *  element in the first row in nested lists or 2 dimensional array and then 'baz'  in
+     *  a potential nested map).
+     * </li>
      * </ul>
      * 
-     * @param map
-     *            the map to search in
+     * @param collection
+     *            the map, list or array to search in
      * @param key
      *            the key to resolve
-     * @return the object in the map with the given key/expression. Or null if
+     * @return the object in the map, list or array with the given key/expression. Or null if
      *         it does not exist.
      */
-    public static Object find(Map<?, ?> map, String key) {
-        if (map == null || key == null) {
+    public static Object find(Object collection, String key) {
+        if (collection == null || key == null) {
             return null;
         }
-        final Object result = map.get(key);
-        if (result == null) {
-            return find(map, key, 0);
+        if(collection instanceof Map){
+           Map<?, ?> map  = (Map<?, ?>) collection;
+            final Object result = map.get(key);
+            if (result == null) {
+                return find(map, key, 0);
+            }
+            return result;
+        } else if(collection instanceof List || collection.getClass().isArray()){
+            return find( collection, key, 0);
         }
-        return result;
+       return null;
     }
 
-    private static Object find(Map<?, ?> map, String key, int fromIndex) {
+    private static Object find(final Object collection, String key, int fromIndex) {
         final int indexOfDot = key.indexOf('.', fromIndex);
         final int indexOfBracket = key.indexOf('[', fromIndex);
         int indexOfEndBracket = -1;
@@ -79,12 +92,28 @@ public final class CollectionUtils {
 
         if (hasBracket) {
             // also check that there is an end-bracket
-            indexOfEndBracket = key.indexOf("]", indexOfBracket);
+            indexOfEndBracket = key.indexOf(']', indexOfBracket);
             hasBracket = indexOfEndBracket != -1;
             if (hasBracket) {
                 final String indexString = key.substring(indexOfBracket + 1, indexOfEndBracket);
                 try {
                     arrayIndex = Integer.parseInt(indexString);
+                    if(collection instanceof List || collection.getClass().isArray()){
+                        Object obj = null;
+                        if(collection instanceof List){
+                            obj = ((List) collection).get(arrayIndex);
+                        } else if (collection.getClass().isArray()) {
+                            obj = Array.get(collection, arrayIndex);
+                        }
+                        key = key.substring( indexOfEndBracket+1, key.length());
+                        if(key.startsWith(".")){
+                           key = key.substring(1, key.length());
+                        }
+                        if(key.isEmpty()){
+                            return obj;
+                        }
+                        return find(obj, key );
+                    }
                 } catch (NumberFormatException e) {
                     // not a valid array/list index
                     hasBracket = false;
@@ -102,9 +131,9 @@ public final class CollectionUtils {
 
         if (hasDot) {
             final String prefix = key.substring(0, indexOfDot);
-            final Object nestedObject = map.get(prefix);
+            final Object nestedObject = ((Map<?,?>)collection).get(prefix);
             if (nestedObject == null) {
-                return find(map, key, indexOfDot + 1);
+                return find(collection, key, indexOfDot + 1);
             }
             if (nestedObject instanceof Map) {
                 final String remainingPart = key.substring(indexOfDot + 1);
@@ -115,10 +144,13 @@ public final class CollectionUtils {
         }
 
         if (hasBracket) {
-            final String prefix = key.substring(0, indexOfBracket);
-            final Object nestedObject = map.get(prefix);
-            if (nestedObject == null) {
-                return find(map, key, indexOfBracket + 1);
+             Object nestedObject = null;
+            if(collection instanceof Map){
+                final String prefix = key.substring(0, indexOfBracket);
+                  nestedObject = ((Map<?,?>)collection).get(prefix);
+                if (nestedObject == null) {
+                    return find(collection, key, indexOfBracket + 1);
+                }
             }
 
             String remainingPart = key.substring(indexOfEndBracket + 1);
@@ -127,7 +159,7 @@ public final class CollectionUtils {
                 final Object valueAtIndex;
                 if (nestedObject instanceof List) {
                     valueAtIndex = ((List<?>) nestedObject).get(arrayIndex);
-                } else if (nestedObject.getClass().isArray()) {
+                } else if (nestedObject!= null && nestedObject.getClass().isArray()) {
                     valueAtIndex = Array.get(nestedObject, arrayIndex);
                 } else {
                     // no way to extract from a non-array and non-list
@@ -143,14 +175,7 @@ public final class CollectionUtils {
                         return valueAtIndex;
                     }
 
-                    if (valueAtIndex instanceof Map) {
-                        @SuppressWarnings("unchecked")
-                        final Map<String, ?> nestedMap = (Map<String, ?>) valueAtIndex;
-                        return find(nestedMap, remainingPart);
-                    } else {
-                        // not traversing any further. Should we want to add
-                        // support for double-sided arrays, we could do it here.
-                    }
+                    return find(valueAtIndex, remainingPart);
                 }
 
             } catch (IndexOutOfBoundsException e) {
