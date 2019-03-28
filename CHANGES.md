@@ -3,6 +3,7 @@
  * [METAMODEL-1210] - Added a new connector for .arff files.
  * [METAMODEL-1207] - Fix JDBC Database version parser edge cases.
  * [METAMODEL-1172] - Made MAP_VALUE function capable of also navigating lists using square bracket notations.
+ * Added ability to specify "split key" attribute for new tables in HBase.
 
 ### Apache MetaModel 5.2.1
 
