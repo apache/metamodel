@@ -18,8 +18,6 @@
  */
 package org.apache.metamodel.arff;
 
-import java.io.File;
-
 import org.apache.metamodel.ConnectionException;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.factory.AbstractDataContextFactory;
