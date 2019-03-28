@@ -64,6 +64,7 @@ under the License.
 		<module>dynamodb</module>
 		<module>excel</module>
 		<module>csv</module>
+		<module>arff</module>
 		<module>json</module>
 		<module>xml</module>
 		<module>jdbc</module>
