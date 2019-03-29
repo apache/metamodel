@@ -70,7 +70,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
     private static final String indexType3 = "tweet3";
     private static final String bulkIndexType = "bulktype";
     private static final String peopleIndexType = "peopletype";
-    private static final String mapping = "{\"date_detection\":\"false\",\"properties\":{\"message\":{\"type\":\"string\",\"index\":\"not_analyzed\",\"doc_values\":\"true\"}}}";
+    private static final String mapping =
+            "{\"date_detection\":\"false\",\"properties\":{\"message\":{\"type\":\"string\",\"index\":\"not_analyzed\",\"doc_values\":\"true\"}}}";
     private Client client;
     private UpdateableDataContext dataContext;
 
@@ -116,7 +117,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
         try (DataSet ds = dataContext.query().from(indexType1).select("_id").execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
             assertTrue(ds.next());
-            assertEquals("Row[values=[tweet_tweet1_1]]",ds.getRow().toString());
+            assertEquals("Row[values=[tweet_tweet1_1]]", ds.getRow().toString());
         }
 
         assertEquals("[_id, message, postDate, user]", Arrays.toString(table.getColumnNames().toArray()));
@@ -126,7 +127,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
         assertEquals(ColumnType.DATE, table.getColumnByName("postDate").getType());
         assertEquals(ColumnType.BIGINT, table.getColumnByName("message").getType());
 
-        try(DataSet ds = dataContext.query().from(indexType1).select("user").and("message").execute()) {
+        try (DataSet ds = dataContext.query().from(indexType1).select("user").and("message").execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
             assertTrue(ds.next());
@@ -200,7 +201,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
         dataContext.executeUpdate(createTable);
 
         final Table table = schema.getTableByName("testCreateTable");
-        assertEquals("[" + ElasticSearchUtils.FIELD_ID + ", foo, bar]", Arrays.toString(table.getColumnNames().toArray()));
+        assertEquals("[" + ElasticSearchUtils.FIELD_ID + ", foo, bar]",
+                Arrays.toString(table.getColumnNames().toArray()));
 
         final Column fooColumn = table.getColumnByName("foo");
         final Column idColumn = table.getPrimaryKeys().get(0);
@@ -249,8 +251,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
         dataContext.executeUpdate(new DeleteFrom(table).where("bar").eq(42));
 
-        final Row row = MetaModelHelper.executeSingleRowQuery(dataContext, dataContext.query().from(table).selectCount()
-                .toQuery());
+        final Row row = MetaModelHelper.executeSingleRowQuery(dataContext,
+                dataContext.query().from(table).selectCount().toQuery());
 
         assertEquals("Row[values=[1]]", row.toString());
 
@@ -276,8 +278,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
         dataContext.executeUpdate(new DeleteFrom(table));
 
-        Row row = MetaModelHelper.executeSingleRowQuery(dataContext, dataContext.query().from(table).selectCount()
-                .toQuery());
+        Row row = MetaModelHelper.executeSingleRowQuery(dataContext,
+                dataContext.query().from(table).selectCount().toQuery());
         assertEquals("Row[values=[0]]", row.toString());
     }
 
@@ -329,8 +331,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
             dataContext.executeUpdate(new DeleteFrom(table).where("bar").gt(40));
             fail("Exception expected");
         } catch (UnsupportedOperationException e) {
-            assertEquals("Could not push down WHERE items to delete by query request: [testCreateTable.bar > 40]",
-                    e.getMessage());
+            final String msg = e.getMessage();
+            assertTrue("Got: " + msg, msg.startsWith("Could not push down WHERE items to delete by query request:"));
         }
     }
 
@@ -377,8 +379,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testWhereColumnIsNullValues() throws Exception {
-        try(DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
-                .isNull().execute()){
+        try (DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate").isNull().execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
             assertTrue(ds.next());
@@ -389,8 +390,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testWhereColumnIsNotNullValues() throws Exception {
-        try(DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate")
-                .isNotNull().execute()){
+        try (DataSet ds =
+                dataContext.query().from(indexType2).select("message").where("postDate").isNotNull().execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
             assertTrue(ds.next());
@@ -401,8 +402,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testWhereMultiColumnsEqualValues() throws Exception {
-        try(DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
-                .isEquals("user4").and("message").ne(5).execute()){
+        try (DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
+                .isEquals("user4").and("message").ne(5).execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
             assertTrue(ds.next());
@@ -437,8 +438,9 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
         q.groupBy(table.getColumnByName("gender"));
         q.select(new SelectItem(table.getColumnByName("gender")),
                 new SelectItem(FunctionType.MAX, table.getColumnByName("age")),
-                new SelectItem(FunctionType.MIN, table.getColumnByName("age")), new SelectItem(FunctionType.COUNT, "*",
-                        "total"), new SelectItem(FunctionType.MIN, table.getColumnByName("id")).setAlias("firstId"));
+                new SelectItem(FunctionType.MIN, table.getColumnByName("age")),
+                new SelectItem(FunctionType.COUNT, "*", "total"),
+                new SelectItem(FunctionType.MIN, table.getColumnByName("id")).setAlias("firstId"));
         q.orderBy("gender");
         DataSet data = dataContext.executeQuery(q);
         assertEquals(
@@ -503,9 +505,9 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
     public void testNonDynamicMapingTableNames() throws Exception {
         CreateIndexRequest cir = new CreateIndexRequest(indexName2);
         client.admin().indices().create(cir).actionGet();
-        
+
         PutMappingRequest pmr = new PutMappingRequest(indexName2).type(indexType3).source(mapping, XContentType.JSON);
-        
+
         client.admin().indices().putMapping(pmr).actionGet();
 
         ElasticSearchDataContext dataContext2 = new ElasticSearchDataContext(client, indexName2);
@@ -517,8 +519,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
         BulkRequestBuilder bulkRequest = client.prepareBulk();
 
         for (int i = 0; i < numberOfDocuments; i++) {
-            bulkRequest.add(client.prepareIndex(indexName, indexType, Integer.toString(i)).setSource(
-                    buildTweeterJson(i)));
+            bulkRequest
+                    .add(client.prepareIndex(indexName, indexType, Integer.toString(i)).setSource(buildTweeterJson(i)));
         }
         bulkRequest.execute().actionGet();
     }
@@ -529,8 +531,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
     }
 
     private void indexTweeterDocument(String indexType, int id) {
-        client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id))
-                .setId("tweet_" + indexType + "_" + id).execute().actionGet();
+        client.prepareIndex(indexName, indexType).setSource(buildTweeterJson(id)).setId("tweet_" + indexType + "_" + id)
+                .execute().actionGet();
     }
 
     private void indexOnePeopleDocument(String gender, int age, int id) throws IOException {
