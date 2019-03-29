@@ -480,6 +480,11 @@ under the License.
 				<version>${guava.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.opencsv</groupId>
+				<artifactId>opencsv</artifactId>
+				<version>3.9</version>
+			</dependency>
+			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpclient</artifactId>
 				<version>${httpcomponents.version}</version>

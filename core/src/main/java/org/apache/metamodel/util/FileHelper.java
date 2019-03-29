@@ -38,6 +38,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,12 @@ public final class FileHelper {
     public static final String US_ASCII_ENCODING = "US-ASCII";
     public static final String ISO_8859_1_ENCODING = "ISO_8859_1";
     public static final String DEFAULT_ENCODING = UTF_8_ENCODING;
+
+    public static final Charset UTF_8_CHARSET = Charset.forName(UTF_8_ENCODING);
+    public static final Charset UTF_16_CHARSET = Charset.forName(UTF_16_ENCODING);
+    public static final Charset US_ASCII_CHARSET = Charset.forName(US_ASCII_ENCODING);
+    public static final Charset ISO_8859_1_CHARSET = Charset.forName(ISO_8859_1_ENCODING);
+    public static final Charset DEFAULT_CHARSET = Charset.forName(DEFAULT_ENCODING);
 
     private FileHelper() {
         // prevent instantiation
@@ -86,8 +93,8 @@ public final class FileHelper {
                 logger.error("Could not create tempFile in order to find temporary dir", e);
                 result = new File("metamodel.tmp.dir");
                 if (!result.mkdir()) {
-                    throw new IllegalStateException("Could not create directory for temporary files: "
-                            + result.getName());
+                    throw new IllegalStateException(
+                            "Could not create directory for temporary files: " + result.getName());
                 }
                 result.deleteOnExit();
             }
@@ -96,6 +103,11 @@ public final class FileHelper {
             logger.info("Using '{}' as tmpdir.", result.getAbsolutePath());
         }
         return result;
+    }
+
+    public static Writer getWriter(File file, Charset charset, boolean append) throws IllegalStateException {
+        boolean insertBom = !append;
+        return getWriter(file, charset, append, insertBom);
     }
 
     public static Writer getWriter(File file, String encoding, boolean append) throws IllegalStateException {
@@ -107,7 +119,7 @@ public final class FileHelper {
         return getWriter(outputStream, encoding, false);
     }
 
-    public static Writer getWriter(OutputStream outputStream, String encoding, boolean insertBom)
+    public static Writer getWriter(OutputStream outputStream, Charset charset, boolean insertBom)
             throws IllegalStateException {
         if (!(outputStream instanceof BufferedOutputStream)) {
             outputStream = new BufferedOutputStream(outputStream);
@@ -115,10 +127,10 @@ public final class FileHelper {
 
         try {
             if (insertBom) {
-                Writer writer = new UnicodeWriter(outputStream, encoding);
+                Writer writer = new UnicodeWriter(outputStream, charset);
                 return writer;
             } else {
-                Writer writer = new OutputStreamWriter(outputStream, encoding);
+                Writer writer = new OutputStreamWriter(outputStream, charset);
                 return writer;
             }
         } catch (Exception e) {
@@ -126,14 +138,27 @@ public final class FileHelper {
         }
     }
 
-    public static Writer getWriter(File file, String encoding, boolean append, boolean insertBom)
+    public static Writer getWriter(OutputStream outputStream, String encoding, boolean insertBom)
+            throws IllegalStateException {
+        return getWriter(outputStream, Charset.forName(encoding), insertBom);
+    }
+
+    public static Writer getWriter(File file, Charset charset, boolean append, boolean insertBom)
             throws IllegalStateException {
         if (append && insertBom) {
             throw new IllegalArgumentException("Can not insert BOM into appending writer");
         }
         final OutputStream outputStream = getOutputStream(file, append);
-        return getWriter(outputStream, encoding, insertBom);
+        return getWriter(outputStream, charset, insertBom);
+    }
 
+    public static Writer getWriter(File file, String encoding, boolean append, boolean insertBom)
+            throws IllegalStateException {
+        return getWriter(file, Charset.forName(encoding), append, insertBom);
+    }
+
+    public static Writer getWriter(File file, Charset charset) throws IllegalStateException {
+        return getWriter(file, charset, false);
     }
 
     public static Writer getWriter(File file, String encoding) throws IllegalStateException {
@@ -141,8 +166,12 @@ public final class FileHelper {
     }
 
     public static Reader getReader(InputStream inputStream, String encoding) throws IllegalStateException {
+        return getReader(inputStream, Charset.forName(encoding));
+    }
+
+    public static Reader getReader(InputStream inputStream, Charset charset) throws IllegalStateException {
         try {
-            if (encoding == null || encoding.toLowerCase().indexOf("utf") != -1) {
+            if (charset == null || charset.name().toLowerCase().indexOf("utf") != -1) {
                 final byte bom[] = new byte[4];
                 int unread;
 
@@ -152,21 +181,21 @@ public final class FileHelper {
 
                 // Read ahead four bytes and check for BOM marks.
                 if ((bom[0] == (byte) 0xEF) && (bom[1] == (byte) 0xBB) && (bom[2] == (byte) 0xBF)) {
-                    encoding = "UTF-8";
+                    charset = UTF_8_CHARSET;
                     unread = n - 3;
                 } else if ((bom[0] == (byte) 0xFE) && (bom[1] == (byte) 0xFF)) {
-                    encoding = "UTF-16BE";
+                    charset = Charset.forName("UTF-16BE");
                     unread = n - 2;
                 } else if ((bom[0] == (byte) 0xFF) && (bom[1] == (byte) 0xFE)) {
-                    encoding = "UTF-16LE";
+                    charset = Charset.forName("UTF-16LE");
                     unread = n - 2;
                 } else if ((bom[0] == (byte) 0x00) && (bom[1] == (byte) 0x00) && (bom[2] == (byte) 0xFE)
                         && (bom[3] == (byte) 0xFF)) {
-                    encoding = "UTF-32BE";
+                    charset = Charset.forName("UTF-32BE");
                     unread = n - 4;
                 } else if ((bom[0] == (byte) 0xFF) && (bom[1] == (byte) 0xFE) && (bom[2] == (byte) 0x00)
                         && (bom[3] == (byte) 0x00)) {
-                    encoding = "UTF-32LE";
+                    charset = Charset.forName("UTF-32LE");
                     unread = n - 4;
                 } else {
                     unread = n;
@@ -182,15 +211,25 @@ public final class FileHelper {
             }
 
             final InputStreamReader inputStreamReader;
-            if (encoding == null) {
+            if (charset == null) {
                 inputStreamReader = new InputStreamReader(inputStream);
             } else {
-                inputStreamReader = new InputStreamReader(inputStream, encoding);
+                inputStreamReader = new InputStreamReader(inputStream, charset);
             }
             return inputStreamReader;
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    public static Reader getReader(File file, Charset charset) throws IllegalStateException {
+        final InputStream inputStream;
+        try {
+            inputStream = new BufferedInputStream(new FileInputStream(file));
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return getReader(inputStream, charset);
     }
 
     public static Reader getReader(File file, String encoding) throws IllegalStateException {
@@ -203,13 +242,25 @@ public final class FileHelper {
         return getReader(inputStream, encoding);
     }
 
-    public static String readInputStreamAsString(InputStream inputStream, String encoding) throws IllegalStateException {
-        Reader reader = getReader(inputStream, encoding);
+    public static String readInputStreamAsString(InputStream inputStream, Charset charset)
+            throws IllegalStateException {
+        final Reader reader = getReader(inputStream, charset);
         return readAsString(reader);
     }
 
+    public static String readInputStreamAsString(InputStream inputStream, String encoding)
+            throws IllegalStateException {
+        final Reader reader = getReader(inputStream, encoding);
+        return readAsString(reader);
+    }
+
+    public static String readFileAsString(File file, Charset charset) throws IllegalStateException {
+        final Reader br = getReader(file, charset);
+        return readAsString(br);
+    }
+
     public static String readFileAsString(File file, String encoding) throws IllegalStateException {
-        Reader br = getReader(file, encoding);
+        final Reader br = getReader(file, encoding);
         return readAsString(br);
     }
 
@@ -288,19 +339,35 @@ public final class FileHelper {
         }
     }
 
-    public static BufferedWriter getBufferedWriter(File file, String encoding) throws IllegalStateException {
-        Writer writer = getWriter(file, encoding);
+    public static BufferedWriter getBufferedWriter(File file, Charset charset) throws IllegalStateException {
+        final Writer writer = getWriter(file, charset);
         return new BufferedWriter(writer);
     }
 
+    public static BufferedWriter getBufferedWriter(File file, String encoding) throws IllegalStateException {
+        final Writer writer = getWriter(file, encoding);
+        return new BufferedWriter(writer);
+    }
+
+    public static BufferedReader getBufferedReader(File file, Charset charset) throws IllegalStateException {
+        final Reader reader = getReader(file, charset);
+        return new BufferedReader(reader);
+    }
+
     public static BufferedReader getBufferedReader(File file, String encoding) throws IllegalStateException {
-        Reader reader = getReader(file, encoding);
+        final Reader reader = getReader(file, encoding);
+        return new BufferedReader(reader);
+    }
+
+    public static BufferedReader getBufferedReader(InputStream inputStream, Charset charset)
+            throws IllegalStateException {
+        final Reader reader = getReader(inputStream, charset);
         return new BufferedReader(reader);
     }
 
     public static BufferedReader getBufferedReader(InputStream inputStream, String encoding)
             throws IllegalStateException {
-        Reader reader = getReader(inputStream, encoding);
+        final Reader reader = getReader(inputStream, encoding);
         return new BufferedReader(reader);
     }
 
@@ -324,17 +391,33 @@ public final class FileHelper {
         writeString(outputStream, string, DEFAULT_ENCODING);
     }
 
+    /**
+     * Writes a string to a {@link OutputStream}, and then closes it.
+     * 
+     * @param outputStream
+     * @param string
+     * @param encoding
+     * @throws IllegalStateException
+     * @deprecated No longer advised for use since this will close the writer (just use {@link Writer#write(String)}).
+     */
+    @Deprecated
     public static void writeString(OutputStream outputStream, String string, String encoding)
             throws IllegalStateException {
         final Writer writer = getWriter(outputStream, encoding);
-        writeString(writer, string, encoding);
+        writeString(writer, string);
     }
 
+    /**
+     * Writes a string to a {@link Writer}, and then closes it.
+     * 
+     * @param writer
+     * @param string
+     * @throws IllegalStateException
+     * 
+     * @deprecated No longer advised for use since this will close the writer (just use {@link Writer#write(String)}).
+     */
+    @Deprecated
     public static void writeString(Writer writer, String string) throws IllegalStateException {
-        writeString(writer, string, DEFAULT_ENCODING);
-    }
-
-    public static void writeString(Writer writer, String string, String encoding) throws IllegalStateException {
         try {
             writer.write(string);
         } catch (Exception e) {
@@ -344,13 +427,33 @@ public final class FileHelper {
         }
     }
 
+    /**
+     * Writes a string to a {@link Writer}, and then closes it.
+     * 
+     * @param writer
+     * @param string
+     * @param encoding
+     * @throws IllegalStateException
+     * 
+     * @deprecated No longer advised for use since this will close the writer (just use {@link Writer#write(String)})
+     *             and the encoding is never used.
+     */
+    @Deprecated
+    public static void writeString(Writer writer, String string, String encoding) throws IllegalStateException {
+        writeString(writer, string);
+    }
+
     public static void writeStringAsFile(File file, String string) throws IllegalStateException {
         writeStringAsFile(file, string, DEFAULT_ENCODING);
     }
 
     public static void writeStringAsFile(File file, String string, String encoding) throws IllegalStateException {
-        final BufferedWriter bw = getBufferedWriter(file, encoding);
-        writeString(bw, string, encoding);
+        writeStringAsFile(file, string, Charset.forName(encoding));
+    }
+
+    public static void writeStringAsFile(File file, String string, Charset charset) throws IllegalStateException {
+        final BufferedWriter bw = getBufferedWriter(file, charset);
+        writeString(bw, string);
     }
 
     public static BufferedReader getBufferedReader(File file) throws IllegalStateException {
@@ -410,7 +513,7 @@ public final class FileHelper {
 
     public static void copy(File from, File to) throws IllegalStateException {
         assert from.exists();
-        
+
         final InputStream in = getInputStream(from);
         try {
             final OutputStream out = getOutputStream(to);
