@@ -31,7 +31,6 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.client.TableDescriptor;
-import org.apache.hadoop.hbase.filter.FirstKeyOnlyFilter;
 import org.apache.hadoop.hbase.filter.PageFilter;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.MetaModelException;
@@ -172,9 +171,7 @@ public class HBaseDataContext extends QueryPostprocessDataContext implements Upd
         long result = 0;
         final org.apache.hadoop.hbase.client.Table hTable = getHTable(table.getName());
         try {
-            Scan scan = new Scan();
-            scan.setFilter(new FirstKeyOnlyFilter());
-            ResultScanner scanner = hTable.getScanner(scan);
+            ResultScanner scanner = hTable.getScanner(new Scan());
             try {
                 while (scanner.next() != null) {
                     result++;
