@@ -1,4 +1,4 @@
-### Apache MetaModel [WIP]
+### Apache MetaModel 5.3.0
 
  * [METAMODEL-1210] - Added a new connector for .arff files.
  * [METAMODEL-1207] - Fix JDBC Database version parser edge cases.

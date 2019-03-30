@@ -222,6 +222,11 @@ under the License.
 		</dependency>
 		<dependency>
 			<groupId>org.apache.metamodel</groupId>
+			<artifactId>MetaModel-arff</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.metamodel</groupId>
 			<artifactId>MetaModel-elasticsearch-rest</artifactId>
 			<version>${project.version}</version>
 		</dependency>
