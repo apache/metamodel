@@ -80,9 +80,7 @@ public class SalesforceDataContextTest extends SalesforceTestCase {
             new SalesforceDataContext("foo", "bar", "baz");
             fail("Exception expected");
         } catch (IllegalStateException e) {
-            assertEquals(
-                    "Failed to log in to Salesforce service: INVALID_LOGIN: Invalid username, password, security token; or user locked out.",
-                    e.getMessage());
+            assertTrue(e.getMessage(), e.getMessage().startsWith("Failed to log in to Salesforce service"));
         }
     }
 
