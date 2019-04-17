@@ -222,9 +222,11 @@ public class HBaseDataContext extends QueryPostprocessDataContext implements Upd
         for (Column column : columns) {
             if (!column.isPrimaryKey()) {
                 final int colonIndex = column.getName().indexOf(':');
+                final int len = column.getName().length();
                 if (colonIndex != -1) {
-                    String family = column.getName().substring(0, colonIndex);
-                    scan.addFamily(family.getBytes());
+                    final String family = column.getName().substring(0, colonIndex);
+                    final String colName = column.getName().substring(colonIndex + 1, len);
+                    scan.addColumn(family.getBytes(), colName.getBytes());
                 } else {
                     scan.addFamily(column.getName().getBytes());
                 }

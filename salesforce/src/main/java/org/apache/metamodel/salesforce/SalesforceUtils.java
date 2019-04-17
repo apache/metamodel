@@ -50,6 +50,9 @@ public class SalesforceUtils {
             }
             cause = cause.getCause(); 
         }
+        if (message == null) {
+            throw new IllegalStateException(whatWentWrong, cause);
+        }
         throw new IllegalStateException(whatWentWrong + ": " + message, cause);
     }
 }

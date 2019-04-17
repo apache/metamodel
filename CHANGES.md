@@ -1,3 +1,7 @@
+### Apache MetaModel _WIP_
+
+ * Improved HBase query building by scanning columns instead of column families.
+
 ### Apache MetaModel 5.3.0
 
  * [METAMODEL-1210] - Added a new connector for .arff files.
