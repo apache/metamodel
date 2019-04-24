@@ -253,20 +253,25 @@ public final class MetaModelHelper {
      */
     private static Set<FilterItem> applicableFilters(Collection<FilterItem> filters,
             Collection<SelectItem> selectItemList) {
+        final Set<SelectItem> items = new HashSet<>(selectItemList);
 
-        Set<SelectItem> items = new HashSet<SelectItem>(selectItemList);
+        return filters.stream().filter(fi -> items.containsAll(getSelectItems(fi))).collect(Collectors.toSet());
+    }
 
-        return filters.stream().filter(fi -> {
-            Collection<SelectItem> fiSelectItems = new ArrayList<>();
-            fiSelectItems.add(fi.getSelectItem());
-            Object operand = fi.getOperand();
+    private static Set<SelectItem> getSelectItems(final FilterItem filterItem) {
+        final Set<SelectItem> itemsInFilter = new HashSet<>();
+        if (filterItem.getChildItemCount() == 0) {
+            itemsInFilter.add(filterItem.getSelectItem());
+            final Object operand = filterItem.getOperand();
             if (operand instanceof SelectItem) {
-                fiSelectItems.add((SelectItem) operand);
+                itemsInFilter.add((SelectItem) operand);
             }
-
-            return items.containsAll(fiSelectItems);
-
-        }).collect(Collectors.toSet());
+        } else {
+            for (FilterItem childFilterItem : filterItem.getChildItems()) {
+                itemsInFilter.addAll(getSelectItems(childFilterItem));
+            }
+        }
+        return itemsInFilter;
     }
 
     public static DataSet getFiltered(DataSet dataSet, Iterable<FilterItem> filterItems) {
