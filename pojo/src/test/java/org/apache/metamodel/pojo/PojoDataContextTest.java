@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.pojo;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,7 +32,13 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
 import org.apache.metamodel.data.DataSet;
+import org.apache.metamodel.data.Row;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.LogicalOperator;
+import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
@@ -214,5 +221,42 @@ public class PojoDataContextTest extends TestCase {
         map.put("col2", b);
         map.put("col3", c);
         return map;
+    }
+
+    public void testJoinWithCompoundFilterItems() {
+        final List<Role> roles = new ArrayList<>();
+        roles.add(new Role(1, "admin"));
+        roles.add(new Role(2, "guest"));
+
+        final List<User> users = new ArrayList<>();
+        users.add(new User("pete", null, 1));
+        users.add(new User("jake", Date.valueOf("2018-1-1"), 1));
+        users.add(new User("susan", Date.valueOf("2020-1-1"), 2));
+
+        final DataContext dataContext = new PojoDataContext("userdb", new ObjectTableDataProvider<User>("users",
+                User.class, users), new ObjectTableDataProvider<Role>("roles", Role.class, roles));
+
+        final SelectItem expirationDateField = new SelectItem(dataContext
+                .getColumnByQualifiedLabel("userdb.users.expirationDate"));
+        final Column userRoleIdColumn = dataContext.getColumnByQualifiedLabel("userdb.users.roleId");
+        final Column roleIdColumn = dataContext.getColumnByQualifiedLabel("userdb.roles.id");
+
+        DataSet dataSet = dataContext
+                .query()
+                .from("users")
+                .and("roles")
+                .select("users.name")
+                .where(userRoleIdColumn)
+                .eq(roleIdColumn)
+                .where(new FilterItem(LogicalOperator.OR, new FilterItem(expirationDateField, OperatorType.EQUALS_TO,
+                        null), new FilterItem(expirationDateField, OperatorType.GREATER_THAN_OR_EQUAL, Date
+                                .valueOf("2019-1-1"))))
+                .orderBy("name")
+                .execute();
+
+        List<Row> rows = dataSet.toRows();
+        assertEquals(2, rows.size());
+        assertEquals("pete", rows.get(0).getValue(0));
+        assertEquals("susan", rows.get(1).getValue(0));
     }
 }
