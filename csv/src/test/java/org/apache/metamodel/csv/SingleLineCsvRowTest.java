@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.csv;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -25,9 +27,12 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.util.FileHelper;
+import org.apache.metamodel.util.FileResource;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -59,5 +64,26 @@ public class SingleLineCsvRowTest {
         final Object[] values1 = originalRow.getValues();
         final Object[] values2 = deserializedRow.getValues();
         Assert.assertArrayEquals(values1, values2);
+    }
+
+    @Test
+    public void testConcurrentAccess() throws Exception {
+        final List<Column> columns = new ArrayList<>();
+        columns.add(new MutableColumn("b").setColumnNumber(2));
+        columns.add(new MutableColumn("d").setColumnNumber(4));
+        columns.add(new MutableColumn("f").setColumnNumber(6));
+        columns.add(new MutableColumn("h").setColumnNumber(8));
+        columns.add(new MutableColumn("J").setColumnNumber(10));
+
+        final CSVParser csvParser = new CSVParser();
+        try (final DataSet dataSet = new SingleLineCsvDataSet(FileHelper
+                .getBufferedReader(new FileResource("src/test/resources/empty_fields.csv").read(),
+                        FileHelper.UTF_8_CHARSET), csvParser, columns, null, 11, false)) {
+            dataSet.toRows().parallelStream().forEach(row -> {
+                for (int i = 0; i < 5; i++) {
+                    assertEquals("", row.getValue(i));
+                }
+            });
+        }
     }
 }
