@@ -29,6 +29,8 @@ import org.apache.metamodel.schema.Column;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.opencsv.ICSVParser;
+
 /**
  * Specialized row implementation for single-line CSV values
  */
@@ -99,7 +101,10 @@ final class SingleLineCsvRow extends AbstractRow {
 
     private String[] parseLine() {
         try {
-            return _dataSet.getCsvParser().parseLine(_line);
+            final ICSVParser csvParser = _dataSet.getCsvParser();
+            synchronized (csvParser) {
+                return csvParser.parseLine(_line);
+            }
         } catch (IOException e) {
             if (_failOnInconsistentRowLength) {
                 throw new MetaModelException("Failed to parse CSV line no. " + _rowNumber + ": " + _line, e);
