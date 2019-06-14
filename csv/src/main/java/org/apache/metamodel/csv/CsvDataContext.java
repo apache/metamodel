@@ -48,10 +48,8 @@ import org.apache.metamodel.util.UrlResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.ICSVParser;
-import com.opencsv.RFC4180ParserBuilder;
 
 /**
  * DataContext implementation for reading CSV files.
@@ -299,21 +297,11 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
             return new CsvDataSet(csvReader, columns, maxRowsOrNull, columnCount, failOnInconsistentRowLength);
         }
 
-        return new SingleLineCsvDataSet(reader, createParser(), columns, maxRowsOrNull, columnCount,
-                failOnInconsistentRowLength);
+        return new SingleLineCsvDataSet(reader, columns, maxRowsOrNull, columnCount, _configuration);
     }
 
     private ICSVParser createParser() {
-        final ICSVParser parser;
-        if (_configuration.getEscapeChar() == _configuration.getQuoteChar()) {
-            parser = new RFC4180ParserBuilder().withSeparator(_configuration.getSeparatorChar())
-                    .withQuoteChar(_configuration.getQuoteChar()).build();
-        } else {
-            parser = new CSVParserBuilder().withSeparator(_configuration.getSeparatorChar())
-                    .withQuoteChar(_configuration.getQuoteChar()).withEscapeChar(_configuration.getEscapeChar())
-                    .build();
-        }
-        return parser;
+        return _configuration.createParser();
     }
 
     protected CSVReader createCsvReader(int skipLines) {
