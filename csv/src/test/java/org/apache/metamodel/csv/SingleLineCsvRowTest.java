@@ -36,8 +36,6 @@ import org.apache.metamodel.util.FileResource;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.opencsv.CSVParser;
-
 public class SingleLineCsvRowTest {
 
     @Test
@@ -45,9 +43,7 @@ public class SingleLineCsvRowTest {
         final List<Column> columns = new ArrayList<>();
         columns.add(new MutableColumn("1"));
         columns.add(new MutableColumn("2"));
-        CSVParser csvParser = new CSVParser();
-        @SuppressWarnings("deprecation")
-        final SingleLineCsvDataSet dataSet = new SingleLineCsvDataSet(null, csvParser, columns, null, 2, false);
+        final SingleLineCsvDataSet dataSet = new SingleLineCsvDataSet(null, columns, null, 2, new CsvConfiguration());
         final SingleLineCsvRow originalRow = new SingleLineCsvRow(dataSet, "foo,bar", 2, false, 1);
 
         final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
