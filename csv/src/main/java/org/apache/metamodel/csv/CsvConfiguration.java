@@ -26,10 +26,6 @@ import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.util.BaseObject;
 import org.apache.metamodel.util.FileHelper;
 
-import com.opencsv.CSVParserBuilder;
-import com.opencsv.ICSVParser;
-import com.opencsv.RFC4180ParserBuilder;
-
 /**
  * Represents the configuration for reading/parsing CSV files.
  */
@@ -199,17 +195,4 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
                 + ", separatorChar=" + separatorChar + ", quoteChar=" + quoteChar + ", escapeChar=" + escapeChar
                 + ", failOnInconsistentRowLength=" + failOnInconsistentRowLength + "]";
     }
-    
-    public ICSVParser createParser() {
-        if (getEscapeChar() == getQuoteChar()) {
-            return new RFC4180ParserBuilder().withSeparator(getSeparatorChar()).withQuoteChar(getQuoteChar()).build();
-        } else {
-            return new CSVParserBuilder()
-                    .withSeparator(getSeparatorChar())
-                    .withQuoteChar(getQuoteChar())
-                    .withEscapeChar(getEscapeChar())
-                    .build();
-        }
-    }
-
 }

@@ -41,59 +41,23 @@ import com.opencsv.ICSVParser;
 final class SingleLineCsvDataSet extends AbstractDataSet {
 
     private final BufferedReader _reader;
-    private final ICSVParser _csvParser;
     private final int _columnsInTable;
     private final boolean _failOnInconsistentRowLength;
-    private final CsvConfiguration _csvConfiguration;
+    private final CsvParserBuilder _csvParserBuilder;
     
     private volatile int _rowNumber;
     private volatile Integer _rowsRemaining;
     private volatile Row _row;
 
-    /**
-     * @param reader
-     * @param csvParser
-     * @param columns
-     * @param maxRows
-     * @param columnsInTable
-     * @param failOnInconsistentRowLength
-     * 
-     * @deprecated When instantiating a {@link SingleLineCsvDataSet} using this constructor the {@link ICSVParser} can
-     *             be reused in different threads in a parallel manner which is not promised to work by the
-     *             {@link ICSVParser}. Use
-     *             {@link #SingleLineCsvDataSet(BufferedReader, CsvConfiguration, List, Integer, int, boolean)} instead.
-     */
-    @Deprecated
-    public SingleLineCsvDataSet(BufferedReader reader, ICSVParser csvParser, List<Column> columns, Integer maxRows,
-            int columnsInTable, boolean failOnInconsistentRowLength) {
-        this(reader, csvParser, columns, maxRows, columnsInTable, failOnInconsistentRowLength, null);
-    }
-
-    /**
-     * @param reader
-     * @param columns
-     * @param maxRows
-     * @param columnsInTable
-     * @param csvParser
-     * @param failOnInconsistentRowLength
-     */
     public SingleLineCsvDataSet(final BufferedReader reader, final List<Column> columns, final Integer maxRows,
             final int columnsInTable, final CsvConfiguration csvConfiguration) {
-        this(reader, null, columns, maxRows, columnsInTable, csvConfiguration.isFailOnInconsistentRowLength(),
-                csvConfiguration);
-    }
-
-    private SingleLineCsvDataSet(final BufferedReader reader, final ICSVParser csvParser, final List<Column> columns,
-            final Integer maxRows, final int columnsInTable, final boolean failOnInconsistentRowLength,
-            final CsvConfiguration csvConfiguration) {
         super(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
         _reader = reader;
-        _csvParser = csvParser;
         _columnsInTable = columnsInTable;
-        _failOnInconsistentRowLength = failOnInconsistentRowLength;
+        _failOnInconsistentRowLength = csvConfiguration.isFailOnInconsistentRowLength();
         _rowNumber = 0;
         _rowsRemaining = maxRows;
-        _csvConfiguration = csvConfiguration;
+        _csvParserBuilder = new CsvParserBuilder(csvConfiguration);
     }
 
     @Override
@@ -131,10 +95,7 @@ final class SingleLineCsvDataSet extends AbstractDataSet {
     }
 
     protected ICSVParser getCsvParser() {
-        if (_csvConfiguration != null) {
-            return _csvConfiguration.createParser();
-        }
-        return _csvParser;
+        return _csvParserBuilder.build();
     }
 
     public boolean nextInternal() {
@@ -167,5 +128,4 @@ final class SingleLineCsvDataSet extends AbstractDataSet {
     public Row getRow() {
         return _row;
     }
-
 }

@@ -301,7 +301,7 @@ public final class CsvDataContext extends QueryPostprocessDataContext implements
     }
 
     private ICSVParser createParser() {
-        return _configuration.createParser();
+        return new CsvParserBuilder(_configuration).build();
     }
 
     protected CSVReader createCsvReader(int skipLines) {
