@@ -46,6 +46,7 @@ public class SingleLineCsvRowTest {
         columns.add(new MutableColumn("1"));
         columns.add(new MutableColumn("2"));
         CSVParser csvParser = new CSVParser();
+        @SuppressWarnings("deprecation")
         final SingleLineCsvDataSet dataSet = new SingleLineCsvDataSet(null, csvParser, columns, null, 2, false);
         final SingleLineCsvRow originalRow = new SingleLineCsvRow(dataSet, "foo,bar", 2, false, 1);
 
@@ -75,10 +76,9 @@ public class SingleLineCsvRowTest {
         columns.add(new MutableColumn("h").setColumnNumber(8));
         columns.add(new MutableColumn("J").setColumnNumber(10));
 
-        final CSVParser csvParser = new CSVParser();
         try (final DataSet dataSet = new SingleLineCsvDataSet(FileHelper
                 .getBufferedReader(new FileResource("src/test/resources/empty_fields.csv").read(),
-                        FileHelper.UTF_8_CHARSET), csvParser, columns, null, 11, false)) {
+                        FileHelper.UTF_8_CHARSET), columns, null, 11, new CsvConfiguration())) {
             dataSet.toRows().parallelStream().forEach(row -> {
                 for (int i = 0; i < 5; i++) {
                     assertEquals("", row.getValue(i));
