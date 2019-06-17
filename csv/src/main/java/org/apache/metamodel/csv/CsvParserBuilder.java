@@ -23,8 +23,8 @@ import com.opencsv.ICSVParser;
 import com.opencsv.RFC4180ParserBuilder;
 
 class CsvParserBuilder {
-    final CSVParserBuilder _csvParserBuilder;
-    final RFC4180ParserBuilder _rfc4180ParserBuilder;
+    private final CSVParserBuilder _csvParserBuilder;
+    private final RFC4180ParserBuilder _rfc4180ParserBuilder;
 
     CsvParserBuilder(final CsvConfiguration csvConfiguration) {
         if (csvConfiguration.getEscapeChar() == csvConfiguration.getQuoteChar()) {
