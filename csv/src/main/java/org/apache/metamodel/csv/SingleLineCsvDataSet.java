@@ -128,4 +128,5 @@ final class SingleLineCsvDataSet extends AbstractDataSet {
     public Row getRow() {
         return _row;
     }
+
 }
