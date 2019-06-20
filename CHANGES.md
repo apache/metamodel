@@ -1,6 +1,7 @@
 ### Apache MetaModel _WIP_
 
- * [METAMODEL-1211] - Fix bug of getting all SelectItems when performing nested loop joins.
+ * [METAMODEL-1213] - Fixed concurrency bug in single-line CSV parallel reader.
+ * [METAMODEL-1211] - Fixed bug of getting all SelectItems when performing nested loop joins.
  * Improved HBase query building by scanning columns instead of column families.
 
 ### Apache MetaModel 5.3.0
