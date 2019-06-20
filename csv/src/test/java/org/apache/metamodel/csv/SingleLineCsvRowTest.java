@@ -74,7 +74,7 @@ public class SingleLineCsvRowTest {
 
         try (final DataSet dataSet = new SingleLineCsvDataSet(FileHelper
                 .getBufferedReader(new FileResource("src/test/resources/empty_fields.csv").read(),
-                        FileHelper.UTF_8_CHARSET), columns, null, 11, new CsvConfiguration())) {
+                        FileHelper.UTF_8_ENCODING), columns, null, 11, new CsvConfiguration())) {
             dataSet.toRows().parallelStream().forEach(row -> {
                 for (int i = 0; i < 5; i++) {
                     assertEquals("", row.getValue(i));
