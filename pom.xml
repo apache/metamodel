@@ -43,11 +43,11 @@ under the License.
         <url>https://github.com/arjansh/metamodel.git</url>
         <connection>scm:git:https://github.com/arjansh/metamodel.git</connection>
         <developerConnection>scm:git:https://github.com/arjansh/metamodel.git</developerConnection>    
-		<tag>HEAD</tag>
+		<tag>MetaModel-5.2.1-HI1</tag>
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
 	<artifactId>MetaModel</artifactId>
-	<version>5.2.1-SNAPSHOT</version>
+	<version>5.2.1-HI1</version>
 	<name>MetaModel</name>
 	<description>MetaModel is a library that encapsulates the differences and enhances 
 		the capabilities of different datastores. Rich querying abilities are
