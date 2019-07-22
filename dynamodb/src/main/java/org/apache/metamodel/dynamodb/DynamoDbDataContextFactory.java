@@ -33,7 +33,9 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 
 /**
- * {@link DataContextFactory} for DynamoDB
+ * {@link DataContextFactory} for DynamoDB.
+ * 
+ * Properties used are: username, password, region and table defs.
  */
 public class DynamoDbDataContextFactory extends AbstractDataContextFactory {
 

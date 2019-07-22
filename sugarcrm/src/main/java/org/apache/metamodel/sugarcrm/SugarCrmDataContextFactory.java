@@ -28,6 +28,9 @@ import org.apache.metamodel.factory.UnsupportedDataContextPropertiesException;
 
 /**
  * {@link DataContextFactory} for SugarCRM.
+ * 
+ * Properties used for configuration are: url, username, password and database name (used for SugarCRM application
+ * name).
  */
 public class SugarCrmDataContextFactory extends AbstractDataContextFactory {
 
@@ -37,7 +40,8 @@ public class SugarCrmDataContextFactory extends AbstractDataContextFactory {
     }
 
     @Override
-    public DataContext create(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry)
+    public DataContext create(final DataContextProperties properties,
+            final ResourceFactoryRegistry resourceFactoryRegistry)
             throws UnsupportedDataContextPropertiesException, ConnectionException {
         final String sugarCrmBaseUrl = properties.getUrl();
         final String username = properties.getUsername();
