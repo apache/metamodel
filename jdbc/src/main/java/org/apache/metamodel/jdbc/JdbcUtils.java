@@ -18,12 +18,10 @@
  */
 package org.apache.metamodel.jdbc;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.metamodel.MetaModelException;
-import org.apache.metamodel.jdbc.dialects.DefaultQueryRewriter;
 import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.OperatorType;
@@ -75,15 +73,6 @@ public final class JdbcUtils {
         default:
             return new MetaModelException(message, e);
         }
-    }
-
-    /**
-     * @deprecated use {@link IQueryRewriter#setStatementParameter(PreparedStatement, int, Column, Object)}
-     */
-    @Deprecated
-    public static void setStatementValue(final PreparedStatement st, final int valueIndex, final Column column,
-            Object value) throws SQLException {
-        new DefaultQueryRewriter(null).setStatementParameter(st, valueIndex, column, value);
     }
 
     public static String getValueAsSql(Column column, Object value, IQueryRewriter queryRewriter) {

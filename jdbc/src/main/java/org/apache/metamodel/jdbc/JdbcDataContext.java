@@ -569,15 +569,6 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     }
 
     /**
-     * @deprecated Manually close {@link ResultSet} and {@link Statement} instead.
-     */
-    @Deprecated
-    public void close(Connection connection, ResultSet rs, Statement st) {
-        close(connection);
-        FileHelper.safeClose(rs, st);
-    }
-
-    /**
      * Convenience method to get the available catalogNames using this connection.
      * 
      * @return a String-array with the names of the available catalogs.

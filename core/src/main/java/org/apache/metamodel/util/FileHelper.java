@@ -359,14 +359,12 @@ public final class FileHelper {
         return new BufferedReader(reader);
     }
 
-    public static BufferedReader getBufferedReader(InputStream inputStream, Charset charset)
-            throws IllegalStateException {
+    public static BufferedReader getBufferedReader(InputStream inputStream, Charset charset) throws IllegalStateException {
         final Reader reader = getReader(inputStream, charset);
         return new BufferedReader(reader);
     }
 
-    public static BufferedReader getBufferedReader(InputStream inputStream, String encoding)
-            throws IllegalStateException {
+    public static BufferedReader getBufferedReader(InputStream inputStream, String encoding) throws IllegalStateException {
         final Reader reader = getReader(inputStream, encoding);
         return new BufferedReader(reader);
     }
@@ -388,59 +386,11 @@ public final class FileHelper {
     }
 
     public static void writeString(OutputStream outputStream, String string) throws IllegalStateException {
-        writeString(outputStream, string, DEFAULT_ENCODING);
-    }
-
-    /**
-     * Writes a string to a {@link OutputStream}, and then closes it.
-     * 
-     * @param outputStream
-     * @param string
-     * @param encoding
-     * @throws IllegalStateException
-     * @deprecated No longer advised for use since this will close the writer (just use {@link Writer#write(String)}).
-     */
-    @Deprecated
-    public static void writeString(OutputStream outputStream, String string, String encoding)
-            throws IllegalStateException {
-        final Writer writer = getWriter(outputStream, encoding);
-        writeString(writer, string);
-    }
-
-    /**
-     * Writes a string to a {@link Writer}, and then closes it.
-     * 
-     * @param writer
-     * @param string
-     * @throws IllegalStateException
-     * 
-     * @deprecated No longer advised for use since this will close the writer (just use {@link Writer#write(String)}).
-     */
-    @Deprecated
-    public static void writeString(Writer writer, String string) throws IllegalStateException {
-        try {
+        try (final Writer writer = getWriter(outputStream, DEFAULT_ENCODING)) {
             writer.write(string);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new IllegalStateException(e);
-        } finally {
-            safeClose(writer);
         }
-    }
-
-    /**
-     * Writes a string to a {@link Writer}, and then closes it.
-     * 
-     * @param writer
-     * @param string
-     * @param encoding
-     * @throws IllegalStateException
-     * 
-     * @deprecated No longer advised for use since this will close the writer (just use {@link Writer#write(String)})
-     *             and the encoding is never used.
-     */
-    @Deprecated
-    public static void writeString(Writer writer, String string, String encoding) throws IllegalStateException {
-        writeString(writer, string);
     }
 
     public static void writeStringAsFile(File file, String string) throws IllegalStateException {
@@ -452,8 +402,11 @@ public final class FileHelper {
     }
 
     public static void writeStringAsFile(File file, String string, Charset charset) throws IllegalStateException {
-        final BufferedWriter bw = getBufferedWriter(file, charset);
-        writeString(bw, string);
+        try (final BufferedWriter bw = getBufferedWriter(file, charset)) {
+            bw.write(string);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public static BufferedReader getBufferedReader(File file) throws IllegalStateException {
