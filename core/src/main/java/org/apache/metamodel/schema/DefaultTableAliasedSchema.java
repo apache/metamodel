@@ -86,14 +86,4 @@ public class DefaultTableAliasedSchema extends AbstractSchema implements Wrappin
     public String getQuote() {
         return wrappedSchema.getQuote();
     }
-    
-    @Override
-    public boolean equals(final Object other) {
-        return getWrappedSchema().equals(other);
-    }
-
-    @Override
-    public int hashCode() {
-        return getWrappedSchema().hashCode();
-    }
 }

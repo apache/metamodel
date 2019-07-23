@@ -33,6 +33,7 @@ import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.CompositeSchema;
+import org.apache.metamodel.schema.DefaultTableAliasedSchema;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
@@ -122,7 +123,8 @@ public class CompositeDataContext extends AbstractDataContext {
                         Schema dcSchema = dc.getSchemaByName(schema.getName());
                         if (dcSchema != null) {
                             // second round = try with schema equals method
-                            if (dcSchema.equals(schema)) {
+                            if (dcSchema.equals(schema) || (dcSchema instanceof DefaultTableAliasedSchema
+                                    && ((DefaultTableAliasedSchema) dcSchema).getWrappedSchema().equals(schema))) {
                                 logger.debug("DataContext for '{}' resolved (using equals) to: '{}'", table, dcSchema);
                                 result = dc;
                                 break;
