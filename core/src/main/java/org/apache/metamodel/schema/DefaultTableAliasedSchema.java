@@ -91,4 +91,9 @@ public class DefaultTableAliasedSchema extends AbstractSchema implements Wrappin
     public boolean equals(final Object other) {
         return getWrappedSchema().equals(other);
     }
+
+    @Override
+    public int hashCode() {
+        return getWrappedSchema().hashCode();
+    }
 }
