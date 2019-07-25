@@ -3,6 +3,7 @@
  * [METAMODEL-1151] - Created DataContextFactory implementations for each remaining module.
  * [METAMODEL-1213] - Fixed concurrency bug in single-line CSV parallel reader.
  * [METAMODEL-1211] - Fixed bug of getting all SelectItems when performing nested loop joins.
+ * [METAMODEL-1215] - Removed deprecated code from pre-Java 8 times.
  * Improved HBase query building by scanning columns instead of column families.
 
 ### Apache MetaModel 5.3.0
