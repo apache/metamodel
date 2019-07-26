@@ -20,6 +20,7 @@ package org.apache.metamodel.dynamodb;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.factory.AbstractDataContextFactory;
+import org.apache.metamodel.factory.DataContextFactory;
 import org.apache.metamodel.factory.DataContextProperties;
 import org.apache.metamodel.factory.ResourceFactoryRegistry;
 import org.apache.metamodel.util.SimpleTableDef;
@@ -31,6 +32,11 @@ import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 
+/**
+ * {@link DataContextFactory} for DynamoDB.
+ * 
+ * Properties used are: username, password, region and table defs.
+ */
 public class DynamoDbDataContextFactory extends AbstractDataContextFactory {
 
     @Override
