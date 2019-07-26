@@ -4,6 +4,7 @@
  * [METAMODEL-1214] - CompositeDataContext uses wrappedSchema for comparison when searching for it in the cache.
  * [METAMODEL-1213] - Fixed concurrency bug in single-line CSV parallel reader.
  * [METAMODEL-1211] - Fixed bug of getting all SelectItems when performing nested loop joins.
+ * [METAMODEL-1151] - Created DataContextFactory implementations for each remaining module.
  * Improved HBase query building by scanning columns instead of column families.
 
 ### Apache MetaModel 5.3.0
