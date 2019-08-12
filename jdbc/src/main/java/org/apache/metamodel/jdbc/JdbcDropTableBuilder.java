@@ -66,12 +66,12 @@ final class JdbcDropTableBuilder extends AbstractTableDropBuilder implements Tab
     protected String createSqlStatement() {
         final Table table = getTable();
         final FromItem fromItem = new FromItem(table);
-        final String tableLabel = _queryRewriter.rewriteFromItem(fromItem);
+        final String qualifiedTableName = _queryRewriter.rewriteFromItem(fromItem);
 
         if (table.getType() != null && table.getType() == TableType.VIEW) {
-            return "DROP VIEW " + tableLabel;
+            return "DROP VIEW " + qualifiedTableName;
         } else {
-            return "DROP TABLE " + tableLabel;
+            return "DROP TABLE " + qualifiedTableName;
         }
     }
 
