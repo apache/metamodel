@@ -29,6 +29,7 @@ import org.apache.metamodel.jdbc.dialects.IQueryRewriter;
 import org.apache.metamodel.query.FromItem;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.TableType;
 
 /**
  * {@link TableDropBuilder} that issues an SQL DROP TABLE statement
@@ -63,10 +64,15 @@ final class JdbcDropTableBuilder extends AbstractTableDropBuilder implements Tab
     }
 
     protected String createSqlStatement() {
-        FromItem fromItem = new FromItem(getTable());
-        String tableLabel = _queryRewriter.rewriteFromItem(fromItem);
+        final Table table = getTable();
+        final FromItem fromItem = new FromItem(table);
+        final String qualifiedTableName = _queryRewriter.rewriteFromItem(fromItem);
 
-        return "DROP TABLE " + tableLabel;
+        if (table.getType() != null && table.getType() == TableType.VIEW) {
+            return "DROP VIEW " + qualifiedTableName;
+        } else {
+            return "DROP TABLE " + qualifiedTableName;
+        }
     }
 
 }
