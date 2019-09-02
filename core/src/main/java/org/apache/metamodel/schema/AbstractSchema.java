@@ -173,10 +173,16 @@ public abstract class AbstractSchema implements Schema {
 
     @Override
     public final int compareTo(Schema that) {
-        int diff = getQualifiedLabel().compareTo(that.getQualifiedLabel());
-        if (diff == 0) {
-            diff = toString().compareTo(that.toString());
+        if (getQualifiedLabel() == null) {
+            return that.getQualifiedLabel() == null ? 0 : -1;
+        } else if (that.getQualifiedLabel() == null) {
+            return 1;
+        } else {
+            int diff = getQualifiedLabel().compareTo(that.getQualifiedLabel());
+            if (diff == 0) {
+                diff = toString().compareTo(that.toString());
+            }
+            return diff;
         }
-        return diff;
     }
 }

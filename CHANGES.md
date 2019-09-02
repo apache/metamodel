@@ -1,6 +1,7 @@
 ### Apache MetaModel _WIP_
 
- * [METAMODEL-1217] - Fixes dropping JDBC Tables with view as TableType
+ * [METAMODEL-1218] - Fixed comparing schemas with name null.
+ * [METAMODEL-1217] - Fixed dropping JDBC Tables with view as TableType.
  * [METAMODEL-1215] - Removed deprecated code from pre-Java 8 times.
  * [METAMODEL-1214] - CompositeDataContext uses wrappedSchema for comparison when searching for it in the cache.
  * [METAMODEL-1213] - Fixed concurrency bug in single-line CSV parallel reader.
