@@ -802,7 +802,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         return schemas;
     }
 
-    private boolean hasDefaultSQLServerSchema(final DatabaseMetaData metaData) throws SQLException {
+    private static boolean hasDefaultSQLServerSchema(final DatabaseMetaData metaData) throws SQLException {
         ResultSet schemas = null;
         try {
             schemas = metaData.getSchemas();
