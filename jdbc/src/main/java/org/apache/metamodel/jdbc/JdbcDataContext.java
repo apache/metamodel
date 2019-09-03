@@ -790,7 +790,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
             while (resultSet.next()) {
                 if (resultSet.getString("TABLE_SCHEM").equals(DEFAULT_SCHEMA_NAME_SQLSERVER)) {
                     schemas.add(DEFAULT_SCHEMA_NAME_SQLSERVER);
-					break;
+                    break;
                 }
             }
         } finally {
