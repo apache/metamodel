@@ -101,6 +101,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     public static final String DATABASE_PRODUCT_IMPALA = "Impala";
 		
     private static final String DEFAULT_SCHEMA_NAME_SQLSERVER = "dbo";
+    private static final String RESULT_SET_COLUMN_NAME_SCHEMA_SQLSERVER = "TABLE_SCHEM";
 
     public static final ColumnType COLUMN_TYPE_CLOB_AS_STRING =
             new ColumnTypeImpl("CLOB", SuperColumnType.LITERAL_TYPE, String.class, true);
@@ -782,32 +783,38 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     private Set<String> getSchemaSQLServerNames(DatabaseMetaData metaData) throws SQLException {
         // Distinct schema names. metaData.getTables() is a denormalized resultset
         final Set<String> schemas = new HashSet<>();
-        ResultSet resultSet = null;
 
-        // Find DBO schema if present
-        try {
-            resultSet = metaData.getSchemas();
-            while (resultSet.next()) {
-                if (resultSet.getString("TABLE_SCHEM").equals(DEFAULT_SCHEMA_NAME_SQLSERVER)) {
-                    schemas.add(DEFAULT_SCHEMA_NAME_SQLSERVER);
-                    break;
-                }
-            }
-        } finally {
-            FileHelper.safeClose(resultSet);
+        if (hasDefaultSQLServerSchema(metaData)) {
+            schemas.add(DEFAULT_SCHEMA_NAME_SQLSERVER);
         }
 
-        // Find other schemas
+        // Find other schemas from tables
+        ResultSet tables = null;
         try {
-            resultSet = metaData.getTables(_catalogName, null, null, JdbcUtils.getTableTypesAsStrings(_tableTypes));
-            while (resultSet.next()) {
-                schemas.add(resultSet.getString("TABLE_SCHEM"));
+            tables = metaData.getTables(_catalogName, null, null, JdbcUtils.getTableTypesAsStrings(_tableTypes));
+            while (tables.next()) {
+                schemas.add(tables.getString(RESULT_SET_COLUMN_NAME_SCHEMA_SQLSERVER));
             }
         } finally {
-            FileHelper.safeClose(resultSet);
+            FileHelper.safeClose(tables);
         }
 
         return schemas;
+    }
+
+    private boolean hasDefaultSQLServerSchema(final DatabaseMetaData metaData) throws SQLException {
+        ResultSet schemas = null;
+        try {
+            schemas = metaData.getSchemas();
+            while (schemas.next()) {
+                if (schemas.getString(RESULT_SET_COLUMN_NAME_SCHEMA_SQLSERVER).equals(DEFAULT_SCHEMA_NAME_SQLSERVER)) {
+                    return true;
+                }
+            }
+        } finally {
+            FileHelper.safeClose(schemas);
+        }
+        return false;
     }
 
     public JdbcDataContext setQueryRewriter(IQueryRewriter queryRewriter) {
