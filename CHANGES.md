@@ -1,5 +1,6 @@
 ### Apache MetaModel _WIP_
 
+ * [METAMODEL-1219] - Improved returning schemas for SQL Server
  * [METAMODEL-1217] - Fixes dropping JDBC Tables with view as TableType
  * [METAMODEL-1215] - Removed deprecated code from pre-Java 8 times.
  * [METAMODEL-1214] - CompositeDataContext uses wrappedSchema for comparison when searching for it in the cache.

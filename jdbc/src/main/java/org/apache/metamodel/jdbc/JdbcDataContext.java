@@ -101,7 +101,8 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     public static final String DATABASE_PRODUCT_IMPALA = "Impala";
 		
     private static final String DEFAULT_SCHEMA_NAME_SQLSERVER = "dbo";
-    private static final String RESULT_SET_COLUMN_NAME_SCHEMA_SQLSERVER = "TABLE_SCHEM";
+
+    private static final String SCHEMA_NAME_IDENTIFIER = "TABLE_SCHEM";
 
     public static final ColumnType COLUMN_TYPE_CLOB_AS_STRING =
             new ColumnTypeImpl("CLOB", SuperColumnType.LITERAL_TYPE, String.class, true);
@@ -784,35 +785,29 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
         // Distinct schema names. metaData.getTables() is a denormalized resultset
         final Set<String> schemas = new HashSet<>();
 
+        // Add the default schema (if present) even though it can have no tables
         if (hasDefaultSQLServerSchema(metaData)) {
             schemas.add(DEFAULT_SCHEMA_NAME_SQLSERVER);
         }
 
         // Find other schemas from tables
-        ResultSet tables = null;
-        try {
-            tables = metaData.getTables(_catalogName, null, null, JdbcUtils.getTableTypesAsStrings(_tableTypes));
+        try (ResultSet tables = metaData
+                .getTables(_catalogName, null, null, JdbcUtils.getTableTypesAsStrings(_tableTypes))) {
             while (tables.next()) {
-                schemas.add(tables.getString(RESULT_SET_COLUMN_NAME_SCHEMA_SQLSERVER));
+                schemas.add(tables.getString(SCHEMA_NAME_IDENTIFIER));
             }
-        } finally {
-            FileHelper.safeClose(tables);
         }
 
         return schemas;
     }
 
     private static boolean hasDefaultSQLServerSchema(final DatabaseMetaData metaData) throws SQLException {
-        ResultSet schemas = null;
-        try {
-            schemas = metaData.getSchemas();
+        try (ResultSet schemas = metaData.getSchemas()) {
             while (schemas.next()) {
-                if (schemas.getString(RESULT_SET_COLUMN_NAME_SCHEMA_SQLSERVER).equals(DEFAULT_SCHEMA_NAME_SQLSERVER)) {
+                if (schemas.getString(SCHEMA_NAME_IDENTIFIER).equals(DEFAULT_SCHEMA_NAME_SQLSERVER)) {
                     return true;
                 }
             }
-        } finally {
-            FileHelper.safeClose(schemas);
         }
         return false;
     }
