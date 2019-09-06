@@ -1,4 +1,4 @@
-### Apache MetaModel _WIP_
+### Apache MetaModel 5.3.1
 
  * [METAMODEL-1219] - Improved returning schemas for SQL Server.
  * [METAMODEL-1218] - Fixed comparing schemas with name null.
