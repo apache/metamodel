@@ -288,7 +288,7 @@ under the License.
 				</executions>
 				<configuration>
 					<excludePackageNames>com.sugarcrm.ws.soap</excludePackageNames>
-					<additionalparam>-Xdoclint:none</additionalparam>
+					<doclint>none</doclint>
 				</configuration>
 			</plugin>
 
