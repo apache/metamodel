@@ -40,8 +40,6 @@ import org.slf4j.LoggerFactory;
  * @deprecated Instead of using this class just use the {@link RestHighLevelClient} itself. This class was introduced to
  *             support Elasticsearch 5.6.3, when the {@link RestHighLevelClient} didn't offer all needed functionality,
  *             but now it does, so please use that one instead of this one.
- * @author arjans
- *
  */
 @Deprecated
 public class ElasticSearchRestClient extends RestHighLevelClient {
