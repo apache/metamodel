@@ -115,7 +115,7 @@ public abstract class AbstractElasticSearchDataSet extends AbstractDataSet {
             return null;
         }
 
-        final Map<String, Object> source = _currentHit.getSource();
+        final Map<String, Object> source = _currentHit.getSourceAsMap();
         final String documentId = _currentHit.getId();
         return ElasticSearchUtils.createRow(source, documentId, getHeader());
     }

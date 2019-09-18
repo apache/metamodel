@@ -31,6 +31,7 @@ import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
@@ -39,7 +40,11 @@ import org.slf4j.LoggerFactory;
 /**
  * {@link RowDeletionBuilder} implementation for
  * {@link ElasticSearchDataContext}.
+ * 
+ * @deprecated {@link TransportClient} on which this implementation is based is deprecated in Elasticsearch 7.x and will
+ *             be removed in Elasticsearch 8. Please use ElasticSearchRestDeleteBuilder instead.
  */
+@Deprecated
 final class ElasticSearchDeleteBuilder extends AbstractRowDeletionBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDeleteBuilder.class);

@@ -81,11 +81,8 @@ public class ElasticSearchUtils {
             propertiesMap.put(fieldName, propertyMap);
         }
 
-        HashMap<String, Map<String, Map<String, String>>> docTypeMap = new HashMap<>();
-        docTypeMap.put("properties", propertiesMap);
-        
-        final Map<String, Map<String, Map<String, Map<String, String>>>> mapping = new HashMap<>();
-        mapping.put(table.getName(), docTypeMap);
+        final Map<String, Map<String, Map<String, String>>> mapping = new HashMap<>();
+        mapping.put("properties", propertiesMap);
         return mapping;
     }
 

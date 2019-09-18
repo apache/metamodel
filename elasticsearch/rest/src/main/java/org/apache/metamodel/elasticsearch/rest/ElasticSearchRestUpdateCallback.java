@@ -32,10 +32,15 @@ import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.DocWriteRequest;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.ClearScrollRequest;
+import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,6 +126,7 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
         bulkRequest = null;
     }
 
+    // TODO: This method is public, but I would like it to be package private
     public void execute(final ActionRequest action) {
         if (isBatch() && (action instanceof DocWriteRequest<?>)) {
             getBulkRequest().add((DocWriteRequest<?>) action);
@@ -135,20 +141,32 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
 
     private void executeBlocking(final ActionRequest action) {
         try {
-            if (action instanceof PutMappingRequest) {
-                getDataContext().getElasticSearchClient().createMapping((PutMappingRequest) action);
-            } else {
-                final ActionResponse result = getDataContext().getElasticSearchClient().execute(action);
+            final RestHighLevelClient client = getDataContext().getRestHighLevelClient();
+            final ActionResponse result;
 
-                if (result instanceof BulkResponse && ((BulkResponse) result).hasFailures()) {
-                    BulkItemResponse[] failedItems = ((BulkResponse) result).getItems();
-                    for (int i = 0; i < failedItems.length; i++) {
-                        if (failedItems[i].isFailed()) {
-                            final BulkItemResponse failedItem = failedItems[i];
-                            logger.error("Bulk failed with item no. {} of {}: id={} op={} status={} error={}", i + 1,
-                                    failedItems.length, failedItem.getId(), failedItem.getOpType(), failedItem.status(),
-                                    failedItem.getFailureMessage());
-                        }
+            if (action instanceof BulkRequest) {
+                result = client.bulk((BulkRequest) action, RequestOptions.DEFAULT);
+            } else if (action instanceof IndexRequest) {
+                result = client.index((IndexRequest) action, RequestOptions.DEFAULT);
+            } else if (action instanceof DeleteRequest) {
+                result = client.delete((DeleteRequest) action, RequestOptions.DEFAULT);
+            } else if (action instanceof ClearScrollRequest) {
+                result = client.clearScroll((ClearScrollRequest) action, RequestOptions.DEFAULT);
+            } else if (action instanceof SearchScrollRequest) {
+                result = client.scroll((SearchScrollRequest) action, RequestOptions.DEFAULT);
+            } else {
+                result = null;
+            }
+
+            if (result instanceof BulkResponse && ((BulkResponse) result).hasFailures()) {
+                BulkItemResponse[] failedItems = ((BulkResponse) result).getItems();
+                for (int i = 0; i < failedItems.length; i++) {
+                    if (failedItems[i].isFailed()) {
+                        final BulkItemResponse failedItem = failedItems[i];
+                        logger
+                                .error("Bulk failed with item no. {} of {}: id={} op={} status={} error={}", i + 1,
+                                        failedItems.length, failedItem.getId(), failedItem.getOpType(), failedItem
+                                                .status(), failedItem.getFailureMessage());
                     }
                 }
             }

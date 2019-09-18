@@ -35,6 +35,7 @@ import org.apache.metamodel.factory.UnsupportedDataContextPropertiesException;
 import org.apache.metamodel.util.SimpleTableDef;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
 
 /**
  * Factory for ElasticSearch data context of REST type.
@@ -78,7 +79,7 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
         return true;
     }
 
-    private ElasticSearchRestClient createClient(final DataContextProperties properties) throws MalformedURLException {
+    private RestHighLevelClient createClient(final DataContextProperties properties) throws MalformedURLException {
         final URL url = new URL(properties.getUrl());
         final RestClientBuilder builder = RestClient.builder(new HttpHost(url.getHost(), url.getPort()));
         
@@ -91,7 +92,7 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
                     credentialsProvider));
         }
 
-        return new ElasticSearchRestClient(builder.build());
+        return new RestHighLevelClient(builder);
     }
 
     private String getIndex(DataContextProperties properties) {
@@ -106,7 +107,7 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
     public DataContext create(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry)
             throws UnsupportedDataContextPropertiesException, ConnectionException {
         try {
-            ElasticSearchRestClient client = createClient(properties);
+            final RestHighLevelClient client = createClient(properties);
             final String indexName = getIndex(properties);
             final SimpleTableDef[] tableDefinitions = properties.getTableDefs();
             return new ElasticSearchRestDataContext(client, indexName, tableDefinitions);

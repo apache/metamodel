@@ -18,26 +18,34 @@
  */
 package org.apache.metamodel.elasticsearch.rest;
 
+import static org.apache.metamodel.elasticsearch.rest.ElasticSearchRestDataContext.DEFAULT_TABLE_NAME;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.http.HttpHost;
 import org.apache.metamodel.BatchUpdateScript;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
+import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.factory.DataContextFactory;
 import org.apache.metamodel.factory.DataContextPropertiesImpl;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
-import org.elasticsearch.action.index.IndexRequest;
+import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
+import org.apache.metamodel.schema.TableType;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.PutMappingRequest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +53,7 @@ import org.junit.Test;
 public class ElasticSearchRestDataContexFactoryIT {
     private static final String INDEX_NAME = "myindex";
 
-    private static ElasticSearchRestClient externalClient;
+    private static RestHighLevelClient externalClient;
 
     private String dockerHostAddress;
 
@@ -55,22 +63,24 @@ public class ElasticSearchRestDataContexFactoryIT {
     public void setUp() throws Exception {
         dockerHostAddress = ElasticSearchRestDataContextIT.determineHostName();
 
-        externalClient = new ElasticSearchRestClient(RestClient.builder(new HttpHost(dockerHostAddress, 9200)).build());
+        externalClient = new RestHighLevelClient(RestClient.builder(new HttpHost(dockerHostAddress, 9200)));
+        externalClient.indices().create(new CreateIndexRequest(INDEX_NAME), RequestOptions.DEFAULT);
 
-        final Map<String, Object> source = new LinkedHashMap<>();
-        source.put("mytext", "dummy");
+        final PutMappingRequest putMappingRequest = new PutMappingRequest(INDEX_NAME);
+        putMappingRequest
+                .source(ElasticSearchUtils
+                        .getMappingSource(new MutableTable(DEFAULT_TABLE_NAME, TableType.TABLE, new MutableSchema(
+                                INDEX_NAME), new MutableColumn("name", ColumnType.STRING), new MutableColumn("age",
+                                        ColumnType.INTEGER))));
 
-        final IndexRequest indexRequest = new IndexRequest(INDEX_NAME, "text");
-        indexRequest.source(source);
-
-        externalClient.index(indexRequest);
+        externalClient.indices().putMapping(putMappingRequest, RequestOptions.DEFAULT);
 
         factory = new ElasticSearchRestDataContextFactory();
     }
 
     @After
     public void tearDown() throws IOException {
-        externalClient.delete(INDEX_NAME);
+        externalClient.indices().delete(new DeleteIndexRequest(INDEX_NAME), RequestOptions.DEFAULT);
     }
 
     @Test
@@ -92,40 +102,35 @@ public class ElasticSearchRestDataContexFactoryIT {
 
         assertTrue(factory.accepts(properties, null));
 
-        final ElasticSearchRestDataContext dataContext = (ElasticSearchRestDataContext) factory.create(properties,
-                null);
+        final ElasticSearchRestDataContext dataContext = (ElasticSearchRestDataContext) factory
+                .create(properties, null);
 
         dataContext.executeUpdate(new BatchUpdateScript() {
             @Override
             public void run(UpdateCallback callback) {
-                callback.createTable(INDEX_NAME, "persons")
-                        .withColumn("name").ofType(ColumnType.STRING)
-                        .withColumn("age").ofType(ColumnType.INTEGER)
-                        .execute();
-            }
-        });
-
-        dataContext.executeUpdate(new BatchUpdateScript() {
-            @Override
-            public void run(UpdateCallback callback) {
-                callback.insertInto("persons").value("name", "John Doe").value("age", 42).execute();
-                callback.insertInto("persons").value("name", "Jane Doe").value("age", 41).execute();
+                callback.insertInto(DEFAULT_TABLE_NAME).value("name", "John Doe").value("age", 42).execute();
+                callback.insertInto(DEFAULT_TABLE_NAME).value("name", "Jane Doe").value("age", 41).execute();
             }
         });
 
         dataContext.refreshSchemas();
 
-        final DataSet persons = dataContext.executeQuery("SELECT name, age FROM persons");
+        final DataSet persons = dataContext.executeQuery("SELECT name, age FROM " + DEFAULT_TABLE_NAME);
         final List<Row> personData = persons.toRows();
 
         assertEquals(2, personData.size());
 
         // Sort person data, so we can validate each row's values.
-        Column ageColumn = dataContext.getSchemaByName(INDEX_NAME).getTableByName("persons").getColumnByName("age");
-        personData.sort((row1, row2) -> ((Integer) row1.getValue(ageColumn)).compareTo(((Integer) row2.getValue(
-                ageColumn))));
+        final Column ageColumn = dataContext
+                .getSchemaByName(INDEX_NAME)
+                .getTableByName(DEFAULT_TABLE_NAME)
+                .getColumnByName("age");
+        personData
+                .sort((row1, row2) -> ((Integer) row1.getValue(ageColumn))
+                        .compareTo(((Integer) row2.getValue(ageColumn))));
 
         assertThat(Arrays.asList(personData.get(0).getValues()), containsInAnyOrder("Jane Doe", 41));
         assertThat(Arrays.asList(personData.get(1).getValues()), containsInAnyOrder("John Doe", 42));
     }
+
 }

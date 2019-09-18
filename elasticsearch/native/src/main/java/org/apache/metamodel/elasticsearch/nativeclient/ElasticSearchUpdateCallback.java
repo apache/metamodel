@@ -28,10 +28,15 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.update.RowUpdationBuilder;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
 
 /**
  * {@link UpdateCallback} implementation for {@link ElasticSearchDataContext}.
+ * 
+ * @deprecated {@link TransportClient} on which this implementation is based is deprecated in Elasticsearch 7.x and will
+ *             be removed in Elasticsearch 8. Please use ElasticSearchUpdateCallback instead.
  */
+@Deprecated
 final class ElasticSearchUpdateCallback extends AbstractUpdateCallback {
 
     public ElasticSearchUpdateCallback(ElasticSearchDataContext dataContext) {

@@ -28,6 +28,8 @@ import org.apache.metamodel.query.SelectItem;
 import org.elasticsearch.action.search.ClearScrollRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,11 +40,11 @@ final class ElasticSearchRestDataSet extends AbstractElasticSearchDataSet {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchRestDataSet.class);
 
-    private final ElasticSearchRestClient _client;
+    private final RestHighLevelClient client;
 
-    public ElasticSearchRestDataSet(final ElasticSearchRestClient client, final SearchResponse searchResponse, final List<SelectItem> selectItems) {
+    public ElasticSearchRestDataSet(final RestHighLevelClient client, final SearchResponse searchResponse, final List<SelectItem> selectItems) {
         super(searchResponse, selectItems);
-        _client = client;
+        this.client = client;
     }
 
     @Override
@@ -51,7 +53,7 @@ final class ElasticSearchRestDataSet extends AbstractElasticSearchDataSet {
         final ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
         clearScrollRequest.addScrollId(scrollId);
         try {
-            _client.execute(clearScrollRequest);
+            client.clearScroll((ClearScrollRequest) clearScrollRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             logger.warn("Could not clear scroll.", e);
         }
@@ -59,7 +61,7 @@ final class ElasticSearchRestDataSet extends AbstractElasticSearchDataSet {
 
     @Override
     protected SearchResponse scrollSearchResponse(final String scrollId) throws IOException {
-        return _client.searchScroll(new SearchScrollRequest(scrollId).scroll(
-                AbstractElasticSearchDataContext.TIMEOUT_SCROLL));
+        return client.scroll(new SearchScrollRequest(scrollId).scroll(
+                AbstractElasticSearchDataContext.TIMEOUT_SCROLL), RequestOptions.DEFAULT);
     }
 }

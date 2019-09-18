@@ -31,7 +31,7 @@ import org.apache.metamodel.util.SimpleTableDef;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +59,11 @@ import org.slf4j.LoggerFactory;
  * <li>keystorePassword (optional, only available if clientType is "transport")
  * </li>
  * </ul>
+ * 
+ * @deprecated {@link TransportClient} on which this implementation is based is deprecated in Elasticsearch 7.x and will
+ *             be removed in Elasticsearch 8. Please use ElasticSearchRestDataContext instead.
  */
+@Deprecated
 public class ElasticSearchDataContextFactory implements DataContextFactory {
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContextFactory.class);
 
@@ -131,10 +135,16 @@ public class ElasticSearchDataContextFactory implements DataContextFactory {
     }
 
     private Client createTransportClient(DataContextProperties properties) {
-        final Settings settings = Settings.builder().put().put("name", "MetaModel").put("cluster.name", getCluster(properties)).build();
+        final Settings settings = Settings
+                .builder()
+                .put("name", "MetaModel")
+                .put("cluster.name", getCluster(properties))
+                .build();
         final TransportClient client = new PreBuiltTransportClient(settings);
         try {
-            client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(properties.getHostname()), properties.getPort()));
+            client
+                    .addTransportAddress(new TransportAddress(InetAddress.getByName(properties.getHostname()),
+                            properties.getPort()));
         } catch (UnknownHostException e) {
             logger.warn("no IP address for the host with name \"{}\" could be found.", properties.getHostname());
         }
