@@ -126,8 +126,7 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
         bulkRequest = null;
     }
 
-    // TODO: This method is public, but I would like it to be package private
-    public void execute(final ActionRequest action) {
+    void execute(final ActionRequest action) {
         if (isBatch() && (action instanceof DocWriteRequest<?>)) {
             getBulkRequest().add((DocWriteRequest<?>) action);
             bulkActionCount++;
