@@ -76,9 +76,6 @@ public class ElasticSearchRestDataContextIT {
     private static final String DEFAULT_DOCKER_HOST_NAME = "localhost";
 
     private static final String INDEX_NAME = "twitter";
-    private static final String INDEX_TYPE_1 = "tweet1";
-    private static final String INDEX_TYPE_2 = "tweet2";
-    private static final String BULK_INDEX_TYPE = "bulktype";
 
     private static RestHighLevelClient client;
 
@@ -126,7 +123,7 @@ public class ElasticSearchRestDataContextIT {
 
     @Test
     public void testSimpleQuery() throws Exception {
-        indexTweeterDocument(INDEX_TYPE_1, 1);
+        indexTweeterDocument(1);
 
         assertArrayEquals(new String[] { DEFAULT_TABLE_NAME }, dataContext
                 .getDefaultSchema()
@@ -167,9 +164,9 @@ public class ElasticSearchRestDataContextIT {
     }
 
     private void indexType2TweeterDocuments() throws IOException {
-        indexTweeterDocument(INDEX_TYPE_2, 1);
-        indexTweeterDocument(INDEX_TYPE_2, 2, null);
-        indexTweeterDocument(INDEX_TYPE_2, 1);
+        indexTweeterDocument(1);
+        indexTweeterDocument(2, null);
+        indexTweeterDocument(1);
 
         dataContext.refreshSchemas();
     }
@@ -194,7 +191,7 @@ public class ElasticSearchRestDataContextIT {
 
     @Test
     public void testDateIsHandledAsDate() throws Exception {
-        indexTweeterDocument(INDEX_TYPE_1, 1);
+        indexTweeterDocument(1);
 
         final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
         final Column column = table.getColumnByName("postDate");
@@ -352,7 +349,7 @@ public class ElasticSearchRestDataContextIT {
 
     @Test
     public void testWhereColumnEqualsValues() throws Exception {
-        indexBulkDocuments(INDEX_NAME, BULK_INDEX_TYPE, 10);
+        indexBulkDocuments(INDEX_NAME, 10);
 
         try (DataSet ds = dataContext
                 .query()
@@ -410,7 +407,7 @@ public class ElasticSearchRestDataContextIT {
 
     @Test
     public void testWhereMultiColumnsEqualValues() throws Exception {
-        indexBulkDocuments(INDEX_NAME, BULK_INDEX_TYPE, 10);
+        indexBulkDocuments(INDEX_NAME, 10);
         try (DataSet ds = dataContext
                 .query()
                 .from(DEFAULT_TABLE_NAME)
@@ -431,7 +428,7 @@ public class ElasticSearchRestDataContextIT {
 
     @Test
     public void testWhereColumnInValues() throws Exception {
-        indexBulkDocuments(INDEX_NAME, BULK_INDEX_TYPE, 10);
+        indexBulkDocuments(INDEX_NAME, 10);
         try (DataSet ds = dataContext
                 .query()
                 .from(DEFAULT_TABLE_NAME)
@@ -483,7 +480,7 @@ public class ElasticSearchRestDataContextIT {
 
     @Test
     public void testFilterOnNumberColumn() throws Exception {
-        indexBulkDocuments(INDEX_NAME, BULK_INDEX_TYPE, 10);
+        indexBulkDocuments(INDEX_NAME, 10);
         final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
         final Query q = dataContext.query().from(table).select("user").where("message").greaterThan(7).toQuery();
         final DataSet data = dataContext.executeQuery(q);
@@ -510,7 +507,7 @@ public class ElasticSearchRestDataContextIT {
 
     @Test
     public void testCountQuery() throws Exception {
-        indexBulkDocuments(INDEX_NAME, BULK_INDEX_TYPE, 10);
+        indexBulkDocuments(INDEX_NAME, 10);
         final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
         final Query q = new Query().selectCount().from(table);
 
@@ -528,7 +525,7 @@ public class ElasticSearchRestDataContextIT {
 
     @Test(expected = QueryParserException.class)
     public void testQueryForAnExistingTableAndNonExistingField() throws Exception {
-        indexTweeterDocument(INDEX_TYPE_1, 1);
+        indexTweeterDocument(1);
         dataContext.query().from(DEFAULT_TABLE_NAME).select("nonExistingField").execute();
     }
 
@@ -586,14 +583,14 @@ public class ElasticSearchRestDataContextIT {
     
     @Test(expected = MetaModelException.class)
     public void testInsertIntoSecondTable() throws Exception {
-        indexTweeterDocument(INDEX_TYPE_1, 1);
+        indexTweeterDocument(1);
 
         final InsertInto insertInto = new InsertInto(new MutableTable("SecondTable", TableType.TABLE, dataContext
                 .getDefaultSchema(), new MutableColumn("foo", ColumnType.STRING))).value("foo", "bar");
         dataContext.executeUpdate(insertInto);
     }
     
-    private static void indexBulkDocuments(final String indexName, final String indexType, final int numberOfDocuments)
+    private static void indexBulkDocuments(final String indexName, final int numberOfDocuments)
             throws IOException {
         final BulkRequest bulkRequest = new BulkRequest();
 
@@ -609,15 +606,15 @@ public class ElasticSearchRestDataContextIT {
         dataContext.refreshSchemas();
     }
 
-    private static void indexTweeterDocument(final String indexType, final int id, final Date date) throws IOException {
-        final IndexRequest indexRequest = new IndexRequest(INDEX_NAME).id("tweet_" + indexType + "_" + id);
+    private static void indexTweeterDocument(final int id, final Date date) throws IOException {
+        final IndexRequest indexRequest = new IndexRequest(INDEX_NAME).id("tweet_tweet2_" + id);
         indexRequest.source(buildTweeterJson(id, date));
 
         client.index(indexRequest, RequestOptions.DEFAULT);
     }
 
-    private static void indexTweeterDocument(String indexType, int id) throws IOException {
-        final IndexRequest indexRequest = new IndexRequest(INDEX_NAME).id("tweet_" + indexType + "_" + id);
+    private static void indexTweeterDocument(int id) throws IOException {
+        final IndexRequest indexRequest = new IndexRequest(INDEX_NAME).id("tweet_tweet2_" + id);
         indexRequest.source(buildTweeterJson(id));
 
         client.index(indexRequest, RequestOptions.DEFAULT);
