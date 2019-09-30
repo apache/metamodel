@@ -37,26 +37,34 @@ public final class ExcelConfiguration extends BaseObject implements
 
 	public static final int NO_COLUMN_NAME_LINE = 0;
 	public static final int DEFAULT_COLUMN_NAME_LINE = 1;
+	public static final int EAGER_READ = 1000;
 
 	private final int columnNameLineNumber;
 	private final ColumnNamingStrategy columnNamingStrategy;
 	private final boolean skipEmptyLines;
 	private final boolean skipEmptyColumns;
+    private final boolean validateColumnTypes;
 
 	public ExcelConfiguration() {
 		this(DEFAULT_COLUMN_NAME_LINE, true, false);
 	}
 
     public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns) {
-        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns);
+        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns, false);
+    }
+    
+    public ExcelConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy,
+            Boolean skipEmptyLines, Boolean skipEmptyColumns) {
+        this(columnNameLineNumber, columnNamingStrategy, skipEmptyLines, skipEmptyColumns, false);
     }
 
     public ExcelConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy,
-            boolean skipEmptyLines, boolean skipEmptyColumns) {
+            boolean skipEmptyLines, boolean skipEmptyColumns, boolean validateColumnTypes) {
         this.columnNameLineNumber = columnNameLineNumber;
         this.skipEmptyLines = skipEmptyLines;
         this.skipEmptyColumns = skipEmptyColumns;
         this.columnNamingStrategy = columnNamingStrategy;
+        this.validateColumnTypes = validateColumnTypes;
     }
     
     /**
@@ -101,6 +109,16 @@ public final class ExcelConfiguration extends BaseObject implements
 	public boolean isSkipEmptyColumns() {
 		return skipEmptyColumns;
 	}
+
+    /**
+     * Defines if columns in the excel spreadsheet should be validated on datatypes while
+     * reading the spreadsheet.
+     * 
+     * @return a boolean indicating whether or not to validate column types.
+     */
+    public boolean isValidateColumnTypes() {
+        return validateColumnTypes;
+    }
 
 	@Override
 	protected void decorateIdentity(List<Object> identifiers) {

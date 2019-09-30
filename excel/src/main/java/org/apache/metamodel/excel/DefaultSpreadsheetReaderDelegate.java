@@ -65,13 +65,13 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         _configuration = configuration;
     }
 
-    public Schema createSchema(String schemaName, boolean validateColumnTypes) {
+    public Schema createSchema(String schemaName) {
         final MutableSchema schema = new MutableSchema(schemaName);
         final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
         try {
             for (int i = 0; i < wb.getNumberOfSheets(); i++) {
                 final Sheet currentSheet = wb.getSheetAt(i);
-                final MutableTable table = createTable(wb, currentSheet, validateColumnTypes);
+                final MutableTable table = createTable(wb, currentSheet, _configuration.isValidateColumnTypes());
                 table.setSchema(schema);
                 schema.addTable(table);
             }
@@ -80,11 +80,6 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         } finally {
             FileHelper.safeClose(wb);
         }
-    }
-
-    @Override
-    public Schema createSchema(String schemaName) {
-        return createSchema(schemaName, false);
     }
 
     @Override
@@ -197,7 +192,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     private ColumnType[] getColumnTypes(final Sheet sheet, final Row row) {
         final Iterator<Row> data = ExcelUtils.getRowIterator(sheet, _configuration, false);
         final int rowLength = row.getLastCellNum();
-        int eagerness = 1000;
+        int eagerness = ExcelConfiguration.EAGER_READ;
         final ColumnType[] columnTypes = new ColumnType[rowLength];
 
         while (data.hasNext() && eagerness-- > 0) {
