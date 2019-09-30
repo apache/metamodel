@@ -52,6 +52,10 @@ public final class ExcelConfiguration extends BaseObject implements
     public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns) {
         this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns, false);
     }
+
+    public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns, boolean validateColumnTypes) {
+        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns, validateColumnTypes);
+    }
     
     public ExcelConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy,
             Boolean skipEmptyLines, Boolean skipEmptyColumns) {

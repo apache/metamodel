@@ -419,6 +419,19 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(ds.next());
     }
 
+    public void testDataTypes() throws Exception {
+        ExcelConfiguration conf = new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, true, true, true);
+        ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/testDataTypes.xlsx"), conf);
+        Schema schema = dc.getMainSchema();
+        assertEquals(1, schema.getTableCount());
+
+        Table table = schema.getTables().get(0);
+        assertEquals("[Column[name=INTEGER,columnNumber=0,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=STRING,columnNumber=1,type=STRING,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=FORMULA,columnNumber=2,type=FORMULA,nullable=true,nativeType=null,columnSize=null]]",
+                Arrays.toString(table.getColumns().toArray()));
+    }
+
     public void testMissingColumnHeader() throws Exception {
         File file = copyOf("src/test/resources/xls_missing_column_header.xls");
         DataContext dc = new ExcelDataContext(file);
