@@ -141,7 +141,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             while (row == null && rowIterator.hasNext()) {
                 row = rowIterator.next();
             }
-            
+
             // build columns without any intrinsic column names
             final ColumnNamingStrategy columnNamingStrategy = _configuration.getColumnNamingStrategy();
             try (final ColumnNamingSession columnNamingSession = columnNamingStrategy.startColumnNamingSession()) {
@@ -149,7 +149,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                 for (int i = 0; i < offset; i++) {
                     columnNamingSession.getNextColumnName(new ColumnNamingContextImpl(i));
                 }
-                
+
                 for (int j = offset; j < row.getLastCellNum(); j++) {
                     final ColumnNamingContext namingContext = new ColumnNamingContextImpl(table, null, j);
                     final Column column;
@@ -166,11 +166,11 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                     table.addColumn(column);
                 }
             }
-            
+
         } else {
-        	
+
             boolean hasColumns = true;
-            
+
             // iterate to the column name line number (if above 1)
             for (int j = 1; j < columnNameLineNumber; j++) {
                 if (rowIterator.hasNext()) {
@@ -180,12 +180,12 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                     break;
                 }
             }
-            
+
             if (hasColumns) {
                 createColumns(table, wb, row, columnTypes);
             }
         }
-        
+
         return table;
     }
 
@@ -262,9 +262,9 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             return;
         }
         final short rowLength = row.getLastCellNum();
-        
+
         final int offset = getColumnOffset(row);
-        
+
         // build columns based on cell values.
         try (final ColumnNamingSession columnNamingSession = _configuration.getColumnNamingStrategy()
                 .startColumnNamingSession()) {
