@@ -65,14 +65,13 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         _configuration = configuration;
     }
 
-    @Override
-    public Schema createSchema(String schemaName) {
+    public Schema createSchema(String schemaName, boolean validateColumnTypes) {
         final MutableSchema schema = new MutableSchema(schemaName);
         final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
         try {
             for (int i = 0; i < wb.getNumberOfSheets(); i++) {
                 final Sheet currentSheet = wb.getSheetAt(i);
-                final MutableTable table = createTable(wb, currentSheet);
+                final MutableTable table = createTable(wb, currentSheet, validateColumnTypes);
                 table.setSchema(schema);
                 schema.addTable(table);
             }
@@ -81,6 +80,11 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         } finally {
             FileHelper.safeClose(wb);
         }
+    }
+
+    @Override
+    public Schema createSchema(String schemaName) {
+        return createSchema(schemaName, false);
     }
 
     @Override
@@ -105,7 +109,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         // do nothing
     }
 
-    private MutableTable createTable(final Workbook wb, final Sheet sheet) {
+    private MutableTable createTable(final Workbook wb, final Sheet sheet, boolean validateColumnTypes) {
         final MutableTable table = new MutableTable(sheet.getSheetName(), TableType.TABLE);
 
         if (sheet.getPhysicalNumberOfRows() <= 0) {
@@ -126,14 +130,13 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             while (row == null && rowIterator.hasNext()) {
                 row = rowIterator.next();
             }
+            
         } else {
             row = rowIterator.next();
         }
 
-        // Get first 1000 rows for the eager-read
-        final ColumnType[] columnTypes = getColumnTypes(sheet, row);
-
         final int columnNameLineNumber = _configuration.getColumnNameLineNumber();
+        
         if (columnNameLineNumber == ExcelConfiguration.NO_COLUMN_NAME_LINE) {
 
             // get to the first non-empty line (no matter if lines are skipped
@@ -142,6 +145,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             while (row == null && rowIterator.hasNext()) {
                 row = rowIterator.next();
             }
+            
             // build columns without any intrinsic column names
             final ColumnNamingStrategy columnNamingStrategy = _configuration.getColumnNamingStrategy();
             try (final ColumnNamingSession columnNamingSession = columnNamingStrategy.startColumnNamingSession()) {
@@ -149,15 +153,29 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                 for (int i = 0; i < offset; i++) {
                     columnNamingSession.getNextColumnName(new ColumnNamingContextImpl(i));
                 }
+                
                 for (int j = offset; j < row.getLastCellNum(); j++) {
                     final ColumnNamingContext namingContext = new ColumnNamingContextImpl(table, null, j);
-                    final Column column = new MutableColumn(columnNamingSession.getNextColumnName(namingContext),
-                            columnTypes[j], table, j, true);
+                    final Column column;
+                    if (validateColumnTypes) {
+
+                        final ColumnType[] columnTypes = getColumnTypes(sheet, row);
+                        column =
+                                new MutableColumn(columnNamingSession.getNextColumnName(namingContext), columnTypes[j],
+                                        table, j, true);
+                    } else {
+                        column =
+                                new MutableColumn(columnNamingSession.getNextColumnName(namingContext),
+                                        ColumnType.STRING, table, j, true);
+                    }
                     table.addColumn(column);
                 }
             }
+            
         } else {
+        	
             boolean hasColumns = true;
+            
             // iterate to the column name line number (if above 1)
             for (int j = 1; j < columnNameLineNumber; j++) {
                 if (rowIterator.hasNext()) {
@@ -167,10 +185,12 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                     break;
                 }
             }
+            
             if (hasColumns) {
                 createColumns(table, wb, row, columnTypes);
             }
         }
+        
         return table;
     }
 
@@ -181,54 +201,57 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         final ColumnType[] columnTypes = new ColumnType[rowLength];
 
         while (data.hasNext() && eagerness-- > 0) {
-            Row currentRow = data.next();
+            final Row currentRow = data.next();
             for (int index = 0; index < rowLength; index++) {
                 if (currentRow.getLastCellNum() == 0) {
                     continue;
                 }
-                if (currentRow.getCell(index) == null) {
-                    checkColumnType(ColumnType.STRING, columnTypes, index);
-                } else {
-                    CellType cellType = currentRow.getCell(index).getCellType();
-                    switch (cellType) {
-                    case NUMERIC:
-                        if (DateUtil.isCellDateFormatted(currentRow.getCell(index))) {
-                            checkColumnType(ColumnType.DATE, columnTypes, index);
-                        } else {
-                            checkColumnType((currentRow.getCell(index).getNumericCellValue() % 1 == 0)
-                                    ? ColumnType.INTEGER : ColumnType.DOUBLE, columnTypes, index);
-                        }
-                        break;
-                    case BOOLEAN:
-                        checkColumnType(ColumnType.BOOLEAN, columnTypes, index);
-                        break;
-                    case ERROR:
-                        // fall through
-                        break;
-                    case _NONE:
-                        // fall through
-                    case STRING:
-                        // fall through
-                    case FORMULA:
-                        // fall through
-                    case BLANK:
-                        checkColumnType(ColumnType.STRING, columnTypes, index);
-                        break;
-                    }
-                }
+                columnTypes[index] = getColumnTypeFromRow(columnTypes[index], currentRow, index);
             }
         }
         return columnTypes;
     }
 
-    private void checkColumnType(final ColumnType columnType, final ColumnType[] columnTypes, int index) {
-        if (columnTypes[index] != null) {
-            if (!columnTypes[index].equals(ColumnType.STRING) && !columnTypes[index].equals(columnType)) {
-                columnTypes[index] = ColumnType.STRING;
+	private ColumnType getColumnTypeFromRow(final ColumnType columnType, final Row currentRow, int index) {
+		if (currentRow.getCell(index) == null) {
+		    return checkColumnType(ColumnType.STRING, columnType);
+		} else {
+		    CellType cellType = currentRow.getCell(index).getCellType();
+		    switch (cellType) {
+		    case NUMERIC:
+		        if (DateUtil.isCellDateFormatted(currentRow.getCell(index))) {
+		            return checkColumnType(ColumnType.DATE, columnType);
+		        } else {
+		            return checkColumnType((currentRow.getCell(index).getNumericCellValue() % 1 == 0)
+		                    ? ColumnType.INTEGER : ColumnType.DOUBLE, columnType);
+		        }
+		    case BOOLEAN:
+		        return checkColumnType(ColumnType.BOOLEAN, columnType);
+		    case ERROR:
+		        // fall through
+		    case _NONE:
+		        // fall through
+		    case STRING:
+		        // fall through
+		    case FORMULA:
+		        // fall through
+		    case BLANK:
+		    	// fall through
+		    default :
+		        return checkColumnType(ColumnType.STRING, columnType);
+		    }
+		}
+	}
+
+    private ColumnType checkColumnType(final ColumnType expecetedColumnType, ColumnType columnType) {
+        if (columnType != null) {
+            if (!columnType.equals(ColumnType.STRING) && !columnType.equals(expecetedColumnType)) {
+                return ColumnType.STRING;
             }
         } else {
-            columnTypes[index] = columnType;
+            return expecetedColumnType;
         }
+        return columnType;
     }
 
     /**
@@ -238,16 +261,17 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
      * @param wb
      * @param row
      */
-    private void createColumns(MutableTable table, Workbook wb, Row row, ColumnType[] columTypes) {
+    private void createColumns(final MutableTable table, final Workbook wb, final Row row, final ColumnType[] columTypes) {
         if (row == null) {
             logger.warn("Cannot create columns based on null row!");
             return;
         }
         final short rowLength = row.getLastCellNum();
+        
         final int offset = getColumnOffset(row);
+        
         // build columns based on cell values.
-        try (final ColumnNamingSession columnNamingSession = _configuration
-                .getColumnNamingStrategy()
+        try (final ColumnNamingSession columnNamingSession = _configuration.getColumnNamingStrategy()
                 .startColumnNamingSession()) {
             for (int j = offset; j < rowLength; j++) {
                 final Cell cell = row.getCell(j);
@@ -255,7 +279,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                 final ColumnNamingContext columnNamingContext = new ColumnNamingContextImpl(table, intrinsicColumnName,
                         j);
                 final String columnName = columnNamingSession.getNextColumnName(columnNamingContext);
-                Column column = null;
+                final Column column;
                 if (columTypes == null) {
                     column = new MutableColumn(columnName, ColumnType.VARCHAR, table, j, true);
                 } else {
@@ -267,9 +291,9 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     /**
-     * Gets the column offset (first column to include). This is dependent on the
-     * row used for column processing and whether the skip empty columns property is
-     * set.
+     * Gets the column offset (first column to include). This is dependent on
+     * the row used for column processing and whether the skip empty columns
+     * property is set.
      * 
      * @param row
      * @return
