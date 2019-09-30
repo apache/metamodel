@@ -136,6 +136,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         }
 
         final int columnNameLineNumber = _configuration.getColumnNameLineNumber();
+        final ColumnType[] columnTypes = getColumnTypes(sheet, row);
         
         if (columnNameLineNumber == ExcelConfiguration.NO_COLUMN_NAME_LINE) {
 
@@ -159,7 +160,6 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                     final Column column;
                     if (validateColumnTypes) {
 
-                        final ColumnType[] columnTypes = getColumnTypes(sheet, row);
                         column =
                                 new MutableColumn(columnNamingSession.getNextColumnName(namingContext), columnTypes[j],
                                         table, j, true);
@@ -246,7 +246,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     private ColumnType checkColumnType(final ColumnType expecetedColumnType, ColumnType columnType) {
         if (columnType != null) {
             if (!columnType.equals(ColumnType.STRING) && !columnType.equals(expecetedColumnType)) {
-                return ColumnType.STRING;
+                return ColumnType.VARCHAR;
             }
         } else {
             return expecetedColumnType;
