@@ -197,6 +197,9 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
 
         while (data.hasNext() && eagerness-- > 0) {
             final Row currentRow = data.next();
+            if (currentRow.getRowNum() < _configuration.getColumnNameLineNumber()) {
+                continue;
+            }
             for (int index = 0; index < rowLength; index++) {
                 if (currentRow.getLastCellNum() == 0) {
                     continue;

@@ -402,9 +402,9 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(2, schema.getTableCount());
 
         Table table = schema.getTables().get(0);
-        assertEquals("[Column[name=a,columnNumber=0,type=STRING,nullable=true,nativeType=null,columnSize=null], "
-                + "Column[name=b,columnNumber=1,type=STRING,nullable=true,nativeType=null,columnSize=null], "
-                + "Column[name=c,columnNumber=2,type=STRING,nullable=true,nativeType=null,columnSize=null], "
+        assertEquals("[Column[name=a,columnNumber=0,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=b,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=c,columnNumber=2,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
                 + "Column[name=d,columnNumber=3,type=STRING,nullable=true,nativeType=null,columnSize=null]]",
                 Arrays.toString(table.getColumns().toArray()));
 
@@ -419,6 +419,20 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(ds.next());
     }
 
+    public void testDifferentDataTypes() throws Exception {
+        DataContext dc = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"), 
+                new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, true, false, true));
+        
+        Schema schema = dc.getDefaultSchema();
+        assertEquals(2, schema.getTableCount());
+
+        Table table = schema.getTables().get(0);
+        assertEquals("[Column[name=INTEGER,columnNumber=0,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=TEXT,columnNumber=1,type=STRING,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=FORMULA,columnNumber=2,type=STRING,nullable=true,nativeType=null,columnSize=null]]",
+                Arrays.toString(table.getColumns().toArray()));
+    }
+
     public void testMissingColumnHeader() throws Exception {
         File file = copyOf("src/test/resources/xls_missing_column_header.xls");
         DataContext dc = new ExcelDataContext(file);
@@ -426,10 +440,10 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(2, schema.getTableCount());
 
         Table table = schema.getTables().get(0);
-        assertEquals("[Column[name=a,columnNumber=0,type=STRING,nullable=true,nativeType=null,columnSize=null], "
-                + "Column[name=b,columnNumber=1,type=STRING,nullable=true,nativeType=null,columnSize=null], "
-                + "Column[name=A,columnNumber=2,type=STRING,nullable=true,nativeType=null,columnSize=null], "
-                + "Column[name=d,columnNumber=3,type=STRING,nullable=true,nativeType=null,columnSize=null]]",
+        assertEquals("[Column[name=a,columnNumber=0,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=b,columnNumber=1,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=A,columnNumber=2,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
+                + "Column[name=d,columnNumber=3,type=INTEGER,nullable=true,nativeType=null,columnSize=null]]",
                 Arrays.toString(table.getColumns().toArray()));
 
         Query q = new Query().select(table.getColumns()).from(table);
@@ -532,7 +546,7 @@ public class ExcelDataContextTest extends TestCase {
 
         Table table = schema.getTableByName("Sheet1");
         assertEquals(
-                "[Column[name=Pkg No.,columnNumber=0,type=STRING,nullable=true,nativeType=null,columnSize=null], "
+                "[Column[name=Pkg No.,columnNumber=0,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
                         + "Column[name=Description,columnNumber=1,type=STRING,nullable=true,nativeType=null,columnSize=null], "
                         + "Column[name=Room,columnNumber=2,type=STRING,nullable=true,nativeType=null,columnSize=null], "
                         + "Column[name=Level,columnNumber=3,type=STRING,nullable=true,nativeType=null,columnSize=null]]",

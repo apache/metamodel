@@ -57,6 +57,10 @@ public final class ExcelConfiguration extends BaseObject implements
             Boolean skipEmptyLines, Boolean skipEmptyColumns) {
         this(columnNameLineNumber, columnNamingStrategy, skipEmptyLines, skipEmptyColumns, false);
     }
+    
+    public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns, boolean validateColumnTypes) {
+        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns, validateColumnTypes);
+    }
 
     public ExcelConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy,
             boolean skipEmptyLines, boolean skipEmptyColumns, boolean validateColumnTypes) {
@@ -125,12 +129,14 @@ public final class ExcelConfiguration extends BaseObject implements
 		identifiers.add(columnNameLineNumber);
 		identifiers.add(skipEmptyLines);
 		identifiers.add(skipEmptyColumns);
+        identifiers.add(validateColumnTypes);
 	}
 
 	@Override
 	public String toString() {
 		return "ExcelConfiguration[columnNameLineNumber="
 				+ columnNameLineNumber + ", skipEmptyLines=" + skipEmptyLines
-				+ ", skipEmptyColumns=" + skipEmptyColumns + "]";
+				+ ", skipEmptyColumns=" + skipEmptyColumns +", validateColumnTypes="
+				+ validateColumnTypes + "]";
 	}
 }
