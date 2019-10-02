@@ -402,7 +402,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(2, schema.getTableCount());
 
         Table table = schema.getTables().get(0);
-        assertEquals("[Column[name=a,columnNumber=0,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
+        assertEquals("[Column[name=a,columnNumber=0,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
                 + "Column[name=b,columnNumber=1,type=VARCHAR,nullable=true,nativeType=null,columnSize=null], "
                 + "Column[name=c,columnNumber=2,type=INTEGER,nullable=true,nativeType=null,columnSize=null], "
                 + "Column[name=d,columnNumber=3,type=STRING,nullable=true,nativeType=null,columnSize=null]]",

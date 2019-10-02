@@ -129,7 +129,7 @@ public final class ExcelConfiguration extends BaseObject implements
 		identifiers.add(columnNameLineNumber);
 		identifiers.add(skipEmptyLines);
 		identifiers.add(skipEmptyColumns);
-        identifiers.add(validateColumnTypes);
+		identifiers.add(validateColumnTypes);
 	}
 
 	@Override

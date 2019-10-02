@@ -65,13 +65,14 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         _configuration = configuration;
     }
 
+    @Override
     public Schema createSchema(String schemaName) {
         final MutableSchema schema = new MutableSchema(schemaName);
         final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
         try {
             for (int i = 0; i < wb.getNumberOfSheets(); i++) {
                 final Sheet currentSheet = wb.getSheetAt(i);
-                final MutableTable table = createTable(wb, currentSheet, _configuration.isValidateColumnTypes());
+                final MutableTable table = createTable(wb, currentSheet);
                 table.setSchema(schema);
                 schema.addTable(table);
             }
@@ -104,7 +105,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         // do nothing
     }
 
-    private MutableTable createTable(final Workbook wb, final Sheet sheet, boolean validateColumnTypes) {
+    private MutableTable createTable(final Workbook wb, final Sheet sheet) {
         final MutableTable table = new MutableTable(sheet.getSheetName(), TableType.TABLE);
 
         if (sheet.getPhysicalNumberOfRows() <= 0) {
@@ -153,7 +154,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                 for (int j = offset; j < row.getLastCellNum(); j++) {
                     final ColumnNamingContext namingContext = new ColumnNamingContextImpl(table, null, j);
                     final Column column;
-                    if (validateColumnTypes) {
+                    if (_configuration.isValidateColumnTypes()) {
 
                         column =
                                 new MutableColumn(columnNamingSession.getNextColumnName(namingContext), columnTypes[j],
