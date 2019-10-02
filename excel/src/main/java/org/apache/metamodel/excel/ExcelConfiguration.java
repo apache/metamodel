@@ -43,7 +43,7 @@ public final class ExcelConfiguration extends BaseObject implements
 	private final ColumnNamingStrategy columnNamingStrategy;
 	private final boolean skipEmptyLines;
 	private final boolean skipEmptyColumns;
-    private final boolean validateColumnTypes;
+	private final boolean detectColumnTypes;
 
 	public ExcelConfiguration() {
 		this(DEFAULT_COLUMN_NAME_LINE, true, false);
@@ -68,7 +68,7 @@ public final class ExcelConfiguration extends BaseObject implements
         this.skipEmptyLines = skipEmptyLines;
         this.skipEmptyColumns = skipEmptyColumns;
         this.columnNamingStrategy = columnNamingStrategy;
-        this.validateColumnTypes = validateColumnTypes;
+        this.detectColumnTypes = validateColumnTypes;
     }
     
     /**
@@ -121,7 +121,7 @@ public final class ExcelConfiguration extends BaseObject implements
      * @return a boolean indicating whether or not to validate column types.
      */
     public boolean isValidateColumnTypes() {
-        return validateColumnTypes;
+        return detectColumnTypes;
     }
 
 	@Override
@@ -129,7 +129,7 @@ public final class ExcelConfiguration extends BaseObject implements
 		identifiers.add(columnNameLineNumber);
 		identifiers.add(skipEmptyLines);
 		identifiers.add(skipEmptyColumns);
-		identifiers.add(validateColumnTypes);
+		identifiers.add(detectColumnTypes);
 	}
 
 	@Override
@@ -137,6 +137,6 @@ public final class ExcelConfiguration extends BaseObject implements
 		return "ExcelConfiguration[columnNameLineNumber="
 				+ columnNameLineNumber + ", skipEmptyLines=" + skipEmptyLines
 				+ ", skipEmptyColumns=" + skipEmptyColumns +", validateColumnTypes="
-				+ validateColumnTypes + "]";
+				+ detectColumnTypes + "]";
 	}
 }
