@@ -85,7 +85,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
     // we scroll when more than 400 rows are expected
     private static final int SCROLL_THRESHOLD = 400;
 
-    private final RestHighLevelClient restHightLevelClient;
+    private final RestHighLevelClient restHighLevelClient;
 
     /**
      * Constructs a {@link ElasticSearchRestDataContext}. This constructor
@@ -107,7 +107,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
         if (client == null) {
             throw new IllegalArgumentException("ElasticSearch Client cannot be null");
         }
-        restHightLevelClient = client;
+        restHighLevelClient = client;
         this.dynamicTableDefinitions.addAll(Arrays.asList(detectSchema()));
     }
 
@@ -321,6 +321,6 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
      * @return
      */
     RestHighLevelClient getRestHighLevelClient() {
-        return restHightLevelClient;
+        return restHighLevelClient;
     }
 }
