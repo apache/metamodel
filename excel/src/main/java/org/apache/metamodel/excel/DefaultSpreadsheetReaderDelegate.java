@@ -55,255 +55,253 @@ import org.slf4j.LoggerFactory;
  */
 final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultSpreadsheetReaderDelegate.class);
+	private static final Logger logger = LoggerFactory.getLogger(DefaultSpreadsheetReaderDelegate.class);
 
-    private final Resource _resource;
-    private final ExcelConfiguration _configuration;
+	private final Resource _resource;
+	private final ExcelConfiguration _configuration;
 
-    public DefaultSpreadsheetReaderDelegate(Resource resource, ExcelConfiguration configuration) {
-        _resource = resource;
-        _configuration = configuration;
-    }
+	public DefaultSpreadsheetReaderDelegate(Resource resource, ExcelConfiguration configuration) {
+		_resource = resource;
+		_configuration = configuration;
+	}
 
-    @Override
-    public Schema createSchema(String schemaName) {
-        final MutableSchema schema = new MutableSchema(schemaName);
-        final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
-        try {
-            for (int i = 0; i < wb.getNumberOfSheets(); i++) {
-                final Sheet currentSheet = wb.getSheetAt(i);
-                final MutableTable table = createTable(wb, currentSheet);
-                table.setSchema(schema);
-                schema.addTable(table);
-            }
+	@Override
+	public Schema createSchema(String schemaName) {
+		final MutableSchema schema = new MutableSchema(schemaName);
+		final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
+		try {
+			for (int i = 0; i < wb.getNumberOfSheets(); i++) {
+				final Sheet currentSheet = wb.getSheetAt(i);
+				final MutableTable table = createTable(wb, currentSheet);
+				table.setSchema(schema);
+				schema.addTable(table);
+			}
 
-            return schema;
-        } finally {
-            FileHelper.safeClose(wb);
-        }
-    }
-
-    @Override
-    public DataSet executeQuery(Table table, List<Column> columns, int maxRows) {
-        final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
-        final Sheet sheet = wb.getSheet(table.getName());
-
-        if (sheet == null || sheet.getPhysicalNumberOfRows() == 0) {
-            return new EmptyDataSet(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
-        }
-
-        DataSet dataSet = ExcelUtils.getDataSet(wb, sheet, table, _configuration);
-
-        if (maxRows > 0) {
-            dataSet = new MaxRowsDataSet(dataSet, maxRows);
-        }
-        return dataSet;
-    }
-
-    @Override
-    public void notifyTablesModified() {
-        // do nothing
-    }
-
-    private MutableTable createTable(final Workbook wb, final Sheet sheet) {
-        final MutableTable table = new MutableTable(sheet.getSheetName(), TableType.TABLE);
-
-        if (sheet.getPhysicalNumberOfRows() <= 0) {
-            // no physical rows in sheet
-            return table;
-        }
-
-        final Iterator<Row> rowIterator = ExcelUtils.getRowIterator(sheet, _configuration, false);
-
-        if (!rowIterator.hasNext()) {
-            // no physical rows in sheet
-            return table;
-        }
-
-        Row row = null;
-
-        if (_configuration.isSkipEmptyLines()) {
-            while (row == null && rowIterator.hasNext()) {
-                row = rowIterator.next();
-            }
-            
-        } else {
-            row = rowIterator.next();
-        }
-
-        final int columnNameLineNumber = _configuration.getColumnNameLineNumber();
-        final ColumnType[] columnTypes = getColumnTypes(sheet, row);
-        
-        if (columnNameLineNumber == ExcelConfiguration.NO_COLUMN_NAME_LINE) {
-
-            // get to the first non-empty line (no matter if lines are skipped
-            // or not we need to read ahead to figure out how many columns there
-            // are!)
-            while (row == null && rowIterator.hasNext()) {
-                row = rowIterator.next();
-            }
-
-            // build columns without any intrinsic column names
-            final ColumnNamingStrategy columnNamingStrategy = _configuration.getColumnNamingStrategy();
-            try (final ColumnNamingSession columnNamingSession = columnNamingStrategy.startColumnNamingSession()) {
-                final int offset = getColumnOffset(row);
-                for (int i = 0; i < offset; i++) {
-                    columnNamingSession.getNextColumnName(new ColumnNamingContextImpl(i));
-                }
-
-                for (int j = offset; j < row.getLastCellNum(); j++) {
-                    final ColumnNamingContext namingContext = new ColumnNamingContextImpl(table, null, j);
-                    final Column column;
-                    if (_configuration.isValidateColumnTypes()) {
-
-                        column =
-                                new MutableColumn(columnNamingSession.getNextColumnName(namingContext), columnTypes[j],
-                                        table, j, true);
-                    } else {
-                        column =
-                                new MutableColumn(columnNamingSession.getNextColumnName(namingContext),
-                                        ColumnType.STRING, table, j, true);
-                    }
-                    table.addColumn(column);
-                }
-            }
-
-        } else {
-
-            boolean hasColumns = true;
-
-            // iterate to the column name line number (if above 1)
-            for (int j = 1; j < columnNameLineNumber; j++) {
-                if (rowIterator.hasNext()) {
-                    row = rowIterator.next();
-                } else {
-                    hasColumns = false;
-                    break;
-                }
-            }
-
-            if (hasColumns) {
-                createColumns(table, wb, row, columnTypes);
-            }
-        }
-
-        return table;
-    }
-
-    private ColumnType[] getColumnTypes(final Sheet sheet, final Row row) {
-        final Iterator<Row> data = ExcelUtils.getRowIterator(sheet, _configuration, false);
-        final int rowLength = row.getLastCellNum();
-        int eagerness = ExcelConfiguration.EAGER_READ;
-        final ColumnType[] columnTypes = new ColumnType[rowLength];
-
-        while (data.hasNext() && eagerness-- > 0) {
-            final Row currentRow = data.next();
-            if (currentRow.getRowNum() < _configuration.getColumnNameLineNumber()) {
-                continue;
-            }
-            for (int index = 0; index < rowLength; index++) {
-                if (currentRow.getLastCellNum() == 0) {
-                    continue;
-                }
-                columnTypes[index] = getColumnTypeFromRow(columnTypes[index], currentRow, index);
-            }
-        }
-        return columnTypes;
-    }
-
-	private ColumnType getColumnTypeFromRow(final ColumnType columnType, final Row currentRow, int index) {
-		if (currentRow.getCell(index) == null) {
-		    return checkColumnType(ColumnType.STRING, columnType);
-		} else {
-		    CellType cellType = currentRow.getCell(index).getCellType();
-		    switch (cellType) {
-		    case NUMERIC:
-		        if (DateUtil.isCellDateFormatted(currentRow.getCell(index))) {
-		            return checkColumnType(ColumnType.DATE, columnType);
-		        } else {
-		            return checkColumnType((currentRow.getCell(index).getNumericCellValue() % 1 == 0)
-		                    ? ColumnType.INTEGER : ColumnType.DOUBLE, columnType);
-		        }
-		    case BOOLEAN:
-		        return checkColumnType(ColumnType.BOOLEAN, columnType);
-		    case ERROR:
-		        // fall through
-		    case _NONE:
-		        // fall through
-		    case STRING:
-		        // fall through
-		    case FORMULA:
-		        // fall through
-		    case BLANK:
-		    	// fall through
-		    default :
-		        return checkColumnType(ColumnType.STRING, columnType);
-		    }
+			return schema;
+		} finally {
+			FileHelper.safeClose(wb);
 		}
 	}
 
-    private ColumnType checkColumnType(final ColumnType expecetedColumnType, ColumnType columnType) {
-        if (columnType != null) {
-            if (!columnType.equals(ColumnType.STRING) && !columnType.equals(expecetedColumnType)) {
-                return ColumnType.VARCHAR;
-            }
-        } else {
-            return expecetedColumnType;
-        }
-        return columnType;
-    }
+	@Override
+	public DataSet executeQuery(Table table, List<Column> columns, int maxRows) {
+		final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
+		final Sheet sheet = wb.getSheet(table.getName());
 
-    /**
-     * Builds columns based on row/cell values.
-     * 
-     * @param table
-     * @param wb
-     * @param row
-     */
-    private void createColumns(final MutableTable table, final Workbook wb, final Row row, final ColumnType[] columTypes) {
-        if (row == null) {
-            logger.warn("Cannot create columns based on null row!");
-            return;
-        }
-        final short rowLength = row.getLastCellNum();
+		if (sheet == null || sheet.getPhysicalNumberOfRows() == 0) {
+			return new EmptyDataSet(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
+		}
 
-        final int offset = getColumnOffset(row);
+		DataSet dataSet = ExcelUtils.getDataSet(wb, sheet, table, _configuration);
 
-        // build columns based on cell values.
-        try (final ColumnNamingSession columnNamingSession = _configuration.getColumnNamingStrategy()
-                .startColumnNamingSession()) {
-            for (int j = offset; j < rowLength; j++) {
-                final Cell cell = row.getCell(j);
-                final String intrinsicColumnName = ExcelUtils.getCellValue(wb, cell);
-                final ColumnNamingContext columnNamingContext = new ColumnNamingContextImpl(table, intrinsicColumnName,
-                        j);
-                final String columnName = columnNamingSession.getNextColumnName(columnNamingContext);
-                final Column column;
-                if (columTypes == null) {
-                    column = new MutableColumn(columnName, ColumnType.VARCHAR, table, j, true);
-                } else {
-                    column = new MutableColumn(columnName, columTypes[j], table, j, true);
-                }
-                table.addColumn(column);
-            }
-        }
-    }
+		if (maxRows > 0) {
+			dataSet = new MaxRowsDataSet(dataSet, maxRows);
+		}
+		return dataSet;
+	}
 
-    /**
-     * Gets the column offset (first column to include). This is dependent on
-     * the row used for column processing and whether the skip empty columns
-     * property is set.
-     * 
-     * @param row
-     * @return
-     */
-    private int getColumnOffset(Row row) {
-        final int offset;
-        if (_configuration.isSkipEmptyColumns()) {
-            offset = row.getFirstCellNum();
-        } else {
-            offset = 0;
-        }
-        return offset;
-    }
+	@Override
+	public void notifyTablesModified() {
+		// do nothing
+	}
+
+	private MutableTable createTable(final Workbook wb, final Sheet sheet) {
+		final MutableTable table = new MutableTable(sheet.getSheetName(), TableType.TABLE);
+
+		if (sheet.getPhysicalNumberOfRows() <= 0) {
+			// no physical rows in sheet
+			return table;
+		}
+
+		final Iterator<Row> rowIterator = ExcelUtils.getRowIterator(sheet, _configuration, false);
+
+		if (!rowIterator.hasNext()) {
+			// no physical rows in sheet
+			return table;
+		}
+
+		Row row = null;
+
+		if (_configuration.isSkipEmptyLines()) {
+			while (row == null && rowIterator.hasNext()) {
+				row = rowIterator.next();
+			}
+
+		} else {
+			row = rowIterator.next();
+		}
+
+		final int columnNameLineNumber = _configuration.getColumnNameLineNumber();
+		final ColumnType[] columnTypes = getColumnTypes(sheet, row);
+
+		if (columnNameLineNumber == ExcelConfiguration.NO_COLUMN_NAME_LINE) {
+
+			// get to the first non-empty line (no matter if lines are skipped
+			// or not we need to read ahead to figure out how many columns there
+			// are!)
+			while (row == null && rowIterator.hasNext()) {
+				row = rowIterator.next();
+			}
+
+			// build columns without any intrinsic column names
+			final ColumnNamingStrategy columnNamingStrategy = _configuration.getColumnNamingStrategy();
+			try (final ColumnNamingSession columnNamingSession = columnNamingStrategy.startColumnNamingSession()) {
+				final int offset = getColumnOffset(row);
+				for (int i = 0; i < offset; i++) {
+					columnNamingSession.getNextColumnName(new ColumnNamingContextImpl(i));
+				}
+
+				for (int j = offset; j < row.getLastCellNum(); j++) {
+					final ColumnNamingContext namingContext = new ColumnNamingContextImpl(table, null, j);
+					final Column column;
+					if (_configuration.isValidateColumnTypes()) {
+
+						column = new MutableColumn(columnNamingSession.getNextColumnName(namingContext), columnTypes[j],
+								table, j, true);
+					} else {
+						column = new MutableColumn(columnNamingSession.getNextColumnName(namingContext),
+								ColumnType.STRING, table, j, true);
+					}
+					table.addColumn(column);
+				}
+			}
+
+		} else {
+
+			boolean hasColumns = true;
+
+			// iterate to the column name line number (if above 1)
+			for (int j = 1; j < columnNameLineNumber; j++) {
+				if (rowIterator.hasNext()) {
+					row = rowIterator.next();
+				} else {
+					hasColumns = false;
+					break;
+				}
+			}
+
+			if (hasColumns) {
+				createColumns(table, wb, row, columnTypes);
+			}
+		}
+
+		return table;
+	}
+
+	private ColumnType[] getColumnTypes(final Sheet sheet, final Row row) {
+		final Iterator<Row> data = ExcelUtils.getRowIterator(sheet, _configuration, false);
+		final int rowLength = row.getLastCellNum();
+		int eagerness = _configuration.getEagerness();
+		final ColumnType[] columnTypes = new ColumnType[rowLength];
+
+		while (data.hasNext() && eagerness-- > 0) {
+			final Row currentRow = data.next();
+			if (currentRow.getRowNum() < _configuration.getColumnNameLineNumber()) {
+				continue;
+			}
+			for (int index = 0; index < rowLength; index++) {
+				if (currentRow.getLastCellNum() == 0) {
+					continue;
+				}
+				
+				ColumnType columnType = columnTypes[index]; 
+				ColumnType expecetedColumnType = getColumnTypeFromRow(currentRow, index);
+				if (columnType != null) {
+					if (!columnType.equals(ColumnType.STRING) && !columnType.equals(expecetedColumnType)) {
+						columnTypes[index] = ColumnType.VARCHAR;
+					}
+				} else {
+					columnTypes[index] = expecetedColumnType;
+				}
+			}
+		}
+		return columnTypes;
+	}
+
+	private ColumnType getColumnTypeFromRow(final Row currentRow, int index) {
+		if (currentRow.getCell(index) == null) {
+			return ColumnType.STRING;
+		} else {
+			CellType cellType = currentRow.getCell(index).getCellType();
+			switch (cellType) {
+			case NUMERIC:
+				if (DateUtil.isCellDateFormatted(currentRow.getCell(index))) {
+					return ColumnType.DATE;
+				} else {
+					return (currentRow.getCell(index).getNumericCellValue() % 1 == 0)
+							? ColumnType.INTEGER : ColumnType.DOUBLE;
+				}
+			case BOOLEAN:
+				return ColumnType.BOOLEAN;
+			case ERROR:
+				// fall through
+			case _NONE:
+				// fall through
+			case STRING:
+				// fall through
+			case FORMULA:
+				// fall through
+			case BLANK:
+				// fall through
+			default:
+				return ColumnType.STRING;
+			}
+		}
+	}
+
+	/**
+	 * Builds columns based on row/cell values.
+	 * 
+	 * @param table
+	 * @param wb
+	 * @param row
+	 */
+	private void createColumns(final MutableTable table, final Workbook wb, final Row row,
+			final ColumnType[] columTypes) {
+		if (row == null) {
+			logger.warn("Cannot create columns based on null row!");
+			return;
+		}
+		final short rowLength = row.getLastCellNum();
+
+		final int offset = getColumnOffset(row);
+
+		// build columns based on cell values.
+		try (final ColumnNamingSession columnNamingSession = _configuration
+				.getColumnNamingStrategy()
+				.startColumnNamingSession()) {
+			for (int j = offset; j < rowLength; j++) {
+				final Cell cell = row.getCell(j);
+				final String intrinsicColumnName = ExcelUtils.getCellValue(wb, cell);
+				final ColumnNamingContext columnNamingContext = new ColumnNamingContextImpl(table, intrinsicColumnName,
+						j);
+				final String columnName = columnNamingSession.getNextColumnName(columnNamingContext);
+				final Column column;
+				if (!_configuration.isValidateColumnTypes()) {
+					column = new MutableColumn(columnName, ColumnType.VARCHAR, table, j, true);
+				} else {
+					column = new MutableColumn(columnName, columTypes[j], table, j, true);
+				}
+				table.addColumn(column);
+			}
+		}
+	}
+
+	/**
+	 * Gets the column offset (first column to include). This is dependent on
+	 * the row used for column processing and whether the skip empty columns
+	 * property is set.
+	 * 
+	 * @param row
+	 * @return
+	 */
+	private int getColumnOffset(Row row) {
+		final int offset;
+		if (_configuration.isSkipEmptyColumns()) {
+			offset = row.getFirstCellNum();
+		} else {
+			offset = 0;
+		}
+		return offset;
+	}
 }
