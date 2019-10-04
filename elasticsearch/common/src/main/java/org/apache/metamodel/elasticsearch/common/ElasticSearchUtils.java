@@ -264,6 +264,10 @@ public class ElasticSearchUtils {
     }
 
     public static Row createRow(final Map<String, Object> sourceMap, final String documentId, final DataSetHeader header) {
+        if (sourceMap == null) {
+            return null;
+        }
+        
         final Object[] values = new Object[header.size()];
         for (int i = 0; i < values.length; i++) {
             final SelectItem selectItem = header.getSelectItem(i);

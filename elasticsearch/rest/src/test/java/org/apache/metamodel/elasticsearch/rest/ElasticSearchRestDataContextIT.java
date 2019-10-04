@@ -190,6 +190,18 @@ public class ElasticSearchRestDataContextIT {
     }
 
     @Test
+    public void testMissingPrimaryKeyLookupQuery() throws Exception {
+        indexType2TweeterDocuments();
+
+        final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
+        final Column[] pks = table.getPrimaryKeys().toArray(new Column[0]);
+
+        try (DataSet ds = dataContext.query().from(table).selectAll().where(pks[0]).eq("missing").execute()) {
+            assertFalse(ds.next());
+        }
+    }
+
+    @Test
     public void testDateIsHandledAsDate() throws Exception {
         indexTweeterDocument(1);
 
