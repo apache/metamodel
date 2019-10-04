@@ -37,20 +37,20 @@ public final class ExcelConfiguration extends BaseObject implements
 
 	public static final int NO_COLUMN_NAME_LINE = 0;
 	public static final int DEFAULT_COLUMN_NAME_LINE = 1;
-	public static final int EAGER_READ = 1000;
 
+	private final int eagerReader;
 	private final int columnNameLineNumber;
 	private final ColumnNamingStrategy columnNamingStrategy;
 	private final boolean skipEmptyLines;
 	private final boolean skipEmptyColumns;
-    private final boolean validateColumnTypes;
+	private final boolean detectColumnTypes;
 
 	public ExcelConfiguration() {
 		this(DEFAULT_COLUMN_NAME_LINE, true, false);
 	}
 
     public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns) {
-        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns, false);
+        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns, false, 1000);
     }
 
     public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns, boolean validateColumnTypes) {
@@ -59,16 +59,21 @@ public final class ExcelConfiguration extends BaseObject implements
     
     public ExcelConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy,
             Boolean skipEmptyLines, Boolean skipEmptyColumns) {
-        this(columnNameLineNumber, columnNamingStrategy, skipEmptyLines, skipEmptyColumns, false);
+        this(columnNameLineNumber, columnNamingStrategy, skipEmptyLines, skipEmptyColumns, false, 1000);
+    }
+    
+    public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns, boolean validateColumnTypes) {
+        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns, validateColumnTypes, 1000);
     }
 
     public ExcelConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy,
-            boolean skipEmptyLines, boolean skipEmptyColumns, boolean validateColumnTypes) {
+            boolean skipEmptyLines, boolean skipEmptyColumns, boolean validateColumnTypes, int eagerness) {
         this.columnNameLineNumber = columnNameLineNumber;
         this.skipEmptyLines = skipEmptyLines;
         this.skipEmptyColumns = skipEmptyColumns;
         this.columnNamingStrategy = columnNamingStrategy;
-        this.validateColumnTypes = validateColumnTypes;
+        this.detectColumnTypes = validateColumnTypes;
+        this.eagerReader = eagerness;
     }
     
     /**
@@ -121,7 +126,7 @@ public final class ExcelConfiguration extends BaseObject implements
      * @return a boolean indicating whether or not to validate column types.
      */
     public boolean isValidateColumnTypes() {
-        return validateColumnTypes;
+        return detectColumnTypes;
     }
 
 	@Override
@@ -129,12 +134,18 @@ public final class ExcelConfiguration extends BaseObject implements
 		identifiers.add(columnNameLineNumber);
 		identifiers.add(skipEmptyLines);
 		identifiers.add(skipEmptyColumns);
+		identifiers.add(detectColumnTypes);
 	}
 
 	@Override
 	public String toString() {
 		return "ExcelConfiguration[columnNameLineNumber="
 				+ columnNameLineNumber + ", skipEmptyLines=" + skipEmptyLines
-				+ ", skipEmptyColumns=" + skipEmptyColumns + "]";
+				+ ", skipEmptyColumns=" + skipEmptyColumns +", validateColumnTypes="
+				+ detectColumnTypes + "]";
+	}
+
+	public int getEagerness() {
+		return eagerReader;
 	}
 }
