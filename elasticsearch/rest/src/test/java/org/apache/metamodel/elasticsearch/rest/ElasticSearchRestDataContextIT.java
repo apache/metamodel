@@ -64,7 +64,6 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -96,7 +95,7 @@ public class ElasticSearchRestDataContextIT {
     public void setUp() throws Exception {
         final String dockerHostAddress = determineHostName();
 
-        client = new RestHighLevelClient(RestClient.builder(new HttpHost(dockerHostAddress, 9200)));
+        client = ElasticSearchRestUtil.createClient(new HttpHost(dockerHostAddress, 9200), null, null);
         client.indices().create(new CreateIndexRequest(INDEX_NAME), RequestOptions.DEFAULT);
 
         dataContext = new ElasticSearchRestDataContext(client, INDEX_NAME);
