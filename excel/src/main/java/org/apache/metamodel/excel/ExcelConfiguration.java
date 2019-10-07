@@ -58,17 +58,17 @@ public final class ExcelConfiguration extends BaseObject implements
         this(columnNameLineNumber, columnNamingStrategy, skipEmptyLines, skipEmptyColumns, false, 1000);
     }
     
-    public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns, boolean validateColumnTypes) {
-        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns, validateColumnTypes, 1000);
+    public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns, boolean detectColumnTypes) {
+        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns, detectColumnTypes, 1000);
     }
 
     public ExcelConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy,
-            boolean skipEmptyLines, boolean skipEmptyColumns, boolean validateColumnTypes, int eagerness) {
+            boolean skipEmptyLines, boolean skipEmptyColumns, boolean detectColumnTypes, int eagerness) {
         this.columnNameLineNumber = columnNameLineNumber;
         this.skipEmptyLines = skipEmptyLines;
         this.skipEmptyColumns = skipEmptyColumns;
         this.columnNamingStrategy = columnNamingStrategy;
-        this.detectColumnTypes = validateColumnTypes;
+        this.detectColumnTypes = detectColumnTypes;
         this.eagerReader = eagerness;
     }
     
@@ -121,7 +121,7 @@ public final class ExcelConfiguration extends BaseObject implements
      * 
      * @return a boolean indicating whether or not to validate column types.
      */
-    public boolean isValidateColumnTypes() {
+    public boolean isDetectColumnTypes() {
         return detectColumnTypes;
     }
 
@@ -137,7 +137,7 @@ public final class ExcelConfiguration extends BaseObject implements
 	public String toString() {
 		return "ExcelConfiguration[columnNameLineNumber="
 				+ columnNameLineNumber + ", skipEmptyLines=" + skipEmptyLines
-				+ ", skipEmptyColumns=" + skipEmptyColumns +", validateColumnTypes="
+				+ ", skipEmptyColumns=" + skipEmptyColumns +", detectColumnTypes="
 				+ detectColumnTypes + "]";
 	}
 

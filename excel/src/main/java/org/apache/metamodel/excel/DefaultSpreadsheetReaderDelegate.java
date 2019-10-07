@@ -57,22 +57,22 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultSpreadsheetReaderDelegate.class);
 
-    private final Resource           _resource;
+    private final Resource _resource;
     private final ExcelConfiguration _configuration;
 
     public DefaultSpreadsheetReaderDelegate(Resource resource, ExcelConfiguration configuration) {
-        _resource      = resource;
+        _resource = resource;
         _configuration = configuration;
     }
 
     @Override
     public Schema createSchema(String schemaName) {
         final MutableSchema schema = new MutableSchema(schemaName);
-        final Workbook      wb     = ExcelUtils.readWorkbook(_resource, true);
+        final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
         try {
             for (int i = 0; i < wb.getNumberOfSheets(); i++) {
-                final Sheet        currentSheet = wb.getSheetAt(i);
-                final MutableTable table        = createTable(wb, currentSheet);
+                final Sheet currentSheet = wb.getSheetAt(i);
+                final MutableTable table = createTable(wb, currentSheet);
                 table.setSchema(schema);
                 schema.addTable(table);
             }
@@ -85,8 +85,8 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
 
     @Override
     public DataSet executeQuery(Table table, List<Column> columns, int maxRows) {
-        final Workbook wb    = ExcelUtils.readWorkbook(_resource, true);
-        final Sheet    sheet = wb.getSheet(table.getName());
+        final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
+        final Sheet sheet = wb.getSheet(table.getName());
 
         if (sheet == null || sheet.getPhysicalNumberOfRows() == 0) {
             return new EmptyDataSet(columns.stream().map(SelectItem::new).collect(Collectors.toList()));
@@ -126,14 +126,12 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             while (row == null && rowIterator.hasNext()) {
                 row = rowIterator.next();
             }
-
         } else {
             row = rowIterator.next();
         }
 
         final int          columnNameLineNumber = _configuration.getColumnNameLineNumber();
         final ColumnType[] columnTypes          = getColumnTypes(sheet, row);
-
         if (columnNameLineNumber == ExcelConfiguration.NO_COLUMN_NAME_LINE) {
 
             // get to the first non-empty line (no matter if lines are skipped
@@ -154,8 +152,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                 for (int j = offset; j < row.getLastCellNum(); j++) {
                     final ColumnNamingContext namingContext = new ColumnNamingContextImpl(table, null, j);
                     final Column              column;
-                    if (_configuration.isValidateColumnTypes()) {
-
+                    if (_configuration.isDetectColumnTypes()) {
                         column =
                                 new MutableColumn(columnNamingSession.getNextColumnName(namingContext), columnTypes[j],
                                         table, j, true);
@@ -191,10 +188,10 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     private ColumnType[] getColumnTypes(final Sheet sheet, final Row row) {
-        final Iterator<Row> data        = ExcelUtils.getRowIterator(sheet, _configuration, false);
-        final int           rowLength   = row.getLastCellNum();
-        int                 eagerness   = _configuration.getEagerness();
-        final ColumnType[]  columnTypes = new ColumnType[rowLength];
+        final Iterator<Row> data = ExcelUtils.getRowIterator(sheet, _configuration, false);
+        final int rowLength = row.getLastCellNum();
+        int eagerness = _configuration.getEagerness();
+        final ColumnType[] columnTypes = new ColumnType[rowLength];
 
         while (data.hasNext() && eagerness-- > 0) {
             final Row currentRow = data.next();
@@ -206,7 +203,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                     continue;
                 }
 
-                ColumnType columnType          = columnTypes[index];
+                ColumnType columnType = columnTypes[index];
                 ColumnType expecetedColumnType = getColumnTypeFromRow(currentRow, index);
                 if (columnType != null) {
                     if (!columnType.equals(ColumnType.STRING) && !columnType.equals(expecetedColumnType)) {
@@ -230,8 +227,8 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                     if (DateUtil.isCellDateFormatted(currentRow.getCell(index))) {
                         return ColumnType.DATE;
                     } else {
-                        return (currentRow.getCell(index).getNumericCellValue() % 1 == 0) ? ColumnType.INTEGER
-                                : ColumnType.DOUBLE;
+                        return (currentRow.getCell(index).getNumericCellValue() % 1 == 0) 
+                                ? ColumnType.INTEGER : ColumnType.DOUBLE;
                     }
                 case BOOLEAN:
                     return ColumnType.BOOLEAN;
@@ -265,21 +262,19 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             return;
         }
         final short rowLength = row.getLastCellNum();
-
         final int offset = getColumnOffset(row);
 
         // build columns based on cell values.
-        try (final ColumnNamingSession columnNamingSession =
-                _configuration.getColumnNamingStrategy().startColumnNamingSession()) {
+        try (final ColumnNamingSession columnNamingSession = _configuration.getColumnNamingStrategy()
+                .startColumnNamingSession()) {
             for (int j = offset; j < rowLength; j++) {
-                final Cell                cell                = row.getCell(j);
-                final String              intrinsicColumnName = ExcelUtils.getCellValue(wb, cell);
-                final ColumnNamingContext columnNamingContext =
-                        new ColumnNamingContextImpl(table, intrinsicColumnName, j);
-                final String              columnName          =
-                        columnNamingSession.getNextColumnName(columnNamingContext);
-                final Column              column;
-                if (!_configuration.isValidateColumnTypes()) {
+                final Cell cell  = row.getCell(j);
+                final String intrinsicColumnName = ExcelUtils.getCellValue(wb, cell);
+                final ColumnNamingContext columnNamingContext = new ColumnNamingContextImpl(table, intrinsicColumnName, 
+                        j);
+                final String columnName = columnNamingSession.getNextColumnName(columnNamingContext);
+                final Column column;
+                if (!_configuration.isDetectColumnTypes()) {
                     column = new MutableColumn(columnName, ColumnType.VARCHAR, table, j, true);
                 } else {
                     column = new MutableColumn(columnName, columTypes[j], table, j, true);
@@ -290,9 +285,9 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     /**
-     * Gets the column offset (first column to include). This is dependent on the
-     * row used for column processing and whether the skip empty columns property is
-     * set.
+     * Gets the column offset (first column to include). This is dependent on 
+     * the row used for column processing and whether the skip empty columns 
+     * property is set.
      * 
      * @param row
      * @return
