@@ -69,10 +69,31 @@ public class DeleteAndInsertBuilder extends AbstractRowUpdationBuilder {
     private List<Row> updateRows(List<Row> rows) {
         for (ListIterator<Row> it = rows.listIterator(); it.hasNext();) {
             final Row original = (Row) it.next();
+            validateUpdateType(original);
             final Row updated = update(original);
             it.set(updated);
         }
         return rows;
+    }
+
+    private void validateUpdateType(final Row original) {
+        for (int index = 0; index < this.getColumns().length; index++) {
+            switch(getColumns()[index].getType().getName()) {
+            case "INTEGER" :
+                try {
+                    Integer.decode(getValues()[index].toString());
+                } catch (NumberFormatException ex) {
+                    throw new MetaModelException(original.getValue(index).toString() + " should be an Integer!");
+                }
+                break;
+            case "STRING" :
+                // fall through
+            case "VARCHAR" :
+                // fall through
+            default :
+                break;
+            }
+        }
     }
 
     /**

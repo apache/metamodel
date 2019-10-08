@@ -130,8 +130,8 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             row = rowIterator.next();
         }
 
-        final int          columnNameLineNumber = _configuration.getColumnNameLineNumber();
-        final ColumnType[] columnTypes          = getColumnTypes(sheet, row);
+        final int columnNameLineNumber = _configuration.getColumnNameLineNumber();
+        final ColumnType[] columnTypes = getColumnTypes(sheet, row);
         if (columnNameLineNumber == ExcelConfiguration.NO_COLUMN_NAME_LINE) {
 
             // get to the first non-empty line (no matter if lines are skipped
@@ -151,7 +151,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
 
                 for (int j = offset; j < row.getLastCellNum(); j++) {
                     final ColumnNamingContext namingContext = new ColumnNamingContextImpl(table, null, j);
-                    final Column              column;
+                    final Column column;
                     if (_configuration.isDetectColumnTypes()) {
                         column =
                                 new MutableColumn(columnNamingSession.getNextColumnName(namingContext), columnTypes[j],
@@ -262,15 +262,16 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             return;
         }
         final short rowLength = row.getLastCellNum();
+
         final int offset = getColumnOffset(row);
 
         // build columns based on cell values.
         try (final ColumnNamingSession columnNamingSession = _configuration.getColumnNamingStrategy()
                 .startColumnNamingSession()) {
             for (int j = offset; j < rowLength; j++) {
-                final Cell cell  = row.getCell(j);
+                final Cell cell = row.getCell(j);
                 final String intrinsicColumnName = ExcelUtils.getCellValue(wb, cell);
-                final ColumnNamingContext columnNamingContext = new ColumnNamingContextImpl(table, intrinsicColumnName, 
+                final ColumnNamingContext columnNamingContext = new ColumnNamingContextImpl(table, intrinsicColumnName,
                         j);
                 final String columnName = columnNamingSession.getNextColumnName(columnNamingContext);
                 final Column column;
@@ -285,8 +286,8 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     /**
-     * Gets the column offset (first column to include). This is dependent on 
-     * the row used for column processing and whether the skip empty columns 
+     * Gets the column offset (first column to include). This is dependent on
+     * the row used for column processing and whether the skip empty columns
      * property is set.
      * 
      * @param row

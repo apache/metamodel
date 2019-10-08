@@ -20,12 +20,7 @@ package org.apache.metamodel.excel;
 
 import java.util.Date;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.data.Style;
 import org.apache.metamodel.data.Style.Color;
 import org.apache.metamodel.data.Style.SizeUnit;
@@ -33,8 +28,15 @@ import org.apache.metamodel.data.Style.TextAlignment;
 import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
 import org.apache.metamodel.insert.RowInsertionBuilder;
 import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.LazyRef;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
 
 /**
  * {@link RowInsertionBuilder} for excel spreadsheets.
@@ -149,8 +151,33 @@ final class ExcelInsertBuilder extends
 					cell.setCellStyle(cellStyle.get());
 				}
 			}
+			validateUpdateType(row);
 		}
 	}
+    
+    private void validateUpdateType(final Row original) {
+        for (int index = 0; index < this.getColumns().length; index++) {
+            final ColumnType columnType = getColumns()[index].getType();
+            if (columnType != null && getValues()[index] != null) {
+                switch (columnType.getName()) {
+                case "INTEGER":
+                    try {
+                        Integer.decode(getValues()[index].toString());
+                    } catch (NumberFormatException ex) {
+                        throw new MetaModelException(original.getCell(index)
+                                + " should be an Integer!");
+                    }
+                    break;
+                case "STRING":
+                    // fall through
+                case "VARCHAR":
+                    // fall through
+                default:
+                    break;
+                }
+            }
+        }
+    }
 
 	/**
 	 * Converts a percentage based font size to excel "pt" scale.

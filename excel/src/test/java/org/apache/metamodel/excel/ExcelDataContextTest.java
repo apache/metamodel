@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
@@ -431,6 +432,102 @@ public class ExcelDataContextTest extends TestCase {
                 + "Column[name=TEXT,columnNumber=1,type=STRING,nullable=true,nativeType=null,columnSize=null], "
                 + "Column[name=FORMULA,columnNumber=2,type=STRING,nullable=true,nativeType=null,columnSize=null]]",
                 Arrays.toString(table.getColumns().toArray()));
+    }
+    
+    public void testInsertingDifferentDataTypes() {
+        ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
+                new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, true, false, true));
+        Schema schema = dc.getDefaultSchema();
+        assertEquals(2, schema.getTableCount());
+
+        Table table = schema.getTable(0);
+        
+        dc.executeUpdate(new UpdateScript() {
+
+            @Override
+            public void run(UpdateCallback callback) {
+                try {
+                    callback.update(table).value("INTEGER", "this is not an integer").execute();
+                } catch (Exception ex) {
+                    assert true;
+                }
+            }
+
+        });
+            
+        dc.executeUpdate(new UpdateScript() {
+
+            @Override
+            public void run(UpdateCallback callback) {
+                try {
+                    callback.update(table).value("INTEGER", 123).execute();
+                } catch (Exception ex) {
+                    assert false;
+                }
+            }
+            
+        });
+    }
+    
+    public void testUpdateDifferentDataTypes() {
+        ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
+                new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, true, false, true));
+        Schema schema = dc.getDefaultSchema();
+        assertEquals(2, schema.getTableCount());
+
+        Table table = schema.getTable(0);
+        
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                try {
+                    callback.insertInto(table).value("INTEGER", "this is not an integer").execute();
+                    assert true;
+                } catch (MetaModelException mme) {
+                    assert true;
+                }
+            }
+
+        });
+        
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                try {
+                    callback.insertInto(table).value("TEXT", "this is not an integer").execute();
+                    assert true;
+                } catch (MetaModelException mme) {
+                    assert false;
+                }
+            }
+
+        });
+        
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                try {
+                    callback.insertInto(table).value("INTEGER", 1234).execute();
+                    assert true;
+                } catch (MetaModelException mme) {
+                    assert false;
+                }
+            }
+
+        });
+        
+        dc.executeUpdate(new UpdateScript() {
+            @Override
+            public void run(UpdateCallback callback) {
+                try {
+                    callback.insertInto(table).value("TEXT", 1234).execute();
+                    assert true;
+                } catch (MetaModelException mme) {
+                    assert false;
+                }
+            }
+
+        });
     }
 
     public void testMissingColumnHeader() throws Exception {
