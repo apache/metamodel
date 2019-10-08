@@ -58,12 +58,15 @@ public class ElasticSearchRestDataContexFactoryIT {
     private String dockerHostAddress;
 
     private DataContextFactory factory;
+    
+    private DataContextPropertiesImpl properties;
 
     @Before
     public void setUp() throws Exception {
         dockerHostAddress = ElasticSearchRestDataContextIT.determineHostName();
 
-        externalClient = new RestHighLevelClient(RestClient.builder(new HttpHost(dockerHostAddress, 9200)));
+        externalClient = new RestHighLevelClient(RestClient
+                .builder(new HttpHost(dockerHostAddress, ElasticSearchRestDataContextIT.DEFAULT_REST_CLIENT_PORT)));
         externalClient.indices().create(new CreateIndexRequest(INDEX_NAME), RequestOptions.DEFAULT);
 
         final PutMappingRequest putMappingRequest = new PutMappingRequest(INDEX_NAME);
@@ -76,6 +79,12 @@ public class ElasticSearchRestDataContexFactoryIT {
         externalClient.indices().putMapping(putMappingRequest, RequestOptions.DEFAULT);
 
         factory = new ElasticSearchRestDataContextFactory();
+
+        properties = new DataContextPropertiesImpl();
+        properties
+                .put(DataContextPropertiesImpl.PROPERTY_URL, "http://" + dockerHostAddress + ":"
+                        + ElasticSearchRestDataContextIT.DEFAULT_REST_CLIENT_PORT);
+        properties.put(DataContextPropertiesImpl.PROPERTY_DATABASE, INDEX_NAME);
     }
 
     @After
@@ -85,20 +94,14 @@ public class ElasticSearchRestDataContexFactoryIT {
 
     @Test
     public void testAccepts() throws Exception {
-        final DataContextPropertiesImpl properties = new DataContextPropertiesImpl();
         properties.setDataContextType("elasticsearch");
-        properties.put(DataContextPropertiesImpl.PROPERTY_URL, "http://" + dockerHostAddress + ":9200");
-        properties.put(DataContextPropertiesImpl.PROPERTY_DATABASE, INDEX_NAME);
 
         assertTrue(factory.accepts(properties, null));
     }
 
     @Test
     public void testCreateContextAndBulkScript() throws Exception {
-        final DataContextPropertiesImpl properties = new DataContextPropertiesImpl();
         properties.setDataContextType("es-rest");
-        properties.put(DataContextPropertiesImpl.PROPERTY_URL, "http://" + dockerHostAddress + ":9200");
-        properties.put(DataContextPropertiesImpl.PROPERTY_DATABASE, INDEX_NAME);
 
         assertTrue(factory.accepts(properties, null));
 

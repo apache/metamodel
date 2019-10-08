@@ -72,6 +72,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ElasticSearchRestDataContextIT {
+    static final int DEFAULT_REST_CLIENT_PORT = 9200;
+
     private static final String DEFAULT_DOCKER_HOST_NAME = "localhost";
 
     private static final String INDEX_NAME = "twitter";
@@ -95,7 +97,8 @@ public class ElasticSearchRestDataContextIT {
     public void setUp() throws Exception {
         final String dockerHostAddress = determineHostName();
 
-        client = ElasticSearchRestUtil.createClient(new HttpHost(dockerHostAddress, 9200), null, null);
+        client = ElasticSearchRestUtil
+                .createClient(new HttpHost(dockerHostAddress, DEFAULT_REST_CLIENT_PORT), null, null);
         client.indices().create(new CreateIndexRequest(INDEX_NAME), RequestOptions.DEFAULT);
 
         dataContext = new ElasticSearchRestDataContext(client, INDEX_NAME);
@@ -139,11 +142,16 @@ public class ElasticSearchRestDataContextIT {
 
         dataContext.refreshSchemas();
 
-        try (DataSet ds = dataContext.query().from(DEFAULT_TABLE_NAME).select("user").and("message").execute()) {
-            assertEquals(ElasticSearchRestDataSet.class, ds.getClass());
+        try (final DataSet dataSet = dataContext
+                .query()
+                .from(DEFAULT_TABLE_NAME)
+                .select("user")
+                .and("message")
+                .execute()) {
+            assertEquals(ElasticSearchRestDataSet.class, dataSet.getClass());
 
-            assertTrue(ds.next());
-            assertEquals("Row[values=[user1, 1]]", ds.getRow().toString());
+            assertTrue(dataSet.next());
+            assertEquals("Row[values=[user1, 1]]", dataSet.getRow().toString());
         }
     }
 
@@ -152,13 +160,13 @@ public class ElasticSearchRestDataContextIT {
         indexType2TweeterDocuments();
 
         final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
-        final Column[] pks = table.getPrimaryKeys().toArray(new Column[0]);
-        assertEquals(1, pks.length);
-        assertEquals("_id", pks[0].getName());
+        final Column[] primaryKeys = table.getPrimaryKeys().toArray(new Column[0]);
+        assertEquals(1, primaryKeys.length);
+        assertEquals("_id", primaryKeys[0].getName());
 
-        try (DataSet ds = dataContext.query().from(table).select("user", "_id").orderBy("_id").asc().execute()) {
-            assertTrue(ds.next());
-            assertEquals("Row[values=[user1, tweet_tweet2_1]]", ds.getRow().toString());
+        try (DataSet dataSet = dataContext.query().from(table).select("user", "_id").orderBy("_id").asc().execute()) {
+            assertTrue(dataSet.next());
+            assertEquals("Row[values=[user1, tweet_tweet2_1]]", dataSet.getRow().toString());
         }
     }
 
@@ -175,16 +183,22 @@ public class ElasticSearchRestDataContextIT {
         indexType2TweeterDocuments();
 
         final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
-        final Column[] pks = table.getPrimaryKeys().toArray(new Column[0]);
+        final Column[] primaryKeys = table.getPrimaryKeys().toArray(new Column[0]);
 
-        try (DataSet ds = dataContext.query().from(table).selectAll().where(pks[0]).eq("tweet_tweet2_1").execute()) {
-            assertTrue(ds.next());
-            final Object dateValue = ds.getRow().getValue(1);
-            assertEquals("Row[values=[tweet_tweet2_1, " + dateValue + ", 1, user1]]", ds.getRow().toString());
+        try (final DataSet dataSet = dataContext
+                .query()
+                .from(table)
+                .selectAll()
+                .where(primaryKeys[0])
+                .eq("tweet_tweet2_1")
+                .execute()) {
+            assertTrue(dataSet.next());
+            final Object dateValue = dataSet.getRow().getValue(1);
+            assertEquals("Row[values=[tweet_tweet2_1, " + dateValue + ", 1, user1]]", dataSet.getRow().toString());
 
-            assertFalse(ds.next());
+            assertFalse(dataSet.next());
 
-            assertEquals(InMemoryDataSet.class, ds.getClass());
+            assertEquals(InMemoryDataSet.class, dataSet.getClass());
         }
     }
 
@@ -193,10 +207,16 @@ public class ElasticSearchRestDataContextIT {
         indexType2TweeterDocuments();
 
         final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
-        final Column[] pks = table.getPrimaryKeys().toArray(new Column[0]);
+        final Column[] primaryKeys = table.getPrimaryKeys().toArray(new Column[0]);
 
-        try (DataSet ds = dataContext.query().from(table).selectAll().where(pks[0]).eq("missing").execute()) {
-            assertFalse(ds.next());
+        try (final DataSet dataSet = dataContext
+                .query()
+                .from(table)
+                .selectAll()
+                .where(primaryKeys[0])
+                .eq("missing")
+                .execute()) {
+            assertFalse(dataSet.next());
         }
     }
 
@@ -254,14 +274,14 @@ public class ElasticSearchRestDataContextIT {
 
         dataContext.refreshSchemas();
 
-        try (DataSet ds = dataContext.query().from(table).selectAll().orderBy("bar").execute()) {
-            assertTrue(ds.next());
-            assertEquals("hello", ds.getRow().getValue(fooColumn).toString());
-            assertNotNull(ds.getRow().getValue(idColumn));
-            assertTrue(ds.next());
-            assertEquals("world", ds.getRow().getValue(fooColumn).toString());
-            assertNotNull(ds.getRow().getValue(idColumn));
-            assertFalse(ds.next());
+        try (final DataSet dataSet = dataContext.query().from(table).selectAll().orderBy("bar").execute()) {
+            assertTrue(dataSet.next());
+            assertEquals("hello", dataSet.getRow().getValue(fooColumn).toString());
+            assertNotNull(dataSet.getRow().getValue(idColumn));
+            assertTrue(dataSet.next());
+            assertEquals("world", dataSet.getRow().getValue(fooColumn).toString());
+            assertNotNull(dataSet.getRow().getValue(idColumn));
+            assertFalse(dataSet.next());
         }
     }
 
@@ -329,7 +349,7 @@ public class ElasticSearchRestDataContextIT {
         try {
             dataContext.executeUpdate(new DeleteFrom(table).where("bar").gt(40));
             fail("Exception expected");
-        } catch (UnsupportedOperationException e) {
+        } catch (final UnsupportedOperationException e) {
             assertEquals("Could not push down WHERE items to delete by query request: [" + DEFAULT_TABLE_NAME
                     + ".bar > 40]", e.getMessage());
         }
@@ -362,7 +382,7 @@ public class ElasticSearchRestDataContextIT {
     public void testWhereColumnEqualsValues() throws Exception {
         indexBulkDocuments(INDEX_NAME, 10);
 
-        try (DataSet ds = dataContext
+        try (final DataSet dataSet = dataContext
                 .query()
                 .from(DEFAULT_TABLE_NAME)
                 .select("user")
@@ -370,11 +390,11 @@ public class ElasticSearchRestDataContextIT {
                 .where("user")
                 .isEquals("user4")
                 .execute()) {
-            assertEquals(ElasticSearchRestDataSet.class, ds.getClass());
+            assertEquals(ElasticSearchRestDataSet.class, dataSet.getClass());
 
-            assertTrue(ds.next());
-            assertEquals("Row[values=[user4, 4]]", ds.getRow().toString());
-            assertFalse(ds.next());
+            assertTrue(dataSet.next());
+            assertEquals("Row[values=[user4, 4]]", dataSet.getRow().toString());
+            assertFalse(dataSet.next());
         }
     }
 
@@ -382,18 +402,18 @@ public class ElasticSearchRestDataContextIT {
     public void testWhereColumnIsNullValues() throws Exception {
         indexType2TweeterDocuments();
 
-        try (DataSet ds = dataContext
+        try (final DataSet dataSet = dataContext
                 .query()
                 .from(DEFAULT_TABLE_NAME)
                 .select("message")
                 .where("postDate")
                 .isNull()
                 .execute()) {
-            assertEquals(ElasticSearchRestDataSet.class, ds.getClass());
+            assertEquals(ElasticSearchRestDataSet.class, dataSet.getClass());
 
-            assertTrue(ds.next());
-            assertEquals("Row[values=[2]]", ds.getRow().toString());
-            assertFalse(ds.next());
+            assertTrue(dataSet.next());
+            assertEquals("Row[values=[2]]", dataSet.getRow().toString());
+            assertFalse(dataSet.next());
         }
     }
 
@@ -401,25 +421,25 @@ public class ElasticSearchRestDataContextIT {
     public void testWhereColumnIsNotNullValues() throws Exception {
         indexType2TweeterDocuments();
 
-        try (DataSet ds = dataContext
+        try (final DataSet dataSet = dataContext
                 .query()
                 .from(DEFAULT_TABLE_NAME)
                 .select("message")
                 .where("postDate")
                 .isNotNull()
                 .execute()) {
-            assertEquals(ElasticSearchRestDataSet.class, ds.getClass());
+            assertEquals(ElasticSearchRestDataSet.class, dataSet.getClass());
 
-            assertTrue(ds.next());
-            assertEquals("Row[values=[1]]", ds.getRow().toString());
-            assertFalse(ds.next());
+            assertTrue(dataSet.next());
+            assertEquals("Row[values=[1]]", dataSet.getRow().toString());
+            assertFalse(dataSet.next());
         }
     }
 
     @Test
     public void testWhereMultiColumnsEqualValues() throws Exception {
         indexBulkDocuments(INDEX_NAME, 10);
-        try (DataSet ds = dataContext
+        try (final DataSet dataSet = dataContext
                 .query()
                 .from(DEFAULT_TABLE_NAME)
                 .select("user")
@@ -429,18 +449,18 @@ public class ElasticSearchRestDataContextIT {
                 .and("message")
                 .ne(5)
                 .execute()) {
-            assertEquals(ElasticSearchRestDataSet.class, ds.getClass());
+            assertEquals(ElasticSearchRestDataSet.class, dataSet.getClass());
 
-            assertTrue(ds.next());
-            assertEquals("Row[values=[user4, 4]]", ds.getRow().toString());
-            assertFalse(ds.next());
+            assertTrue(dataSet.next());
+            assertEquals("Row[values=[user4, 4]]", dataSet.getRow().toString());
+            assertFalse(dataSet.next());
         }
     }
 
     @Test
     public void testWhereColumnInValues() throws Exception {
         indexBulkDocuments(INDEX_NAME, 10);
-        try (DataSet ds = dataContext
+        try (final DataSet dataSet = dataContext
                 .query()
                 .from(DEFAULT_TABLE_NAME)
                 .select("user")
@@ -449,16 +469,16 @@ public class ElasticSearchRestDataContextIT {
                 .in("user4", "user5")
                 .orderBy("message")
                 .execute()) {
-            assertTrue(ds.next());
+            assertTrue(dataSet.next());
 
-            final String row1 = ds.getRow().toString();
+            final String row1 = dataSet.getRow().toString();
             assertEquals("Row[values=[user4, 4]]", row1);
-            assertTrue(ds.next());
+            assertTrue(dataSet.next());
 
-            final String row2 = ds.getRow().toString();
+            final String row2 = dataSet.getRow().toString();
             assertEquals("Row[values=[user5, 5]]", row2);
 
-            assertFalse(ds.next());
+            assertFalse(dataSet.next());
         }
     }
 
@@ -468,16 +488,16 @@ public class ElasticSearchRestDataContextIT {
 
         final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
 
-        final Query q = new Query();
-        q.from(table);
-        q.groupBy(table.getColumnByName("gender"));
-        q
+        final Query query = new Query();
+        query.from(table);
+        query.groupBy(table.getColumnByName("gender"));
+        query
                 .select(new SelectItem(table.getColumnByName("gender")), new SelectItem(FunctionType.MAX, table
                         .getColumnByName("age")), new SelectItem(FunctionType.MIN, table.getColumnByName("age")),
                         new SelectItem(FunctionType.COUNT, "*", "total"), new SelectItem(FunctionType.MIN, table
                                 .getColumnByName("id")).setAlias("firstId"));
-        q.orderBy("gender");
-        final DataSet data = dataContext.executeQuery(q);
+        query.orderBy("gender");
+        final DataSet data = dataContext.executeQuery(query);
         assertEquals("[" + DEFAULT_TABLE_NAME + ".gender, MAX(" + DEFAULT_TABLE_NAME + ".age), MIN("
                 + DEFAULT_TABLE_NAME + ".age), COUNT(*) AS total, MIN(" + DEFAULT_TABLE_NAME + ".id) AS firstId]",
                 Arrays.toString(data.getSelectItems().toArray()));
@@ -493,8 +513,8 @@ public class ElasticSearchRestDataContextIT {
     public void testFilterOnNumberColumn() throws Exception {
         indexBulkDocuments(INDEX_NAME, 10);
         final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
-        final Query q = dataContext.query().from(table).select("user").where("message").greaterThan(7).toQuery();
-        final DataSet data = dataContext.executeQuery(q);
+        final Query query = dataContext.query().from(table).select("user").where("message").greaterThan(7).toQuery();
+        final DataSet data = dataContext.executeQuery(query);
         final String[] expectations = new String[] { "Row[values=[user8]]", "Row[values=[user9]]" };
 
         assertTrue(data.next());
@@ -520,9 +540,9 @@ public class ElasticSearchRestDataContextIT {
     public void testCountQuery() throws Exception {
         indexBulkDocuments(INDEX_NAME, 10);
         final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
-        final Query q = new Query().selectCount().from(table);
+        final Query query = new Query().selectCount().from(table);
 
-        final List<Object[]> data = dataContext.executeQuery(q).toObjectArrays();
+        final List<Object[]> data = dataContext.executeQuery(query).toObjectArrays();
         assertEquals(1, data.size());
         final Object[] row = data.get(0);
         assertEquals(1, row.length);
@@ -555,11 +575,11 @@ public class ElasticSearchRestDataContextIT {
         dataContext.refreshSchemas();
         final Schema schema = dataContext.getDefaultSchema();
         assertEquals(1, schema.getTableCount());
-        
+
         final Table table = schema.getTable(0);
         assertNotNull(table);
         assertEquals(DEFAULT_TABLE_NAME, table.getName());
-        
+
         assertThat(table.getColumnNames(), containsInAnyOrder(ElasticSearchUtils.FIELD_ID, "foo", "bar"));
     }
 
@@ -577,21 +597,21 @@ public class ElasticSearchRestDataContextIT {
         dataContext.refreshSchemas();
         final Schema schema = dataContext.getDefaultSchema();
         assertEquals(1, schema.getTableCount());
-        
+
         final CreateTable createTable2 = new CreateTable(dataContext.getDefaultSchema(), "SecondTable");
         createTable2.withColumn("foo").ofType(ColumnType.STRING);
         dataContext.executeUpdate(createTable);
     }
-    
+
     @Test
     public void testInsertIntoTable() throws Exception {
         final InsertInto insertInto = new InsertInto(new MutableTable("Whatever", TableType.TABLE, dataContext
                 .getDefaultSchema(), new MutableColumn("foo", ColumnType.STRING))).value("foo", "bar");
         dataContext.executeUpdate(insertInto);
-        
+
         assertEquals(1, dataContext.query().from(DEFAULT_TABLE_NAME).select("foo").execute().toRows().size());
     }
-    
+
     @Test(expected = MetaModelException.class)
     public void testInsertIntoSecondTable() throws Exception {
         indexTweeterDocument(1);
@@ -600,9 +620,13 @@ public class ElasticSearchRestDataContextIT {
                 .getDefaultSchema(), new MutableColumn("foo", ColumnType.STRING))).value("foo", "bar");
         dataContext.executeUpdate(insertInto);
     }
-    
-    private static void indexBulkDocuments(final String indexName, final int numberOfDocuments)
-            throws IOException {
+
+    @Test
+    public void testEmptyIndex() throws Exception {
+        assertEquals(0, dataContext.getSchemaByName(INDEX_NAME).getTables().size());
+    }
+
+    private static void indexBulkDocuments(final String indexName, final int numberOfDocuments) throws IOException {
         final BulkRequest bulkRequest = new BulkRequest();
 
         for (int i = 0; i < numberOfDocuments; i++) {

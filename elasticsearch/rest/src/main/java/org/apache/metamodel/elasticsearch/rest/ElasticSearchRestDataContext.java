@@ -145,17 +145,21 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
             logger.warn("No metadata returned for index name '{}' - no tables will be detected.", indexName);
         } else {
             for (final Entry<String, MappingMetaData> mapping : mappings.entrySet()) {
-                final String documentType = mapping.getValue().type();
+                final String tableName = mapping.getValue().type();
                 final Map<String, Object> mappingConfiguration = mapping.getValue().getSourceAsMap();
                 
                 @SuppressWarnings("unchecked")
-                Map<String, Object> properties = (Map<String, Object>) mappingConfiguration.get("properties");
+                final Map<String, Object> properties = (Map<String, Object>) mappingConfiguration.get(ElasticSearchMetaData.PROPERTIES_KEY);
 
-                try {
-                    final SimpleTableDef table = detectTable(properties, documentType);
-                    result.add(table);
-                } catch (Exception e) {
-                    logger.error("Unexpected error during detectTable for document type '{}'", documentType, e);
+                if (properties != null) {
+                    try {
+                        final SimpleTableDef table = detectTable(properties, tableName);
+                        result.add(table);
+                    } catch (Exception e) {
+                        logger
+                                .error("Unexpected error during detectTable for document mapping type '{}'", tableName,
+                                        e);
+                    }
                 }
             }
         }
@@ -179,13 +183,13 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
      *
      * @param metadataProperties
      *            the ElasticSearch mapping
-     * @param documentType
-     *            the name of the index type
+     * @param tableName
+     *            the name of the table
      * @return a table definition for ElasticSearch.
      */
-    private static SimpleTableDef detectTable(final Map<String, Object> metadataProperties, final String documentType) {
+    private static SimpleTableDef detectTable(final Map<String, Object> metadataProperties, final String tableName) {
         final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(metadataProperties);
-        return new SimpleTableDef(documentType, metaData.getColumnNames(), metaData.getColumnTypes());
+        return new SimpleTableDef(tableName, metaData.getColumnNames(), metaData.getColumnTypes());
     }
 
     @Override

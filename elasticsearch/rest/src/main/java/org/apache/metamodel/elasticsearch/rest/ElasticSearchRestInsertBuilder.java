@@ -75,7 +75,7 @@ final class ElasticSearchRestInsertBuilder extends AbstractRowInsertionBuilder<E
 
             getUpdateCallback().execute(indexRequest);
         } else {
-            logger.info("Source is empty no index request is executed.");
+            logger.info("Source is empty, no index request is executed.");
         }
     }
 

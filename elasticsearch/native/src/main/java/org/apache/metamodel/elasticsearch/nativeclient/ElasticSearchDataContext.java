@@ -181,7 +181,7 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
             throw new IllegalArgumentException("No such document type in index '" + indexName + "': " + documentType);
         }
         final Map<String, Object> mp = mappingMetaData.getSourceAsMap();
-        final Object metadataProperties = mp.get("properties");
+        final Object metadataProperties = mp.get(ElasticSearchMetaData.PROPERTIES_KEY);
         if (metadataProperties != null && metadataProperties instanceof Map) {
             @SuppressWarnings("unchecked")
             final Map<String, ?> metadataPropertiesMap = (Map<String, ?>) metadataProperties;

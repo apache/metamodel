@@ -82,7 +82,7 @@ public class ElasticSearchUtils {
         }
 
         final Map<String, Map<String, Map<String, String>>> mapping = new HashMap<>();
-        mapping.put("properties", propertiesMap);
+        mapping.put(ElasticSearchMetaData.PROPERTIES_KEY, propertiesMap);
         return mapping;
     }
 
@@ -263,6 +263,11 @@ public class ElasticSearchUtils {
         return columnType;
     }
 
+    /**
+     * Creates and returns a {@link Row} for the given sourceMap, using the documentId as primary key and the header as
+     * definition of which columns are added to the row. It will return <code>null</code> if no sourceMap argument is
+     * passed.
+     */
     public static Row createRow(final Map<String, Object> sourceMap, final String documentId, final DataSetHeader header) {
         if (sourceMap == null) {
             return null;
