@@ -482,7 +482,7 @@ public class ExcelDataContextTest extends TestCase {
             public void run(UpdateCallback callback) {
                 try {
                     callback.insertInto(table).value("INTEGER", "this is not an integer").execute();
-                    assert true;
+                    assert false;
                 } catch (MetaModelException mme) {
                     assert true;
                 }
