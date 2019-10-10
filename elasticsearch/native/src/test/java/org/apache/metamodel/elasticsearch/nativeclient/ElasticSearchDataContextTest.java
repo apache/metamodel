@@ -105,6 +105,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
     public void testSimpleQuery() throws Exception {
         indexTweeterDocument(indexType1, 1);
         dataContext.refreshSchemas();
+
         Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
         try (DataSet ds = dataContext.query().from(indexType1).select("_id").execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
