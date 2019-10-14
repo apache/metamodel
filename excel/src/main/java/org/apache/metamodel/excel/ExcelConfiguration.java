@@ -38,7 +38,7 @@ public final class ExcelConfiguration extends BaseObject implements
 	public static final int NO_COLUMN_NAME_LINE = 0;
 	public static final int DEFAULT_COLUMN_NAME_LINE = 1;
 
-	private final int eagerReader;
+	private final int getNumberOfLinesToScan;
 	private final int columnNameLineNumber;
 	private final ColumnNamingStrategy columnNamingStrategy;
 	private final boolean skipEmptyLines;
@@ -69,7 +69,7 @@ public final class ExcelConfiguration extends BaseObject implements
         this.skipEmptyColumns = skipEmptyColumns;
         this.columnNamingStrategy = columnNamingStrategy;
         this.detectColumnTypes = detectColumnTypes;
-        this.eagerReader = eagerness;
+        this.getNumberOfLinesToScan = eagerness;
     }
     
     /**
@@ -142,6 +142,6 @@ public final class ExcelConfiguration extends BaseObject implements
 	}
 
 	public int getEagerness() {
-		return eagerReader;
+		return getNumberOfLinesToScan;
 	}
 }

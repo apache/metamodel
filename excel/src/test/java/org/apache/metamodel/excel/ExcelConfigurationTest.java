@@ -27,7 +27,7 @@ public class ExcelConfigurationTest extends TestCase {
 	public void testToString() throws Exception {
 		ExcelConfiguration conf = new ExcelConfiguration(1, true, false);
 		assertEquals(
-				"ExcelConfiguration[columnNameLineNumber=1, skipEmptyLines=true, skipEmptyColumns=false, validateColumnTypes=false]",
+				"ExcelConfiguration[columnNameLineNumber=1, skipEmptyLines=true, skipEmptyColumns=false, detectColumnTypes=false]",
 				conf.toString());
 	}
 

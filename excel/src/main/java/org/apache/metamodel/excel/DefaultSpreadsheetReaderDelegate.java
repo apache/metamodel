@@ -203,14 +203,14 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                     continue;
                 }
 
-                ColumnType columnType = columnTypes[index];
-                ColumnType expecetedColumnType = getColumnTypeFromRow(currentRow, index);
+                final ColumnType columnType = columnTypes[index];
+                final ColumnType expectedColumnType = getColumnTypeFromRow(currentRow, index);
                 if (columnType != null) {
-                    if (!columnType.equals(ColumnType.STRING) && !columnType.equals(expecetedColumnType)) {
+                    if (!columnType.equals(ColumnType.STRING) && !columnType.equals(expectedColumnType)) {
                         columnTypes[index] = ColumnType.VARCHAR;
                     }
                 } else {
-                    columnTypes[index] = expecetedColumnType;
+                    columnTypes[index] = expectedColumnType;
                 }
             }
         }
@@ -221,8 +221,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         if (currentRow.getCell(index) == null) {
             return ColumnType.STRING;
         } else {
-            CellType cellType = currentRow.getCell(index).getCellType();
-            switch (cellType) {
+            switch (currentRow.getCell(index).getCellType()) {
                 case NUMERIC:
                     if (DateUtil.isCellDateFormatted(currentRow.getCell(index))) {
                         return ColumnType.DATE;
