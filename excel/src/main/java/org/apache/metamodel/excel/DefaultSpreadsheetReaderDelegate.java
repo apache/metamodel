@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.excel;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +42,6 @@ import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.Resource;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -151,16 +151,8 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
 
                 for (int j = offset; j < row.getLastCellNum(); j++) {
                     final ColumnNamingContext namingContext = new ColumnNamingContextImpl(table, null, j);
-                    final Column column;
-                    if (_configuration.isDetectColumnTypes()) {
-                        column =
-                                new MutableColumn(columnNamingSession.getNextColumnName(namingContext), columnTypes[j],
-                                        table, j, true);
-                    } else {
-                        column =
-                                new MutableColumn(columnNamingSession.getNextColumnName(namingContext),
-                                        ColumnType.STRING, table, j, true);
-                    }
+                    final Column column = new MutableColumn(columnNamingSession.getNextColumnName(namingContext),
+                            columnTypes[j], table, j, true);
                     table.addColumn(column);
                 }
             }
@@ -190,29 +182,34 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     private ColumnType[] getColumnTypes(final Sheet sheet, final Row row) {
         final Iterator<Row> data = ExcelUtils.getRowIterator(sheet, _configuration, false);
         final int rowLength = row.getLastCellNum();
-        int eagerness = _configuration.getEagerness();
         final ColumnType[] columnTypes = new ColumnType[rowLength];
+        if (_configuration.isDetectColumnTypes()) {
 
-        while (data.hasNext() && eagerness-- > 0) {
-            final Row currentRow = data.next();
-            if (currentRow.getRowNum() < _configuration.getColumnNameLineNumber()) {
-                continue;
-            }
-            for (int index = 0; index < rowLength; index++) {
-                if (currentRow.getLastCellNum() == 0) {
+            int eagerness = _configuration.getEagerness();
+
+            while (data.hasNext() && eagerness-- > 0) {
+                final Row currentRow = data.next();
+                if (currentRow.getRowNum() < _configuration.getColumnNameLineNumber()) {
                     continue;
                 }
-
-                final ColumnType columnType = columnTypes[index];
-                final ColumnType expectedColumnType = getColumnTypeFromRow(currentRow, index);
-                if (columnType != null) {
-                    if (!columnType.equals(ColumnType.STRING) && !columnType.equals(expectedColumnType)) {
-                        columnTypes[index] = ColumnType.VARCHAR;
+                for (int index = 0; index < rowLength; index++) {
+                    if (currentRow.getLastCellNum() == 0) {
+                        continue;
                     }
-                } else {
-                    columnTypes[index] = expectedColumnType;
+
+                    final ColumnType columnType = columnTypes[index];
+                    final ColumnType expectedColumnType = getColumnTypeFromRow(currentRow, index);
+                    if (columnType != null) {
+                        if (!columnType.equals(ColumnType.STRING) && !columnType.equals(expectedColumnType)) {
+                            columnTypes[index] = ColumnType.VARCHAR;
+                        }
+                    } else {
+                        columnTypes[index] = expectedColumnType;
+                    }
                 }
             }
+        } else {
+            Arrays.fill(columnTypes, ColumnType.STRING);
         }
         return columnTypes;
     }
