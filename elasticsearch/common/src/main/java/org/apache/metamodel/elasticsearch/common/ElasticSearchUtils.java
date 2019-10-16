@@ -265,14 +265,9 @@ public class ElasticSearchUtils {
 
     /**
      * Creates and returns a {@link Row} for the given sourceMap, using the documentId as primary key and the header as
-     * definition of which columns are added to the row. It will return <code>null</code> if no sourceMap argument is
-     * passed.
+     * definition of which columns are added to the row. 
      */
     public static Row createRow(final Map<String, Object> sourceMap, final String documentId, final DataSetHeader header) {
-        if (sourceMap == null) {
-            return null;
-        }
-        
         final Object[] values = new Object[header.size()];
         for (int i = 0; i < values.length; i++) {
             final SelectItem selectItem = header.getSelectItem(i);
@@ -285,17 +280,19 @@ public class ElasticSearchUtils {
             if (column.isPrimaryKey()) {
                 values[i] = documentId;
             } else {
-                Object value = sourceMap.get(column.getName());
+                if (sourceMap != null) {
+                    final Object value = sourceMap.get(column.getName());
 
-                if (column.getType() == ColumnType.DATE) {
-                    Date valueToDate = ElasticSearchDateConverter.tryToConvert((String) value);
-                    if (valueToDate == null) {
-                        values[i] = value;
+                    if (column.getType() == ColumnType.DATE) {
+                        final Date valueToDate = ElasticSearchDateConverter.tryToConvert((String) value);
+                        if (valueToDate == null) {
+                            values[i] = value;
+                        } else {
+                            values[i] = valueToDate;
+                        }
                     } else {
-                        values[i] = valueToDate;
+                        values[i] = value;
                     }
-                } else {
-                    values[i] = value;
                 }
             }
         }
