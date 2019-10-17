@@ -216,11 +216,6 @@ public class ElasticSearchRestDataContextIT {
                 .where(primaryKeys[0])
                 .eq("missing")
                 .execute()) {
-            assertTrue(dataSet.next());
-            assertEquals("missing", dataSet.getRow().getValue(primaryKeys[0]));
-            assertNull(dataSet.getRow().getValue(1));
-            assertNull(dataSet.getRow().getValue(2));
-            assertNull(dataSet.getRow().getValue(3));
             assertFalse(dataSet.next());
         }
     }

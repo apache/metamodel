@@ -268,9 +268,15 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
         final DataSetHeader header = new SimpleDataSetHeader(selectItems);
 
         try {
-            return ElasticSearchUtils.createRow(getRestHighLevelClient()
+            final Map<String, Object> source = getRestHighLevelClient()
                     .get(new GetRequest(getIndexName(), id), RequestOptions.DEFAULT)
-                    .getSource(), id, header);
+                    .getSource();
+
+            if (source == null) {
+                return null;
+            }
+
+            return ElasticSearchUtils.createRow(source, id, header);
         } catch (IOException e) {
             logger.warn("Could not execute ElasticSearch query", e);
             throw new MetaModelException("Could not execute ElasticSearch query", e);
