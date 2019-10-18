@@ -50,12 +50,15 @@ final class ElasticSearchRestDataSet extends AbstractElasticSearchDataSet {
     @Override
     public void closeNow() {
         final String scrollId = _searchResponse.getScrollId();
-        final ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
-        clearScrollRequest.addScrollId(scrollId);
-        try {
-            client.clearScroll((ClearScrollRequest) clearScrollRequest, RequestOptions.DEFAULT);
-        } catch (IOException e) {
-            logger.warn("Could not clear scroll.", e);
+        
+        if (scrollId != null) {
+            final ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+            clearScrollRequest.addScrollId(scrollId);
+            try {
+                client.clearScroll((ClearScrollRequest) clearScrollRequest, RequestOptions.DEFAULT);
+            } catch (final IOException e) {
+                logger.warn("Could not clear scroll.", e);
+            }
         }
     }
 

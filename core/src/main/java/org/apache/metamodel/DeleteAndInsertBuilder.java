@@ -103,12 +103,9 @@ public class DeleteAndInsertBuilder extends AbstractRowUpdationBuilder {
         final DataContext dc = _updateCallback.getDataContext();
         final Table table = getTable();
         final List<FilterItem> whereItems = getWhereItems();
-        final DataSet dataSet = dc.query()
-                .from(table)
-                .select(table.getColumns())
-                .where(whereItems).execute();
-        final List<Row> rows = dataSet.toRows();
-        return rows;
+        try (DataSet dataSet = dc.query().from(table).select(table.getColumns()).where(whereItems).execute()) {
+            return dataSet.toRows();
+        }
     }
 
 }

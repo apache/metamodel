@@ -55,7 +55,7 @@ public abstract class AbstractElasticSearchDataSet extends AbstractDataSet {
     @Override
     public void close() {
         super.close();
-        boolean closeNow = _closed.compareAndSet(true, false);
+        final boolean closeNow = _closed.compareAndSet(false, true);
         if (closeNow) {
             closeNow();
         }
