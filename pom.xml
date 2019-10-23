@@ -176,9 +176,9 @@ under the License.
 	</licenses>
 	<distributionManagement>
 		<repository>
-		<id>releases</id>
-		<name>internal releases</name>
-		<url>http://repo.humaninference.com/content/repositories/releases</url>
+			<id>releases</id>
+			<name>internal releases</name>
+			<url>http://repo.humaninference.com/content/repositories/releases</url>
 		</repository>
 		<snapshotRepository>
 			<id>snapshots</id>
