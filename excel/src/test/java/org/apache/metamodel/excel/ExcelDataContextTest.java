@@ -420,8 +420,16 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(ds.next());
     }
 
-    public void testDifferentDataTypes() throws Exception {
-        DataContext dc = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"), 
+    public void testDifferentDataTypesInXls() throws Exception {
+        differentDataTypesTest("src/test/resources/different_datatypes.xls");
+    }
+
+    public void testDifferentDataTypesInXlsx() throws Exception {
+        differentDataTypesTest("src/test/resources/different_datatypes.xlsx");
+    }
+    
+    public void differentDataTypesTest(String file) {
+        DataContext dc = new ExcelDataContext(copyOf(file), 
                 new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, true, false, true));
         
         Schema schema = dc.getDefaultSchema();

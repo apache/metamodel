@@ -414,13 +414,13 @@ final class ExcelUtils {
      */
     public static DefaultRow createRow(Workbook workbook, Row row, DataSetHeader header) {
         final int size = header.size();
-        final String[] values = new String[size];
+        final Object[] values = new Object[size];
         final Style[] styles = new Style[size];
         if (row != null) {
             for (int i = 0; i < size; i++) {
                 final int columnNumber = header.getSelectItem(i).getColumn().getColumnNumber();
                 final Cell cell = row.getCell(columnNumber);
-                final String value = ExcelUtils.getCellValue(workbook, cell);
+                final Object value = ExcelUtils.getCellValue(workbook, cell);
                 final Style style = ExcelUtils.getCellStyle(workbook, cell);
                 values[i] = value;
                 styles[i] = style;
