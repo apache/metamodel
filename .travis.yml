@@ -5,6 +5,7 @@ jdk:
   - oraclejdk8
   - oraclejdk9
   - oraclejdk11
+dist: trusty
   
 before_install:
   # copy integration test config
