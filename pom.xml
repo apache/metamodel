@@ -22,7 +22,7 @@ under the License.
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<sshwagon.version>2.6</sshwagon.version>
-		<javadoc.version>3.1.1</javadoc.version>
+		<javadoc.version>2.10.3</javadoc.version>
 		<slf4j.version>1.7.25</slf4j.version>
 		<junit.version>4.12</junit.version>
 		<guava.version>27.0.1-jre</guava.version>
@@ -40,9 +40,9 @@ under the License.
 		<version>21</version>
 	</parent>
 	<scm>
-        <url>https://github.com/arjansh/metamodel.git</url>
-        <connection>scm:git:https://github.com/arjansh/metamodel.git</connection>
-        <developerConnection>scm:git:https://github.com/arjansh/metamodel.git</developerConnection>    
+		<url>https://github.com/arjansh/metamodel.git</url>
+		<connection>scm:git:https://github.com/arjansh/metamodel.git</connection>
+		<developerConnection>scm:git:https://github.com/arjansh/metamodel.git</developerConnection>    
 		<tag>HEAD</tag>
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
@@ -176,15 +176,15 @@ under the License.
 	</licenses>
 	<distributionManagement>
 		<repository>
-            <id>releases</id>
-            <name>internal releases</name>
-            <url>http://repo.humaninference.com/content/repositories/releases</url>
+		<id>releases</id>
+		<name>internal releases</name>
+		<url>http://repo.humaninference.com/content/repositories/releases</url>
 		</repository>
 		<snapshotRepository>
-            <id>snapshots</id>
-            <name>internal snapshots</name>
-            <url>http://repo.humaninference.com/content/repositories/snapshots</url>
-            <uniqueVersion>false</uniqueVersion>
+			<id>snapshots</id>
+			<name>internal snapshots</name>
+			<url>http://repo.humaninference.com/content/repositories/snapshots</url>
+			<uniqueVersion>false</uniqueVersion>
 		</snapshotRepository>
 	</distributionManagement>
 
@@ -231,7 +231,6 @@ under the License.
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-                <version>2.5.2</version>
 				<configuration>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<goals>deploy</goals>
