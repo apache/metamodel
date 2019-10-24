@@ -1,3 +1,6 @@
+### Apache MetaModel _WIP_
+ * Bind Travis build to Trusty distribution to avoid CI build failures.
+
 ### Apache MetaModel 5.3.1
 
  * [METAMODEL-1219] - Improved returning schemas for SQL Server.
