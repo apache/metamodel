@@ -140,22 +140,7 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
 
     private void executeBlocking(final ActionRequest action) {
         try {
-            final RestHighLevelClient client = getDataContext().getRestHighLevelClient();
-            final ActionResponse result;
-
-            if (action instanceof BulkRequest) {
-                result = client.bulk((BulkRequest) action, RequestOptions.DEFAULT);
-            } else if (action instanceof IndexRequest) {
-                result = client.index((IndexRequest) action, RequestOptions.DEFAULT);
-            } else if (action instanceof DeleteRequest) {
-                result = client.delete((DeleteRequest) action, RequestOptions.DEFAULT);
-            } else if (action instanceof ClearScrollRequest) {
-                result = client.clearScroll((ClearScrollRequest) action, RequestOptions.DEFAULT);
-            } else if (action instanceof SearchScrollRequest) {
-                result = client.scroll((SearchScrollRequest) action, RequestOptions.DEFAULT);
-            } else {
-                result = null;
-            }
+            final ActionResponse result = executeActionRequest(action);
 
             if (result instanceof BulkResponse && ((BulkResponse) result).hasFailures()) {
                 BulkItemResponse[] failedItems = ((BulkResponse) result).getItems();
@@ -173,6 +158,22 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
             logger.warn("Could not execute command {} ", action, e);
             throw new MetaModelException("Could not execute " + action, e);
         }
+    }
+
+    private ActionResponse executeActionRequest(final ActionRequest action) throws IOException {
+        final RestHighLevelClient client = getDataContext().getRestHighLevelClient();
+        if (action instanceof BulkRequest) {
+            return client.bulk((BulkRequest) action, RequestOptions.DEFAULT);
+        } else if (action instanceof IndexRequest) {
+            return client.index((IndexRequest) action, RequestOptions.DEFAULT);
+        } else if (action instanceof DeleteRequest) {
+            return client.delete((DeleteRequest) action, RequestOptions.DEFAULT);
+        } else if (action instanceof ClearScrollRequest) {
+            return client.clearScroll((ClearScrollRequest) action, RequestOptions.DEFAULT);
+        } else if (action instanceof SearchScrollRequest) {
+            return client.scroll((SearchScrollRequest) action, RequestOptions.DEFAULT);
+        }
+        return null;
     }
 
     private BulkRequest getBulkRequest() {
