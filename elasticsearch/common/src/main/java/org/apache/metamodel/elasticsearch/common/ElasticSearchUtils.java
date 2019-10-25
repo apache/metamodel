@@ -81,11 +81,8 @@ public class ElasticSearchUtils {
             propertiesMap.put(fieldName, propertyMap);
         }
 
-        HashMap<String, Map<String, Map<String, String>>> docTypeMap = new HashMap<>();
-        docTypeMap.put("properties", propertiesMap);
-        
-        final Map<String, Map<String, Map<String, Map<String, String>>>> mapping = new HashMap<>();
-        mapping.put(table.getName(), docTypeMap);
+        final Map<String, Map<String, Map<String, String>>> mapping = new HashMap<>();
+        mapping.put(ElasticSearchMetaData.PROPERTIES_KEY, propertiesMap);
         return mapping;
     }
 
@@ -266,6 +263,10 @@ public class ElasticSearchUtils {
         return columnType;
     }
 
+    /**
+     * Creates and returns a {@link Row} for the given sourceMap, using the documentId as primary key and the header as
+     * definition of which columns are added to the row. 
+     */
     public static Row createRow(final Map<String, Object> sourceMap, final String documentId, final DataSetHeader header) {
         final Object[] values = new Object[header.size()];
         for (int i = 0; i < values.length; i++) {
@@ -279,17 +280,19 @@ public class ElasticSearchUtils {
             if (column.isPrimaryKey()) {
                 values[i] = documentId;
             } else {
-                Object value = sourceMap.get(column.getName());
+                if (sourceMap != null) {
+                    final Object value = sourceMap.get(column.getName());
 
-                if (column.getType() == ColumnType.DATE) {
-                    Date valueToDate = ElasticSearchDateConverter.tryToConvert((String) value);
-                    if (valueToDate == null) {
-                        values[i] = value;
+                    if (column.getType() == ColumnType.DATE) {
+                        final Date valueToDate = ElasticSearchDateConverter.tryToConvert((String) value);
+                        if (valueToDate == null) {
+                            values[i] = value;
+                        } else {
+                            values[i] = valueToDate;
+                        }
                     } else {
-                        values[i] = valueToDate;
+                        values[i] = value;
                     }
-                } else {
-                    values[i] = value;
                 }
             }
         }

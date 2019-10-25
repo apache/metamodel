@@ -32,6 +32,7 @@ import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -50,9 +51,6 @@ final class ElasticSearchRestDeleteBuilder extends AbstractRowDeletionBuilder {
 
     @Override
     public void execute() throws MetaModelException {
-        final Table table = getTable();
-        final String documentType = table.getName();
-
         final ElasticSearchRestDataContext dataContext = _updateCallback.getDataContext();
         final String indexName = dataContext.getIndexName();
 
@@ -74,18 +72,17 @@ final class ElasticSearchRestDeleteBuilder extends AbstractRowDeletionBuilder {
         searchSourceBuilder.query(queryBuilder);
 
         SearchRequest searchRequest = new SearchRequest(indexName);
-        searchRequest.types(documentType);
         searchRequest.source(searchSourceBuilder);
 
         try {
-            final SearchResponse response = dataContext.getElasticSearchClient().search(searchRequest);
+            final SearchResponse response = dataContext.getRestHighLevelClient().search(searchRequest, RequestOptions.DEFAULT);
 
             final Iterator<SearchHit> iterator = response.getHits().iterator();
             while (iterator.hasNext()) {
                 final SearchHit hit = iterator.next();
                 final String typeId = hit.getId();
 
-                DeleteRequest deleteRequest = new DeleteRequest(indexName, documentType, typeId);
+                DeleteRequest deleteRequest = new DeleteRequest(indexName, typeId);
 
                 _updateCallback.execute(deleteRequest);
             }

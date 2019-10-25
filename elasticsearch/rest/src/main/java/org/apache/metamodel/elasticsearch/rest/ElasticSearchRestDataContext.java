@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.metamodel.BatchUpdateScript;
@@ -46,9 +45,14 @@ import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.SimpleTableDef;
+import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.GetMappingsRequest;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -73,13 +77,15 @@ import org.slf4j.LoggerFactory;
  * specification of a schema, through the {@link SimpleTableDef} class.
  */
 public class ElasticSearchRestDataContext extends AbstractElasticSearchDataContext {
+    
+    public static final String DEFAULT_TABLE_NAME = "_doc"; 
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchRestDataContext.class);
 
     // we scroll when more than 400 rows are expected
     private static final int SCROLL_THRESHOLD = 400;
 
-    private final ElasticSearchRestClient elasticSearchClient;
+    private final RestHighLevelClient restHighLevelClient;
 
     /**
      * Constructs a {@link ElasticSearchRestDataContext}. This constructor
@@ -94,14 +100,14 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
      *            an array of {@link SimpleTableDef}s, which define the table
      *            and column model of the ElasticSearch index.
      */
-    public ElasticSearchRestDataContext(final ElasticSearchRestClient client, final String indexName,
+    public ElasticSearchRestDataContext(final RestHighLevelClient client, final String indexName,
             final SimpleTableDef... tableDefinitions) {
         super(indexName, tableDefinitions);
 
         if (client == null) {
             throw new IllegalArgumentException("ElasticSearch Client cannot be null");
         }
-        this.elasticSearchClient = client;
+        restHighLevelClient = client;
         this.dynamicTableDefinitions.addAll(Arrays.asList(detectSchema()));
     }
 
@@ -114,7 +120,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
      * @param indexName
      *            the name of the ElasticSearch index to represent
      */
-    public ElasticSearchRestDataContext(final ElasticSearchRestClient client, String indexName) {
+    public ElasticSearchRestDataContext(final RestHighLevelClient client, String indexName) {
         this(client, indexName, new SimpleTableDef[0]);
     }
 
@@ -122,9 +128,12 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
     protected SimpleTableDef[] detectSchema() {
         logger.info("Detecting schema for index '{}'", indexName);
 
-        final Set<Entry<String, Object>> mappings;
+        final Map<String, MappingMetaData> mappings;
         try {
-            mappings = getElasticSearchClient().getMappings(indexName);
+            mappings = getRestHighLevelClient()
+                    .indices()
+                    .getMapping(new GetMappingsRequest().indices(indexName), RequestOptions.DEFAULT)
+                    .mappings();
         } catch (IOException e) {
             logger.error("Failed to retrieve mappings", e);
             throw new MetaModelException("Failed to execute request for index information needed to detect schema", e);
@@ -133,21 +142,22 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
         final List<SimpleTableDef> result = new ArrayList<>();
 
         if (mappings.isEmpty()) {
-            logger.warn("No metadata returned for index name '{}' - no tables will be detected.");
+            logger.warn("No metadata returned for index name '{}' - no tables will be detected.", indexName);
         } else {
-            for (Entry<String, Object> mapping : mappings) {
-                final String documentType = mapping.getKey();
-
+            for (final Entry<String, MappingMetaData> mapping : mappings.entrySet()) {
+                final String tableName = mapping.getValue().type();
+                final Map<String, Object> mappingConfiguration = mapping.getValue().getSourceAsMap();
+                
                 @SuppressWarnings("unchecked")
-                Map<String, Object> mappingConfiguration = (Map<String, Object>) mapping.getValue();
-                @SuppressWarnings("unchecked")
-                Map<String, Object> properties = (Map<String, Object>) mappingConfiguration.get("properties");
+                final Map<String, Object> properties = (Map<String, Object>) mappingConfiguration.get(ElasticSearchMetaData.PROPERTIES_KEY);
 
-                try {
-                    final SimpleTableDef table = detectTable(properties, documentType);
-                    result.add(table);
-                } catch (Exception e) {
-                    logger.error("Unexpected error during detectTable for document type '{}'", documentType, e);
+                if (properties != null) {
+                    try {
+                        final SimpleTableDef table = detectTable(properties, tableName);
+                        result.add(table);
+                    } catch (Exception e) {
+                        logger.error("Unexpected error during detectTable for document mapping type '{}'", tableName, e);
+                    }
                 }
             }
         }
@@ -156,24 +166,28 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
 
     @Override
     protected void onSchemaCacheRefreshed() {
-        getElasticSearchClient().refresh(indexName);
+        try {
+            getRestHighLevelClient().indices().refresh(new RefreshRequest(indexName), RequestOptions.DEFAULT);
+        } catch (final IOException e) {
+            logger.info("Failed to refresh index \"{}\"", indexName, e);
+        }
 
         detectSchema();
     }
 
     /**
      * Performs an analysis of an available metadata properties/mapping
-     * for a particula document type.
+     * for a particular document type.
      *
      * @param metadataProperties
      *            the ElasticSearch mapping
-     * @param documentType
-     *            the name of the index type
+     * @param tableName
+     *            the name of the table
      * @return a table definition for ElasticSearch.
      */
-    private static SimpleTableDef detectTable(final Map<String, Object> metadataProperties, final String documentType) {
+    private static SimpleTableDef detectTable(final Map<String, Object> metadataProperties, final String tableName) {
         final ElasticSearchMetaData metaData = ElasticSearchMetaDataParser.parse(metadataProperties);
-        return new SimpleTableDef(documentType, metaData.getColumnNames(), metaData.getColumnTypes());
+        return new SimpleTableDef(tableName, metaData.getColumnNames(), metaData.getColumnTypes());
     }
 
     @Override
@@ -186,7 +200,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
             SearchSourceBuilder searchSourceBuilder = createSearchRequest(firstRow, maxRows, queryBuilder);
             SearchResponse result = executeSearch(table, searchSourceBuilder, scrollNeeded(maxRows));
 
-            return new ElasticSearchRestDataSet(getElasticSearchClient(), result, selectItems);
+            return new ElasticSearchRestDataSet(getRestHighLevelClient(), result, selectItems);
         }
         return super.materializeMainSchemaTable(table, selectItems, whereItems, firstRow, maxRows);
     }
@@ -198,15 +212,14 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
 
     private SearchResponse executeSearch(final Table table, final SearchSourceBuilder searchSourceBuilder,
             final boolean scroll) {
-        final SearchRequest searchRequest = new SearchRequest(new String[] { getIndexName() }, searchSourceBuilder)
-                .types(table.getName());
+        final SearchRequest searchRequest = new SearchRequest(new String[] { getIndexName() }, searchSourceBuilder);
 
         if (scroll) {
             searchRequest.scroll(TIMEOUT_SCROLL);
         }
 
         try {
-            return getElasticSearchClient().search(searchRequest);
+            return getRestHighLevelClient().search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             logger.warn("Could not execute ElasticSearch query", e);
             throw new MetaModelException("Could not execute ElasticSearch query", e);
@@ -218,7 +231,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
         SearchResponse searchResult = executeSearch(table, createSearchRequest(1, maxRows, null), scrollNeeded(
                 maxRows));
 
-        return new ElasticSearchRestDataSet(getElasticSearchClient(), searchResult, columns.stream()
+        return new ElasticSearchRestDataSet(getRestHighLevelClient(), searchResult, columns.stream()
                 .map(SelectItem::new).collect(Collectors.toList()));
     }
 
@@ -248,15 +261,20 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
             return null;
         }
 
-        final String documentType = table.getName();
         final String id = keyValue.toString();
 
         final DataSetHeader header = new SimpleDataSetHeader(selectItems);
 
         try {
-            return ElasticSearchUtils.createRow(getElasticSearchClient()
-                    .get(new GetRequest(getIndexName(), documentType, id))
-                    .getSource(), id, header);
+            final Map<String, Object> source = getRestHighLevelClient()
+                    .get(new GetRequest(getIndexName(), id), RequestOptions.DEFAULT)
+                    .getSource();
+
+            if (source == null) {
+                return null;
+            }
+
+            return ElasticSearchUtils.createRow(source, id, header);
         } catch (IOException e) {
             logger.warn("Could not execute ElasticSearch query", e);
             throw new MetaModelException("Could not execute ElasticSearch query", e);
@@ -275,8 +293,10 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
         sourceBuilder.size(0);
 
         try {
-            return getElasticSearchClient().search(new SearchRequest(new String[] { getIndexName() }, sourceBuilder))
-                    .getHits().getTotalHits();
+            return getRestHighLevelClient()
+                    .search(new SearchRequest(new String[] { getIndexName() }, sourceBuilder), RequestOptions.DEFAULT)
+                    .getHits()
+                    .getTotalHits().value;
         } catch (Exception e) {
             logger.warn("Could not execute ElasticSearch get query", e);
             throw new MetaModelException("Could not execute ElasticSearch get query", e);
@@ -294,8 +314,21 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
 
     /**
      * Gets the {@link ElasticSearchRestClient} that this {@link DataContext} is wrapping.
+     * 
+     * @deprecated When outside this package just use the injected RestHighLevelClient when instantiating this class.
+     *             Inside this package use {@link #getRestHighLevelClient()} instead
      */
+    @Deprecated
     public ElasticSearchRestClient getElasticSearchClient() {
-        return elasticSearchClient;
+        return new ElasticSearchRestClient(getRestHighLevelClient().getLowLevelClient());
+    }
+    
+    /**
+     * Gets the {@link RestHighLevelClient} that this {@link DataContext} is wrapping.
+     * 
+     * @return
+     */
+    RestHighLevelClient getRestHighLevelClient() {
+        return restHighLevelClient;
     }
 }

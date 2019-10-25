@@ -27,7 +27,8 @@ import org.apache.metamodel.schema.ColumnType;
  * types to {@link ColumnType}s.
  */
 public class ElasticSearchMetaData {
-    
+    public static final String PROPERTIES_KEY = "properties";
+
     private final String[] columnNames;
     private final ColumnType[] columnTypes;
 

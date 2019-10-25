@@ -27,10 +27,15 @@ import org.elasticsearch.action.search.ClearScrollAction;
 import org.elasticsearch.action.search.ClearScrollRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
 
 /**
  * {@link DataSet} implementation for ElasticSearch
+ * 
+ * @deprecated {@link TransportClient} on which this implementation is based is deprecated in Elasticsearch 7.x and will
+ *             be removed in Elasticsearch 8. Please use ElasticSearchRestDataSet instead.
  */
+@Deprecated
 final class ElasticSearchDataSet extends AbstractElasticSearchDataSet {
 
     private final Client _client;

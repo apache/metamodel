@@ -19,6 +19,7 @@
 package org.apache.metamodel.elasticsearch.rest;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.metamodel.MetaModelException;
@@ -27,8 +28,11 @@ import org.apache.metamodel.insert.AbstractRowInsertionBuilder;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.index.IndexRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class ElasticSearchRestInsertBuilder extends AbstractRowInsertionBuilder<ElasticSearchRestUpdateCallback> {
+    private static final Logger logger = LoggerFactory.getLogger(ElasticSearchRestInsertBuilder.class);
 
     public ElasticSearchRestInsertBuilder(final ElasticSearchRestUpdateCallback updateCallback, final Table table) {
         super(updateCallback, table);
@@ -39,8 +43,12 @@ final class ElasticSearchRestInsertBuilder extends AbstractRowInsertionBuilder<E
         final ElasticSearchRestUpdateCallback updateCallback = getUpdateCallback();
         final ElasticSearchRestDataContext dataContext = updateCallback.getDataContext();
         final String indexName = dataContext.getIndexName();
-        final String documentType = getTable().getName();
-
+        final List<Table> tables = dataContext.getDefaultSchema().getTables();
+        
+        if (!(tables.isEmpty() || tables.get(0).getName().equals(getTable().getName()))) {
+            throw new MetaModelException("Can't add more than one table to Elasticsearch index.");
+        } 
+        
         final Map<String, Object> source = new HashMap<>();
         final Column[] columns = getColumns();
         final Object[] values = getValues();
@@ -61,12 +69,14 @@ final class ElasticSearchRestInsertBuilder extends AbstractRowInsertionBuilder<E
             }
         }
 
-        assert !source.isEmpty();
+        if (!source.isEmpty()) {
+            IndexRequest indexRequest = new IndexRequest(indexName).id(id);
+            indexRequest.source(source);
 
-        IndexRequest indexRequest = new IndexRequest(indexName, documentType, id);
-        indexRequest.source(source);
-
-        getUpdateCallback().execute(indexRequest);
+            getUpdateCallback().execute(indexRequest);
+        } else {
+            logger.info("Source is empty, no index request is executed.");
+        }
     }
 
 }

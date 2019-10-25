@@ -32,10 +32,15 @@ import org.apache.metamodel.schema.Table;
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.DocWriteRequest;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.ClearScrollRequest;
+import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,7 +126,7 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
         bulkRequest = null;
     }
 
-    public void execute(final ActionRequest action) {
+    void execute(final ActionRequest action) {
         if (isBatch() && (action instanceof DocWriteRequest<?>)) {
             getBulkRequest().add((DocWriteRequest<?>) action);
             bulkActionCount++;
@@ -135,20 +140,17 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
 
     private void executeBlocking(final ActionRequest action) {
         try {
-            if (action instanceof PutMappingRequest) {
-                getDataContext().getElasticSearchClient().createMapping((PutMappingRequest) action);
-            } else {
-                final ActionResponse result = getDataContext().getElasticSearchClient().execute(action);
+            final ActionResponse result = executeActionRequest(action);
 
-                if (result instanceof BulkResponse && ((BulkResponse) result).hasFailures()) {
-                    BulkItemResponse[] failedItems = ((BulkResponse) result).getItems();
-                    for (int i = 0; i < failedItems.length; i++) {
-                        if (failedItems[i].isFailed()) {
-                            final BulkItemResponse failedItem = failedItems[i];
-                            logger.error("Bulk failed with item no. {} of {}: id={} op={} status={} error={}", i + 1,
-                                    failedItems.length, failedItem.getId(), failedItem.getOpType(), failedItem.status(),
-                                    failedItem.getFailureMessage());
-                        }
+            if (result instanceof BulkResponse && ((BulkResponse) result).hasFailures()) {
+                BulkItemResponse[] failedItems = ((BulkResponse) result).getItems();
+                for (int i = 0; i < failedItems.length; i++) {
+                    if (failedItems[i].isFailed()) {
+                        final BulkItemResponse failedItem = failedItems[i];
+                        logger
+                                .error("Bulk failed with item no. {} of {}: id={} op={} status={} error={}", i + 1,
+                                        failedItems.length, failedItem.getId(), failedItem.getOpType(), failedItem
+                                                .status(), failedItem.getFailureMessage());
                     }
                 }
             }
@@ -156,6 +158,22 @@ final class ElasticSearchRestUpdateCallback extends AbstractUpdateCallback {
             logger.warn("Could not execute command {} ", action, e);
             throw new MetaModelException("Could not execute " + action, e);
         }
+    }
+
+    private ActionResponse executeActionRequest(final ActionRequest action) throws IOException {
+        final RestHighLevelClient client = getDataContext().getRestHighLevelClient();
+        if (action instanceof BulkRequest) {
+            return client.bulk((BulkRequest) action, RequestOptions.DEFAULT);
+        } else if (action instanceof IndexRequest) {
+            return client.index((IndexRequest) action, RequestOptions.DEFAULT);
+        } else if (action instanceof DeleteRequest) {
+            return client.delete((DeleteRequest) action, RequestOptions.DEFAULT);
+        } else if (action instanceof ClearScrollRequest) {
+            return client.clearScroll((ClearScrollRequest) action, RequestOptions.DEFAULT);
+        } else if (action instanceof SearchScrollRequest) {
+            return client.scroll((SearchScrollRequest) action, RequestOptions.DEFAULT);
+        }
+        return null;
     }
 
     private BulkRequest getBulkRequest() {

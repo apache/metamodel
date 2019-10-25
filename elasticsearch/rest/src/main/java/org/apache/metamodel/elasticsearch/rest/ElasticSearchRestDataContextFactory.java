@@ -22,10 +22,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.metamodel.ConnectionException;
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.factory.DataContextFactory;
@@ -33,8 +29,7 @@ import org.apache.metamodel.factory.DataContextProperties;
 import org.apache.metamodel.factory.ResourceFactoryRegistry;
 import org.apache.metamodel.factory.UnsupportedDataContextPropertiesException;
 import org.apache.metamodel.util.SimpleTableDef;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
 
 /**
  * Factory for ElasticSearch data context of REST type.
@@ -78,20 +73,12 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
         return true;
     }
 
-    private ElasticSearchRestClient createClient(final DataContextProperties properties) throws MalformedURLException {
+    private RestHighLevelClient createClient(final DataContextProperties properties) throws MalformedURLException {
         final URL url = new URL(properties.getUrl());
-        final RestClientBuilder builder = RestClient.builder(new HttpHost(url.getHost(), url.getPort()));
         
-        if (properties.getUsername() != null) {
-            final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(properties.getUsername(),
-                    properties.getPassword()));
-
-            builder.setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(
-                    credentialsProvider));
-        }
-
-        return new ElasticSearchRestClient(builder.build());
+        return ElasticSearchRestUtil
+                .createClient(new HttpHost(url.getHost(), url.getPort()), properties.getUsername(), properties
+                        .getPassword());
     }
 
     private String getIndex(DataContextProperties properties) {
@@ -106,7 +93,7 @@ public class ElasticSearchRestDataContextFactory implements DataContextFactory {
     public DataContext create(DataContextProperties properties, ResourceFactoryRegistry resourceFactoryRegistry)
             throws UnsupportedDataContextPropertiesException, ConnectionException {
         try {
-            ElasticSearchRestClient client = createClient(properties);
+            final RestHighLevelClient client = createClient(properties);
             final String indexName = getIndex(properties);
             final SimpleTableDef[] tableDefinitions = properties.getTableDefs();
             return new ElasticSearchRestDataContext(client, indexName, tableDefinitions);

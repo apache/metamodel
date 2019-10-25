@@ -30,9 +30,15 @@ import org.elasticsearch.action.index.IndexAction;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated {@link TransportClient} on which this implementation is based is deprecated in Elasticsearch 7.x and will
+ *             be removed in Elasticsearch 8. Please use ElasticSearchRestInsertBuilder instead.
+ */
+@Deprecated
 final class ElasticSearchInsertBuilder extends AbstractRowInsertionBuilder<ElasticSearchUpdateCallback> {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchInsertBuilder.class);

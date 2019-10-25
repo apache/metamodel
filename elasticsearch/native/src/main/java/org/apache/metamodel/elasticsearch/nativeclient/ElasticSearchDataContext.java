@@ -46,6 +46,7 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.cluster.ClusterState;
 import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
@@ -76,7 +77,11 @@ import com.carrotsearch.hppc.cursors.ObjectCursor;
  *
  * This implementation supports either automatic discovery of a schema or manual
  * specification of a schema, through the {@link SimpleTableDef} class.
+ * 
+ * @deprecated {@link TransportClient} on which this implementation is based is deprecated in Elasticsearch 7.x and will
+ *             be removed in Elasticsearch 8. Please use ElasticSearchRestDataContext instead.
  */
+@Deprecated
 public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
 
     private static final Logger logger = LoggerFactory.getLogger(ElasticSearchDataContext.class);
@@ -176,7 +181,7 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
             throw new IllegalArgumentException("No such document type in index '" + indexName + "': " + documentType);
         }
         final Map<String, Object> mp = mappingMetaData.getSourceAsMap();
-        final Object metadataProperties = mp.get("properties");
+        final Object metadataProperties = mp.get(ElasticSearchMetaData.PROPERTIES_KEY);
         if (metadataProperties != null && metadataProperties instanceof Map) {
             @SuppressWarnings("unchecked")
             final Map<String, ?> metadataPropertiesMap = (Map<String, ?>) metadataProperties;
@@ -266,7 +271,7 @@ public class ElasticSearchDataContext extends AbstractElasticSearchDataContext {
         final SearchResponse searchResponse =
                 getElasticSearchClient().prepareSearch(indexName).setSource(new SearchSourceBuilder().size(0).query(query))
                         .execute().actionGet();
-        return searchResponse.getHits().getTotalHits();
+        return searchResponse.getHits().getTotalHits().value;
     }
 
     @Override

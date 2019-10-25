@@ -61,6 +61,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+@SuppressWarnings("deprecation")
 public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     private static final String indexName = "twitter";
@@ -71,7 +72,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
     private static final String bulkIndexType = "bulktype";
     private static final String peopleIndexType = "peopletype";
     private static final String mapping =
-            "{\"date_detection\":\"false\",\"properties\":{\"message\":{\"type\":\"string\",\"index\":\"not_analyzed\",\"doc_values\":\"true\"}}}";
+            "{\"date_detection\":\"false\",\"properties\":{\"message\":{\"type\":\"keyword\",\"doc_values\":\"true\"}}}";
     private Client client;
     private UpdateableDataContext dataContext;
 
@@ -80,15 +81,6 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
         client = client();
 
         dataContext = new ElasticSearchDataContext(client, indexName);
-
-        indexTweeterDocument(indexType1, 1);
-        indexTweeterDocument(indexType2, 1);
-        indexTweeterDocument(indexType2, 2, null);
-        insertPeopleDocuments();
-        indexTweeterDocument(indexType2, 1);
-        indexBulkDocuments(indexName, bulkIndexType, 10);
-
-        dataContext.refreshSchemas();
     }
 
     private void insertPeopleDocuments() throws IOException {
@@ -101,6 +93,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
         indexOnePeopleDocument("male", 17, 2);
         indexOnePeopleDocument("male", 18, 3);
         indexOnePeopleDocument("male", 18, 4);
+        dataContext.refreshSchemas();
     }
 
     @After
@@ -110,8 +103,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testSimpleQuery() throws Exception {
-        assertEquals("[bulktype, peopletype, tweet1, tweet2]",
-                Arrays.toString(dataContext.getDefaultSchema().getTableNames().toArray()));
+        indexTweeterDocument(indexType1, 1);
+        dataContext.refreshSchemas();
 
         Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
         try (DataSet ds = dataContext.query().from(indexType1).select("_id").execute()) {
@@ -137,6 +130,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testDocumentIdAsPrimaryKey() throws Exception {
+        indexTweeterDocuments();
+
         Table table = dataContext.getDefaultSchema().getTableByName("tweet2");
         Column[] pks = table.getPrimaryKeys().toArray(new Column[0]);
         assertEquals(1, pks.length);
@@ -150,6 +145,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testExecutePrimaryKeyLookupQuery() throws Exception {
+        indexTweeterDocuments();
+
         Table table = dataContext.getDefaultSchema().getTableByName("tweet2");
         Column[] pks = table.getPrimaryKeys().toArray(new Column[0]);
 
@@ -166,6 +163,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testDateIsHandledAsDate() throws Exception {
+        indexTweeterDocument(indexType1, 1);
+
         Table table = dataContext.getDefaultSchema().getTableByName("tweet1");
         Column column = table.getColumnByName("postDate");
         ColumnType type = column.getType();
@@ -180,6 +179,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testNumberIsHandledAsNumber() throws Exception {
+        insertPeopleDocuments();
+
         Table table = dataContext.getDefaultSchema().getTableByName(peopleIndexType);
         Column column = table.getColumnByName("age");
         ColumnType type = column.getType();
@@ -194,13 +195,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testCreateTableAndInsertQuery() throws Exception {
-        final Schema schema = dataContext.getDefaultSchema();
-        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
-        createTable.withColumn("foo").ofType(ColumnType.STRING);
-        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
-        dataContext.executeUpdate(createTable);
-
-        final Table table = schema.getTableByName("testCreateTable");
+        final Table table = createTable();
         assertEquals("[" + ElasticSearchUtils.FIELD_ID + ", foo, bar]",
                 Arrays.toString(table.getColumnNames().toArray()));
 
@@ -232,14 +227,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testDeleteFromWithWhere() throws Exception {
-        final Schema schema = dataContext.getDefaultSchema();
-        final String tableName = "testCreateTableDelete";
-        final CreateTable createTable = new CreateTable(schema, tableName);
-        createTable.withColumn("foo").ofType(ColumnType.STRING);
-        createTable.withColumn("bar").ofType(ColumnType.DOUBLE);
-        dataContext.executeUpdate(createTable);
-
-        final Table table = schema.getTableByName(tableName);
+        final Table table = createTable();
 
         dataContext.executeUpdate(new UpdateScript() {
             @Override
@@ -260,13 +248,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testDeleteNoWhere() throws Exception {
-        final Schema schema = dataContext.getDefaultSchema();
-        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
-        createTable.withColumn("foo").ofType(ColumnType.STRING);
-        createTable.withColumn("bar").ofType(ColumnType.DOUBLE);
-        dataContext.executeUpdate(createTable);
-
-        final Table table = schema.getTableByName("testCreateTable");
+        final Table table = createTable();
 
         dataContext.executeUpdate(new UpdateScript() {
             @Override
@@ -285,13 +267,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testDeleteByQuery() throws Exception {
-        final Schema schema = dataContext.getDefaultSchema();
-        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
-        createTable.withColumn("foo").ofType(ColumnType.STRING);
-        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
-        dataContext.executeUpdate(createTable);
-
-        final Table table = schema.getTableByName("testCreateTable");
+        final Table table = createTable();
 
         dataContext.executeUpdate(new UpdateScript() {
             @Override
@@ -310,13 +286,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testDeleteUnsupportedQueryType() throws Exception {
-        final Schema schema = dataContext.getDefaultSchema();
-        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
-        createTable.withColumn("foo").ofType(ColumnType.STRING);
-        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
-        dataContext.executeUpdate(createTable);
-
-        final Table table = schema.getTableByName("testCreateTable");
+        final Table table = createTable();
 
         dataContext.executeUpdate(new UpdateScript() {
             @Override
@@ -338,13 +308,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testUpdateRow() throws Exception {
-        final Schema schema = dataContext.getDefaultSchema();
-        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
-        createTable.withColumn("foo").ofType(ColumnType.STRING);
-        createTable.withColumn("bar").ofType(ColumnType.NUMBER);
-        dataContext.executeUpdate(createTable);
-
-        final Table table = schema.getTableByName("testCreateTable");
+        final Table table = createTable();
 
         dataContext.executeUpdate(new UpdateScript() {
             @Override
@@ -367,6 +331,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testWhereColumnEqualsValues() throws Exception {
+        indexBulkDocuments(indexName, bulkIndexType, 10);
+
         try (DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
                 .isEquals("user4").execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
@@ -379,6 +345,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testWhereColumnIsNullValues() throws Exception {
+        indexTweeterDocuments();
+
         try (DataSet ds = dataContext.query().from(indexType2).select("message").where("postDate").isNull().execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
 
@@ -390,6 +358,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testWhereColumnIsNotNullValues() throws Exception {
+        indexTweeterDocuments();
+
         try (DataSet ds =
                 dataContext.query().from(indexType2).select("message").where("postDate").isNotNull().execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
@@ -402,6 +372,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testWhereMultiColumnsEqualValues() throws Exception {
+        indexBulkDocuments(indexName, bulkIndexType, 10);
+
         try (DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
                 .isEquals("user4").and("message").ne(5).execute()) {
             assertEquals(ElasticSearchDataSet.class, ds.getClass());
@@ -414,6 +386,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testWhereColumnInValues() throws Exception {
+        indexBulkDocuments(indexName, bulkIndexType, 10);
+
         try (DataSet ds = dataContext.query().from(bulkIndexType).select("user").and("message").where("user")
                 .in("user4", "user5").orderBy("message").execute()) {
             assertTrue(ds.next());
@@ -431,6 +405,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testGroupByQuery() throws Exception {
+        insertPeopleDocuments();
+
         Table table = dataContext.getDefaultSchema().getTableByName(peopleIndexType);
 
         Query q = new Query();
@@ -456,6 +432,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testFilterOnNumberColumn() {
+        indexBulkDocuments(indexName, bulkIndexType, 10);
+
         Table table = dataContext.getDefaultSchema().getTableByName(bulkIndexType);
         Query q = dataContext.query().from(table).select("user").where("message").greaterThan(7).toQuery();
         DataSet data = dataContext.executeQuery(q);
@@ -470,6 +448,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testMaxRows() throws Exception {
+        insertPeopleDocuments();
+
         Table table = dataContext.getDefaultSchema().getTableByName(peopleIndexType);
         Query query = new Query().from(table).select(table.getColumns()).setMaxRows(5);
         DataSet dataSet = dataContext.executeQuery(query);
@@ -480,6 +460,8 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
 
     @Test
     public void testCountQuery() throws Exception {
+        indexBulkDocuments(indexName, bulkIndexType, 10);
+
         Table table = dataContext.getDefaultSchema().getTableByName(bulkIndexType);
         Query q = new Query().selectCount().from(table);
 
@@ -523,6 +505,16 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
                     .add(client.prepareIndex(indexName, indexType, Integer.toString(i)).setSource(buildTweeterJson(i)));
         }
         bulkRequest.execute().actionGet();
+        
+        dataContext.refreshSchemas();
+    }
+
+    private void indexTweeterDocuments() {
+        indexTweeterDocument(indexType2, 1);
+        indexTweeterDocument(indexType2, 2, null);
+        indexTweeterDocument(indexType2, 1);
+        
+        dataContext.refreshSchemas();
     }
 
     private void indexTweeterDocument(String indexType, int id, Date date) {
@@ -556,4 +548,14 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
         return jsonBuilder().startObject().field("gender", gender).field("age", age).field("id", elementId).endObject();
     }
 
+    private Table createTable() {
+        client.admin().indices().prepareCreate(indexName).execute().actionGet();
+        final Schema schema = dataContext.getDefaultSchema();
+        final CreateTable createTable = new CreateTable(schema, "testCreateTable");
+        createTable.withColumn("foo").ofType(ColumnType.STRING);
+        createTable.withColumn("bar").ofType(ColumnType.DOUBLE);
+        dataContext.executeUpdate(createTable);
+
+        return schema.getTableByName("testCreateTable");
+    }
 }
