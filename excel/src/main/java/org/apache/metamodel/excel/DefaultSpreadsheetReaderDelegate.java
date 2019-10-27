@@ -53,12 +53,12 @@ import org.slf4j.LoggerFactory;
  * The default {@link SpreadsheetReaderDelegate}, which uses POI's main user
  * model to read spreadsheets: the Workbook class.
  */
-final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
+class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultSpreadsheetReaderDelegate.class);
 
-    private final Resource _resource;
-    private final ExcelConfiguration _configuration;
+    protected final Resource _resource;
+    protected final ExcelConfiguration _configuration;
 
     public DefaultSpreadsheetReaderDelegate(Resource resource, ExcelConfiguration configuration) {
         _resource = resource;
@@ -66,7 +66,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     @Override
-    public Schema createSchema(String schemaName) {
+    public Schema createSchema(String schemaName) throws Exception {
         final MutableSchema schema = new MutableSchema(schemaName);
         final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
         try {
@@ -84,7 +84,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     @Override
-    public DataSet executeQuery(Table table, List<Column> columns, int maxRows) {
+    public DataSet executeQuery(Table table, List<Column> columns, int maxRows) throws Exception {
         final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
         final Sheet sheet = wb.getSheet(table.getName());
 
@@ -179,15 +179,15 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         return table;
     }
 
-    private ColumnType[] getColumnTypes(final Sheet sheet, final Row row) {
+    protected ColumnType[] getColumnTypes(final Sheet sheet, final Row row) {
         final Iterator<Row> data = ExcelUtils.getRowIterator(sheet, _configuration, false);
         final int rowLength = row.getLastCellNum();
         final ColumnType[] columnTypes = new ColumnType[rowLength];
         if (_configuration.isDetectColumnTypes()) {
 
-            int eagerness = _configuration.getEagerness();
+            int numberOfLinesToScan = _configuration.getNumberOfLinesToScan();
 
-            while (data.hasNext() && eagerness-- > 0) {
+            while (data.hasNext() && numberOfLinesToScan-- > 0) {
                 final Row currentRow = data.next();
                 if (currentRow.getRowNum() < _configuration.getColumnNameLineNumber()) {
                     continue;
@@ -214,7 +214,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         return columnTypes;
     }
 
-    private ColumnType getColumnTypeFromRow(final Row currentRow, int index) {
+    protected ColumnType getColumnTypeFromRow(final Row currentRow, int index) {
         if (currentRow.getCell(index) == null) {
             return ColumnType.STRING;
         } else {

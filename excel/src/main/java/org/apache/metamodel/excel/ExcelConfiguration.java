@@ -33,12 +33,14 @@ import org.apache.metamodel.util.BaseObject;
 public final class ExcelConfiguration extends BaseObject implements
 		Serializable {
 
-	private static final long serialVersionUID = 1L;
+
+    private static final long serialVersionUID = 1L;
 
 	public static final int NO_COLUMN_NAME_LINE = 0;
 	public static final int DEFAULT_COLUMN_NAME_LINE = 1;
+	private static final int NUMBERS_OF_LINES_TO_SCAN = 1000;
 
-	private final int getNumberOfLinesToScan;
+	private final int numberOfLinesToScan;
 	private final int columnNameLineNumber;
 	private final ColumnNamingStrategy columnNamingStrategy;
 	private final boolean skipEmptyLines;
@@ -50,26 +52,26 @@ public final class ExcelConfiguration extends BaseObject implements
 	}
 
     public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns) {
-        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns, false, 1000);
+        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns, false, NUMBERS_OF_LINES_TO_SCAN);
     }
     
     public ExcelConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy,
             Boolean skipEmptyLines, Boolean skipEmptyColumns) {
-        this(columnNameLineNumber, columnNamingStrategy, skipEmptyLines, skipEmptyColumns, false, 1000);
+        this(columnNameLineNumber, columnNamingStrategy, skipEmptyLines, skipEmptyColumns, false, NUMBERS_OF_LINES_TO_SCAN);
     }
     
     public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns, boolean detectColumnTypes) {
-        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns, detectColumnTypes, 1000);
+        this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns, detectColumnTypes, NUMBERS_OF_LINES_TO_SCAN);
     }
 
     public ExcelConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy,
-            boolean skipEmptyLines, boolean skipEmptyColumns, boolean detectColumnTypes, int eagerness) {
+            boolean skipEmptyLines, boolean skipEmptyColumns, boolean detectColumnTypes, int numberOfLinesToScan) {
         this.columnNameLineNumber = columnNameLineNumber;
         this.skipEmptyLines = skipEmptyLines;
         this.skipEmptyColumns = skipEmptyColumns;
         this.columnNamingStrategy = columnNamingStrategy;
         this.detectColumnTypes = detectColumnTypes;
-        this.getNumberOfLinesToScan = eagerness;
+        this.numberOfLinesToScan = numberOfLinesToScan;
     }
     
     /**
@@ -130,7 +132,8 @@ public final class ExcelConfiguration extends BaseObject implements
 		identifiers.add(columnNameLineNumber);
 		identifiers.add(skipEmptyLines);
 		identifiers.add(skipEmptyColumns);
-		identifiers.add(detectColumnTypes);
+        identifiers.add(detectColumnTypes);
+        identifiers.add(numberOfLinesToScan);
 	}
 
 	@Override
@@ -138,10 +141,10 @@ public final class ExcelConfiguration extends BaseObject implements
 		return "ExcelConfiguration[columnNameLineNumber="
 				+ columnNameLineNumber + ", skipEmptyLines=" + skipEmptyLines
 				+ ", skipEmptyColumns=" + skipEmptyColumns +", detectColumnTypes="
-				+ detectColumnTypes + "]";
+				+ detectColumnTypes + ", numbersOfLinesToScan=" + numberOfLinesToScan + "]";
 	}
 
-	public int getEagerness() {
-		return getNumberOfLinesToScan;
+	public int getNumberOfLinesToScan() {
+		return numberOfLinesToScan;
 	}
 }

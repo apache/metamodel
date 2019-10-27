@@ -22,7 +22,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,6 @@ import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-import org.apache.metamodel.schema.naming.ColumnNamingContext;
 import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
 import org.apache.metamodel.schema.naming.ColumnNamingSession;
 import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
@@ -49,8 +47,6 @@ import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Resource;
 import org.apache.poi.openxml4j.opc.OPCPackage;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -65,17 +61,14 @@ import org.xml.sax.XMLReader;
  * This implementation is very efficient as it uses SAX XML parsing which does
  * not bloat memory usage in the same way that POI's user model does.
  */
-final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
+final class XlsxSpreadsheetReaderDelegate extends DefaultSpreadsheetReaderDelegate {
 
     private static final Logger logger = LoggerFactory.getLogger(XlsxSpreadsheetReaderDelegate.class);
 
-    private final Resource _resource;
-    private final ExcelConfiguration _configuration;
     private final Map<String, String> _tableNamesToInternalIds;
 
     public XlsxSpreadsheetReaderDelegate(Resource resource, ExcelConfiguration configuration) {
-        _resource = resource;
-        _configuration = configuration;
+        super(resource, configuration);
         _tableNamesToInternalIds = new ConcurrentHashMap<String, String>();
     }
 
@@ -159,128 +152,7 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
                     }
                 });
     }
-
-    private ColumnType[] getColumnTypes(final Sheet sheet, final Row row) {
-        final Iterator<Row> data = ExcelUtils.getRowIterator(sheet, _configuration, false);
-        final int rowLength = row.getLastCellNum();
-        final ColumnType[] columnTypes = new ColumnType[rowLength];
-        if (_configuration.isDetectColumnTypes()) {
-
-            int eagerness = _configuration.getEagerness();
-
-            while (data.hasNext() && eagerness-- > 0) {
-                final Row currentRow = data.next();
-                if (currentRow.getRowNum() < _configuration.getColumnNameLineNumber()) {
-                    continue;
-                }
-                for (int index = 0; index < rowLength; index++) {
-                    if (currentRow.getLastCellNum() == 0) {
-                        continue;
-                    }
-
-                    final ColumnType columnType = columnTypes[index];
-                    final ColumnType expectedColumnType = getColumnTypeFromRow(currentRow, index);
-                    if (columnType != null) {
-                        if (!columnType.equals(ColumnType.STRING) && !columnType.equals(expectedColumnType)) {
-                            columnTypes[index] = ColumnType.VARCHAR;
-                        }
-                    } else {
-                        columnTypes[index] = expectedColumnType;
-                    }
-                }
-            }
-        } else {
-            Arrays.fill(columnTypes, ColumnType.STRING);
-        }
-        return columnTypes;
-    }
-
-    private ColumnType getColumnTypeFromRow(final Row currentRow, int index) {
-        if (currentRow.getCell(index) == null) {
-            return ColumnType.STRING;
-        } else {
-            switch (currentRow.getCell(index).getCellType()) {
-            case NUMERIC:
-                if (DateUtil.isCellDateFormatted(currentRow.getCell(index))) {
-                    return ColumnType.DATE;
-                } else {
-                    return (currentRow.getCell(index).getNumericCellValue() % 1 == 0) ? ColumnType.INTEGER
-                            : ColumnType.DOUBLE;
-                }
-            case BOOLEAN:
-                return ColumnType.BOOLEAN;
-            case ERROR:
-                // fall through
-            case _NONE:
-                // fall through
-            case STRING:
-                // fall through
-            case FORMULA:
-                // fall through
-            case BLANK:
-                // fall through
-            default:
-                return ColumnType.STRING;
-            }
-        }
-    }
-
-    /**
-     * Builds columns based on row/cell values.
-     * 
-     * @param table
-     * @param wb
-     * @param row
-     */
-    private void createColumns(final MutableTable table, final Workbook wb, final Row row,
-            final ColumnType[] columTypes) {
-        if (row == null) {
-            logger.warn("Cannot create columns based on null row!");
-            return;
-        }
-        final short rowLength = row.getLastCellNum();
-
-        final int offset = getColumnOffset(row);
-
-        // build columns based on cell values.
-        try (final ColumnNamingSession columnNamingSession = _configuration
-                .getColumnNamingStrategy()
-                .startColumnNamingSession()) {
-            for (int j = offset; j < rowLength; j++) {
-                final Cell cell = row.getCell(j);
-                final String intrinsicColumnName = ExcelUtils.getCellValue(wb, cell);
-                final ColumnNamingContext columnNamingContext = new ColumnNamingContextImpl(table, intrinsicColumnName,
-                        j);
-                final String columnName = columnNamingSession.getNextColumnName(columnNamingContext);
-                final Column column;
-                if (!_configuration.isDetectColumnTypes()) {
-                    column = new MutableColumn(columnName, ColumnType.VARCHAR, table, j, true);
-                } else {
-                    column = new MutableColumn(columnName, columTypes[j], table, j, true);
-                }
-                table.addColumn(column);
-            }
-        }
-    }
-
-    /**
-     * Gets the column offset (first column to include). This is dependent on
-     * the row used for column processing and whether the skip empty columns
-     * property is set.
-     * 
-     * @param row
-     * @return
-     */
-    private int getColumnOffset(Row row) {
-        final int offset;
-        if (_configuration.isSkipEmptyColumns()) {
-            offset = row.getFirstCellNum();
-        } else {
-            offset = 0;
-        }
-        return offset;
-    }
-
+    
     private void buildColumns(final MutableTable table, final String relationshipId, final XSSFReader xssfReader)
             throws Exception {
         final InputStream sheetData = xssfReader.getSheet(relationshipId);
