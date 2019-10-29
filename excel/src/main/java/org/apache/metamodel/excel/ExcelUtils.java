@@ -171,14 +171,14 @@ final class ExcelUtils {
 
     }
 
-    public static String getCellValue(Workbook wb, Cell cell) {
+    public static Object getCellValue(Workbook wb, Cell cell) {
         if (cell == null) {
             return null;
         }
 
         final String cellCoordinate = "(" + cell.getRowIndex() + "," + cell.getColumnIndex() + ")";
 
-        final String result;
+        final Object result;
 
         switch (cell.getCellType()) {
         case BLANK:
@@ -186,7 +186,7 @@ final class ExcelUtils {
             result = null;
             break;
         case BOOLEAN:
-            result = Boolean.toString(cell.getBooleanCellValue());
+            result = cell.getBooleanCellValue();
             break;
         case ERROR:
             String errorResult;
@@ -237,7 +237,7 @@ final class ExcelUtils {
         return result;
     }
 
-    private static String getFormulaCellValue(Workbook wb, Cell cell) {
+    private static Object getFormulaCellValue(Workbook wb, Cell cell) {
         // first try with a cached/precalculated value
         try {
             double numericCellValue = cell.getNumericCellValue();
@@ -414,13 +414,13 @@ final class ExcelUtils {
      */
     public static DefaultRow createRow(Workbook workbook, Row row, DataSetHeader header) {
         final int size = header.size();
-        final String[] values = new String[size];
+        final Object[] values = new Object[size];
         final Style[] styles = new Style[size];
         if (row != null) {
             for (int i = 0; i < size; i++) {
                 final int columnNumber = header.getSelectItem(i).getColumn().getColumnNumber();
                 final Cell cell = row.getCell(columnNumber);
-                final String value = ExcelUtils.getCellValue(workbook, cell);
+                final Object value = ExcelUtils.getCellValue(workbook, cell);
                 final Style style = ExcelUtils.getCellStyle(workbook, cell);
                 values[i] = value;
                 styles[i] = style;

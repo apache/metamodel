@@ -18,6 +18,7 @@
  */
 package org.apache.metamodel.excel;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,6 +42,7 @@ import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.Resource;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -51,12 +53,12 @@ import org.slf4j.LoggerFactory;
  * The default {@link SpreadsheetReaderDelegate}, which uses POI's main user
  * model to read spreadsheets: the Workbook class.
  */
-final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
+class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultSpreadsheetReaderDelegate.class);
 
-    private final Resource _resource;
-    private final ExcelConfiguration _configuration;
+    protected final Resource _resource;
+    protected final ExcelConfiguration _configuration;
 
     public DefaultSpreadsheetReaderDelegate(Resource resource, ExcelConfiguration configuration) {
         _resource = resource;
@@ -64,7 +66,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     @Override
-    public Schema createSchema(String schemaName) {
+    public Schema createSchema(String schemaName) throws Exception {
         final MutableSchema schema = new MutableSchema(schemaName);
         final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
         try {
@@ -82,7 +84,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     }
 
     @Override
-    public DataSet executeQuery(Table table, List<Column> columns, int maxRows) {
+    public DataSet executeQuery(Table table, List<Column> columns, int maxRows) throws Exception {
         final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
         final Sheet sheet = wb.getSheet(table.getName());
 
@@ -129,6 +131,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         }
 
         final int columnNameLineNumber = _configuration.getColumnNameLineNumber();
+        final ColumnType[] columnTypes = getColumnTypes(sheet, row);
         if (columnNameLineNumber == ExcelConfiguration.NO_COLUMN_NAME_LINE) {
 
             // get to the first non-empty line (no matter if lines are skipped
@@ -149,7 +152,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                 for (int j = offset; j < row.getLastCellNum(); j++) {
                     final ColumnNamingContext namingContext = new ColumnNamingContextImpl(table, null, j);
                     final Column column = new MutableColumn(columnNamingSession.getNextColumnName(namingContext),
-                            ColumnType.STRING, table, j, true);
+                            columnTypes[j], table, j, true);
                     table.addColumn(column);
                 }
             }
@@ -169,11 +172,76 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             }
 
             if (hasColumns) {
-                createColumns(table, wb, row);
+                createColumns(table, wb, row, columnTypes);
             }
         }
 
         return table;
+    }
+
+    protected ColumnType[] getColumnTypes(final Sheet sheet, final Row row) {
+        final Iterator<Row> data = ExcelUtils.getRowIterator(sheet, _configuration, false);
+        final int rowLength = row.getLastCellNum();
+        final ColumnType[] columnTypes = new ColumnType[rowLength];
+        if (_configuration.isDetectColumnTypes()) {
+
+            int numberOfLinesToScan = _configuration.getNumberOfLinesToScan();
+
+            while (data.hasNext() && numberOfLinesToScan-- > 0) {
+                final Row currentRow = data.next();
+                if (currentRow.getRowNum() < _configuration.getColumnNameLineNumber()) {
+                    continue;
+                }
+                for (int index = 0; index < rowLength; index++) {
+                    if (currentRow.getLastCellNum() == 0) {
+                        continue;
+                    }
+
+                    final ColumnType columnType = columnTypes[index];
+                    final ColumnType expectedColumnType = getColumnTypeFromRow(currentRow, index);
+                    if (columnType != null) {
+                        if (!columnType.equals(ColumnType.STRING) && !columnType.equals(expectedColumnType)) {
+                            columnTypes[index] = ColumnType.VARCHAR;
+                        }
+                    } else {
+                        columnTypes[index] = expectedColumnType;
+                    }
+                }
+            }
+        } else {
+            Arrays.fill(columnTypes, ColumnType.STRING);
+        }
+        return columnTypes;
+    }
+
+    protected ColumnType getColumnTypeFromRow(final Row currentRow, int index) {
+        if (currentRow.getCell(index) == null) {
+            return ColumnType.STRING;
+        } else {
+            switch (currentRow.getCell(index).getCellType()) {
+                case NUMERIC:
+                    if (DateUtil.isCellDateFormatted(currentRow.getCell(index))) {
+                        return ColumnType.DATE;
+                    } else {
+                        return (currentRow.getCell(index).getNumericCellValue() % 1 == 0) 
+                                ? ColumnType.INTEGER : ColumnType.DOUBLE;
+                    }
+                case BOOLEAN:
+                    return ColumnType.BOOLEAN;
+                case ERROR:
+                    // fall through
+                case _NONE:
+                    // fall through
+                case STRING:
+                    // fall through
+                case FORMULA:
+                    // fall through
+                case BLANK:
+                    // fall through
+                default:
+                    return ColumnType.STRING;
+            }
+        }
     }
 
     /**
@@ -183,7 +251,8 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
      * @param wb
      * @param row
      */
-    private void createColumns(MutableTable table, Workbook wb, Row row) {
+    private void createColumns(final MutableTable table, final Workbook wb, final Row row,
+            final ColumnType[] columTypes) {
         if (row == null) {
             logger.warn("Cannot create columns based on null row!");
             return;
@@ -197,11 +266,17 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                 .startColumnNamingSession()) {
             for (int j = offset; j < rowLength; j++) {
                 final Cell cell = row.getCell(j);
-                final String intrinsicColumnName = ExcelUtils.getCellValue(wb, cell);
+                Object cellValue = ExcelUtils.getCellValue(wb, cell);
+                final String intrinsicColumnName = cellValue == null ? "" : cellValue.toString();
                 final ColumnNamingContext columnNamingContext = new ColumnNamingContextImpl(table, intrinsicColumnName,
                         j);
                 final String columnName = columnNamingSession.getNextColumnName(columnNamingContext);
-                final Column column = new MutableColumn(columnName, ColumnType.VARCHAR, table, j, true);
+                final Column column;
+                if (!_configuration.isDetectColumnTypes()) {
+                    column = new MutableColumn(columnName, ColumnType.VARCHAR, table, j, true);
+                } else {
+                    column = new MutableColumn(columnName, columTypes[j], table, j, true);
+                }
                 table.addColumn(column);
             }
         }

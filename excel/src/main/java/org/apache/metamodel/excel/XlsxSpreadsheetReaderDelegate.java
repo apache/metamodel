@@ -22,6 +22,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -46,6 +47,9 @@ import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Resource;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,17 +61,14 @@ import org.xml.sax.XMLReader;
  * This implementation is very efficient as it uses SAX XML parsing which does
  * not bloat memory usage in the same way that POI's user model does.
  */
-final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
+final class XlsxSpreadsheetReaderDelegate extends DefaultSpreadsheetReaderDelegate {
 
     private static final Logger logger = LoggerFactory.getLogger(XlsxSpreadsheetReaderDelegate.class);
 
-    private final Resource _resource;
-    private final ExcelConfiguration _configuration;
     private final Map<String, String> _tableNamesToInternalIds;
 
     public XlsxSpreadsheetReaderDelegate(Resource resource, ExcelConfiguration configuration) {
-        _resource = resource;
-        _configuration = configuration;
+        super(resource, configuration);
         _tableNamesToInternalIds = new ConcurrentHashMap<String, String>();
     }
 
@@ -151,11 +152,30 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
                     }
                 });
     }
-
+    
     private void buildColumns(final MutableTable table, final String relationshipId, final XSSFReader xssfReader)
             throws Exception {
         final InputStream sheetData = xssfReader.getSheet(relationshipId);
 
+        final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
+        Sheet sheet = wb.getSheetAt(0);
+        final Iterator<Row> rowIterator = ExcelUtils.getRowIterator(sheet, _configuration, false);
+
+        Row row = null;
+        if (!rowIterator.hasNext()) {
+            // no physical rows in sheet
+            return;
+        }
+
+        if (_configuration.isSkipEmptyLines()) {
+            while (row == null && rowIterator.hasNext()) {
+                row = rowIterator.next();
+            }
+        } else {
+            row = rowIterator.next();
+        }
+        final Row currentRow = row;
+        
         final XlsxRowCallback rowCallback = new XlsxRowCallback() {
             @Override
             public boolean row(int rowNumber, List<String> values, List<Style> styles) {
@@ -178,7 +198,12 @@ final class XlsxSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
                                 intrinsicColumnName, i));
 
                         if (!(_configuration.isSkipEmptyColumns() && values.get(i) == null)) {
-                            table.addColumn(new MutableColumn(columnName, ColumnType.STRING, table, i, true));
+                            if (currentRow != null) {
+                                final ColumnType[] columnTypes = getColumnTypes(sheet, currentRow);
+                                table.addColumn(new MutableColumn(columnName, columnTypes[i], table, i, true));
+                            } else {
+                                table.addColumn(new MutableColumn(columnName, ColumnType.STRING, table, i, true));
+                            }
                         }
                     }
                 }
