@@ -266,7 +266,8 @@ class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegate {
                 .startColumnNamingSession()) {
             for (int j = offset; j < rowLength; j++) {
                 final Cell cell = row.getCell(j);
-                final String intrinsicColumnName = ExcelUtils.getCellValue(wb, cell);
+                Object cellValue = ExcelUtils.getCellValue(wb, cell);
+                final String intrinsicColumnName = cellValue == null ? "" : cellValue.toString();
                 final ColumnNamingContext columnNamingContext = new ColumnNamingContextImpl(table, intrinsicColumnName,
                         j);
                 final String columnName = columnNamingSession.getNextColumnName(columnNamingContext);
