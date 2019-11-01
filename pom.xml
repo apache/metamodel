@@ -27,7 +27,7 @@ under the License.
 		<junit.version>4.12</junit.version>
 		<guava.version>27.0.1-jre</guava.version>
 		<hadoop.version>3.1.1</hadoop.version>
-		<jackson.version>2.6.7</jackson.version>
+		<jackson.version>2.10.0</jackson.version>
 		<easymock.version>3.2</easymock.version>
 		<spring.version>4.2.6.RELEASE</spring.version>
 		<httpcomponents.version>4.4.1</httpcomponents.version>
