@@ -18,16 +18,16 @@
  */
 package org.apache.metamodel.excel;
 
-import org.apache.metamodel.excel.ExcelConfiguration;
-
 import junit.framework.TestCase;
 
 public class ExcelConfigurationTest extends TestCase {
 
 	public void testToString() throws Exception {
-		ExcelConfiguration conf = new ExcelConfiguration(1, true, false);
-		assertEquals(
-				"ExcelConfiguration[columnNameLineNumber=1, skipEmptyLines=true, skipEmptyColumns=false]",
+        final ExcelConfiguration conf = new ExcelConfiguration(1, true, false);
+        assertEquals(String
+                .format("ExcelConfiguration[columnNameLineNumber=%s, skipEmptyLines=%s, skipEmptyColumns=%s, "
+                        + "detectColumnTypes=%s, numbersOfLinesToScan=%s]", ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE,
+                        true, false, false, ExcelConfiguration.DEFAULT_NUMBERS_OF_LINES_TO_SCAN),
 				conf.toString());
 	}
 
