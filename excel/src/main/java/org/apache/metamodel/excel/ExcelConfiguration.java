@@ -116,8 +116,11 @@ public final class ExcelConfiguration extends BaseObject implements
 	}
 
     /**
-     * Defines if columns in the excel spreadsheet should be validated on datatypes while
-     * reading the spreadsheet.
+     * Defines if columns in the excel spreadsheet should be detected on data types while reading the spreadsheet.
+     * If this detection configuration is set to false and there's no column name line configured, then all column
+     * types will be String.
+     * If this detection configuration is set to false and there's a column name line configured, then all column
+     * types will be VarChar.
      * 
      * @return a boolean indicating whether or not to validate column types.
      */
