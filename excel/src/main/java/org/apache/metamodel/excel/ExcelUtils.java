@@ -53,6 +53,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.FontUnderline;
@@ -236,7 +237,7 @@ final class ExcelUtils {
         return result;
     }
 
-    public static Object getCellValueAsObject(Workbook wb, Cell cell) {
+    public static Object getCellValueAsObject(final Workbook wb, final Cell cell) {
         if (cell == null) {
             return null;
         }
@@ -257,7 +258,7 @@ final class ExcelUtils {
             String errorResult;
             try {
                 errorResult = FormulaError.forInt(cell.getErrorCellValue()).getString();
-            } catch (RuntimeException e) {
+            } catch (final RuntimeException e) {
                 logger.debug("Getting error code for {} failed!: {}", cellCoordinate, e.getMessage());
                 if (cell instanceof XSSFCell) {
                     // hack to get error string, which is available
@@ -273,7 +274,7 @@ final class ExcelUtils {
             result = getFormulaCellValueAsObject(wb, cell);
             break;
         case NUMERIC:
-            if (HSSFDateUtil.isCellDateFormatted(cell)) {
+            if (DateUtil.isCellDateFormatted(cell)) {
                 result = cell.getDateCellValue();
             } else {
                 result = getIntegerOrDoubleValueFromDouble(cell.getNumericCellValue());
@@ -296,7 +297,7 @@ final class ExcelUtils {
         if (value == null || value.getClass().equals(expectedColumnType.getJavaEquivalentClass())) {
             return value;
         }
-        
+
         if (!(value.getClass().equals(Integer.class) && expectedColumnType
                 .getJavaEquivalentClass()
                 .equals(Double.class)) && logger.isWarnEnabled()) {
@@ -305,8 +306,8 @@ final class ExcelUtils {
             final String warning = String
                     .format("Cell %s has the value '%s' of data type '%s', which doesn't match the detected column's "
                             + "data type '%s'. This cell gets value NULL in the DataSet.", cellCoordinate, value, value
-                                    .getClass()
-                                    .getSimpleName(), expectedColumnType);
+                            .getClass()
+                            .getSimpleName(), expectedColumnType);
             logger.warn(warning);
         }
         return null;
@@ -360,7 +361,7 @@ final class ExcelUtils {
         // first try with a cached/precalculated value
         try {
             return getIntegerOrDoubleValueFromDouble(cell.getNumericCellValue());
-        } catch (Exception e) {
+        } catch (final Exception e) {
             if (logger.isInfoEnabled()) {
                 logger.info("Failed to fetch cached/precalculated formula value of cell: " + cell, e);
             }
@@ -370,8 +371,8 @@ final class ExcelUtils {
         try {
             if (logger.isInfoEnabled()) {
                 logger
-                        .info("cell({},{}) is a formula. Attempting to evaluate: {}", cell.getRowIndex(), cell
-                                .getColumnIndex(), cell.getCellFormula());
+                .info("cell({},{}) is a formula. Attempting to evaluate: {}", cell.getRowIndex(), cell
+                        .getColumnIndex(), cell.getCellFormula());
             }
 
             final FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
@@ -380,10 +381,10 @@ final class ExcelUtils {
             final Cell evaluatedCell = evaluator.evaluateInCell(cell);
 
             return getCellValueAsObject(wb, evaluatedCell);
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             logger
-                    .warn("Exception occurred while evaluating formula at position ({},{}): {}", cell.getRowIndex(),
-                            cell.getColumnIndex(), e.getMessage());
+            .warn("Exception occurred while evaluating formula at position ({},{}): {}", cell.getRowIndex(),
+                    cell.getColumnIndex(), e.getMessage());
             // Some exceptions we simply log - result will be then be the actual formula
             if (e instanceof FormulaParseException) {
                 logger.error("Parse exception occurred while evaluating cell formula: " + cell, e);
@@ -398,7 +399,7 @@ final class ExcelUtils {
         return cell.getCellFormula();
     }
 
-    private static Number getIntegerOrDoubleValueFromDouble(double value) {
+    private static Number getIntegerOrDoubleValueFromDouble(final double value) {
         final Double doubleValue = Double.valueOf(value);
         if (doubleValue % 1 == 0 && doubleValue <= Integer.MAX_VALUE) {
             return Integer.valueOf(doubleValue.intValue());
@@ -538,7 +539,7 @@ final class ExcelUtils {
      * @param selectItems select items of the columns in the table
      * @return
      */
-    public static DefaultRow createRow(Workbook workbook, Row row, DataSetHeader header) {
+    public static DefaultRow createRow(final Workbook workbook, final Row row, final DataSetHeader header) {
         final int size = header.size();
         final Object[] values = new Object[size];
         final Style[] styles = new Style[size];
@@ -578,8 +579,8 @@ final class ExcelUtils {
         return dataSet;
     }
 
-    private static String getNumericCellValueAsStringUsingBuildinFormat(CellStyle cellStyle, double cellValue) {
-        int formatIndex = cellStyle.getDataFormat();
+    private static String getNumericCellValueAsStringUsingBuildinFormat(final CellStyle cellStyle, final double cellValue) {
+        final int formatIndex = cellStyle.getDataFormat();
         String formatString = cellStyle.getDataFormatString();
         if (formatString == null) {
             formatString = BuiltinFormats.getBuiltinFormat(formatIndex);

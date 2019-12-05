@@ -247,7 +247,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         return null;
     }
 
-    private void detectColumnTypes(Row firstRow, final Iterator<Row> dataRowIterator, final ColumnType[] columnTypes) {
+    private void detectColumnTypes(final Row firstRow, final Iterator<Row> dataRowIterator, final ColumnType[] columnTypes) {
         detectColumnTypesFirstRow(firstRow, columnTypes);
         detectColumnTypesOtherRows(dataRowIterator, columnTypes);
 
@@ -321,32 +321,32 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
 
     private static ColumnType determineColumnTypeFromCell(final Cell cell) {
         switch (cell.getCellType()) {
-            case NUMERIC:
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    return ColumnType.DATE;
-                } else {
-                    return cell.getNumericCellValue() % 1 == 0 ? ColumnType.INTEGER : ColumnType.DOUBLE;
-                }
-            case BOOLEAN:
-                return ColumnType.BOOLEAN;
-            case FORMULA:
-                final FormulaEvaluator evaluator = cell
-                        .getSheet()
-                        .getWorkbook()
-                        .getCreationHelper()
-                        .createFormulaEvaluator();
-                return determineColumnTypeFromCell(evaluator.evaluateInCell(cell));
-            case STRING:
-                // fall through
-            case BLANK:
-                // fall through
-            case _NONE:
-                // fall through
-            case ERROR:
-                // fall through
-            default:
-                return DEFAULT_COLUMN_TYPE;
+        case NUMERIC:
+            if (DateUtil.isCellDateFormatted(cell)) {
+                return ColumnType.DATE;
+            } else {
+                return cell.getNumericCellValue() % 1 == 0 ? ColumnType.INTEGER : ColumnType.DOUBLE;
             }
+        case BOOLEAN:
+            return ColumnType.BOOLEAN;
+        case FORMULA:
+            final FormulaEvaluator evaluator = cell
+            .getSheet()
+            .getWorkbook()
+            .getCreationHelper()
+            .createFormulaEvaluator();
+            return determineColumnTypeFromCell(evaluator.evaluateInCell(cell));
+        case STRING:
+            // fall through
+        case BLANK:
+            // fall through
+        case _NONE:
+            // fall through
+        case ERROR:
+            // fall through
+        default:
+            return DEFAULT_COLUMN_TYPE;
+        }
     }
 
     /**
@@ -371,7 +371,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
                 .startColumnNamingSession()) {
             for (int i = offset; i < rowLength; i++) {
                 final Cell cell = row.getCell(i);
-                final String intrinsicColumnName = (String) ExcelUtils.getCellValue(wb, cell);
+                final String intrinsicColumnName = ExcelUtils.getCellValue(wb, cell);
                 final ColumnNamingContext columnNamingContext = new ColumnNamingContextImpl(table, intrinsicColumnName,
                         i);
                 final String columnName = columnNamingSession.getNextColumnName(columnNamingContext);
