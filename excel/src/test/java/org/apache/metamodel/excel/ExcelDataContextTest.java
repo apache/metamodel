@@ -910,17 +910,10 @@ public class ExcelDataContextTest extends TestCase {
         final Column columnD = table.getColumns().get(3);
         assertEquals("d", columnD.getName());
         assertEquals(ColumnType.INTEGER, columnD.getType());
-        final DataSet dataSetColumnD = dataContext
-                .query()
-                .from(table)
-                .select(columnD)
-                .where(columnD)
-                .eq(12)
-                .execute();
+        final DataSet dataSetColumnD = dataContext.query().from(table).select(columnD).where(columnD).eq(12).execute();
         assertTrue(dataSetColumnD.next());
         assertEquals(12, dataSetColumnD.getRow().getValue(0));
     }
-
 
     public void testInsertingValueOfValidColumnType() {
         final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
@@ -955,5 +948,4 @@ public class ExcelDataContextTest extends TestCase {
         final Table table = dataContext.getDefaultSchema().getTable(0);
         dataContext.executeUpdate(new Update(table).value("INTEGER", 1).value("INTEGER", "this is not an integer"));
     }
-
 }

@@ -40,7 +40,7 @@ under the License.
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
-			<version>4.1.0</version>
+			<version>4.1.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>

@@ -63,6 +63,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
 
     private final Resource _resource;
     private final ExcelConfiguration _configuration;
+    private FormulaEvaluator _formulaEvaluator;
 
     public DefaultSpreadsheetReaderDelegate(Resource resource, ExcelConfiguration configuration) {
         _resource = resource;
@@ -73,6 +74,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     public Schema createSchema(String schemaName) {
         final MutableSchema schema = new MutableSchema(schemaName);
         final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
+        _formulaEvaluator = wb.getCreationHelper().createFormulaEvaluator();
         try {
             for (int i = 0; i < wb.getNumberOfSheets(); i++) {
                 final Sheet currentSheet = wb.getSheetAt(i);
@@ -247,7 +249,8 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         return null;
     }
 
-    private void detectColumnTypes(final Row firstRow, final Iterator<Row> dataRowIterator, final ColumnType[] columnTypes) {
+    private void detectColumnTypes(final Row firstRow, final Iterator<Row> dataRowIterator,
+            final ColumnType[] columnTypes) {
         detectColumnTypesFirstRow(firstRow, columnTypes);
         detectColumnTypesOtherRows(dataRowIterator, columnTypes);
 
@@ -292,7 +295,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
      * @param cell
      * @return Returns a new {@link ColumnType} when detected. Otherwise null is returned.
      */
-    private static ColumnType detectNewColumnTypeCell(final ColumnType currentColumnType, final Cell cell) {
+    private ColumnType detectNewColumnTypeCell(final ColumnType currentColumnType, final Cell cell) {
         // Can't detect something new if it's already on the default.
         if (currentColumnType != null && currentColumnType.equals(DEFAULT_COLUMN_TYPE)) {
             return null;
@@ -319,7 +322,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         return null;
     }
 
-    private static ColumnType determineColumnTypeFromCell(final Cell cell) {
+    private ColumnType determineColumnTypeFromCell(final Cell cell) {
         switch (cell.getCellType()) {
         case NUMERIC:
             if (DateUtil.isCellDateFormatted(cell)) {
@@ -330,12 +333,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         case BOOLEAN:
             return ColumnType.BOOLEAN;
         case FORMULA:
-            final FormulaEvaluator evaluator = cell
-            .getSheet()
-            .getWorkbook()
-            .getCreationHelper()
-            .createFormulaEvaluator();
-            return determineColumnTypeFromCell(evaluator.evaluateInCell(cell));
+            return determineColumnTypeFromCell(_formulaEvaluator.evaluateInCell(cell));
         case STRING:
             // fall through
         case BLANK:
@@ -367,7 +365,8 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         final int offset = getColumnOffset(row);
 
         // build columns based on cell values.
-        try (final ColumnNamingSession columnNamingSession = _configuration.getColumnNamingStrategy()
+        try (final ColumnNamingSession columnNamingSession = _configuration
+                .getColumnNamingStrategy()
                 .startColumnNamingSession()) {
             for (int i = offset; i < rowLength; i++) {
                 final Cell cell = row.getCell(i);

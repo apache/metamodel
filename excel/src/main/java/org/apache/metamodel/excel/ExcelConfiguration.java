@@ -146,11 +146,11 @@ public final class ExcelConfiguration extends BaseObject implements
         identifiers.add(numberOfLinesToScan);
 	}
 
-	@Override
-	public String toString() {
+    @Override
+    public String toString() {
         return String
                 .format("ExcelConfiguration[columnNameLineNumber=%s, skipEmptyLines=%s, skipEmptyColumns=%s, "
                         + "detectColumnTypes=%s, numbersOfLinesToScan=%s]", columnNameLineNumber, skipEmptyLines,
                         skipEmptyColumns, detectColumnTypes, numberOfLinesToScan);
-	}
+    }
 }
