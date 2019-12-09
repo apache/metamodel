@@ -46,7 +46,6 @@ import org.apache.metamodel.util.Resource;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.formula.FormulaParseException;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -186,27 +185,7 @@ final class ExcelUtils {
             result = Boolean.toString(cell.getBooleanCellValue());
             break;
         case ERROR:
-            String errorResult;
-            try {
-                byte errorCode = cell.getErrorCellValue();
-                FormulaError formulaError = FormulaError.forInt(errorCode);
-                errorResult = formulaError.getString();
-            } catch (RuntimeException e) {
-                logger
-                        .debug("Getting error code for ({},{}) failed!: {}", cell.getRowIndex(), cell.getColumnIndex(),
-                                e.getMessage());
-                if (cell instanceof XSSFCell) {
-                    // hack to get error string, which is available
-                    String value = ((XSSFCell) cell).getErrorCellString();
-                    errorResult = value;
-                } else {
-                    logger
-                            .error("Couldn't handle unexpected error scenario in cell: (" + cell.getRowIndex() + ","
-                                    + cell.getColumnIndex() + ")", e);
-                    throw e;
-                }
-            }
-            result = errorResult;
+            result = (String) getErrorResult(cell);
             break;
         case FORMULA:
             result = getFormulaCellValue(wb, cell);
@@ -251,24 +230,7 @@ final class ExcelUtils {
             result = Boolean.valueOf(cell.getBooleanCellValue());
             break;
         case ERROR:
-            String errorResult;
-            try {
-                errorResult = FormulaError.forInt(cell.getErrorCellValue()).getString();
-            } catch (final RuntimeException e) {
-                logger
-                        .debug("Getting error code for ({},{}) failed!: {}", cell.getRowIndex(), cell.getColumnIndex(),
-                                e.getMessage());
-                if (cell instanceof XSSFCell) {
-                    // hack to get error string, which is available
-                    errorResult = ((XSSFCell) cell).getErrorCellString();
-                } else {
-                    logger
-                            .error("Couldn't handle unexpected error scenario in cell: (" + cell.getRowIndex() + ","
-                                    + cell.getColumnIndex() + ")", e);
-                    throw e;
-                }
-            }
-            result = errorResult;
+            result = getErrorResult(cell);
             break;
         case FORMULA:
             result = getFormulaCellValueAsObject(workbook, cell);
@@ -292,6 +254,27 @@ final class ExcelUtils {
         return result;
     }
 
+    private static Object getErrorResult(final Cell cell) {
+        String errorResult;
+        try {
+            errorResult = FormulaError.forInt(cell.getErrorCellValue()).getString();
+        } catch (final RuntimeException e) {
+            logger
+                    .debug("Getting error code for ({},{}) failed!: {}", cell.getRowIndex(), cell.getColumnIndex(), e
+                            .getMessage());
+            if (cell instanceof XSSFCell) {
+                // hack to get error string, which is available
+                errorResult = ((XSSFCell) cell).getErrorCellString();
+            } else {
+                logger
+                        .error("Couldn't handle unexpected error scenario in cell: ({},{})", cell.getRowIndex(), cell
+                                .getColumnIndex());
+                throw e;
+            }
+        }
+        return errorResult;
+    }
+
     private static Object getCellValueChecked(final Workbook workbook, final Cell cell,
             final ColumnType expectedColumnType) {
         final Object value = getCellValueAsObject(workbook, cell);
@@ -303,16 +286,15 @@ final class ExcelUtils {
         if (!(value.getClass().equals(Integer.class) && expectedColumnType
                 .getJavaEquivalentClass()
                 .equals(Double.class)) && logger.isWarnEnabled()) {
-            final String warning = String
-                    .format("Cell (%s,%s) has the value '%s' of data type '%s', which doesn't match the detected "
-                            + "column's data type '%s'. This cell gets value NULL in the DataSet.", cell.getRowIndex(),
+            logger
+                    .warn("Cell ({},{}) has the value '{}' of data type '{}', which doesn't match the detected "
+                            + "column's data type '{}'. This cell gets value NULL in the DataSet.", cell.getRowIndex(),
                             cell.getColumnIndex(), value, value.getClass().getSimpleName(), expectedColumnType);
-            logger.warn(warning);
         }
         return null;
     }
 
-    private static String getFormulaCellValue(Workbook wb, Cell cell) {
+    private static String getFormulaCellValue(Workbook workbook, Cell cell) {
         // first try with a cached/precalculated value
         try {
             double numericCellValue = cell.getNumericCellValue();
@@ -324,36 +306,13 @@ final class ExcelUtils {
         }
 
         // evaluate cell first, if possible
-        try {
-            if (logger.isInfoEnabled()) {
-                logger
-                        .info("cell ({},{}) is a formula. Attempting to evaluate: {}", cell.getRowIndex(), cell
-                                .getColumnIndex(), cell.getCellFormula());
-            }
-
-            final FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
-
-            // calculates the formula and puts it's value back into the cell
-            final Cell evaluatedCell = evaluator.evaluateInCell(cell);
-
-            return getCellValue(wb, evaluatedCell);
-        } catch (RuntimeException e) {
-            logger
-                    .warn("Exception occurred while evaluating formula at position ({},{}): {}", cell.getRowIndex(),
-                            cell.getColumnIndex(), e.getMessage());
-            // Some exceptions we simply log - result will be then be the
-            // actual formula
-            if (e instanceof FormulaParseException) {
-                logger.warn("Parse exception occurred while evaluating cell formula: " + cell, e);
-            } else if (e instanceof IllegalArgumentException) {
-                logger.error("Illegal formula argument occurred while evaluating cell formula: " + cell, e);
-            } else {
-                logger.error("Unexpected exception occurred while evaluating cell formula: " + cell, e);
-            }
+        final Cell evaluatedCell = getEvaluatedCell(workbook, cell);
+        if (evaluatedCell != null) {
+            return getCellValue(workbook, evaluatedCell);
+        } else {
+            // last resort: return the string formula
+            return cell.getCellFormula();
         }
-
-        // last resort: return the string formula
-        return cell.getCellFormula();
     }
 
     private static Object getFormulaCellValueAsObject(final Workbook workbook, final Cell cell) {
@@ -367,6 +326,16 @@ final class ExcelUtils {
         }
 
         // evaluate cell first, if possible
+        final Cell evaluatedCell = getEvaluatedCell(workbook, cell);
+        if (evaluatedCell != null) {
+            return getCellValueAsObject(workbook, evaluatedCell);
+        } else {
+            // last resort: return the string formula
+            return cell.getCellFormula();
+        }
+    }
+
+    private static Cell getEvaluatedCell(final Workbook workbook, final Cell cell) {
         try {
             if (logger.isInfoEnabled()) {
                 logger
@@ -377,19 +346,13 @@ final class ExcelUtils {
             final FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
 
             // calculates the formula and puts it's value back into the cell
-            final Cell evaluatedCell = evaluator.evaluateInCell(cell);
-
-            return getCellValueAsObject(workbook, evaluatedCell);
-        } catch (final FormulaParseException e) {
-            logger.warn("Parse exception occurred while evaluating cell formula: " + cell, e);
-        } catch (final IllegalArgumentException e) {
-            logger.error("Illegal formula argument occurred while evaluating cell formula: " + cell, e);
-        } catch (final RuntimeException e) {
-            logger.error("Unexpected exception occurred while evaluating cell formula: " + cell, e);
+            return evaluator.evaluateInCell(cell);
+        } catch (RuntimeException e) {
+            logger
+                    .warn("Exception occurred while evaluating formula at position ({},{}): {}", cell.getRowIndex(),
+                            cell.getColumnIndex(), e.getMessage());
         }
-
-        // last resort: return the string formula
-        return cell.getCellFormula();
+        return null;
     }
 
     private static Number getDoubleAsNumber(final double value) {

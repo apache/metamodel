@@ -225,7 +225,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             // Now we need the first data row
             row = findTheFirstNonEmptyRow(iterator);
             if (row != null) {
-                detectColumnTypes(row, iterator, columnTypes);
+                new ColumnTypeScanner(sheet).detectColumnTypes(row, iterator, columnTypes);
             }
         } else {
             if (_configuration.getColumnNameLineNumber() == ExcelConfiguration.NO_COLUMN_NAME_LINE) {
@@ -245,109 +245,6 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             }
         }
         return null;
-    }
-
-    private void detectColumnTypes(final Row firstRow, final Iterator<Row> dataRowIterator,
-            final ColumnType[] columnTypes) {
-        detectColumnTypesFirstRow(firstRow, columnTypes);
-        detectColumnTypesOtherRows(dataRowIterator, columnTypes);
-
-        // If all cells are null, then this loop sets the column type to the default
-        for (int i = 0; i < columnTypes.length; i++) {
-            if (columnTypes[i] == null) {
-                columnTypes[i] = DEFAULT_COLUMN_TYPE;
-            }
-        }
-    }
-
-    private void detectColumnTypesFirstRow(final Row firstRow, final ColumnType[] columnTypes) {
-        if (firstRow != null && firstRow.getLastCellNum() > 0) {
-            for (int i = getColumnOffset(firstRow); i < columnTypes.length; i++) {
-                if (firstRow.getCell(i) != null) {
-                    columnTypes[i] = determineColumnTypeFromCell(firstRow.getCell(i));
-                }
-            }
-        }
-    }
-
-    private void detectColumnTypesOtherRows(final Iterator<Row> dataRowIterator, final ColumnType[] columnTypes) {
-        int numberOfLinesToScan = _configuration.getNumberOfLinesToScan() - 1;
-
-        while (dataRowIterator.hasNext() && numberOfLinesToScan-- > 0) {
-            final Row currentRow = dataRowIterator.next();
-            if (currentRow != null && currentRow.getLastCellNum() > 0) {
-                for (int i = getColumnOffset(currentRow); i < columnTypes.length; i++) {
-                    final ColumnType detectNewColumnType = detectNewColumnTypeCell(columnTypes[i], currentRow
-                            .getCell(i));
-                    if (detectNewColumnType != null) {
-                        columnTypes[i] = detectNewColumnType;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Tries to detect a new {@link ColumnType} for a cell.
-     * @param currentColumnType
-     * @param cell
-     * @return Returns a new {@link ColumnType} when detected. Otherwise null is returned.
-     */
-    private static ColumnType detectNewColumnTypeCell(final ColumnType currentColumnType, final Cell cell) {
-        // Can't detect something new if it's already on the default.
-        if (currentColumnType != null && currentColumnType.equals(DEFAULT_COLUMN_TYPE)) {
-            return null;
-        }
-        // Skip if the cell is null. This way 1 missing cell can't influence the column type of all other cells.
-        if (cell == null) {
-            return null;
-        }
-
-        final ColumnType detectedColumnType = determineColumnTypeFromCell(cell);
-        if (currentColumnType == null) {
-            return detectedColumnType;
-        } else if (!currentColumnType.equals(detectedColumnType)) {
-            // If the column type is Double and a Integer is detected, then don't set it to Integer
-            if (currentColumnType.equals(ColumnType.INTEGER) && detectedColumnType.equals(ColumnType.DOUBLE)) {
-                // If the column type is Integer and a Double is detected, then set it to Double
-                return detectedColumnType;
-            } else if (currentColumnType.equals(ColumnType.DOUBLE) && detectedColumnType.equals(ColumnType.INTEGER)) {
-                return null;
-            } else {
-                return DEFAULT_COLUMN_TYPE;
-            }
-        }
-        return null;
-    }
-
-    private static ColumnType determineColumnTypeFromCell(final Cell cell) {
-        switch (cell.getCellType()) {
-        case NUMERIC:
-            if (DateUtil.isCellDateFormatted(cell)) {
-                return ColumnType.DATE;
-            } else {
-                return cell.getNumericCellValue() % 1 == 0 ? ColumnType.INTEGER : ColumnType.DOUBLE;
-            }
-        case BOOLEAN:
-            return ColumnType.BOOLEAN;
-        case FORMULA:
-            FormulaEvaluator formulaEvaluator = cell
-                    .getSheet()
-                    .getWorkbook()
-                    .getCreationHelper()
-                    .createFormulaEvaluator();
-            return determineColumnTypeFromCell(formulaEvaluator.evaluateInCell(cell));
-        case STRING:
-            // fall through
-        case BLANK:
-            // fall through
-        case _NONE:
-            // fall through
-        case ERROR:
-            // fall through
-        default:
-            return DEFAULT_COLUMN_TYPE;
-        }
     }
 
     /**
@@ -399,5 +296,112 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
             offset = 0;
         }
         return offset;
+    }
+    
+    private class ColumnTypeScanner {
+        final FormulaEvaluator formulaEvaluator;
+
+        ColumnTypeScanner(final Sheet sheet) {
+            formulaEvaluator = sheet.getWorkbook().getCreationHelper().createFormulaEvaluator();
+        }
+
+        private void detectColumnTypes(final Row firstRow, final Iterator<Row> dataRowIterator,
+                final ColumnType[] columnTypes) {
+            detectColumnTypesFirstRow(firstRow, columnTypes);
+            detectColumnTypesOtherRows(dataRowIterator, columnTypes);
+
+            // If all cells are null, then this loop sets the column type to the default
+            for (int i = 0; i < columnTypes.length; i++) {
+                if (columnTypes[i] == null) {
+                    columnTypes[i] = DEFAULT_COLUMN_TYPE;
+                }
+            }
+        }
+
+        private void detectColumnTypesFirstRow(final Row firstRow, final ColumnType[] columnTypes) {
+            if (firstRow != null && firstRow.getLastCellNum() > 0) {
+                for (int i = getColumnOffset(firstRow); i < columnTypes.length; i++) {
+                    if (firstRow.getCell(i) != null) {
+                        columnTypes[i] = determineColumnTypeFromCell(firstRow.getCell(i));
+                    }
+                }
+            }
+        }
+
+        private void detectColumnTypesOtherRows(final Iterator<Row> dataRowIterator, final ColumnType[] columnTypes) {
+            int numberOfLinesToScan = _configuration.getNumberOfLinesToScan() - 1;
+
+            while (dataRowIterator.hasNext() && numberOfLinesToScan-- > 0) {
+                final Row currentRow = dataRowIterator.next();
+                if (currentRow != null && currentRow.getLastCellNum() > 0) {
+                    for (int i = getColumnOffset(currentRow); i < columnTypes.length; i++) {
+                        final ColumnType detectNewColumnType = detectNewColumnTypeCell(columnTypes[i], currentRow
+                                .getCell(i));
+                        if (detectNewColumnType != null) {
+                            columnTypes[i] = detectNewColumnType;
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Tries to detect a new {@link ColumnType} for a cell.
+         * @param currentColumnType
+         * @param cell
+         * @return Returns a new {@link ColumnType} when detected. Otherwise null is returned.
+         */
+        private ColumnType detectNewColumnTypeCell(final ColumnType currentColumnType, final Cell cell) {
+            // Can't detect something new if it's already on the default.
+            if (currentColumnType != null && currentColumnType.equals(DEFAULT_COLUMN_TYPE)) {
+                return null;
+            }
+            // Skip if the cell is null. This way 1 missing cell can't influence the column type of all other cells.
+            if (cell == null) {
+                return null;
+            }
+
+            final ColumnType detectedColumnType = determineColumnTypeFromCell(cell);
+            if (currentColumnType == null) {
+                return detectedColumnType;
+            } else if (!currentColumnType.equals(detectedColumnType)) {
+                // If the column type is Double and a Integer is detected, then don't set it to Integer
+                if (currentColumnType.equals(ColumnType.INTEGER) && detectedColumnType.equals(ColumnType.DOUBLE)) {
+                    // If the column type is Integer and a Double is detected, then set it to Double
+                    return detectedColumnType;
+                } else if (currentColumnType.equals(ColumnType.DOUBLE) && detectedColumnType
+                        .equals(ColumnType.INTEGER)) {
+                    return null;
+                } else {
+                    return DEFAULT_COLUMN_TYPE;
+                }
+            }
+            return null;
+        }
+
+        private ColumnType determineColumnTypeFromCell(final Cell cell) {
+            switch (cell.getCellType()) {
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return ColumnType.DATE;
+                } else {
+                    return cell.getNumericCellValue() % 1 == 0 ? ColumnType.INTEGER : ColumnType.DOUBLE;
+                }
+            case BOOLEAN:
+                return ColumnType.BOOLEAN;
+            case FORMULA:
+                return determineColumnTypeFromCell(formulaEvaluator.evaluateInCell(cell));
+            case STRING:
+                // fall through
+            case BLANK:
+                // fall through
+            case _NONE:
+                // fall through
+            case ERROR:
+                // fall through
+            default:
+                return DEFAULT_COLUMN_TYPE;
+            }
+        }
     }
 }
