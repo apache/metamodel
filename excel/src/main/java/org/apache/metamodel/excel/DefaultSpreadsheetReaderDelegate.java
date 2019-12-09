@@ -293,7 +293,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
      * @param cell
      * @return Returns a new {@link ColumnType} when detected. Otherwise null is returned.
      */
-    private ColumnType detectNewColumnTypeCell(final ColumnType currentColumnType, final Cell cell) {
+    private static ColumnType detectNewColumnTypeCell(final ColumnType currentColumnType, final Cell cell) {
         // Can't detect something new if it's already on the default.
         if (currentColumnType != null && currentColumnType.equals(DEFAULT_COLUMN_TYPE)) {
             return null;
@@ -320,7 +320,7 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         return null;
     }
 
-    private ColumnType determineColumnTypeFromCell(final Cell cell) {
+    private static ColumnType determineColumnTypeFromCell(final Cell cell) {
         switch (cell.getCellType()) {
         case NUMERIC:
             if (DateUtil.isCellDateFormatted(cell)) {
