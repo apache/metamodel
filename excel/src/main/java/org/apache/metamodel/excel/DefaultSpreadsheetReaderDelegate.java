@@ -63,7 +63,6 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
 
     private final Resource _resource;
     private final ExcelConfiguration _configuration;
-    private FormulaEvaluator _formulaEvaluator;
 
     public DefaultSpreadsheetReaderDelegate(Resource resource, ExcelConfiguration configuration) {
         _resource = resource;
@@ -74,7 +73,6 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
     public Schema createSchema(String schemaName) {
         final MutableSchema schema = new MutableSchema(schemaName);
         final Workbook wb = ExcelUtils.readWorkbook(_resource, true);
-        _formulaEvaluator = wb.getCreationHelper().createFormulaEvaluator();
         try {
             for (int i = 0; i < wb.getNumberOfSheets(); i++) {
                 final Sheet currentSheet = wb.getSheetAt(i);
@@ -333,7 +331,12 @@ final class DefaultSpreadsheetReaderDelegate implements SpreadsheetReaderDelegat
         case BOOLEAN:
             return ColumnType.BOOLEAN;
         case FORMULA:
-            return determineColumnTypeFromCell(_formulaEvaluator.evaluateInCell(cell));
+            FormulaEvaluator formulaEvaluator = cell
+                    .getSheet()
+                    .getWorkbook()
+                    .getCreationHelper()
+                    .createFormulaEvaluator();
+            return determineColumnTypeFromCell(formulaEvaluator.evaluateInCell(cell));
         case STRING:
             // fall through
         case BLANK:

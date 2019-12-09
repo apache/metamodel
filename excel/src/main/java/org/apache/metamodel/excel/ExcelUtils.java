@@ -192,13 +192,17 @@ final class ExcelUtils {
                 FormulaError formulaError = FormulaError.forInt(errorCode);
                 errorResult = formulaError.getString();
             } catch (RuntimeException e) {
-                logger.debug("Getting error code for {} failed!: {}", getCellCoordinates(cell), e.getMessage());
+                logger
+                        .debug("Getting error code for ({},{}) failed!: {}", cell.getRowIndex(), cell.getColumnIndex(),
+                                e.getMessage());
                 if (cell instanceof XSSFCell) {
                     // hack to get error string, which is available
                     String value = ((XSSFCell) cell).getErrorCellString();
                     errorResult = value;
                 } else {
-                    logger.error("Couldn't handle unexpected error scenario in cell: " + getCellCoordinates(cell), e);
+                    logger
+                            .error("Couldn't handle unexpected error scenario in cell: (" + cell.getRowIndex() + ","
+                                    + cell.getColumnIndex() + ")", e);
                     throw e;
                 }
             }
@@ -226,7 +230,7 @@ final class ExcelUtils {
             throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
         }
 
-        logger.debug("cell {} resolved to value: {}", getCellCoordinates(cell), result);
+        logger.debug("cell ({},{}) resolved to value: {}", cell.getRowIndex(), cell.getColumnIndex(), result);
 
         return result;
     }
@@ -251,12 +255,16 @@ final class ExcelUtils {
             try {
                 errorResult = FormulaError.forInt(cell.getErrorCellValue()).getString();
             } catch (final RuntimeException e) {
-                logger.debug("Getting error code for {} failed!: {}", getCellCoordinates(cell), e.getMessage());
+                logger
+                        .debug("Getting error code for ({},{}) failed!: {}", cell.getRowIndex(), cell.getColumnIndex(),
+                                e.getMessage());
                 if (cell instanceof XSSFCell) {
                     // hack to get error string, which is available
                     errorResult = ((XSSFCell) cell).getErrorCellString();
                 } else {
-                    logger.error("Couldn't handle unexpected error scenario in cell: " + getCellCoordinates(cell), e);
+                    logger
+                            .error("Couldn't handle unexpected error scenario in cell: (" + cell.getRowIndex() + ","
+                                    + cell.getColumnIndex() + ")", e);
                     throw e;
                 }
             }
@@ -279,12 +287,12 @@ final class ExcelUtils {
             throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
         }
 
-        logger.debug("cell {} resolved to value: {}", getCellCoordinates(cell), result);
+        logger.debug("cell ({},{}) resolved to value: {}", cell.getRowIndex(), cell.getColumnIndex(), result);
 
         return result;
     }
 
-    public static Object getCellValueChecked(final Workbook workbook, final Cell cell,
+    private static Object getCellValueChecked(final Workbook workbook, final Cell cell,
             final ColumnType expectedColumnType) {
         final Object value = getCellValueAsObject(workbook, cell);
         if (value == null || value.getClass().equals(expectedColumnType.getJavaEquivalentClass())) {
@@ -296,9 +304,9 @@ final class ExcelUtils {
                 .getJavaEquivalentClass()
                 .equals(Double.class)) && logger.isWarnEnabled()) {
             final String warning = String
-                    .format("Cell %s has the value '%s' of data type '%s', which doesn't match the detected "
-                            + "column's data type '%s'. This cell gets value NULL in the DataSet.", getCellCoordinates(
-                                    cell), value, value.getClass().getSimpleName(), expectedColumnType);
+                    .format("Cell (%s,%s) has the value '%s' of data type '%s', which doesn't match the detected "
+                            + "column's data type '%s'. This cell gets value NULL in the DataSet.", cell.getRowIndex(),
+                            cell.getColumnIndex(), value, value.getClass().getSimpleName(), expectedColumnType);
             logger.warn(warning);
         }
         return null;
@@ -319,8 +327,8 @@ final class ExcelUtils {
         try {
             if (logger.isInfoEnabled()) {
                 logger
-                        .info("cell {} is a formula. Attempting to evaluate: {}", getCellCoordinates(cell), cell
-                                .getCellFormula());
+                        .info("cell ({},{}) is a formula. Attempting to evaluate: {}", cell.getRowIndex(), cell
+                                .getColumnIndex(), cell.getCellFormula());
             }
 
             final FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
@@ -331,12 +339,12 @@ final class ExcelUtils {
             return getCellValue(wb, evaluatedCell);
         } catch (RuntimeException e) {
             logger
-                    .warn("Exception occurred while evaluating formula at position {}: {}", getCellCoordinates(cell), e
-                            .getMessage());
+                    .warn("Exception occurred while evaluating formula at position ({},{}): {}", cell.getRowIndex(),
+                            cell.getColumnIndex(), e.getMessage());
             // Some exceptions we simply log - result will be then be the
             // actual formula
             if (e instanceof FormulaParseException) {
-                logger.error("Parse exception occurred while evaluating cell formula: " + cell, e);
+                logger.warn("Parse exception occurred while evaluating cell formula: " + cell, e);
             } else if (e instanceof IllegalArgumentException) {
                 logger.error("Illegal formula argument occurred while evaluating cell formula: " + cell, e);
             } else {
@@ -362,8 +370,8 @@ final class ExcelUtils {
         try {
             if (logger.isInfoEnabled()) {
                 logger
-                        .info("cell {} is a formula. Attempting to evaluate: {}", getCellCoordinates(cell), cell
-                                .getCellFormula());
+                        .info("cell ({},{}) is a formula. Attempting to evaluate: {}", cell.getRowIndex(), cell
+                                .getColumnIndex(), cell.getCellFormula());
             }
 
             final FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
@@ -373,7 +381,7 @@ final class ExcelUtils {
 
             return getCellValueAsObject(workbook, evaluatedCell);
         } catch (final FormulaParseException e) {
-            logger.error("Parse exception occurred while evaluating cell formula: " + cell, e);
+            logger.warn("Parse exception occurred while evaluating cell formula: " + cell, e);
         } catch (final IllegalArgumentException e) {
             logger.error("Illegal formula argument occurred while evaluating cell formula: " + cell, e);
         } catch (final RuntimeException e) {
@@ -572,9 +580,5 @@ final class ExcelUtils {
         }
         final DataFormatter formatter = new DataFormatter();
         return formatter.formatRawCellContents(cellValue, formatIndex, formatString);
-    }
-    
-    private static String getCellCoordinates(Cell cell) {
-        return String.format("(%s,%s)", cell.getRowIndex(), cell.getColumnIndex());
     }
 }
