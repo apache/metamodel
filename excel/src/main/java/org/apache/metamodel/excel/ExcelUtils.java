@@ -273,8 +273,7 @@ final class ExcelUtils {
         }
     }
 
-    private static Object evaluateCell(final Workbook workbook, final Cell cell,
-            final ColumnType expectedColumnType) {
+    private static Object evaluateCell(final Workbook workbook, final Cell cell, final ColumnType expectedColumnType) {
         final Object value = getCellValueAsObject(workbook, cell);
         if (value == null || value.getClass().equals(expectedColumnType.getJavaEquivalentClass())) {
             return value;
