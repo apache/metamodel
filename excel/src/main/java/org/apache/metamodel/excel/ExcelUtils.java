@@ -185,7 +185,7 @@ final class ExcelUtils {
             result = Boolean.toString(cell.getBooleanCellValue());
             break;
         case ERROR:
-            result = (String) getErrorResult(cell);
+            result = getErrorResult(cell);
             break;
         case FORMULA:
             result = getFormulaCellValue(wb, cell);
