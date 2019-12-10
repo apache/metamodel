@@ -69,12 +69,10 @@ public class ElasticSearchRestDataContexFactoryIT {
                 .builder(new HttpHost(dockerHostAddress, ElasticSearchRestDataContextIT.DEFAULT_REST_CLIENT_PORT)));
         externalClient.indices().create(new CreateIndexRequest(INDEX_NAME), RequestOptions.DEFAULT);
 
-        final PutMappingRequest putMappingRequest = new PutMappingRequest(INDEX_NAME);
-        putMappingRequest
-                .source(ElasticSearchUtils
-                        .getMappingSource(new MutableTable(DEFAULT_TABLE_NAME, TableType.TABLE, new MutableSchema(
-                                INDEX_NAME), new MutableColumn("name", ColumnType.STRING), new MutableColumn("age",
-                                        ColumnType.INTEGER))));
+        final MutableTable table = new MutableTable(DEFAULT_TABLE_NAME, TableType.TABLE, new MutableSchema(INDEX_NAME),
+                new MutableColumn("name", ColumnType.STRING), new MutableColumn("age", ColumnType.INTEGER));
+        final PutMappingRequest putMappingRequest = new PutMappingRequest(INDEX_NAME)
+                .source(ElasticSearchUtils.getMappingSource(table));
 
         externalClient.indices().putMapping(putMappingRequest, RequestOptions.DEFAULT);
 

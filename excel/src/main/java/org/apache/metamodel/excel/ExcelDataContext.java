@@ -189,7 +189,7 @@ public final class ExcelDataContext extends QueryPostprocessDataContext implemen
                 if (_spreadsheetReaderDelegate == null) {
                     _spreadsheetReaderDelegate = _resource.read(in -> {
                         try {
-                            if (FileMagic.valueOf(in) == FileMagic.OOXML) {
+                            if (FileMagic.valueOf(in) == FileMagic.OOXML && !_configuration.isDetectColumnTypes()) {
                                 return new XlsxSpreadsheetReaderDelegate(_resource, _configuration);
                             } else {
                                 return new DefaultSpreadsheetReaderDelegate(_resource, _configuration);

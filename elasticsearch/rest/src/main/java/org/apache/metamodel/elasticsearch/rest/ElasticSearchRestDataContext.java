@@ -156,9 +156,7 @@ public class ElasticSearchRestDataContext extends AbstractElasticSearchDataConte
                         final SimpleTableDef table = detectTable(properties, tableName);
                         result.add(table);
                     } catch (Exception e) {
-                        logger
-                                .error("Unexpected error during detectTable for document mapping type '{}'", tableName,
-                                        e);
+                        logger.error("Unexpected error during detectTable for document mapping type '{}'", tableName, e);
                     }
                 }
             }

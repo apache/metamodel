@@ -21,8 +21,10 @@ package org.apache.metamodel.excel;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.apache.metamodel.DataContext;
+import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
@@ -30,15 +32,19 @@ import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.Style;
 import org.apache.metamodel.data.StyleBuilder;
+import org.apache.metamodel.insert.InsertInto;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
+import org.apache.metamodel.update.Update;
 import org.apache.metamodel.util.DateUtils;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Month;
+import org.junit.Test;
 
 import junit.framework.TestCase;
 
@@ -791,5 +797,155 @@ public class ExcelDataContextTest extends TestCase {
         assertNotNull(table.getColumnByName(firstColumnName));
         assertNotNull(table.getColumnByName(secondColumnName));
         assertNotNull(table.getColumnByName(thirdColumnName));
+    }
+
+    public void testDetectingDifferentDataTypesInXls() throws Exception {
+        detectingDataTypes("src/test/resources/different_datatypes.xls");
+    }
+
+    public void testDifferentDataTypesInXlsx() throws Exception {
+        detectingDataTypes("src/test/resources/different_datatypes.xlsx");
+    }
+
+    private void detectingDataTypes(final String file) {
+        final DataContext dataContext = new ExcelDataContext(copyOf(file), new ExcelConfiguration(
+                ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 19));
+
+        final Schema schema = dataContext.getDefaultSchema();
+        assertEquals(2, schema.getTableCount());
+
+        final Table table = schema.getTables().get(0);
+        assertEquals("INTEGER", table.getColumns().get(0).getName());
+        assertEquals(ColumnType.INTEGER, table.getColumns().get(0).getType());
+        assertEquals("TEXT", table.getColumns().get(1).getName());
+        assertEquals(ColumnType.STRING, table.getColumns().get(1).getType());
+        assertEquals("FORMULA", table.getColumns().get(2).getName());
+        assertEquals(ColumnType.INTEGER, table.getColumns().get(2).getType());
+        assertEquals("MIXING_DOUBLE_AND_INT", table.getColumns().get(3).getName());
+        assertEquals(ColumnType.DOUBLE, table.getColumns().get(3).getType());
+        assertEquals("MIXING_OTHER_DATATYPES", table.getColumns().get(4).getName());
+        assertEquals(ColumnType.STRING, table.getColumns().get(4).getType());
+        final DataSet countDataSet = dataContext.query().from(table).selectCount().execute();
+        assertTrue(countDataSet.next());
+        assertEquals(20L, countDataSet.getRow().getValue(0));
+        assertFalse(countDataSet.next());
+    }
+
+    public void testCellValueWithWrongDatatypeIsSetToNull() {
+        // Unless Integers and Doubles are mixed all other incorrect values will be converted to null with a warning
+        final DataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
+                new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 19));
+        final Table table = dataContext.getDefaultSchema().getTables().get(0);
+        final DataSet testWrongDatatypeDataSet = dataContext
+                .query()
+                .from(table)
+                .select("MIXING_DOUBLE_AND_INT")
+                .execute();
+        IntStream.range(0, 20).forEach(i -> assertTrue(testWrongDatatypeDataSet.next()));
+        assertNull(testWrongDatatypeDataSet.getRow().getValue(0));
+        assertFalse(testWrongDatatypeDataSet.next());
+    }
+
+    public void testDetectingDataTypeNotSkippingLinesAndColumnsUsingNameLine() {
+        final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/skipped_lines.xlsx"),
+                new ExcelConfiguration(6, null, false, false, true, 3));
+        final Table table = dataContext.getDefaultSchema().getTables().get(0);
+        assertEquals(ColumnType.STRING, table.getColumns().get(0).getType());
+        assertEquals(ColumnType.INTEGER, table.getColumns().get(6).getType());
+        assertEquals(ColumnType.INTEGER, table.getColumns().get(7).getType());
+    }
+
+    public void testDetectingDataTypeNotSkippingLinesAndColumnsNoNameLine() {
+        final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/skipped_lines.xlsx"),
+                new ExcelConfiguration(ExcelConfiguration.NO_COLUMN_NAME_LINE, null, false, false, true, 3));
+        final Table table = dataContext.getDefaultSchema().getTables().get(0);
+        assertEquals(ColumnType.STRING, table.getColumns().get(0).getType());
+        assertEquals(ColumnType.INTEGER, table.getColumns().get(6).getType());
+        assertEquals(ColumnType.INTEGER, table.getColumns().get(7).getType());
+    }
+
+    public void testDetectingDataTypeSkippingLinesAndColumnsUsingNameLine() {
+        final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/skipped_lines.xlsx"),
+                new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, true, true, 3));
+        final Table table = dataContext.getDefaultSchema().getTables().get(0);
+        assertEquals(ColumnType.INTEGER, table.getColumns().get(0).getType());
+        assertEquals(ColumnType.INTEGER, table.getColumns().get(1).getType());
+    }
+
+    public void testDetectingDataTypeSkippingLinesAndColumnsNoNameLine() {
+        final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/skipped_lines.xlsx"),
+                new ExcelConfiguration(ExcelConfiguration.NO_COLUMN_NAME_LINE, null, true, true, true, 3));
+        final Table table = dataContext.getDefaultSchema().getTables().get(0);
+        assertEquals(ColumnType.INTEGER, table.getColumns().get(0).getType());
+        assertEquals(ColumnType.INTEGER, table.getColumns().get(1).getType());
+    }
+
+    public void testToMuchNumberOfLinesToScan() throws Exception {
+        final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/skipped_lines.xlsx"),
+                new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, true, true, 4));
+
+        final Table table = dataContext.getDefaultSchema().getTables().get(0);
+        assertEquals("hello", table.getColumns().get(0).getName());
+        assertEquals("world", table.getColumns().get(1).getName());
+        assertEquals(ColumnType.INTEGER, table.getColumns().get(0).getType());
+        assertEquals(ColumnType.INTEGER, table.getColumns().get(1).getType());
+        final DataSet dataSet = dataContext.query().from(table).selectCount().execute();
+        assertTrue(dataSet.next());
+        assertEquals(3L, dataSet.getRow().getValue(0));
+    }
+
+    public void testToMissingValueDoesntEffectDetectedType() throws Exception {
+        final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/xls_missing_values.xls"),
+                new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 3));
+
+        final Table table = dataContext.getDefaultSchema().getTables().get(0);
+        final Column columnB = table.getColumns().get(1);
+        assertEquals("b", columnB.getName());
+        assertEquals(ColumnType.INTEGER, columnB.getType());
+        final DataSet dataSetColumnB = dataContext.query().from(table).select(columnB).execute();
+        assertTrue(dataSetColumnB.next());
+        assertTrue(dataSetColumnB.next());
+        assertNull(dataSetColumnB.getRow().getValue(0));
+
+        final Column columnD = table.getColumns().get(3);
+        assertEquals("d", columnD.getName());
+        assertEquals(ColumnType.INTEGER, columnD.getType());
+        final DataSet dataSetColumnD = dataContext.query().from(table).select(columnD).where(columnD).eq(12).execute();
+        assertTrue(dataSetColumnD.next());
+        assertEquals(12, dataSetColumnD.getRow().getValue(0));
+    }
+
+    public void testInsertingValueOfValidColumnType() {
+        final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
+                new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 19));
+        final Table table = dataContext.getDefaultSchema().getTable(0);
+        dataContext.executeUpdate(new InsertInto(table).value("INTEGER", 123));
+        final DataSet dataSet = dataContext.query().from(table).selectAll().where("INTEGER").eq(123).execute();
+        assertTrue(dataSet.next());
+    }
+
+    @Test(expected = MetaModelException.class)
+    public void testInsertingValueOfInvalidColumnType() {
+        final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
+                new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 19));
+        final Table table = dataContext.getDefaultSchema().getTable(0);
+        dataContext.executeUpdate(new InsertInto(table).value("INTEGER", "this is not an integer"));
+    }
+
+    public void testUpdatingValueOfValidColumnType() {
+        final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
+                new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 19));
+        final Table table = dataContext.getDefaultSchema().getTable(0);
+        dataContext.executeUpdate(new Update(table).value("INTEGER", 1).value("INTEGER", 123));
+        final DataSet dataSet = dataContext.query().from(table).selectAll().where("INTEGER").eq(123).execute();
+        assertTrue(dataSet.next());
+    }
+
+    @Test(expected = MetaModelException.class)
+    public void testUpdatingValueOfInvalidColumnType() {
+        final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
+                new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 19));
+        final Table table = dataContext.getDefaultSchema().getTable(0);
+        dataContext.executeUpdate(new Update(table).value("INTEGER", 1).value("INTEGER", "this is not an integer"));
     }
 }

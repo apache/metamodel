@@ -1,3 +1,7 @@
+### Apache MetaModel _WIP_
+ * [METAMODEL-1221] - Upgrade to Elasticsearch 7.3
+ * Bind Travis build to Trusty distribution to avoid CI build failures.
+
 ### Apache MetaModel 5.3.1
 
  * [METAMODEL-1219] - Improved returning schemas for SQL Server.
