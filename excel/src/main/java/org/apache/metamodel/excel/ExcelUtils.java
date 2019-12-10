@@ -254,17 +254,16 @@ final class ExcelUtils {
         return result;
     }
 
-    private static Object getErrorResult(final Cell cell) {
-        String errorResult;
+    private static String getErrorResult(final Cell cell) {
         try {
-            errorResult = FormulaError.forInt(cell.getErrorCellValue()).getString();
+            return FormulaError.forInt(cell.getErrorCellValue()).getString();
         } catch (final RuntimeException e) {
             logger
                     .debug("Getting error code for ({},{}) failed!: {}", cell.getRowIndex(), cell.getColumnIndex(), e
                             .getMessage());
             if (cell instanceof XSSFCell) {
                 // hack to get error string, which is available
-                errorResult = ((XSSFCell) cell).getErrorCellString();
+                return ((XSSFCell) cell).getErrorCellString();
             } else {
                 logger
                         .error("Couldn't handle unexpected error scenario in cell: ({},{})", cell.getRowIndex(), cell
@@ -272,10 +271,9 @@ final class ExcelUtils {
                 throw e;
             }
         }
-        return errorResult;
     }
 
-    private static Object getCellValueChecked(final Workbook workbook, final Cell cell,
+    private static Object evaluateCell(final Workbook workbook, final Cell cell,
             final ColumnType expectedColumnType) {
         final Object value = getCellValueAsObject(workbook, cell);
         if (value == null || value.getClass().equals(expectedColumnType.getJavaEquivalentClass())) {
@@ -509,7 +507,7 @@ final class ExcelUtils {
                         .equals(DefaultSpreadsheetReaderDelegate.LEGACY_COLUMN_TYPE)) {
                     value = ExcelUtils.getCellValue(workbook, cell);
                 } else {
-                    value = ExcelUtils.getCellValueChecked(workbook, cell, columnType);
+                    value = ExcelUtils.evaluateCell(workbook, cell, columnType);
                 }
 
                 final Style style = ExcelUtils.getCellStyle(workbook, cell);
