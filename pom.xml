@@ -29,7 +29,7 @@ under the License.
 		<hadoop.version>3.1.1</hadoop.version>
 		<jackson.version>2.10.1</jackson.version>
 		<easymock.version>3.2</easymock.version>
-		<spring.version>4.2.6.RELEASE</spring.version>
+		<spring.version>5.2.2.RELEASE</spring.version>
 		<httpcomponents.version>4.4.1</httpcomponents.version>
 		<docker-maven-plugin.version>0.23.0</docker-maven-plugin.version>
 		<skipTests>false</skipTests>

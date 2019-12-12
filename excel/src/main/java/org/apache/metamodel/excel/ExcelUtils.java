@@ -19,7 +19,6 @@
 package org.apache.metamodel.excel;
 
 import java.io.File;
-import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -37,21 +36,22 @@ import org.apache.metamodel.data.Style;
 import org.apache.metamodel.data.Style.SizeUnit;
 import org.apache.metamodel.data.StyleBuilder;
 import org.apache.metamodel.query.SelectItem;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.util.DateUtils;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
-import org.apache.metamodel.util.FormatHelper;
 import org.apache.metamodel.util.InMemoryResource;
 import org.apache.metamodel.util.Resource;
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.formula.FormulaParseException;
+import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Color;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.FontUnderline;
@@ -75,8 +75,6 @@ import org.xml.sax.XMLReader;
 final class ExcelUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ExcelUtils.class);
-
-    private static final NumberFormat _numberFormat = FormatHelper.getUiNumberFormat();
 
     private ExcelUtils() {
         // prevent instantiation
@@ -176,8 +174,6 @@ final class ExcelUtils {
             return null;
         }
 
-        final String cellCoordinate = "(" + cell.getRowIndex() + "," + cell.getColumnIndex() + ")";
-
         final String result;
 
         switch (cell.getCellType()) {
@@ -189,30 +185,13 @@ final class ExcelUtils {
             result = Boolean.toString(cell.getBooleanCellValue());
             break;
         case ERROR:
-            String errorResult;
-            try {
-                byte errorCode = cell.getErrorCellValue();
-                FormulaError formulaError = FormulaError.forInt(errorCode);
-                errorResult = formulaError.getString();
-            } catch (RuntimeException e) {
-                logger.debug("Getting error code for {} failed!: {}", cellCoordinate, e.getMessage());
-                if (cell instanceof XSSFCell) {
-                    // hack to get error string, which is available
-                    String value = ((XSSFCell) cell).getErrorCellString();
-                    errorResult = value;
-                } else {
-                    logger.error("Couldn't handle unexpected error scenario in cell: " + cellCoordinate, e);
-                    throw e;
-                }
-            }
-            result = errorResult;
+            result = getErrorResult(cell);
             break;
         case FORMULA:
-            // result = cell.getCellFormula();
             result = getFormulaCellValue(wb, cell);
             break;
         case NUMERIC:
-            if (HSSFDateUtil.isCellDateFormatted(cell)) {
+            if (DateUtil.isCellDateFormatted(cell)) {
                 Date date = cell.getDateCellValue();
                 if (date == null) {
                     result = null;
@@ -220,9 +199,7 @@ final class ExcelUtils {
                     result = DateUtils.createDateFormat().format(date);
                 }
             } else {
-                // TODO: Consider not formatting it, but simple using
-                // Double.toString(...)
-                result = _numberFormat.format(cell.getNumericCellValue());
+                result = getNumericCellValueAsString(cell.getCellStyle(), cell.getNumericCellValue());
             }
             break;
         case STRING:
@@ -232,18 +209,93 @@ final class ExcelUtils {
             throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
         }
 
-        logger.debug("cell {} resolved to value: {}", cellCoordinate, result);
+        logger.debug("cell ({},{}) resolved to value: {}", cell.getRowIndex(), cell.getColumnIndex(), result);
 
         return result;
     }
 
-    private static String getFormulaCellValue(Workbook wb, Cell cell) {
+    private static Object getCellValueAsObject(final Workbook workbook, final Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+
+        final Object result;
+
+        switch (cell.getCellType()) {
+        case BLANK:
+        case _NONE:
+            result = null;
+            break;
+        case BOOLEAN:
+            result = Boolean.valueOf(cell.getBooleanCellValue());
+            break;
+        case ERROR:
+            result = getErrorResult(cell);
+            break;
+        case FORMULA:
+            result = getFormulaCellValueAsObject(workbook, cell);
+            break;
+        case NUMERIC:
+            if (DateUtil.isCellDateFormatted(cell)) {
+                result = cell.getDateCellValue();
+            } else {
+                result = getDoubleAsNumber(cell.getNumericCellValue());
+            }
+            break;
+        case STRING:
+            result = cell.getRichStringCellValue().getString();
+            break;
+        default:
+            throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
+        }
+
+        logger.debug("cell ({},{}) resolved to value: {}", cell.getRowIndex(), cell.getColumnIndex(), result);
+
+        return result;
+    }
+
+    private static String getErrorResult(final Cell cell) {
+        try {
+            return FormulaError.forInt(cell.getErrorCellValue()).getString();
+        } catch (final RuntimeException e) {
+            logger
+                    .debug("Getting error code for ({},{}) failed!: {}", cell.getRowIndex(), cell.getColumnIndex(), e
+                            .getMessage());
+            if (cell instanceof XSSFCell) {
+                // hack to get error string, which is available
+                return ((XSSFCell) cell).getErrorCellString();
+            } else {
+                logger
+                        .error("Couldn't handle unexpected error scenario in cell: ({},{})", cell.getRowIndex(), cell
+                                .getColumnIndex());
+                throw e;
+            }
+        }
+    }
+
+    private static Object evaluateCell(final Workbook workbook, final Cell cell, final ColumnType expectedColumnType) {
+        final Object value = getCellValueAsObject(workbook, cell);
+        if (value == null || value.getClass().equals(expectedColumnType.getJavaEquivalentClass()) || (value
+                .getClass()
+                .equals(Integer.class) && expectedColumnType.getJavaEquivalentClass().equals(Double.class))) {
+            return value;
+        } else {
+            if (logger.isWarnEnabled()) {
+                logger
+                        .warn("Cell ({},{}) has the value '{}' of data type '{}', which doesn't match the detected "
+                                + "column's data type '{}'. This cell gets value NULL in the DataSet.", cell
+                                        .getRowIndex(), cell.getColumnIndex(), value, value.getClass().getSimpleName(),
+                                expectedColumnType);
+            }
+            return null;
+        }
+    }
+
+    private static String getFormulaCellValue(Workbook workbook, Cell cell) {
         // first try with a cached/precalculated value
         try {
             double numericCellValue = cell.getNumericCellValue();
-            // TODO: Consider not formatting it, but simple using
-            // Double.toString(...)
-            return _numberFormat.format(numericCellValue);
+            return getNumericCellValueAsString(cell.getCellStyle(), numericCellValue);
         } catch (Exception e) {
             if (logger.isInfoEnabled()) {
                 logger.info("Failed to fetch cached/precalculated formula value of cell: " + cell, e);
@@ -251,34 +303,62 @@ final class ExcelUtils {
         }
 
         // evaluate cell first, if possible
+        final Cell evaluatedCell = getEvaluatedCell(workbook, cell);
+        if (evaluatedCell != null) {
+            return getCellValue(workbook, evaluatedCell);
+        } else {
+            // last resort: return the string formula
+            return cell.getCellFormula();
+        }
+    }
+
+    private static Object getFormulaCellValueAsObject(final Workbook workbook, final Cell cell) {
+        // first try with a cached/precalculated value
         try {
+            return getDoubleAsNumber(cell.getNumericCellValue());
+        } catch (final Exception e) {
             if (logger.isInfoEnabled()) {
-                logger.info("cell({},{}) is a formula. Attempting to evaluate: {}",
-                        new Object[] { cell.getRowIndex(), cell.getColumnIndex(), cell.getCellFormula() });
-            }
-
-            final FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
-
-            // calculates the formula and puts it's value back into the cell
-            final Cell evaluatedCell = evaluator.evaluateInCell(cell);
-
-            return getCellValue(wb, evaluatedCell);
-        } catch (RuntimeException e) {
-            logger.warn("Exception occurred while evaluating formula at position ({},{}): {}",
-                    new Object[] { cell.getRowIndex(), cell.getColumnIndex(), e.getMessage() });
-            // Some exceptions we simply log - result will be then be the
-            // actual formula
-            if (e instanceof FormulaParseException) {
-                logger.error("Parse exception occurred while evaluating cell formula: " + cell, e);
-            } else if (e instanceof IllegalArgumentException) {
-                logger.error("Illegal formula argument occurred while evaluating cell formula: " + cell, e);
-            } else {
-                logger.error("Unexpected exception occurred while evaluating cell formula: " + cell, e);
+                logger.info("Failed to fetch cached/precalculated formula value of cell: " + cell, e);
             }
         }
 
-        // last resort: return the string formula
-        return cell.getCellFormula();
+        // evaluate cell first, if possible
+        final Cell evaluatedCell = getEvaluatedCell(workbook, cell);
+        if (evaluatedCell != null) {
+            return getCellValueAsObject(workbook, evaluatedCell);
+        } else {
+            // last resort: return the string formula
+            return cell.getCellFormula();
+        }
+    }
+
+    private static Cell getEvaluatedCell(final Workbook workbook, final Cell cell) {
+        try {
+            if (logger.isInfoEnabled()) {
+                logger
+                        .info("cell ({},{}) is a formula. Attempting to evaluate: {}", cell.getRowIndex(), cell
+                                .getColumnIndex(), cell.getCellFormula());
+            }
+
+            final FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+
+            // calculates the formula and puts it's value back into the cell
+            return evaluator.evaluateInCell(cell);
+        } catch (RuntimeException e) {
+            logger
+                    .warn("Exception occurred while evaluating formula at position ({},{}): {}", cell.getRowIndex(),
+                            cell.getColumnIndex(), e.getMessage());
+        }
+        return null;
+    }
+
+    private static Number getDoubleAsNumber(final double value) {
+        final Double doubleValue = Double.valueOf(value);
+        if (doubleValue % 1 == 0 && doubleValue <= Integer.MAX_VALUE) {
+            return Integer.valueOf(doubleValue.intValue());
+        } else {
+            return doubleValue;
+        }
     }
 
     public static Style getCellStyle(Workbook workbook, Cell cell) {
@@ -412,15 +492,23 @@ final class ExcelUtils {
      * @param selectItems select items of the columns in the table
      * @return
      */
-    public static DefaultRow createRow(Workbook workbook, Row row, DataSetHeader header) {
+    public static DefaultRow createRow(final Workbook workbook, final Row row, final DataSetHeader header) {
         final int size = header.size();
-        final String[] values = new String[size];
+        final Object[] values = new Object[size];
         final Style[] styles = new Style[size];
         if (row != null) {
             for (int i = 0; i < size; i++) {
                 final int columnNumber = header.getSelectItem(i).getColumn().getColumnNumber();
+                final ColumnType columnType = header.getSelectItem(i).getColumn().getType();
                 final Cell cell = row.getCell(columnNumber);
-                final String value = ExcelUtils.getCellValue(workbook, cell);
+                final Object value;
+                if (columnType.equals(DefaultSpreadsheetReaderDelegate.DEFAULT_COLUMN_TYPE) || columnType
+                        .equals(DefaultSpreadsheetReaderDelegate.LEGACY_COLUMN_TYPE)) {
+                    value = ExcelUtils.getCellValue(workbook, cell);
+                } else {
+                    value = ExcelUtils.evaluateCell(workbook, cell, columnType);
+                }
+
                 final Style style = ExcelUtils.getCellStyle(workbook, cell);
                 values[i] = value;
                 styles[i] = style;
@@ -442,5 +530,15 @@ final class ExcelUtils {
 
         final DataSet dataSet = new XlsDataSet(selectItems, workbook, rowIterator);
         return dataSet;
+    }
+
+    private static String getNumericCellValueAsString(final CellStyle cellStyle, final double cellValue) {
+        final int formatIndex = cellStyle.getDataFormat();
+        String formatString = cellStyle.getDataFormatString();
+        if (formatString == null) {
+            formatString = BuiltinFormats.getBuiltinFormat(formatIndex);
+        }
+        final DataFormatter formatter = new DataFormatter();
+        return formatter.formatRawCellContents(cellValue, formatIndex, formatString);
     }
 }

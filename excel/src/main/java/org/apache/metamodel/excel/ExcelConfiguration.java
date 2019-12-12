@@ -37,26 +37,39 @@ public final class ExcelConfiguration extends BaseObject implements
 
 	public static final int NO_COLUMN_NAME_LINE = 0;
 	public static final int DEFAULT_COLUMN_NAME_LINE = 1;
+    public static final int DEFAULT_NUMBERS_OF_LINES_TO_SCAN = 10;
 
 	private final int columnNameLineNumber;
 	private final ColumnNamingStrategy columnNamingStrategy;
 	private final boolean skipEmptyLines;
 	private final boolean skipEmptyColumns;
+    private final boolean detectColumnTypes;
+    private final int numberOfLinesToScan;
 
 	public ExcelConfiguration() {
 		this(DEFAULT_COLUMN_NAME_LINE, true, false);
 	}
 
-    public ExcelConfiguration(int columnNameLineNumber, boolean skipEmptyLines, boolean skipEmptyColumns) {
+    public ExcelConfiguration(final int columnNameLineNumber, final boolean skipEmptyLines,
+            final boolean skipEmptyColumns) {
         this(columnNameLineNumber, null, skipEmptyLines, skipEmptyColumns);
     }
 
-    public ExcelConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy,
-            boolean skipEmptyLines, boolean skipEmptyColumns) {
+    public ExcelConfiguration(final int columnNameLineNumber, final ColumnNamingStrategy columnNamingStrategy,
+            final boolean skipEmptyLines, final boolean skipEmptyColumns) {
+        this(columnNameLineNumber, columnNamingStrategy, skipEmptyLines, skipEmptyColumns, false,
+                DEFAULT_NUMBERS_OF_LINES_TO_SCAN);
+    }
+
+    public ExcelConfiguration(final int columnNameLineNumber, final ColumnNamingStrategy columnNamingStrategy,
+            final boolean skipEmptyLines, final boolean skipEmptyColumns, final boolean detectColumnTypes,
+            final int numberOfLinesToScan) {
         this.columnNameLineNumber = columnNameLineNumber;
         this.skipEmptyLines = skipEmptyLines;
         this.skipEmptyColumns = skipEmptyColumns;
         this.columnNamingStrategy = columnNamingStrategy;
+        this.detectColumnTypes = detectColumnTypes;
+        this.numberOfLinesToScan = numberOfLinesToScan;
     }
     
     /**
@@ -102,17 +115,42 @@ public final class ExcelConfiguration extends BaseObject implements
 		return skipEmptyColumns;
 	}
 
+    /**
+     * Defines if columns in the excel spreadsheet should be detected on data types while reading the spreadsheet.
+     * If this detection configuration is set to false and there's no column name line configured, then all column
+     * types will be String.
+     * If this detection configuration is set to false and there's a column name line configured, then all column
+     * types will be VarChar.
+     * 
+     * @return a boolean indicating whether or not to validate column types.
+     */
+    public boolean isDetectColumnTypes() {
+        return detectColumnTypes;
+    }
+
+    /**
+     * The number of lines to scan when detecting the column types
+     * 
+     * @return an int indicating the numbers of lines that will be scanned
+     */
+    public int getNumberOfLinesToScan() {
+        return numberOfLinesToScan;
+    }
+
 	@Override
 	protected void decorateIdentity(List<Object> identifiers) {
 		identifiers.add(columnNameLineNumber);
 		identifiers.add(skipEmptyLines);
 		identifiers.add(skipEmptyColumns);
+        identifiers.add(detectColumnTypes);
+        identifiers.add(numberOfLinesToScan);
 	}
 
-	@Override
-	public String toString() {
-		return "ExcelConfiguration[columnNameLineNumber="
-				+ columnNameLineNumber + ", skipEmptyLines=" + skipEmptyLines
-				+ ", skipEmptyColumns=" + skipEmptyColumns + "]";
-	}
+    @Override
+    public String toString() {
+        return String
+                .format("ExcelConfiguration[columnNameLineNumber=%s, skipEmptyLines=%s, skipEmptyColumns=%s, "
+                        + "detectColumnTypes=%s, numbersOfLinesToScan=%s]", columnNameLineNumber, skipEmptyLines,
+                        skipEmptyColumns, detectColumnTypes, numberOfLinesToScan);
+    }
 }
