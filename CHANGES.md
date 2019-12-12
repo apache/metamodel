@@ -1,4 +1,5 @@
 ### Apache MetaModel _WIP_
+ * [METAMODEL-82] - Detect Column Types with Excel datastores
  * [METAMODEL-1221] - Upgrade to Elasticsearch 7.3
  * Bind Travis build to Trusty distribution to avoid CI build failures.
 
