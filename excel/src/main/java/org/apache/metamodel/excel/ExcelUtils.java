@@ -275,20 +275,20 @@ final class ExcelUtils {
 
     private static Object evaluateCell(final Workbook workbook, final Cell cell, final ColumnType expectedColumnType) {
         final Object value = getCellValueAsObject(workbook, cell);
-        if (value == null || value.getClass().equals(expectedColumnType.getJavaEquivalentClass())) {
+        if (value == null || value.getClass().equals(expectedColumnType.getJavaEquivalentClass()) || (value
+                .getClass()
+                .equals(Integer.class) && expectedColumnType.getJavaEquivalentClass().equals(Double.class))) {
             return value;
+        } else {
+            if (logger.isWarnEnabled()) {
+                logger
+                        .warn("Cell ({},{}) has the value '{}' of data type '{}', which doesn't match the detected "
+                                + "column's data type '{}'. This cell gets value NULL in the DataSet.", cell
+                                        .getRowIndex(), cell.getColumnIndex(), value, value.getClass().getSimpleName(),
+                                expectedColumnType);
+            }
+            return null;
         }
-
-        // Don't log when an Integer value is in a Double column type
-        if (!(value.getClass().equals(Integer.class) && expectedColumnType
-                .getJavaEquivalentClass()
-                .equals(Double.class)) && logger.isWarnEnabled()) {
-            logger
-                    .warn("Cell ({},{}) has the value '{}' of data type '{}', which doesn't match the detected "
-                            + "column's data type '{}'. This cell gets value NULL in the DataSet.", cell.getRowIndex(),
-                            cell.getColumnIndex(), value, value.getClass().getSimpleName(), expectedColumnType);
-        }
-        return null;
     }
 
     private static String getFormulaCellValue(Workbook workbook, Cell cell) {

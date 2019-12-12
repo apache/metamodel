@@ -841,7 +841,11 @@ public class ExcelDataContextTest extends TestCase {
                 .from(table)
                 .select("MIXING_DOUBLE_AND_INT")
                 .execute();
-        IntStream.range(0, 20).forEach(i -> assertTrue(testWrongDatatypeDataSet.next()));
+        IntStream.range(0, 19).forEach(i -> {
+            assertTrue(testWrongDatatypeDataSet.next());
+            assertNotNull(testWrongDatatypeDataSet.getRow().getValue(0));
+        });
+        assertTrue(testWrongDatatypeDataSet.next());
         assertNull(testWrongDatatypeDataSet.getRow().getValue(0));
         assertFalse(testWrongDatatypeDataSet.next());
     }
@@ -919,7 +923,7 @@ public class ExcelDataContextTest extends TestCase {
         final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
                 new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 19));
         final Table table = dataContext.getDefaultSchema().getTable(0);
-        dataContext.executeUpdate(new InsertInto(table).value("INTEGER", 123));
+        dataContext.executeUpdate(new InsertInto(table).value("INTEGER", Integer.valueOf(123)));
         final DataSet dataSet = dataContext.query().from(table).selectAll().where("INTEGER").eq(123).execute();
         assertTrue(dataSet.next());
     }
@@ -936,7 +940,7 @@ public class ExcelDataContextTest extends TestCase {
         final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
                 new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 19));
         final Table table = dataContext.getDefaultSchema().getTable(0);
-        dataContext.executeUpdate(new Update(table).value("INTEGER", 1).value("INTEGER", 123));
+        dataContext.executeUpdate(new Update(table).value("INTEGER", 1).value("INTEGER", Integer.valueOf(123)));
         final DataSet dataSet = dataContext.query().from(table).selectAll().where("INTEGER").eq(123).execute();
         assertTrue(dataSet.next());
     }
