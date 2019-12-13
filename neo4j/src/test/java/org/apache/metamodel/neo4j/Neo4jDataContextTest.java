@@ -21,7 +21,9 @@ package org.apache.metamodel.neo4j;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.HttpHost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -217,7 +219,7 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         String bookNodeIdJSONObject = requestWrapper.executeCypherQuery("MATCH (n:JUnitBook)"
                 + " WHERE n.title = 'Introduction to algorithms'" + " RETURN id(n);");
         String bookNodeId = new JSONObject(bookNodeIdJSONObject).getJSONArray("results").getJSONObject(0)
-                .getJSONArray("data").getJSONObject(0).getJSONArray("row").getString(0);
+                .getJSONArray("data").getJSONObject(0).getJSONArray("row").optString(0);
 
         Neo4jDataContext strategy = new Neo4jDataContext(getHostname(), getPort(), getUsername(), getPassword());
 
@@ -288,22 +290,22 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         String bookNodeIdJSONObject = requestWrapper.executeCypherQuery("MATCH (n:JUnitBook)"
                 + " WHERE n.title = 'Introduction to algorithms'" + " RETURN id(n);");
         String bookNodeId = new JSONObject(bookNodeIdJSONObject).getJSONArray("results").getJSONObject(0)
-                .getJSONArray("data").getJSONObject(0).getJSONArray("row").getString(0);
+                .getJSONArray("data").getJSONObject(0).getJSONArray("row").optString(0);
 
         String helenaNodeIdJSONObject = requestWrapper.executeCypherQuery("MATCH (n:JUnitPerson)"
                 + " WHERE n.name = 'Helena'" + " RETURN id(n);");
         String helenaNodeId = new JSONObject(helenaNodeIdJSONObject).getJSONArray("results").getJSONObject(0)
-                .getJSONArray("data").getJSONObject(0).getJSONArray("row").getString(0);
+                .getJSONArray("data").getJSONObject(0).getJSONArray("row").optString(0);
 
         String tomaszNodeIdJSONObject = requestWrapper.executeCypherQuery("MATCH (n:JUnitPerson)"
                 + " WHERE n.name = 'Tomasz'" + " RETURN id(n);");
         String tomaszNodeId = new JSONObject(tomaszNodeIdJSONObject).getJSONArray("results").getJSONObject(0)
-                .getJSONArray("data").getJSONObject(0).getJSONArray("row").getString(0);
+                .getJSONArray("data").getJSONObject(0).getJSONArray("row").optString(0);
 
         String philomeenaNodeIdJSONObject = requestWrapper.executeCypherQuery("MATCH (n:JUnitPerson)"
                 + " WHERE n.name = 'Philomeena'" + " RETURN id(n);");
         String philomeenaNodeId = new JSONObject(philomeenaNodeIdJSONObject).getJSONArray("results").getJSONObject(0)
-                .getJSONArray("data").getJSONObject(0).getJSONArray("row").getString(0);
+                .getJSONArray("data").getJSONObject(0).getJSONArray("row").optString(0);
 
         Neo4jDataContext strategy = new Neo4jDataContext(getHostname(), getPort(), getUsername(), getPassword());
 
@@ -322,12 +324,29 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
                 }
             });
             assertEquals(3, rows.size());
-            assertEquals("Row[values=[" + helenaNodeId + ", Helena, 100, null, null, null]]", rows.get(0).toString());
-            assertEquals("Row[values=[" + philomeenaNodeId + ", Philomeena, 18, null, null, " + bookNodeId + "]]", rows
-                    .get(1).toString());
-            assertEquals("Row[values=[" + tomaszNodeId + ", Tomasz, 26, " + bookNodeId + ", 5, null]]", rows.get(2)
-                    .toString());
+
+            validateRow(rows.get(0), helenaNodeId, "Helena", "100", "null", "null", "null");
+            validateRow(rows.get(1), philomeenaNodeId, "Philomeena", "18", "null", "null", bookNodeId);
+            validateRow(rows.get(2), tomaszNodeId, "Tomasz", "26", bookNodeId, "5", "null");
         }
+    }
+
+    void validateRow(final Row row, String... expectedValues) {
+        // Because the order of columns can vary over different test runs, we have to determine at which index the
+        // columns are.
+        final Map<String, Integer> columnNameMap = new HashMap<>();
+        for (int i = 0; i < 6; i++) {
+            String columnName = row.getSelectItems().get(i).getColumn().getName();
+
+            columnNameMap.put(columnName, i);
+        }
+
+        assertEquals(expectedValues[0], row.getValue(columnNameMap.get("_id")).toString());
+        assertEquals(expectedValues[1], row.getValue(columnNameMap.get("name")).toString());
+        assertEquals(expectedValues[2], row.getValue(columnNameMap.get("age")).toString());
+        assertEquals(expectedValues[3], row.getValue(columnNameMap.get("rel_HAS_READ")).toString());
+        assertEquals(expectedValues[4], row.getValue(columnNameMap.get("rel_HAS_READ#rating")).toString());
+        assertEquals(expectedValues[5], row.getValue(columnNameMap.get("rel_HAS_BROWSED")).toString());
     }
 
     @Test
@@ -445,7 +464,7 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         String bookNodeIdJSONObject = requestWrapper.executeCypherQuery("MATCH (n:JUnitBook)"
                 + " WHERE n.title = 'Introduction to algorithms'" + " RETURN id(n);");
         String bookNodeId = new JSONObject(bookNodeIdJSONObject).getJSONArray("results").getJSONObject(0)
-                .getJSONArray("data").getJSONObject(0).getJSONArray("row").getString(0);
+                .getJSONArray("data").getJSONObject(0).getJSONArray("row").optString(0);
 
         Neo4jDataContext strategy = new Neo4jDataContext(getHostname(), getPort(), getUsername(), getPassword());
 
@@ -486,11 +505,21 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
         // create datacontext using detected schema
         final DataContext dc = new Neo4jDataContext(getHostname(), getPort(), getUsername(), getPassword());
 
+        final String expectedFirstResult;
         try (final DataSet ds = dc.query().from("JUnitLabel").select("name").and("age").firstRow(2).execute()) {
             assertTrue("Class: " + ds.getClass().getName(), ds instanceof Neo4jDataSet);
             assertTrue(ds.next());
             final Row row = ds.getRow();
-            assertEquals("Row[values=[Jane Doe, null]]", row.toString());
+            
+            // Because the select query doesn't return results in an ordered manner, we can't be sure which result will
+            // be returned first and which second, but we do know that the one expected here (the second) shouldn't be
+            // the one returned first by the second query.
+            if (row.toString().equals("Row[values=[Jane Doe, null]]")) {
+                expectedFirstResult = "Row[values=[John Doe, 30]]";
+            } else {
+                assertEquals("Row[values=[John Doe, 30]]", row.toString());
+                expectedFirstResult = "Row[values=[Jane Doe, null]]";
+            }
             assertFalse(ds.next());
         }
 
@@ -498,7 +527,7 @@ public class Neo4jDataContextTest extends Neo4jTestCase {
             assertTrue("Class: " + ds.getClass().getName(), ds instanceof Neo4jDataSet);
             assertTrue(ds.next());
             final Row row = ds.getRow();
-            assertEquals("Row[values=[John Doe, 30]]", row.toString());
+            assertEquals(expectedFirstResult, row.toString());
             assertFalse(ds.next());
         }
     }
