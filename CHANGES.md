@@ -1,4 +1,4 @@
-### Apache MetaModel 5.3.2 
+### Apache MetaModel 5.3.2
  * Upgrade to Jackson 2.10.1
  * Upgrade to Spring 5.2.2
  * [METAMODEL-82] - Detect Column Types with Excel datastores
