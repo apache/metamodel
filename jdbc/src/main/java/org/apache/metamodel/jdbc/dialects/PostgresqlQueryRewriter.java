@@ -135,7 +135,7 @@ public class PostgresqlQueryRewriter extends LimitOffsetQueryRewriter {
             Schema schema = table.getSchema();
             if (schema != null) {
                 String schemaName = schema.getName();
-                if (schemaName != null) {
+                if (schemaName != null && !schemaName.isEmpty()) {
                     result = result.replaceFirst(schemaName, '\"' + schema.getName() + '\"');
                 }
             }

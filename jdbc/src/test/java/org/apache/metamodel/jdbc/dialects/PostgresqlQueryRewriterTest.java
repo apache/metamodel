@@ -28,6 +28,7 @@ import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableSchema;
 import org.apache.metamodel.schema.MutableTable;
 import org.easymock.EasyMock;
 import org.junit.Test;
@@ -53,12 +54,12 @@ public class PostgresqlQueryRewriterTest {
     }
     
     @Test
-    public void testApproximateCountQuery() {
+    public void testApproximateCountQueryAndBlankSchemaName() {
         final SelectItem selectItem = SelectItem.getCountAllItem();
         selectItem.setFunctionApproximationAllowed(true);
         final Query query = new Query();
         query.select(selectItem);
-        query.from(new MutableTable("tbl"));
+        query.from(new MutableTable("tbl").setSchema(new MutableSchema("")));
         assertEquals("SELECT APPROXIMATE COUNT(*) FROM tbl", query.toSql());
         
         final PostgresqlQueryRewriter queryRewriter = new PostgresqlQueryRewriter(null);
