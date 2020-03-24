@@ -61,7 +61,7 @@ public class PostgresqlQueryRewriterTest {
         query.select(selectItem);
         query.from(new MutableTable("tbl").setSchema(new MutableSchema("")));
         assertEquals("SELECT APPROXIMATE COUNT(*) FROM tbl", query.toSql());
-        
+
         final PostgresqlQueryRewriter queryRewriter = new PostgresqlQueryRewriter(null);
         final String sql = queryRewriter.rewriteQuery(query);
         assertEquals("SELECT COUNT(*) FROM tbl", sql);

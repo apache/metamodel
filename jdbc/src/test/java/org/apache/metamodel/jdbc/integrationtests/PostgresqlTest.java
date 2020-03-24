@@ -504,15 +504,14 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         });
         
         try {
-            
             final Optional<Integer> insertedRows = updateSummary.getInsertedRows();
             assertTrue(insertedRows.isPresent());
             assertEquals(2, insertedRows.get().intValue());
-            
+
             final Optional<Iterable<Object>> generatedKeys = updateSummary.getGeneratedKeys();
             assertTrue(generatedKeys.isPresent());
             assertEquals("[1, 2]", generatedKeys.get().toString());
-            
+
         } finally {
             if (schema.getTableByName(tableName) != null) {
                 dc.executeUpdate(new DropTable(schema, tableName));
