@@ -74,7 +74,7 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>9.3-1104-jdbc4</version>
+			<version>42.2.11</version>
 			<!-- optional instead of test-scoped because we code against it in the rewriter class -->
 			<optional>true</optional>
 		</dependency>

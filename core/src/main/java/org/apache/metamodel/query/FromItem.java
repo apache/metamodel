@@ -222,7 +222,8 @@ public class FromItem extends BaseObject implements QueryItem, Cloneable {
         }
         StringBuilder sb = new StringBuilder();
         if (_table != null) {
-            if (_table.getSchema() != null && _table.getSchema().getName() != null) {
+            if (_table.getSchema() != null && _table.getSchema().getName() != null
+                    && !_table.getSchema().getName().isEmpty()) {
                 sb.append(_table.getSchema().getName());
                 sb.append('.');
             }

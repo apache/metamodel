@@ -502,15 +502,21 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                 cb.insertInto(table).value("foo", "world").execute();
             }
         });
+        
+        try {
+            final Optional<Integer> insertedRows = updateSummary.getInsertedRows();
+            assertTrue(insertedRows.isPresent());
+            assertEquals(2, insertedRows.get().intValue());
 
-        final Optional<Integer> insertedRows = updateSummary.getInsertedRows();
-        assertTrue(insertedRows.isPresent());
-        assertEquals(2, insertedRows.get().intValue());
-        
-        final Optional<Iterable<Object>> generatedKeys = updateSummary.getGeneratedKeys();
-        assertTrue(generatedKeys.isPresent());
-        assertEquals("[1, 2]", generatedKeys.get().toString());
-        
+            final Optional<Iterable<Object>> generatedKeys = updateSummary.getGeneratedKeys();
+            assertTrue(generatedKeys.isPresent());
+            assertEquals("[1, 2]", generatedKeys.get().toString());
+
+        } finally {
+            if (schema.getTableByName(tableName) != null) {
+                dc.executeUpdate(new DropTable(schema, tableName));
+            }
+        }
     }
 
     public void testBlob() throws Exception {
@@ -737,7 +743,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         } catch (Exception e) {
             String message = e.getMessage().replaceAll("\n", " ");
             assertEquals(
-                    "Could not execute batch: INSERT INTO \"public\".\"my_table\" (\"person name\",age) VALUES ('John Doe','42'): Batch entry 0 INSERT INTO \"public\".\"my_table\" (\"person name\",age) VALUES ('John Doe','42') was aborted.  Call getNextException to see the cause.",
+                    "java.sql.BatchUpdateException: Batch entry 0 INSERT INTO \"public\".\"my_table\" (\"person name\",age) VALUES ('John Doe','42') was aborted: ERROR: column \"age\" is of type integer but expression is of type character varying   Hint: You will need to rewrite or cast the expression.   Position: 64  Call getNextException to see other errors in the batch.",
                     message);
         } finally {
             dc.refreshSchemas();

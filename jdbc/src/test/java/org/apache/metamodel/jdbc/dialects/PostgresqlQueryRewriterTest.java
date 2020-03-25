@@ -18,12 +18,18 @@
  */
 package org.apache.metamodel.jdbc.dialects;
 
+import static org.junit.Assert.assertEquals;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.apache.metamodel.query.Query;
+import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
+import org.apache.metamodel.schema.MutableSchema;
+import org.apache.metamodel.schema.MutableTable;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
@@ -45,5 +51,19 @@ public class PostgresqlQueryRewriterTest {
         queryRewriter.setStatementParameter(statementMock, 0, column, value);
 
         EasyMock.verify(statementMock);
+    }
+    
+    @Test
+    public void testApproximateCountQueryAndBlankSchemaName() {
+        final SelectItem selectItem = SelectItem.getCountAllItem();
+        selectItem.setFunctionApproximationAllowed(true);
+        final Query query = new Query();
+        query.select(selectItem);
+        query.from(new MutableTable("tbl").setSchema(new MutableSchema("")));
+        assertEquals("SELECT APPROXIMATE COUNT(*) FROM tbl", query.toSql());
+
+        final PostgresqlQueryRewriter queryRewriter = new PostgresqlQueryRewriter(null);
+        final String sql = queryRewriter.rewriteQuery(query);
+        assertEquals("SELECT COUNT(*) FROM tbl", sql);
     }
 }
