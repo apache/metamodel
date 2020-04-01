@@ -23,11 +23,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.metamodel.MetaModelException;
+import org.apache.metamodel.convert.StringToBooleanConverter;
+import org.apache.metamodel.convert.StringToDateConverter;
+import org.apache.metamodel.convert.StringToDoubleConverter;
 import org.apache.metamodel.data.AbstractDataSet;
 import org.apache.metamodel.data.DefaultRow;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Column;
+import org.apache.metamodel.schema.SuperColumnType;
 import org.apache.metamodel.util.FileHelper;
 
 import com.opencsv.CSVReader;
@@ -110,7 +114,7 @@ final class CsvDataSet extends AbstractDataSet {
             Column column = getHeader().getSelectItem(i).getColumn();
             int columnNumber = column.getColumnNumber();
             if (columnNumber < csvValues.length) {
-                rowValues[i] = csvValues[columnNumber];
+                rowValues[i] = getTypedValue(csvValues[columnNumber], column.getType().getSuperType());
             } else {
                 // Ticket #125: Missing values should be enterpreted as
                 // null.
@@ -127,5 +131,18 @@ final class CsvDataSet extends AbstractDataSet {
         }
 
         return true;
+    }
+
+    private Object getTypedValue(String value, SuperColumnType columnType) {
+        switch (columnType) {
+            case BOOLEAN_TYPE:
+                return new StringToBooleanConverter().toVirtualValue(value);
+            case NUMBER_TYPE:
+                return new StringToDoubleConverter().toVirtualValue(value);
+            case TIME_TYPE:
+                return new StringToDateConverter().toVirtualValue(value);
+            default:
+                return value;
+        }
     }
 }

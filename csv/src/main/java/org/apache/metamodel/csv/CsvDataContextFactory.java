@@ -22,8 +22,11 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.factory.AbstractDataContextFactory;
 import org.apache.metamodel.factory.DataContextProperties;
 import org.apache.metamodel.factory.ResourceFactoryRegistry;
+import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
+import org.apache.metamodel.schema.typing.ColumnTypingStrategy;
+import org.apache.metamodel.schema.typing.CustomColumnTypingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.Resource;
 import org.apache.metamodel.util.SimpleTableDef;
@@ -59,7 +62,16 @@ public class CsvDataContextFactory extends AbstractDataContextFactory {
             columnNamingStrategy = new CustomColumnNamingStrategy(columnNames);
         }
 
-        final CsvConfiguration configuration = new CsvConfiguration(columnNameLineNumber, columnNamingStrategy,
+        final ColumnTypingStrategy columnTypingStrategy;
+        if (properties.getTableDefs() == null) {
+            columnTypingStrategy = null;
+        } else {
+            final SimpleTableDef firstTable = properties.getTableDefs()[0];
+            final ColumnType[] columnTypes = firstTable.getColumnTypes();
+            columnTypingStrategy = new CustomColumnTypingStrategy(columnTypes);
+        }
+
+        final CsvConfiguration configuration = new CsvConfiguration(columnNameLineNumber, columnNamingStrategy, columnTypingStrategy,
                 encoding, separatorChar, quoteChar, escapeChar, failOnInconsistentRowLength, multilineValuesEnabled);
         return new CsvDataContext(resource, configuration);
     }

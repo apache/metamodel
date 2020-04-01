@@ -38,6 +38,9 @@ import org.apache.metamodel.schema.TableType;
 import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
 import org.apache.metamodel.schema.naming.ColumnNamingSession;
 import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
+import org.apache.metamodel.schema.typing.ColumnTypingContextImpl;
+import org.apache.metamodel.schema.typing.ColumnTypingSession;
+import org.apache.metamodel.schema.typing.ColumnTypingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.LegacyDeserializationObjectInputStream;
 
@@ -125,17 +128,22 @@ final class CsvTable extends AbstractTable {
         final int columnNameLineNumber = configuration.getColumnNameLineNumber();
         final boolean nullable = !configuration.isFailOnInconsistentRowLength();
         final ColumnNamingStrategy columnNamingStrategy = configuration.getColumnNamingStrategy();
+        final ColumnTypingStrategy columnTypingStrategy = configuration.getColumnTypingStrategy();
 
         List<Column> columns = new ArrayList<>();
 
-        try (final ColumnNamingSession namingSession = columnNamingStrategy.startColumnNamingSession()) {
+        try (final ColumnNamingSession namingSession = columnNamingStrategy.startColumnNamingSession();
+             final ColumnTypingSession typingSession = columnTypingStrategy.startColumnTypingSession()) {
             for (int i = 0; i < columnNames.size(); i++) {
                 final String intrinsicColumnName = columnNameLineNumber == CsvConfiguration.NO_COLUMN_NAME_LINE ? null
                         : columnNames.get(i);
                 final String columnName = namingSession.getNextColumnName(new ColumnNamingContextImpl(this,
                         intrinsicColumnName, i));
-                final Column column = new MutableColumn(columnName, ColumnType.STRING, this, i, null, null, nullable,
-                        null, false, null);
+
+                final ColumnType columnType = typingSession.getNextColumnType(new ColumnTypingContextImpl(i));
+
+                final Column column = new MutableColumn( columnName, columnType, this, i, null, null, nullable, null,
+                        false, null );
                 columns.add(column);
             }
         }
