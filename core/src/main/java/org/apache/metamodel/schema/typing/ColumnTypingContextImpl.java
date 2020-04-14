@@ -31,18 +31,14 @@ public class ColumnTypingContextImpl implements ColumnTypingContext {
 
     private final Table table;
 
-    private final ColumnType intrinsicColumnType;
-
 
     /**
      * Creates a context to conifgure a column for a specific table.
      * @param table               The table that contains the column
-     * @param intrinsicColumnType The column type that represents the type configured in the datastore
      * @param columnIndex         the index in the table of the column being configured.
      */
-    public ColumnTypingContextImpl( Table table, ColumnType intrinsicColumnType, int columnIndex ) {
+    public ColumnTypingContextImpl( Table table, int columnIndex ) {
         this.table = table;
-        this.intrinsicColumnType = intrinsicColumnType;
         this.columnIndex = columnIndex;
     }
 
@@ -52,7 +48,7 @@ public class ColumnTypingContextImpl implements ColumnTypingContext {
      * @param columnIndex the index in the table of the column being configured.
      */
     public ColumnTypingContextImpl( int columnIndex ) {
-        this( null, null, columnIndex );
+        this( null, columnIndex );
     }
 
 
@@ -65,12 +61,6 @@ public class ColumnTypingContextImpl implements ColumnTypingContext {
     @Override
     public Table getTable() {
         return table;
-    }
-
-
-    @Override
-    public ColumnType getIntrinsicColumnType() {
-        return intrinsicColumnType;
     }
 
 }

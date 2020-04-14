@@ -19,6 +19,7 @@
 package org.apache.metamodel.schema.typing;
 
 import org.apache.metamodel.schema.ColumnType;
+import org.apache.metamodel.util.SimpleTableDef;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -51,6 +52,10 @@ public class CustomColumnTypingStrategy implements ColumnTypingStrategy {
      */
     public CustomColumnTypingStrategy( ColumnType... columnTypes ) {
         this( Arrays.asList( columnTypes ) );
+    }
+
+    public CustomColumnTypingStrategy( SimpleTableDef tableDef ) {
+        this( Arrays.asList( tableDef.getColumnTypes() ) );
     }
 
 

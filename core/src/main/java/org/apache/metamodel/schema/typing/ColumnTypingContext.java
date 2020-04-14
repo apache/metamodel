@@ -41,12 +41,4 @@ public interface ColumnTypingContext {
      * @return the associated table
      */
     Table getTable();
-
-    /**
-     * Gets the intrinsic column type, if this is defined in the datastore
-     * itself. This may be in the form of a header or such.
-     *
-     * @return the column type representing the datastore's column type
-     */
-    ColumnType getIntrinsicColumnType();
 }

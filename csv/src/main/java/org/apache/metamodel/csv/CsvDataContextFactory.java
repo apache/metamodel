@@ -67,8 +67,7 @@ public class CsvDataContextFactory extends AbstractDataContextFactory {
             columnTypingStrategy = null;
         } else {
             final SimpleTableDef firstTable = properties.getTableDefs()[0];
-            final ColumnType[] columnTypes = firstTable.getColumnTypes();
-            columnTypingStrategy = new CustomColumnTypingStrategy(columnTypes);
+            columnTypingStrategy = new CustomColumnTypingStrategy(firstTable);
         }
 
         final CsvConfiguration configuration = new CsvConfiguration(columnNameLineNumber, columnNamingStrategy, columnTypingStrategy,
