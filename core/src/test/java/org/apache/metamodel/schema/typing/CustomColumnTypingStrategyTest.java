@@ -27,10 +27,10 @@ public class CustomColumnTypingStrategyTest {
 
     @Test
     public void testTypeConfiguration() throws Exception {
-        ColumnTypingStrategy strategy = ColumnTypingStrategies.customTypes(ColumnType.STRING, ColumnType.NUMBER);
-        try ( final ColumnTypingSession session = strategy.startColumnTypingSession() ) {
-            assertEquals(ColumnType.STRING, session.getNextColumnType(new ColumnTypingContextImpl(0)));
-            assertEquals(ColumnType.NUMBER, session.getNextColumnType(new ColumnTypingContextImpl(1)));
+        ColumnTypingStrategy strategy = ColumnTypingStrategies.getCustomStrategy(ColumnType.STRING, ColumnType.NUMBER);
+        try (ColumnTypingSession session = strategy.startColumnTypingSession()) {
+            assertEquals(ColumnType.STRING, session.getNextColumnType(new ColumnTypingContext(0)));
+            assertEquals(ColumnType.NUMBER, session.getNextColumnType(new ColumnTypingContext(1)));
         }
     }
 }

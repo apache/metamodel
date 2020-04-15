@@ -22,7 +22,6 @@ import org.apache.metamodel.DataContext;
 import org.apache.metamodel.factory.AbstractDataContextFactory;
 import org.apache.metamodel.factory.DataContextProperties;
 import org.apache.metamodel.factory.ResourceFactoryRegistry;
-import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
 import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
 import org.apache.metamodel.schema.typing.ColumnTypingStrategy;

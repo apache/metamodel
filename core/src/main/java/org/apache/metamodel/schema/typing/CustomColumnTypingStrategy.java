@@ -40,7 +40,7 @@ public class CustomColumnTypingStrategy implements ColumnTypingStrategy {
      *
      * @param columnTypes a list of column types to be applied to a table.
      */
-    public CustomColumnTypingStrategy( List<ColumnType> columnTypes ) {
+    public CustomColumnTypingStrategy(final List<ColumnType> columnTypes) {
         this.columnTypes = columnTypes;
     }
 
@@ -50,32 +50,24 @@ public class CustomColumnTypingStrategy implements ColumnTypingStrategy {
      *
      * @param columnTypes a list of column types to be applied to a table.
      */
-    public CustomColumnTypingStrategy( ColumnType... columnTypes ) {
-        this( Arrays.asList( columnTypes ) );
+    public CustomColumnTypingStrategy(final ColumnType... columnTypes) {
+        this(Arrays.asList(columnTypes));
     }
 
-    public CustomColumnTypingStrategy( SimpleTableDef tableDef ) {
-        this( Arrays.asList( tableDef.getColumnTypes() ) );
+
+    public CustomColumnTypingStrategy(final SimpleTableDef tableDef) {
+        this(Arrays.asList(tableDef.getColumnTypes()));
     }
 
 
     @Override
     public ColumnTypingSession startColumnTypingSession() {
         final Iterator<ColumnType> iterator = columnTypes.iterator();
-        return new ColumnTypingSession() {
-
-            @Override
-            public ColumnType getNextColumnType( ColumnTypingContext ctx ) {
-                if ( iterator.hasNext() ) {
-                    return iterator.next();
-                }
-                return null;
+        return ctx -> {
+            if (iterator.hasNext()) {
+                return iterator.next();
             }
-
-
-            @Override
-            public void close() {
-            }
+            return null;
         };
     }
 }

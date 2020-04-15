@@ -38,7 +38,7 @@ import org.apache.metamodel.schema.TableType;
 import org.apache.metamodel.schema.naming.ColumnNamingContextImpl;
 import org.apache.metamodel.schema.naming.ColumnNamingSession;
 import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
-import org.apache.metamodel.schema.typing.ColumnTypingContextImpl;
+import org.apache.metamodel.schema.typing.ColumnTypingContext;
 import org.apache.metamodel.schema.typing.ColumnTypingSession;
 import org.apache.metamodel.schema.typing.ColumnTypingStrategy;
 import org.apache.metamodel.util.FileHelper;
@@ -140,7 +140,7 @@ final class CsvTable extends AbstractTable {
                 final String columnName = namingSession.getNextColumnName(new ColumnNamingContextImpl(this,
                         intrinsicColumnName, i));
 
-                final ColumnType columnType = typingSession.getNextColumnType(new ColumnTypingContextImpl(i));
+                final ColumnType columnType = typingSession.getNextColumnType(new ColumnTypingContext(i));
 
                 final Column column = new MutableColumn( columnName, columnType, this, i, null, null, nullable, null,
                         false, null );

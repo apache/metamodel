@@ -116,11 +116,11 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
 
     /**
      * Gets a {@link ColumnTypingStrategy} to use if needed.
-     * @return The configured strategy, or {@link ColumnTypingStrategies#defaultStrategy}.
+     * @return The configured strategy, or {@link ColumnTypingStrategies#getDefaultStrategy}.
      */
     public ColumnTypingStrategy getColumnTypingStrategy() {
         if (columnTypingStrategy == null) {
-            return ColumnTypingStrategies.defaultStrategy();
+            return ColumnTypingStrategies.getDefaultStrategy();
         }
         return columnTypingStrategy;
     }

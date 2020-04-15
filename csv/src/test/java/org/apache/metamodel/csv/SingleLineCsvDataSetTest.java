@@ -72,15 +72,10 @@ public class SingleLineCsvDataSetTest extends TestCase {
     }
 
     public void testCustomTyping() throws Exception {
-        ColumnType columnType1 = ColumnType.DATE;
-        ColumnType columnType2 = ColumnType.TIME;
-        ColumnType columnType3 = ColumnType.STRING;
-        ColumnType columnType4 = ColumnType.NUMBER;
-        ColumnType columnType5 = ColumnType.BOOLEAN;
 
         final CsvConfiguration configuration = new CsvConfiguration( CsvConfiguration.DEFAULT_COLUMN_NAME_LINE, null,
-                new CustomColumnTypingStrategy( columnType1, columnType2, columnType3, columnType4, columnType5 ),
-                FileHelper.DEFAULT_ENCODING, CsvConfiguration.DEFAULT_SEPARATOR_CHAR,
+                new CustomColumnTypingStrategy(ColumnType.DATE, ColumnType.TIME, ColumnType.STRING, ColumnType.NUMBER,
+                        ColumnType.BOOLEAN), FileHelper.DEFAULT_ENCODING, CsvConfiguration.DEFAULT_SEPARATOR_CHAR,
                 CsvConfiguration.DEFAULT_QUOTE_CHAR, CsvConfiguration.DEFAULT_ESCAPE_CHAR, false, true );
 
         final DataContext dc = new CsvDataContext( new File( "src/test/resources/csv_various_types.csv" ), configuration );
@@ -117,16 +112,11 @@ public class SingleLineCsvDataSetTest extends TestCase {
     public void testTypeBasedFiltering() throws Exception {
         File dataFile = new File("src/test/resources/csv_various_types.csv");
 
-        ColumnType columnType1 = ColumnType.DATE;
-        ColumnType columnType2 = ColumnType.TIME;
-        ColumnType columnType3 = ColumnType.STRING;
-        ColumnType columnType4 = ColumnType.NUMBER;
-        ColumnType columnType5 = ColumnType.BOOLEAN;
-
         final CsvConfiguration typedConfiguration = new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE,
-                null, new CustomColumnTypingStrategy(columnType1, columnType2, columnType3, columnType4, columnType5)
-                , FileHelper.DEFAULT_ENCODING, CsvConfiguration.DEFAULT_SEPARATOR_CHAR,
-                CsvConfiguration.DEFAULT_QUOTE_CHAR, CsvConfiguration.DEFAULT_ESCAPE_CHAR, false, true);
+                null, new CustomColumnTypingStrategy(ColumnType.DATE, ColumnType.TIME, ColumnType.STRING,
+                ColumnType.NUMBER, ColumnType.BOOLEAN), FileHelper.DEFAULT_ENCODING,
+                CsvConfiguration.DEFAULT_SEPARATOR_CHAR, CsvConfiguration.DEFAULT_QUOTE_CHAR,
+                CsvConfiguration.DEFAULT_ESCAPE_CHAR, false, true);
         final DataContext typedDc = new CsvDataContext(dataFile,
                 typedConfiguration);
         final Table typedTable = typedDc.getDefaultSchema().getTable(0);

@@ -39,7 +39,7 @@ public class ColumnTypingStrategies {
      *
      * @return a strategy that defaults to text
      */
-    public static ColumnTypingStrategy defaultStrategy() {
+    public static ColumnTypingStrategy getDefaultStrategy() {
         return DEFAULT_STRATEGY;
     }
 
@@ -50,8 +50,8 @@ public class ColumnTypingStrategies {
      * @param columnTypes the types of each column
      * @return a strategy for custom type configuration
      */
-    public static ColumnTypingStrategy customTypes( List<ColumnType> columnTypes ) {
-        return new CustomColumnTypingStrategy( columnTypes );
+    public static ColumnTypingStrategy getCustomStrategy(final List<ColumnType> columnTypes) {
+        return new CustomColumnTypingStrategy(columnTypes);
     }
 
 
@@ -61,7 +61,7 @@ public class ColumnTypingStrategies {
      * @param columnTypes the types of each column
      * @return a strategy for custom type configuration
      */
-    public static ColumnTypingStrategy customTypes( ColumnType... columnTypes ) {
-        return new CustomColumnTypingStrategy( columnTypes );
+    public static ColumnTypingStrategy getCustomStrategy(final ColumnType... columnTypes) {
+        return new CustomColumnTypingStrategy(columnTypes);
     }
 }

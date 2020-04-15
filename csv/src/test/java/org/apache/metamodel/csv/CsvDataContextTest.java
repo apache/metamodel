@@ -831,14 +831,9 @@ public class CsvDataContextTest extends TestCase {
         final String thirdColumnName = "third";
         final String fourthColumnName = "fourth";
 
-        final ColumnType firstColumnType = ColumnType.STRING;
-        final ColumnType secondColumnType = ColumnType.STRING;
-        final ColumnType thirdColumnType = ColumnType.STRING;
-        final ColumnType fourthColumnType = ColumnType.NUMBER;
-
         final CsvConfiguration configuration = new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE,
                 new CustomColumnNamingStrategy(firstColumnName, secondColumnName, thirdColumnName, fourthColumnName),
-                new CustomColumnTypingStrategy(firstColumnType, secondColumnType, thirdColumnType, fourthColumnType),
+                new CustomColumnTypingStrategy(ColumnType.STRING, ColumnType.STRING, ColumnType.STRING, ColumnType.NUMBER),
                 FileHelper.DEFAULT_ENCODING, CsvConfiguration.DEFAULT_SEPARATOR_CHAR,
                 CsvConfiguration.DEFAULT_QUOTE_CHAR, CsvConfiguration.DEFAULT_ESCAPE_CHAR, false, true);
 

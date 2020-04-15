@@ -38,11 +38,12 @@ public interface ColumnTypingSession extends Closeable {
      *            column index, intrinsic type etc. if available.
      * @return the type to provide to the column.
      */
-    public ColumnType getNextColumnType( ColumnTypingContext ctx );
+    ColumnType getNextColumnType(ColumnTypingContext ctx);
 
     /**
      * Ends the column typing session.
      */
     @Override
-    void close();
+    default void close() {
+    }
 }

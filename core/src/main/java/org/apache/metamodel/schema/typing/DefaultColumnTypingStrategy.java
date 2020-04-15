@@ -31,17 +31,6 @@ public class DefaultColumnTypingStrategy implements ColumnTypingStrategy {
 
     @Override
     public ColumnTypingSession startColumnTypingSession() {
-        return new ColumnTypingSession() {
-
-            @Override
-            public ColumnType getNextColumnType( ColumnTypingContext ctx ) {
-                return ColumnType.STRING;
-            }
-
-
-            @Override
-            public void close() {
-            }
-        };
+        return ctx -> ColumnType.STRING;
     }
 }

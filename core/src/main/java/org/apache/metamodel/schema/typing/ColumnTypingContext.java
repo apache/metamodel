@@ -18,21 +18,51 @@
  */
 package org.apache.metamodel.schema.typing;
 
-import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Table;
+
 
 /**
  * Defines the context for configuring the type for a single column in a
  * {@link ColumnTypingStrategy} session.
  */
-public interface ColumnTypingContext {
+public class ColumnTypingContext {
+
+    private final int columnIndex;
+
+    private final Table table;
+
+
+    /**
+     * Creates a context to conifgure a column for a specific table.
+     *
+     * @param table       The table that contains the column
+     * @param columnIndex the index in the table of the column being configured.
+     */
+    public ColumnTypingContext(final Table table, final int columnIndex) {
+        this.table = table;
+        this.columnIndex = columnIndex;
+    }
+
+
+    /**
+     * Creates a context a column to be configured.
+     *
+     * @param columnIndex the index in the table of the column being configured.
+     */
+    public ColumnTypingContext(final int columnIndex) {
+        this(null, columnIndex);
+    }
+
 
     /**
      * Gets the index of the column being configured.
      *
      * @return the column index
      */
-    int getColumnIndex();
+    public int getColumnIndex() {
+        return columnIndex;
+    }
+
 
     /**
      * Gets the {@link Table} that the column is to pertain to. If the table is
@@ -40,5 +70,8 @@ public interface ColumnTypingContext {
      *
      * @return the associated table
      */
-    Table getTable();
+    public Table getTable() {
+        return table;
+    }
+
 }
