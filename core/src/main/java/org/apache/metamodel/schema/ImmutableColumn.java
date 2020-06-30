@@ -148,6 +148,11 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
     }
 
     @Override
+    public Integer getDecimalDigits() {
+        return decimalDigits;
+    }
+
+    @Override
     public Integer getDecimalDigits() { return decimalDigits; }
 
     @Override

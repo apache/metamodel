@@ -343,7 +343,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
         }
     }
 
-    private void processColumn(JdbcTable table, boolean convertLobs, ResultSet rs, int columnNumber) throws SQLException {
+    private final void processColumn(JdbcTable table, boolean convertLobs, ResultSet rs, int columnNumber) throws SQLException {
         final String columnName = rs.getString(4);
         if (_identifierQuoteString == null && new StringTokenizer(columnName).countTokens() > 1) {
             logger.warn("column name contains whitespace: \"" + columnName + "\".");

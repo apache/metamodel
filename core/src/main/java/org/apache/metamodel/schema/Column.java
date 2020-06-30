@@ -86,7 +86,7 @@ public interface Column extends Comparable<Column>, Serializable, NamedStructure
     public Integer getColumnSize();
 
     /**
-     * Gets the number of decimal digits this column.
+     * Gets the number of decimal digits for this column.
      *
      * @return the number of decimal digits for this column or null if the size is not
      *         determined or known.
