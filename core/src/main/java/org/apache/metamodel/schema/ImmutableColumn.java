@@ -23,7 +23,7 @@ import java.io.Serializable;
 /**
  * Immutable implementation of the Column interface.
  * 
- * It is not intended to be instantiated on it's own. Rather, use the
+ * It is not intended to be instantiated on its own. Rather, use the
  * constructor in ImmutableSchema.
  * 
  * @see ImmutableSchema
