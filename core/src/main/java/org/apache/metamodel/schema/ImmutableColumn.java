@@ -73,18 +73,7 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
      */
     public ImmutableColumn(String name, ColumnType type, Table table, int columnNumber, Integer columnSize,
                            String nativeType, Boolean nullable, String remarks, boolean indexed, String quote, boolean primaryKey) {
-        this.name = name;
-        this.type = type;
-        this.table = table;
-        this.columnNumber = columnNumber;
-        this.columnSize = columnSize;
-        this.decimalDigits = null;
-        this.nativeType = nativeType;
-        this.nullable = nullable;
-        this.remarks = remarks;
-        this.indexed = indexed;
-        this.quote = quote;
-        this.primaryKey = primaryKey;
+        this(name, type, table, columnNumber, columnSize, null, nativeType, nullable, remarks, indexed, quote, primaryKey);
     }
 
     /**
