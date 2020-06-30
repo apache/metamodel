@@ -352,7 +352,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
         final int jdbcType = rs.getInt(5);
         final String nativeType = rs.getString(6);
         final Integer columnSize = rs.getInt(7);
-        Integer decimalDigits = rs.getInt(9);
+        final Integer decimalDigits = rs.getInt(9);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Found column: table=" + table.getName() + ",columnName=" + columnName + ",nativeType="
