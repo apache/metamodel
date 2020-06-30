@@ -47,6 +47,48 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
 
     /**
      * Constructs a new {@link ImmutableColumn}.
+     *
+     * @param name
+     *            the name of the column
+     * @param type
+     *            the type of the column
+     * @param table
+     *            the table which the constructed column will pertain to
+     * @param columnNumber
+     *            the column number of the column
+     * @param columnSize
+     *            the size of the column
+     * @param nativeType
+     *            the native type of the column
+     * @param nullable
+     *            whether the column's values are nullable
+     * @param remarks
+     *            the remarks of the column
+     * @param indexed
+     *            whether the column is indexed or not
+     * @param quote
+     *            the quote character(s) of the column
+     * @param primaryKey
+     *            whether the column is a primary key or not
+     */
+    public ImmutableColumn(String name, ColumnType type, Table table, int columnNumber, Integer columnSize,
+                           String nativeType, Boolean nullable, String remarks, boolean indexed, String quote, boolean primaryKey) {
+        this.name = name;
+        this.type = type;
+        this.table = table;
+        this.columnNumber = columnNumber;
+        this.columnSize = columnSize;
+        this.decimalDigits = null;
+        this.nativeType = nativeType;
+        this.nullable = nullable;
+        this.remarks = remarks;
+        this.indexed = indexed;
+        this.quote = quote;
+        this.primaryKey = primaryKey;
+    }
+
+    /**
+     * Constructs a new {@link ImmutableColumn}.
      * 
      * @param name
      *            the name of the column
@@ -58,6 +100,8 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
      *            the column number of the column
      * @param columnSize
      *            the size of the column
+     * @param decimalDigits
+     *            number of digits of precision for a numeric type
      * @param nativeType
      *            the native type of the column
      * @param nullable
@@ -151,10 +195,7 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
     public Integer getDecimalDigits() {
         return decimalDigits;
     }
-
-    @Override
-    public Integer getDecimalDigits() { return decimalDigits; }
-
+    
     @Override
     public String getNativeType() {
         return nativeType;

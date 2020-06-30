@@ -83,7 +83,7 @@ public class AbstractCreateTableBuilderTest extends TestCase {
         assertFalse(executed.get().booleanValue());
 
         MutableTable likeTable = new MutableTable("blablablabla");
-        likeTable.addColumn(new MutableColumn("foo", ColumnType.VARCHAR, likeTable, 0, 1234, null, "vch", true, null, false,
+        likeTable.addColumn(new MutableColumn("foo", ColumnType.VARCHAR, likeTable, 0, 1234, "vch", true, null, false,
                 null).setPrimaryKey(true));
         likeTable.addColumn(new MutableColumn("bar"));
         likeTable.addColumn(new MutableColumn("baz"));

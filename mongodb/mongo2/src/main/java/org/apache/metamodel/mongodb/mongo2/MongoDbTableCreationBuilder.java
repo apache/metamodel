@@ -46,7 +46,7 @@ final class MongoDbTableCreationBuilder extends
 			// all mongo db collections have an _id field as the first field.
 			ImmutableColumn idColumn = new ImmutableColumn("_id",
 					ColumnType.ROWID, table, table.getColumnCount(), null,
-					null, null, null, null, true, null, true);
+					null, null, null, true, null, true);
 			table.addColumn(idColumn);
 		}
 		table.setSchema(schema);
