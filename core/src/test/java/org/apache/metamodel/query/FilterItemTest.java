@@ -414,7 +414,7 @@ public class FilterItemTest extends TestCase {
     }
 
     public void testInOperandSql() throws Exception {
-        SelectItem selectItem = new SelectItem(new MutableColumn("foo", ColumnType.VARCHAR, null, 1, null, null, true,
+        SelectItem selectItem = new SelectItem(new MutableColumn("foo", ColumnType.VARCHAR, null, 1, null, null, null, true,
                 null, false, null));
         Object operand = new String[] { "foo", "bar" };
         assertEquals("foo IN ('foo' , 'bar')", new FilterItem(selectItem, OperatorType.IN, operand).toSql());
@@ -458,7 +458,7 @@ public class FilterItemTest extends TestCase {
     }
 
     public void testInOperandEvaluate() throws Exception {
-        SelectItem selectItem = new SelectItem(new MutableColumn("foo", ColumnType.VARCHAR, null, 1, null, null, true,
+        SelectItem selectItem = new SelectItem(new MutableColumn("foo", ColumnType.VARCHAR, null, 1, null, null, null, true,
                 null, false, null));
         Object operand = new String[] { "foo", "bar" };
 

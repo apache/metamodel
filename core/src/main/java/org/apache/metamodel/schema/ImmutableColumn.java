@@ -38,6 +38,7 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
     private final Boolean nullable;
     private final String remarks;
     private final Integer columnSize;
+    private final Integer decimalDigits;
     private final String nativeType;
     private final boolean indexed;
     private final boolean primaryKey;
@@ -71,12 +72,13 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
      *            whether the column is a primary key or not
      */
     public ImmutableColumn(String name, ColumnType type, Table table, int columnNumber, Integer columnSize,
-            String nativeType, Boolean nullable, String remarks, boolean indexed, String quote, boolean primaryKey) {
+                           Integer decimalDigits, String nativeType, Boolean nullable, String remarks, boolean indexed, String quote, boolean primaryKey) {
         this.name = name;
         this.type = type;
         this.table = table;
         this.columnNumber = columnNumber;
         this.columnSize = columnSize;
+        this.decimalDigits = decimalDigits;
         this.nativeType = nativeType;
         this.nullable = nullable;
         this.remarks = remarks;
@@ -100,6 +102,7 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
         this.table = table;
         this.columnNumber = column.getColumnNumber();
         this.columnSize = column.getColumnSize();
+        this.decimalDigits = column.getDecimalDigits();
         this.nativeType = column.getNativeType();
         this.nullable = column.isNullable();
         this.remarks = column.getRemarks();
@@ -109,8 +112,8 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
     }
 
     protected ImmutableColumn(Column column, ImmutableTable table) {
-        this(column.getName(), column.getType(), table, column.getColumnNumber(), column.getColumnSize(), column
-                .getNativeType(), column.isNullable(), column.getRemarks(), column.isIndexed(), column.getQuote(),
+        this(column.getName(), column.getType(), table, column.getColumnNumber(), column.getColumnSize(), column.getDecimalDigits(),
+             column.getNativeType(), column.isNullable(), column.getRemarks(), column.isIndexed(), column.getQuote(),
                 column.isPrimaryKey());
     }
 
@@ -143,6 +146,9 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
     public Integer getColumnSize() {
         return columnSize;
     }
+
+    @Override
+    public Integer getDecimalDigits() { return decimalDigits; }
 
     @Override
     public String getNativeType() {

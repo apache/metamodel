@@ -67,7 +67,7 @@ public class SingleMapColumnSchemaBuilder implements SchemaBuilder, DocumentConv
     public MutableSchema build() {
         MutableSchema schema = new MutableSchema(_schemaName);
         MutableTable table = new MutableTable(_tableName, schema);
-        table.addColumn(new MutableColumn(_columnName, ColumnType.MAP, table, 1, null, null, false, null, false, null));
+        table.addColumn(new MutableColumn(_columnName, ColumnType.MAP, table, 1, null, null, null, false, null, false, null));
         schema.addTable(table);
         return schema;
     }

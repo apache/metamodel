@@ -39,6 +39,7 @@ public class MutableColumn extends AbstractColumn implements Serializable {
     private boolean _indexed = false;
     private boolean _primaryKey = false;
     private Integer _columnSize = null;
+    private Integer _decimalDigits = null;
     private String _nativeType = null;
     private String _quoteString = null;
 
@@ -70,9 +71,10 @@ public class MutableColumn extends AbstractColumn implements Serializable {
     }
 
     public MutableColumn(String name, ColumnType type, Table table, int columnNumber, Integer columnSize,
-            String nativeType, Boolean nullable, String remarks, boolean indexed, String quote) {
+                         Integer decimalDigits, String nativeType, Boolean nullable, String remarks, boolean indexed, String quote) {
         this(name, type, table, columnNumber, nullable);
         setColumnSize(columnSize);
+        setDecimalDigits(decimalDigits);
         setNativeType(nativeType);
         setRemarks(remarks);
         setIndexed(indexed);
@@ -141,6 +143,16 @@ public class MutableColumn extends AbstractColumn implements Serializable {
 
     public MutableColumn setRemarks(String remarks) {
         _remarks = remarks;
+        return this;
+    }
+
+    @Override
+    public Integer getDecimalDigits() {
+        return _decimalDigits;
+    }
+
+    public MutableColumn setDecimalDigits(Integer decimalDigits) {
+        _decimalDigits = decimalDigits;
         return this;
     }
 

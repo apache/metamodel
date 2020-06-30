@@ -134,7 +134,7 @@ final class CsvTable extends AbstractTable {
                         : columnNames.get(i);
                 final String columnName = namingSession.getNextColumnName(new ColumnNamingContextImpl(this,
                         intrinsicColumnName, i));
-                final Column column = new MutableColumn(columnName, ColumnType.STRING, this, i, null, null, nullable,
+                final Column column = new MutableColumn(columnName, ColumnType.STRING, this, i, null, null, null, nullable,
                         null, false, null);
                 columns.add(column);
             }
