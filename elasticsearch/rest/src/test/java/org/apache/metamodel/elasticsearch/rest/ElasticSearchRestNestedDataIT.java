@@ -38,6 +38,7 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -109,6 +110,40 @@ public class ElasticSearchRestNestedDataIT {
             final Map userValueMap = (Map) userValue;
             assertEquals("John Doe", userValueMap.get("fullname"));
             assertEquals("Main street 1, Newville", userValueMap.get("address"));
+        }
+    }
+
+    @Test
+    public void testIndexOfDocumentWithDots() throws Exception {
+        final String document =
+                "{ \"user.fullname\": \"John Doe\", "
+                + "\"user.address\": \"Main street 1, Newville\", "
+                + "\"message\": \"This is what I have to say.\" }";
+
+        final IndexRequest indexRequest = new IndexRequest(INDEX_NAME).id("1");
+        indexRequest.source(document, XContentType.JSON);
+
+        client.index(indexRequest, RequestOptions.DEFAULT);
+
+        final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
+
+        assertThat(table.getColumnNames(), containsInAnyOrder("_id", "message", "user"));
+
+        dataContext.refreshSchemas();
+
+        try (final DataSet dataSet = dataContext
+                .query()
+                .from(DEFAULT_TABLE_NAME)
+                .select("user")
+                .and("message")
+                .execute()) {
+            assertEquals(ElasticSearchRestDataSet.class, dataSet.getClass());
+
+            assertTrue(dataSet.next());
+            final Row row = dataSet.getRow();
+            assertEquals("This is what I have to say.", row.getValue(table.getColumnByName("message")));
+
+            assertNotNull(row.getValue(table.getColumnByName("user")));
         }
     }
 }
