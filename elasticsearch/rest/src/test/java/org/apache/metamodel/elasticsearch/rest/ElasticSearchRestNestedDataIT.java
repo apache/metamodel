@@ -86,8 +86,25 @@ public class ElasticSearchRestNestedDataIT {
 
         assertThat(table.getColumnNames(), containsInAnyOrder("_id", "message", "user"));
 
-        assertEquals(ColumnType.MAP, table.getColumnByName("user").getType());
+        dataContext.refreshSchemas();
+        
+        try (final DataSet dataSet = dataContext
+                .query()
+                .from(DEFAULT_TABLE_NAME)
+                .select("user")
+                .and("message")
+                .execute()) {
+            assertEquals(ElasticSearchRestDataSet.class, dataSet.getClass());
+
+            assertTrue(dataSet.next());
+            final Row row = dataSet.getRow();
+            assertEquals("This is what I have to say.", row.getValue(table.getColumnByName("message")));
+            
+            assertTrue(row.getValue(table.getColumnByName("user")) instanceof Map);
+        }
+
         assertEquals(ColumnType.STRING, table.getColumnByName("message").getType());
+        assertEquals(ColumnType.MAP, table.getColumnByName("user").getType());
     }
 
     @Test
