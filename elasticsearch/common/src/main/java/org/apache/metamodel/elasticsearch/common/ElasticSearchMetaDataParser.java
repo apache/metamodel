@@ -62,7 +62,13 @@ public class ElasticSearchMetaDataParser {
         final String metaDataFieldType = getMetaDataFieldTypeFromMetaDataField(fieldMetadata);
 
         if (metaDataFieldType == null) {
-            return ColumnType.STRING;
+            // When we're dealing with a field with nested values, it doesn't have a "type", but it has "properties". In
+            // that case we should handle it as a field with the type "Map".
+            if (fieldMetadata.get("properties") != null) {
+                return ColumnType.MAP;
+            } else {
+                return ColumnType.STRING;
+            }
         }
 
         return ElasticSearchUtils.getColumnTypeFromElasticSearchType(metaDataFieldType);
