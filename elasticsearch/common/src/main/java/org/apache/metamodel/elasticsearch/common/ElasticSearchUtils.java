@@ -293,7 +293,7 @@ public class ElasticSearchUtils {
                     } else if (column.getType() == ColumnType.MAP && value == null) {
                         // Because of a bug in Elasticsearch, when field names contain dots, it's possible that the
                         // mapping of the index described a column to be of the type "MAP", while it's based on a number
-                        // of fields contains dots in their name. In this case we may have to work around that
+                        // of fields containing dots in their name. In this case we may have to work around that
                         // inconsistency by creating column names with dots ourselves, based on the schema.
                         final Map<String, Object> valueMap = new HashMap<>();
 
