@@ -40,9 +40,9 @@ under the License.
 		<version>21</version>
 	</parent>
 	<scm>
-		<url>https://gitbox.apache.org/repos/asf/metamodel.git</url>
-		<connection>https://gitbox.apache.org/repos/asf/metamodel.git</connection>
-		<developerConnection>scm:git:https://gitbox.apache.org/repos/asf/metamodel.git</developerConnection>
+		<url>https://github.com/arjansh/metamodel.git</url>
+		<connection>scm:git:https://github.com/arjansh/metamodel.git</connection>
+		<developerConnection>scm:git:https://github.com/arjansh/metamodel.git</developerConnection>    
 		<tag>HEAD</tag>
 	</scm>
 	<groupId>org.apache.metamodel</groupId>
@@ -176,14 +176,15 @@ under the License.
 	</licenses>
 	<distributionManagement>
 		<repository>
-			<id>apache.releases.https</id>
-			<name>Apache Release Distribution Repository</name>
-			<url>https://repository.apache.org/service/local/staging/deploy/maven2</url>
+			<id>releases</id>
+			<name>internal releases</name>
+			<url>http://repo.humaninference.com/content/repositories/releases</url>
 		</repository>
 		<snapshotRepository>
-			<id>apache.snapshots.https</id>
-			<name>Apache Development Snapshot Repository</name>
-			<url>https://repository.apache.org/content/repositories/snapshots</url>
+			<id>snapshots</id>
+			<name>internal snapshots</name>
+			<url>http://repo.humaninference.com/content/repositories/snapshots</url>
+			<uniqueVersion>false</uniqueVersion>
 		</snapshotRepository>
 	</distributionManagement>
 
@@ -230,6 +231,7 @@ under the License.
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.2</version>
 				<configuration>
 					<autoVersionSubmodules>true</autoVersionSubmodules>
 					<goals>deploy</goals>
