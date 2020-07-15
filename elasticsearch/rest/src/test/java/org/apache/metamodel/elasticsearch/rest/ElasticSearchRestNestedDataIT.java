@@ -46,7 +46,6 @@ public class ElasticSearchRestNestedDataIT {
     private static final String INDEX_NAME = "nesteddata";
 
     private static RestHighLevelClient client;
-
     private static UpdateableDataContext dataContext;
 
     @Before
