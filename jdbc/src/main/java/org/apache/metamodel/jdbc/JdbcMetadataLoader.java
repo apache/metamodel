@@ -327,47 +327,7 @@ final class JdbcMetadataLoader implements MetadataLoader {
 
             while (rs.next()) {
                 columnNumber++;
-                final String columnName = rs.getString(4);
-                if (_identifierQuoteString == null && new StringTokenizer(columnName).countTokens() > 1) {
-                    logger.warn("column name contains whitespace: \"" + columnName + "\".");
-                }
-
-                final int jdbcType = rs.getInt(5);
-                final String nativeType = rs.getString(6);
-                final Integer columnSize = rs.getInt(7);
-
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Found column: table=" + table.getName() + ",columnName=" + columnName + ",nativeType="
-                            + nativeType + ",columnSize=" + columnSize);
-                }
-
-                ColumnType columnType = _dataContext.getQueryRewriter().getColumnType(jdbcType, nativeType, columnSize);
-                if (convertLobs) {
-                    if (columnType == ColumnType.CLOB || columnType == ColumnType.NCLOB) {
-                        columnType = JdbcDataContext.COLUMN_TYPE_CLOB_AS_STRING;
-                    } else if (columnType == ColumnType.BLOB) {
-                        columnType = JdbcDataContext.COLUMN_TYPE_BLOB_AS_BYTES;
-                    }
-                }
-
-                final int jdbcNullable = rs.getInt(11);
-                final Boolean nullable;
-                if (jdbcNullable == DatabaseMetaData.columnNullable) {
-                    nullable = true;
-                } else if (jdbcNullable == DatabaseMetaData.columnNoNulls) {
-                    nullable = false;
-                } else {
-                    nullable = null;
-                }
-
-                final String remarks = rs.getString(12);
-
-                final JdbcColumn column = new JdbcColumn(columnName, columnType, table, columnNumber, nullable);
-                column.setRemarks(remarks);
-                column.setNativeType(nativeType);
-                column.setColumnSize(columnSize);
-                column.setQuote(_identifierQuoteString);
-                table.addColumn(column);
+                processColumn(table, convertLobs, rs, columnNumber);
             }
 
             final int columnsReturned = columnNumber + 1;
@@ -381,6 +341,52 @@ final class JdbcMetadataLoader implements MetadataLoader {
         } catch (SQLException e) {
             throw JdbcUtils.wrapException(e, "retrieve table metadata for " + table.getName(), JdbcActionType.METADATA);
         }
+    }
+
+    private final void processColumn(JdbcTable table, boolean convertLobs, ResultSet rs, int columnNumber) throws SQLException {
+        final String columnName = rs.getString(4);
+        if (_identifierQuoteString == null && new StringTokenizer(columnName).countTokens() > 1) {
+            logger.warn("column name contains whitespace: \"" + columnName + "\".");
+        }
+
+        final int jdbcType = rs.getInt(5);
+        final String nativeType = rs.getString(6);
+        final Integer columnSize = rs.getInt(7);
+        final Integer decimalDigits = rs.getInt(9);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Found column: table=" + table.getName() + ",columnName=" + columnName + ",nativeType="
+                    + nativeType + ",columnSize=" + columnSize);
+        }
+
+        ColumnType columnType = _dataContext.getQueryRewriter().getColumnType(jdbcType, nativeType, columnSize);
+        if (convertLobs) {
+            if (columnType == ColumnType.CLOB || columnType == ColumnType.NCLOB) {
+                columnType = JdbcDataContext.COLUMN_TYPE_CLOB_AS_STRING;
+            } else if (columnType == ColumnType.BLOB) {
+                columnType = JdbcDataContext.COLUMN_TYPE_BLOB_AS_BYTES;
+            }
+        }
+
+        final int jdbcNullable = rs.getInt(11);
+        final Boolean nullable;
+        if (jdbcNullable == DatabaseMetaData.columnNullable) {
+            nullable = true;
+        } else if (jdbcNullable == DatabaseMetaData.columnNoNulls) {
+            nullable = false;
+        } else {
+            nullable = null;
+        }
+
+        final String remarks = rs.getString(12);
+
+        final JdbcColumn column = new JdbcColumn(columnName, columnType, table, columnNumber, nullable);
+        column.setRemarks(remarks);
+        column.setNativeType(nativeType);
+        column.setColumnSize(columnSize);
+        column.setDecimalDigits(decimalDigits);
+        column.setQuote(_identifierQuoteString);
+        table.addColumn(column);
     }
 
     @Override

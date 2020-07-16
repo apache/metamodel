@@ -86,6 +86,14 @@ public interface Column extends Comparable<Column>, Serializable, NamedStructure
     public Integer getColumnSize();
 
     /**
+     * Gets the number of decimal digits for this column.
+     *
+     * @return the number of decimal digits for this column or null if the size is not
+     *         determined or known.
+     */
+    public Integer getDecimalDigits();
+
+    /**
      * Gets the native type of this column. A native type is the name of the
      * data type as defined in the datastore.
      * 
