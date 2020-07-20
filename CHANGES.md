@@ -1,5 +1,6 @@
 ### Apache MetaModel [WIP]
 
+ * [METAMODEL-1227] - Better handling of nested objects in Elasticsearch data
  * [METAMODEL-1224] - Ensured compatibility with newer versions of PostgreSQL
 
 ### Apache MetaModel 5.3.2
