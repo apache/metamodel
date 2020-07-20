@@ -38,6 +38,7 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,9 +68,13 @@ public class ElasticSearchRestNestedDataIT {
 
     @Test
     public void testNestedData() throws Exception {
+        final Map<String, Object> address = new HashMap<>();
+        address.put("street", "Main street 1");
+        address.put("city", "Newville");
+
         final Map<String, Object> user = new HashMap<>();
         user.put("fullname", "John Doe");
-        user.put("address", "Main street 1, Newville");
+        user.put("address", address);
 
         final Map<String, Object> userMessage = new LinkedHashMap<>();
         userMessage.put("user", user);
@@ -80,6 +85,26 @@ public class ElasticSearchRestNestedDataIT {
 
         client.index(indexRequest, RequestOptions.DEFAULT);
 
+        validateSchemaAndResults();
+    }
+
+    @Test
+    public void testIndexOfDocumentWithDots() throws Exception {
+        final String document =
+                "{ \"user.fullname\": \"John Doe\", "
+                + "\"user.address.street\": \"Main street 1\", "
+                + "\"user.address.city\": \"Newville\", "
+                + "\"message\": \"This is what I have to say.\" }";
+
+        final IndexRequest indexRequest = new IndexRequest(INDEX_NAME).id("1");
+        indexRequest.source(document, XContentType.JSON);
+
+        client.index(indexRequest, RequestOptions.DEFAULT);
+
+        validateSchemaAndResults();
+    }
+
+    private void validateSchemaAndResults() {
         final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
 
         assertThat(table.getColumnNames(), containsInAnyOrder("_id", "message", "user"));
@@ -107,7 +132,14 @@ public class ElasticSearchRestNestedDataIT {
             @SuppressWarnings("rawtypes")
             final Map userValueMap = (Map) userValue;
             assertEquals("John Doe", userValueMap.get("fullname"));
-            assertEquals("Main street 1, Newville", userValueMap.get("address"));
+
+            final Object addressValue = userValueMap.get("address");
+            assertTrue(addressValue instanceof Map);
+
+            @SuppressWarnings("rawtypes")
+            final Map addressValueMap = (Map) addressValue;
+            assertEquals("Main street 1", addressValueMap.get("street"));
+            assertEquals("Newville", addressValueMap.get("city"));
         }
     }
 }

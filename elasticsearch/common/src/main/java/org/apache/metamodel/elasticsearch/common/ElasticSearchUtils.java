@@ -290,6 +290,23 @@ public class ElasticSearchUtils {
                         } else {
                             values[i] = valueToDate;
                         }
+                    } else if (column.getType() == ColumnType.MAP && value == null) {
+                        // Because of a bug in Elasticsearch, when field names contain dots, it's possible that the
+                        // mapping of the index described a column to be of the type "MAP", while it's based on a number
+                        // of fields containing dots in their name. In this case we may have to work around that
+                        // inconsistency by creating column names with dots ourselves, based on the schema.
+                        final Map<String, Object> valueMap = new HashMap<>();
+
+                        sourceMap
+                                .keySet()
+                                .stream()
+                                .filter(fieldName -> fieldName.startsWith(column.getName() + "."))
+                                .forEach(fieldName -> evaluateField(sourceMap, valueMap, fieldName, fieldName
+                                        .substring(fieldName.indexOf('.') + 1)));
+
+                        if (!valueMap.isEmpty()) {
+                            values[i] = valueMap;
+                        }
                     } else {
                         values[i] = value;
                     }
@@ -298,5 +315,27 @@ public class ElasticSearchUtils {
         }
 
         return new DefaultRow(header, values);
+    }
+
+    private static void evaluateField(final Map<String, Object> sourceMap, final Map<String, Object> valueMap,
+            final String sourceFieldName, final String subFieldName) {
+        if (subFieldName.contains(".")) {
+            @SuppressWarnings("unchecked")
+            final Map<String, Object> nestedValueMap = (Map<String, Object>) valueMap
+                    .computeIfAbsent(subFieldName.substring(0, subFieldName.indexOf('.')), key -> createNestedValueMap(
+                            valueMap, key));
+
+            evaluateField(sourceMap, nestedValueMap, sourceFieldName, subFieldName
+                    .substring(subFieldName.indexOf('.') + 1));
+        } else {
+            valueMap.put(subFieldName, sourceMap.get(sourceFieldName));
+        }
+    }
+
+    private static Object createNestedValueMap(final Map<String, Object> valueMap, final String nestedFieldName) {
+        final Map<String, Object> nestedValueMap = new HashMap<>();
+        valueMap.put(nestedFieldName, nestedValueMap);
+
+        return nestedValueMap;
     }
 }
