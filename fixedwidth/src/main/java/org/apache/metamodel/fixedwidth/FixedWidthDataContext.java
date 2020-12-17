@@ -19,11 +19,8 @@
 package org.apache.metamodel.fixedwidth;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 
 import org.apache.metamodel.MetaModelException;
