@@ -1,5 +1,6 @@
 ### Apache MetaModel [WIP]
 
+ * [METAMODEL-1229] - FixedWidth works with UrlResource/HttpInputStream.
  * [METAMODEL-1228] - Better handling of fieldnames with dots in Elasticsearch
  * [METAMODEL-1227] - Better handling of nested objects in Elasticsearch data
  * [METAMODEL-1224] - Ensured compatibility with newer versions of PostgreSQL

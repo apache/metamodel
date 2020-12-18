@@ -18,10 +18,12 @@
  */
 package org.apache.metamodel.fixedwidth;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
-
-import junit.framework.TestCase;
 
 import org.apache.metamodel.DataContext;
 import org.apache.metamodel.data.DataSet;
@@ -29,6 +31,9 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
+import org.apache.metamodel.util.UrlResource;
+
+import junit.framework.TestCase;
 
 public class FixedWidthDataContextTest extends TestCase {
 
@@ -237,5 +242,25 @@ public class FixedWidthDataContextTest extends TestCase {
 
         assertNotNull(table.getColumnByName(firstColumnName));
         assertNotNull(table.getColumnByName(secondColumnName));
+    }
+
+    public void testUrlResource() throws MalformedURLException {
+        final URL url = new URL("http://localhost:8080/fixed-width.txt");
+        final DataContext dataContext = new FixedWidthDataContext(new ByteUrlResource(url),
+                new EbcdicConfiguration(FixedWidthConfiguration.DEFAULT_COLUMN_NAME_LINE, "UTF8", 4, false, true,
+                        true));
+        assertNotNull(dataContext.getSchemaByName("localhost:8080"));
+    }
+
+    private static class ByteUrlResource extends UrlResource {
+        public ByteUrlResource(final URL url) {
+            super(url);
+        }
+
+        @Override
+        public InputStream read() {
+            // any InputStream that can not be cast to BufferedInputStream
+            return new ByteArrayInputStream("test-data".getBytes());
+        }
     }
 }

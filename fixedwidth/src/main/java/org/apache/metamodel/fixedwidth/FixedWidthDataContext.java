@@ -153,18 +153,22 @@ public class FixedWidthDataContext extends QueryPostprocessDataContext {
     private FixedWidthReader createReader() {
         final InputStream inputStream = _resource.read();
         final FixedWidthReader reader;
-        
+
         if (_configuration instanceof EbcdicConfiguration) {
-            reader = new EbcdicReader((BufferedInputStream) inputStream, _configuration.getEncoding(),
-                    _configuration.getValueWidths(), _configuration.isFailOnInconsistentLineWidth(), 
-                    ((EbcdicConfiguration) _configuration).isSkipEbcdicHeader(), 
-                    ((EbcdicConfiguration) _configuration).isEolPresent());
+            final BufferedInputStream bufferedInputStream =
+                    inputStream instanceof BufferedInputStream ? (BufferedInputStream) inputStream
+                            : new BufferedInputStream(inputStream);
+            reader =
+                    new EbcdicReader(bufferedInputStream, _configuration.getEncoding(), _configuration.getValueWidths(),
+                            _configuration.isFailOnInconsistentLineWidth(),
+                            ((EbcdicConfiguration) _configuration).isSkipEbcdicHeader(),
+                            ((EbcdicConfiguration) _configuration).isEolPresent());
         } else {
             if (_configuration.isConstantValueWidth()) {
                 reader = new FixedWidthReader(inputStream, _configuration.getEncoding(),
                         _configuration.getFixedValueWidth(), _configuration.isFailOnInconsistentLineWidth());
             } else {
-                reader = new FixedWidthReader(inputStream, _configuration.getEncoding(), 
+                reader = new FixedWidthReader(inputStream, _configuration.getEncoding(),
                         _configuration.getValueWidths(), _configuration.isFailOnInconsistentLineWidth());
             }
         }
