@@ -736,7 +736,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                             "Column[name=age,columnNumber=2,type=INTEGER,nullable=true,nativeType=int4,columnSize=10]",
                             table.getColumnByName("age").toString());
 
-                    cb.insertInto(table).value("person name", "John Doe").value("age", "42").execute();
+                    cb.insertInto(table).value("person name", "John Doe").value("age", 42).execute();
                 }
             });
 
