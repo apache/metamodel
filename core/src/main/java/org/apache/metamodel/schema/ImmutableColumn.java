@@ -125,7 +125,7 @@ public final class ImmutableColumn extends AbstractColumn implements Serializabl
      * table.
      * 
      * @param column
-     *            the column to immitate
+     *            the column to imitate
      * @param table
      *            the table that the constructed column will pertain to
      */

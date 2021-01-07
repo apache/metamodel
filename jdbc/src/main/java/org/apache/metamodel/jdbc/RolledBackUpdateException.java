@@ -24,7 +24,7 @@ import org.apache.metamodel.MetaModelException;
 
 /**
  * Represents an exception during {@link JdbcDataContext#executeUpdate(org.apache.metamodel.UpdateScript)} which was
- * rolled back at the JDBC layer. This particular exception type can typically be catched and the update can be retried
+ * rolled back at the JDBC layer. This particular exception type can typically be caught and the update can be retried
  * to retry the transaction (assuming that the script is designed in a way that makes it idempotent and has not
  * side-effects on state outside of the {@link JdbcDataContext}).
  * 

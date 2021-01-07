@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Simple implementation of {@link QueryPartProcessor} which simply adds all
  * elements to a collection. Use {@link #getTokens()} to retrieve the 'processed'
- * tokens and {@link #getDelims()} for the corresponding delimitors.
+ * tokens and {@link #getDelims()} for the corresponding delimiters.
  */
 public class QueryPartCollectionProcessor implements QueryPartProcessor {
 

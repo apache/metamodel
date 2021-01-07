@@ -51,8 +51,8 @@ public interface OperatorType extends Serializable {
             NOT_LIKE, GREATER_THAN, GREATER_THAN_OR_EQUAL, LESS_THAN, LESS_THAN_OR_EQUAL, IN, NOT_IN };
 
 /**
-     * Determines if this operator requires a space delimitor. Operators that are written using letters usually require
-     * space delimitation whereas sign-based operators such as "=" and "&lt;" can be applied even without any delimitaton.
+     * Determines if this operator requires a space delimiter. Operators that are written using letters usually require
+     * space delimitation whereas sign-based operators such as "=" and "&lt;" can be applied even without any delimitation.
      * 
      * @return
      */

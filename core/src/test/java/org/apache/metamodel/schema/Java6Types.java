@@ -229,7 +229,7 @@ class Java6Types {
 	public final static int REF = 2006;
 
 	/**
-	 * The constant in the Java programming language, somtimes referred to as a
+	 * The constant in the Java programming language, sometimes referred to as a
 	 * type code, that identifies the generic SQL type <code>DATALINK</code>.
 	 * 
 	 * @since 1.4
@@ -237,7 +237,7 @@ class Java6Types {
 	public final static int DATALINK = 70;
 
 	/**
-	 * The constant in the Java programming language, somtimes referred to as a
+	 * The constant in the Java programming language, sometimes referred to as a
 	 * type code, that identifies the generic SQL type <code>BOOLEAN</code>.
 	 * 
 	 * @since 1.4

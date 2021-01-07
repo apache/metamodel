@@ -58,11 +58,11 @@ final class InterceptableUpdateCallback extends AbstractUpdateCallback implement
     @Override
     public TableCreationBuilder createTable(Schema schema, String name) throws IllegalArgumentException,
             IllegalStateException {
-        TableCreationBuilder tabelCreationBuilder = _updateCallback.createTable(schema, name);
+        TableCreationBuilder tableCreationBuilder = _updateCallback.createTable(schema, name);
         if (_tableCreationInterceptors.isEmpty()) {
-            return tabelCreationBuilder;
+            return tableCreationBuilder;
         }
-        return new InterceptableTableCreationBuilder(tabelCreationBuilder, _tableCreationInterceptors);
+        return new InterceptableTableCreationBuilder(tableCreationBuilder, _tableCreationInterceptors);
     }
 
     @Override

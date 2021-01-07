@@ -90,7 +90,7 @@ public final class MetaModelHelper {
     }
 
     /**
-     * Creates an array of tables where all occurences of tables in the provided list of tables and columns are included
+     * Creates an array of tables where all occurrences of tables in the provided list of tables and columns are included
      */
     public static Table[] getTables(Collection<Table> tableList, Iterable<Column> columnList) {
         HashSet<Table> set = new HashSet<Table>();
@@ -184,7 +184,7 @@ public final class MetaModelHelper {
 
     public static DataSet getCarthesianProduct(DataSet[] fromDataSets, Iterable<FilterItem> whereItems) {
         assert (fromDataSets.length > 0);
-        // First check if carthesian product is even nescesary
+        // First check if carthesian product is even necessary
         if (fromDataSets.length == 1) {
             return getFiltered(fromDataSets[0], whereItems);
         }

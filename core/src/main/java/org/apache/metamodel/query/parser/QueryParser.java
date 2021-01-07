@@ -161,7 +161,7 @@ public class QueryParser {
     }
 
     private void parseWhereClause(Query query, String whereClause) {
-        // only parse "AND" delimitors, since "OR" will be taken care of as
+        // only parse "AND" delimiters, since "OR" will be taken care of as
         // compound filter items at 2nd level parsing
         QueryPartParser clauseParser = new QueryPartParser(new WhereItemParser(query), whereClause, " AND ");
         clauseParser.parse();
@@ -173,7 +173,7 @@ public class QueryParser {
     }
 
     private void parseHavingClause(Query query, String havingClause) {
-        // only parse "AND" delimitors, since "OR" will be taken care of as
+        // only parse "AND" delimiters, since "OR" will be taken care of as
         // compound filter items at 2nd level parsing
         QueryPartParser clauseParser = new QueryPartParser(new HavingItemParser(query), havingClause, " AND ");
         clauseParser.parse();
@@ -201,7 +201,7 @@ public class QueryParser {
         if (!offsetClause.isEmpty()) {
             try {
                 final int offset = Integer.parseInt(offsetClause);
-                // ofset is 0-based, but first-row is 1-based
+                // offset is 0-based, but first-row is 1-based
                 final int firstRow = offset + 1;
                 query.setFirstRow(firstRow);
             } catch (NumberFormatException e) {

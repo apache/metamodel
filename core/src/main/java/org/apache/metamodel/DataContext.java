@@ -110,7 +110,7 @@ public interface DataContext {
      *            the SQL query to parse
      * @return a {@link Query} object corresponding to the SQL query.
      * @throws MetaModelException
-     *             in case the parsing was unsuccesful.
+     *             in case the parsing was unsuccessful.
      */
     public Query parseQuery(String queryString) throws MetaModelException;
 
@@ -129,7 +129,7 @@ public interface DataContext {
     /**
      * Compiles a query, preparing it for reuse. Often times compiled queries
      * have a performance improvement when executed, but at the cost of a
-     * preparation time penalty. Therefore it is adviced to use compiled queries
+     * preparation time penalty. Therefore it is advised to use compiled queries
      * when the same query is to be fired multiple times.
      * 
      * Compiled queries can contain {@link QueryParameter}s as operands in the
@@ -145,7 +145,7 @@ public interface DataContext {
      * @return the {@link CompiledQuery} after preparing the query
      * 
      * @throws MetaModelException
-     *             if preparing the query is unsuccesful
+     *             if preparing the query is unsuccessful
      */
     public CompiledQuery compileQuery(Query query) throws MetaModelException;
 

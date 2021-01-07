@@ -360,7 +360,7 @@ public abstract class QueryPostprocessDataContext extends AbstractDataContext im
             throw new IllegalArgumentException("FromItem type not supported: " + fromItem);
         }
         if (dataSet == null) {
-            throw new IllegalStateException("FromItem was not succesfully materialized: " + fromItem);
+            throw new IllegalStateException("FromItem was not successfully materialized: " + fromItem);
         }
         
         return dataSet;

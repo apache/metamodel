@@ -305,7 +305,7 @@ public class JdbcTestTemplates {
         assertNotNull(conn);
 
         try {
-            // clean up, if nescesary
+            // clean up, if necessary
             conn.createStatement().execute("DROP TABLE test_table");
         } catch (SQLException e) {
             // do nothing

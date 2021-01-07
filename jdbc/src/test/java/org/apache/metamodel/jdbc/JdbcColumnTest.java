@@ -27,7 +27,7 @@ import org.apache.metamodel.schema.Column;
 
 public class JdbcColumnTest extends JdbcTestCase {
 
-	public void testEqualsDisconected() throws Exception {
+	public void testEqualsDisconnected() throws Exception {
 		Connection con1 = getTestDbConnection();
 		DataContext dc = new JdbcDataContext(con1);
 		Column col1 = dc.getDefaultSchema().getTableByName("EMPLOYEES").getColumnByName("EMPLOYEENUMBER");

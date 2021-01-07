@@ -116,7 +116,7 @@ public final class JdbcUtils {
 
     /**
      * Determines if a particular {@link FilterItem} will have it's parameter (operand) replaced during SQL generation.
-     * Such filter items should succesively have their parameters set at execution time.
+     * Such filter items should successively have their parameters set at execution time.
      * 
      * @param whereItem
      * @return

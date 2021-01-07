@@ -145,7 +145,7 @@ public interface ColumnType extends HasName, Serializable {
      * @return an int representing one of the constants in the {@link Types}
      *         class.
      * @throws IllegalStateException
-     *             in case getting the JDBC type was unsuccesful.
+     *             in case getting the JDBC type was unsuccessful.
      */
     public int getJdbcType() throws IllegalStateException;
 }

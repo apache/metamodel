@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * Immutable implementation of the Relationship interface.
  * 
  * The immutability help ensure integrity of object-relationships. To create
- * relationsips use the <code>createRelationship</code> method.
+ * relationships use the <code>createRelationship</code> method.
  */
 public class MutableRelationship extends AbstractRelationship implements
 		Serializable, Relationship {

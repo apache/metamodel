@@ -75,8 +75,8 @@ import org.xml.sax.InputSource;
  * A DataContext strategy that reads XML content and maps it to a table-based
  * model similar to the rest of MetaModel. Tables are created by examining the
  * data in the XML file, NOT by reading XML Schemas (xsd/dtd's). This enables
- * compliancy with ALL xml formats but also raises a risk that two XML files
- * with the same format wont nescesarily yield the same table model if some
+ * compliance with ALL xml formats but also raises a risk that two XML files
+ * with the same format wont necessarily yield the same table model if some
  * optional attributes or tags are omitted in one of the files.
  * 
  * The parsing method applied in this datacontext is DOM based, which means that

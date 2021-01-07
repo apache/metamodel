@@ -19,7 +19,7 @@
 package org.apache.metamodel.query.parser;
 
 /**
- * Callback of the {@link QueryPartParser}, which recieves notifications
+ * Callback of the {@link QueryPartParser}, which receives notifications
  * whenever a token is identified/parsed. A {@link QueryPartProcessor} is used
  * to perform the actual processing of identified tokens.
  */
@@ -29,7 +29,7 @@ public interface QueryPartProcessor {
      * Method invoked whenever the {@link QueryPartParser} identifies a token.
      * 
      * @param delim
-     *            the (previous) delimitor identified before the token. This
+     *            the (previous) delimiter identified before the token. This
      *            will always be null in case of the first token.
      * @param token
      *            the token identified.

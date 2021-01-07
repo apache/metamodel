@@ -28,7 +28,7 @@ import org.apache.metamodel.schema.Column;
  * the WHERE and HAVING parts of an SQL query.
  * 
  * Each provided FilterItem will be evaluated with the logical AND operator,
- * which requires that all filters are applied. Alternatively, if you wan't to
+ * which requires that all filters are applied. Alternatively, if you want to
  * use an OR operator, then use the appropriate constructor of FilterItem to
  * create a composite filter.
  * 

@@ -279,8 +279,8 @@ public abstract class AbstractDataContext implements DataContext {
         for (final String schemaName : schemaNames) {
             if (schemaName != null) {
                 // search case-insensitive
-                String schameNameInLowerCase = schemaName.toLowerCase();
-                Column col = searchColumn(schameNameInLowerCase, columnName, columnNameInLowerCase);
+                String schemaNameInLowerCase = schemaName.toLowerCase();
+                Column col = searchColumn(schemaNameInLowerCase, columnName, columnNameInLowerCase);
                 if (col != null) {
                     return col;
                 }
@@ -465,18 +465,18 @@ public abstract class AbstractDataContext implements DataContext {
                 currentToken.setLength(0);
 
                 if (tokens.size() > expectedParts) {
-                    // unsuccesfull - return null
+                    // unsuccessful - return null
                     return null;
                 }
             } else if (c == '"') {
                 if (inQuotes) {
                     if (i + 1 < path.length() && path.charAt(i + 1) != '.') {
-                        // unsuccesfull - return null
+                        // unsuccessful - return null
                         return null;
                     }
                 } else {
                     if (currentToken.length() > 0) {
-                        // unsuccesfull - return null
+                        // unsuccessful - return null
                         return null;
                     }
                 }

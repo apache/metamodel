@@ -20,7 +20,7 @@ package org.apache.metamodel.query.parser;
 
 /**
  * Parser of query parts. This parser is aware of parenthesis symbols '(' and
- * ')' and only yields tokens that have balanced parentheses. Delimitors are
+ * ')' and only yields tokens that have balanced parentheses. Delimiters are
  * configurable.
  */
 public final class QueryPartParser {
@@ -34,7 +34,7 @@ public final class QueryPartParser {
             throw new IllegalArgumentException("Clause cannot be null");
         }
         if (itemDelims == null || itemDelims.length == 0) {
-            throw new IllegalArgumentException("Item delimitors cannot be null or empty");
+            throw new IllegalArgumentException("Item delimiters cannot be null or empty");
         }
         _processor = processor;
         _clause = clause;

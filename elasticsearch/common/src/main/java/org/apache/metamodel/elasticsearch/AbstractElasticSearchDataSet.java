@@ -89,7 +89,7 @@ public abstract class AbstractElasticSearchDataSet extends AbstractDataSet {
 
         final String scrollId = _searchResponse.getScrollId();
         if (scrollId == null) {
-            // this search response is not scrolleable - then it's the end.
+            // this search response is not scrollable - then it's the end.
             _currentHit = null;
             return false;
         }

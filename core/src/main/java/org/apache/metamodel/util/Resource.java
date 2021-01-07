@@ -36,7 +36,7 @@ public interface Resource extends HasName {
 
     /**
      * Gets the qualified path of the resource, which typically includes slash
-     * or backslash separated nodes in a hierarical tree structure.
+     * or backslash separated nodes in a hierarchical tree structure.
      *
      * @return
      */

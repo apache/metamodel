@@ -211,7 +211,7 @@ public class SqliteTest extends TestCase {
         assertNotNull(connection);
 
         try {
-            // clean up, if nescesary
+            // clean up, if necessary
             connection.createStatement().execute("DROP TABLE test_table");
         } catch (SQLException e) {
             // do nothing

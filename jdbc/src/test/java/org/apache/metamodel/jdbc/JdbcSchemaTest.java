@@ -33,7 +33,7 @@ import org.apache.metamodel.schema.Table;
 public class JdbcSchemaTest extends JdbcTestCase {
 
 	/**
-	 * Ticket #248: Tables and Schemas need to be Serialiazable
+	 * Ticket #248: Tables and Schemas need to be Serializable
 	 */
 	public void testSerialize() throws Exception {
 		Connection connection = getTestDbConnection();

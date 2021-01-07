@@ -133,7 +133,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         assertNotNull(connection);
 
         try {
-            // clean up, if nescesary
+            // clean up, if necessary
             connection.createStatement().execute("DROP TABLE Person.test_table");
         } catch (SQLException e) {
             // do nothing

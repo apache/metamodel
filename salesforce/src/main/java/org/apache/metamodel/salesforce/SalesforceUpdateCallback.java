@@ -132,7 +132,7 @@ final class SalesforceUpdateCallback extends AbstractUpdateCallback implements C
         for (final SaveResult saveResult : saveResults) {
             boolean success = saveResult.getSuccess();
             if (success) {
-                logger.debug("Succesfully {}ed record with id={}", action, saveResult.getId());
+                logger.debug("Successfully {}ed record with id={}", action, saveResult.getId());
                 successes++;
             } else {
                 final com.sforce.soap.partner.Error[] errorArray = saveResult.getErrors();

@@ -132,13 +132,13 @@ public abstract class AbstractUpdateCallback implements UpdateCallback {
 
     @Override
     public boolean isCreateTableSupported() {
-        // since 2.0 all updateable datacontext have create table support
+        // since 2.0 all updatable datacontext have create table support
         return true;
     }
 
     @Override
     public boolean isInsertSupported() {
-        // since 2.0 all updateable datacontext have insert into table support
+        // since 2.0 all updatable datacontext have insert into table support
         return true;
     }
 

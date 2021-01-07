@@ -62,8 +62,7 @@ public class ExcelUpdateCallbackTest extends TestCase {
 					.get(sheet);
 			assertEquals(0, rows.size());
 
-			// create 5x the amound of rows as the streaming sheet will hold in
-			// memory
+			// create 5x the amount of rows as the streaming sheet will hold in memory
 			for (int i = 0; i < windowSize * 5; i++) {
 				Row row = sheet.createRow(i);
 				Cell cell = row.createCell(0);

@@ -44,7 +44,7 @@ public interface WhereClauseBuilder<T> {
      * Defines a where item to set as a criteria
      * 
      * @param columnName
-     *            the name of the colum to which the criteria will be applied
+     *            the name of the column to which the criteria will be applied
      * @return a builder object for further building the where item
      */
     public FilterBuilder<T> where(String columnName);

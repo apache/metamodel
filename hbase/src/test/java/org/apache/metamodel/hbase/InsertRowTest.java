@@ -184,12 +184,12 @@ public class InsertRowTest extends HBaseUpdateCallbackTest {
     }
 
     /**
-     * Goodflow. Inserting a row succesfully (with values set)
+     * Goodflow. Inserting a row successfully (with values set)
      *
      * @throws IOException
      */
     @Test
-    public void testInsertingSuccesfully() throws IOException {
+    public void testInsertingSuccessfully() throws IOException {
         final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                 CF_BAR);
         final Map<HBaseColumn, Object> row = createRow(existingTable, HBaseDataContext.FIELD_ID, CF_FOO, CF_BAR, false);

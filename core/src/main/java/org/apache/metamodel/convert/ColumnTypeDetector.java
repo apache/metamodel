@@ -51,7 +51,7 @@ final class ColumnTypeDetector {
 				_integerPossible = false;
 			}
 			// If integer is possible, double will always also be possible,
-			// but not nescesarily the other way around
+			// but not necessarily the other way around
 			if (_integerPossible) {
 				try {
 					Integer.parseInt(stringValue);
