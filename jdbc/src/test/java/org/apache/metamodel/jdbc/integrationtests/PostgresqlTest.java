@@ -21,6 +21,7 @@ package org.apache.metamodel.jdbc.integrationtests;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -757,9 +758,11 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                             "Column[name=age,columnNumber=2,type=INTEGER,nullable=true,nativeType=int4,columnSize=10]",
                             table.getColumnByName("age").toString());
 
-                    cb.insertInto(table).value("person name", "John Doe").value("age", 42).execute();
+                    cb.insertInto(table).value("person name", "John Doe").value("age", "42").execute();
                 }
             });
+
+            fail("No expected java.sql.BatchUpdateException occurred at case.");
 
         } catch (Exception e) {
             String message = e.getMessage().replaceAll("\n", " ");
