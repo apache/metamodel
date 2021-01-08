@@ -329,8 +329,7 @@ public class ElasticSearchUtils {
         if (subFieldName.contains(".")) {
             @SuppressWarnings("unchecked")
             final Map<String, Object> nestedValueMap = (Map<String, Object>) valueMap
-                    .computeIfAbsent(subFieldName.substring(0, subFieldName.indexOf('.')), key -> createNestedValueMap(
-                            valueMap, key));
+                    .computeIfAbsent(subFieldName.substring(0, subFieldName.indexOf('.')), key -> new HashMap<>());
 
             evaluateField(sourceMap, nestedValueMap, sourceFieldName, subFieldName
                     .substring(subFieldName.indexOf('.') + 1));
@@ -338,14 +337,5 @@ public class ElasticSearchUtils {
             valueMap.put(subFieldName, sourceMap.get(sourceFieldName));
         }
         logger.info("Done evaluating sourceField: " + sourceFieldName + ", with subFieldName: " + subFieldName);
-    }
-
-    private static Object createNestedValueMap(final Map<String, Object> valueMap, final String nestedFieldName) {
-        logger.info("Start creating nested value map for nestedFieldName: " + nestedFieldName);
-        final Map<String, Object> nestedValueMap = new HashMap<>();
-        valueMap.put(nestedFieldName, nestedValueMap);
-        logger.info("Done creating nested value map for nestedFieldName: " + nestedFieldName);
-
-        return nestedValueMap;
     }
 }
