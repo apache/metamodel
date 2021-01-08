@@ -41,6 +41,9 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
+
 /**
  * Test case that tests MS SQL Server interaction. The test uses the
  * "AdventureWorks 2012" sample database which can be downloaded from codeplex.
@@ -58,6 +61,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         return "sqlserver.jtds_driver";
     }
 
+    @Test
     public void testCreateInsertAndUpdate() throws Exception {
         if (!isConfigured()) {
             return;
@@ -66,6 +70,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
     }
 
     // This test is pretty useless. It assumes way too much, and fails due to SQL Server not using timestamp as assumed.
+    @Test
     public void ignoreTestTimestampValueInsertSelect() throws Exception {
         if (!isConfigured()) {
             return;
@@ -75,6 +80,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.NANOSECONDS, "datetime");
     }
 
+    @Test
     public void testCreateTableInUpdateScript() throws Exception {
         if (!isConfigured()) {
             return;
@@ -104,6 +110,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         dc.executeUpdate(new DropTable(schema, tableName));
     }
 
+    @Test
     public void testCompositePrimaryKeyCreation() throws Exception {
         if (!isConfigured()) {
             return;
@@ -112,6 +119,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.compositeKeyCreation(getDataContext(), "metamodel_test_composite_keys");
     }
 
+    @Test
     public void testWorkingWithDates() throws Exception {
         if (!isConfigured()) {
             return;
@@ -125,6 +133,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.createInsertAndUpdateDateTypes(dc, schema, "test_table");
     }
 
+    @Test
     public void testAutomaticConversionWhenInsertingString() throws Exception {
         if (!isConfigured()) {
             return;
@@ -179,6 +188,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         connection.createStatement().execute("DROP TABLE Person.test_table");
     }
 
+    @Test
     public void testQueryUsingExpressions() throws Exception {
         if (!isConfigured()) {
             return;
@@ -199,6 +209,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         assertFalse(dataSet.next());
     }
 
+    @Test
     public void testGetSchemaNormalTableTypes() throws Exception {
         if (!isConfigured()) {
             return;
@@ -234,6 +245,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         assertEquals(26, salesSchema.getTableCount());
     }
 
+    @Test
     public void testGetSchemaAllTableTypes() throws Exception {
         if (!isConfigured()) {
             return;
@@ -249,6 +261,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         assertTrue(strategy.getSchemaNames().containsAll(expectedSchemaNames));
     }
 
+    @Test
     public void testQueryRewriterQuoteAliases() throws Exception {
         if (!isConfigured()) {
             return;
@@ -288,6 +301,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
         data.close();
     }
 
+    @Test
     public void testQuotedString() throws Exception {
         if (!isConfigured()) {
             return;
@@ -308,6 +322,7 @@ public class SQLServerJtdsDriverTest extends AbstractJdbIntegrationTest {
                 queryRewriter.rewriteQuery(q));
     }
 
+    @Test
     public void testMaxAndOffset() throws Exception {
         if (!isConfigured()) {
             return;

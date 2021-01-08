@@ -30,6 +30,9 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
+
 /**
  * Test case that tests MS SQL Server interaction. The test uses the
  * "AdventureWorks" sample database which can be downloaded from codeplex.
@@ -47,6 +50,7 @@ public class SQLServerMicrosoftDriverTest extends AbstractJdbIntegrationTest {
         return "sqlserver.microsoft_driver";
     }
 
+    @Test
     public void testQueryUsingExpressions() throws Exception {
         if (!isConfigured()) {
             return;
@@ -66,6 +70,7 @@ public class SQLServerMicrosoftDriverTest extends AbstractJdbIntegrationTest {
         assertFalse(dataSet.next());
     }
 
+    @Test
     public void testGetSchemaNormalTableTypes() throws Exception {
         if (!isConfigured()) {
             return;
@@ -91,6 +96,7 @@ public class SQLServerMicrosoftDriverTest extends AbstractJdbIntegrationTest {
 
     }
 
+    @Test
     public void testGetSchemaAllTableTypes() throws Exception {
         if (!isConfigured()) {
             return;
@@ -105,6 +111,7 @@ public class SQLServerMicrosoftDriverTest extends AbstractJdbIntegrationTest {
         assertEquals("Schema[name=dbo]", strategy.getDefaultSchema().toString());
     }
 
+    @Test
     public void testQueryRewriterQuoteAliases() throws Exception {
         if (!isConfigured()) {
             return;
@@ -145,6 +152,7 @@ public class SQLServerMicrosoftDriverTest extends AbstractJdbIntegrationTest {
         data.close();
     }
 
+    @Test
     public void testQuotedString() throws Exception {
         if (!isConfigured()) {
             return;

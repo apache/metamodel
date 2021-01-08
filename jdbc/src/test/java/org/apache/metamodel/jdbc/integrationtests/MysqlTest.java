@@ -50,6 +50,8 @@ import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * Test case that tests mysql interaction. The test requires the "sakila" sample
@@ -64,6 +66,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         return "mysql";
     }
 
+    @Test
     public void testCreateInsertAndUpdate() throws Exception {
         if (!isConfigured()) {
             return;
@@ -72,6 +75,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(getDataContext(), "metamodel_test_simple");
     }
 
+    @Test
     public void testCompositePrimaryKeyCreation() throws Exception {
         if (!isConfigured()) {
             return;
@@ -80,6 +84,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.compositeKeyCreation(getDataContext(), "metamodel_test_composite_keys");
     }
 
+    @Test
     public void testTimestampValueInsertSelect() throws Exception {
         if (!isConfigured()) {
             return;
@@ -89,6 +94,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.MICROSECONDS, "TIMESTAMP(6)");
     }
 
+    @Test
     public void testInterpretationOfNull() throws Exception {
         if (!isConfigured()) {
             return;
@@ -97,6 +103,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.interpretationOfNulls(getConnection());
     }
 
+    @Test
     public void testDatabaseProductName() throws Exception {
         if (!isConfigured()) {
             return;
@@ -106,6 +113,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         assertEquals(JdbcDataContext.DATABASE_PRODUCT_MYSQL, databaseProductName);
     }
 
+    @Test
     public void testCreateInsertAndUpdateDateTypes() throws Exception {
         if (!isConfigured()) {
             return;
@@ -116,6 +124,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
                 "metamodel_mysql_test");
     }
 
+    @Test
     public void testAutomaticConversionWhenInsertingString() throws Exception {
         if (!isConfigured()) {
             return;
@@ -170,6 +179,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         });
     }
 
+    @Test
     public void testCharOfSizeOne() throws Exception {
         if (!isConfigured()) {
             return;
@@ -178,6 +188,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.meaningOfOneSizeChar(getConnection());
     }
 
+    @Test
     public void testAlternativeConnectionString() throws Exception {
         if (!isConfigured()) {
             return;
@@ -195,6 +206,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         assertEquals(1000, tableModel.getRowCount());
     }
 
+    @Test
     public void testGetCatalogNames() throws Exception {
         if (!isConfigured()) {
             return;
@@ -207,6 +219,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         assertNotNull(dataContext.getSchemaByName("sakila"));
     }
 
+    @Test
     public void testGetDefaultSchema() throws Exception {
         if (!isConfigured()) {
             return;
@@ -217,6 +230,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         assertEquals("sakila", schema.getName());
     }
 
+    @Test
     public void testExecuteQuery() throws Exception {
         if (!isConfigured()) {
             return;
@@ -282,6 +296,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
     }
 
     // Test to query the film table (caused troubles in DataCleaner)
+    @Test
     public void testFilmQuery() throws Exception {
         if (!isConfigured()) {
             return;
@@ -293,6 +308,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         dc.executeQuery(q);
     }
 
+    @Test
     public void testGetSchema() throws Exception {
         if (!isConfigured()) {
             return;
@@ -364,6 +380,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
                 Arrays.toString(staffView.getColumns().toArray()));
     }
 
+    @Test
     public void testSplitQuery() throws Exception {
         if (!isConfigured()) {
             return;
@@ -400,6 +417,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         assertEquals(32098, count);
     }
 
+    @Test
     public void testQueryWithSingleQuote() throws Exception {
         if (!isConfigured()) {
             return;
@@ -413,6 +431,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         assertFalse(ds.next());
     }
 
+    @Test
     public void testCompiledQueries() throws Exception {
         if (!isConfigured()) {
             return;
@@ -444,6 +463,7 @@ public class MysqlTest extends AbstractJdbIntegrationTest {
         }
     }
 
+    @Test
     public void testWhiteSpaceColumns() throws Exception {
         if (!isConfigured()) {
             return;

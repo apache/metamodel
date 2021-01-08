@@ -38,6 +38,9 @@ import org.apache.metamodel.schema.Table;
 
 import com.google.common.collect.Sets;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
+
 /**
  * Integrationtests for Firebird SQL.
  * 
@@ -55,6 +58,7 @@ public class FirebirdTest extends AbstractJdbIntegrationTest {
         return "firebird";
     }
 
+    @Test
 	public void testGetSchemas() throws Exception {
 	    if (!isConfigured()) {
 	        return;
@@ -97,6 +101,7 @@ public class FirebirdTest extends AbstractJdbIntegrationTest {
 		assertEquals(relationStrings,referenceRelationStrings);
 	}
 
+	@Test
 	public void testExecuteQuery() throws Exception {
 	    if (!isConfigured()) {
             return;

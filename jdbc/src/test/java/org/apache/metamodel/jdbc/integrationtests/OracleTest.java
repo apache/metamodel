@@ -43,6 +43,9 @@ import org.apache.metamodel.schema.TableType;
 
 import com.google.common.collect.Sets;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
+
 /**
  * Test case that tests oracle interaction. An express edition of the oracle
  * database can be used to run these tests.
@@ -76,6 +79,7 @@ public class OracleTest extends AbstractJdbIntegrationTest {
         return "oracle";
     }
 
+    @Test
     public void testGetQueryRewriter() throws Exception {
         if (!isConfigured()) {
             return;
@@ -85,6 +89,7 @@ public class OracleTest extends AbstractJdbIntegrationTest {
         assertEquals(OracleQueryRewriter.class, queryRewriter.getClass());
     }
 
+    @Test
     public void testCreateInsertAndUpdate() throws Exception {
         if (!isConfigured()) {
             return;
@@ -93,6 +98,7 @@ public class OracleTest extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(getDataContext(), "metamodel_test_simple");
     }
 
+    @Test
     public void testTimestampValueInsertSelect() throws Exception {
         if (!isConfigured()) {
             return;
@@ -102,6 +108,7 @@ public class OracleTest extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.MICROSECONDS, null);
     }
 
+    @Test
     public void testCompositePrimaryKeyCreation() throws Exception {
         if (!isConfigured()) {
             return;
@@ -114,6 +121,7 @@ public class OracleTest extends AbstractJdbIntegrationTest {
      * Ticket #170: getIndexInfo causes SQLException. We test that resultsets
      * are closed properly.
      */
+    @Test
     public void testIndexInfo() throws Exception {
         if (!isConfigured()) {
             return;
@@ -126,6 +134,7 @@ public class OracleTest extends AbstractJdbIntegrationTest {
         assertTrue(schema.getTableCount() > 0);
     }
 
+    @Test
     public void testGetSchemaNames() throws Exception {
         if (!isConfigured()) {
             return;
@@ -153,6 +162,7 @@ public class OracleTest extends AbstractJdbIntegrationTest {
      * Really only tests the JDBC implementation, used to help localize the
      * cause for Ticket #144
      */
+    @Test
     public void testGetImportedKeys() throws Exception {
         if (!isConfigured()) {
             return;
@@ -192,6 +202,7 @@ public class OracleTest extends AbstractJdbIntegrationTest {
         assertEquals(2, count);
     }
 
+    @Test
     public void testGetSchema() throws Exception {
         if (!isConfigured()) {
             return;
@@ -240,6 +251,7 @@ public class OracleTest extends AbstractJdbIntegrationTest {
                 Arrays.toString(schema.getTableByName("DEPARTMENTS").getColumns().toArray()));
     }
 
+    @Test
     public void testExecuteQuery() throws Exception {
         if (!isConfigured()) {
             return;
@@ -278,6 +290,7 @@ public class OracleTest extends AbstractJdbIntegrationTest {
         assertTrue(found);
     }
 
+    @Test
     public void testMaxAndOffset() throws Exception {
         if (!isConfigured()) {
             return;

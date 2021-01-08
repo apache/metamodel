@@ -35,6 +35,9 @@ import org.apache.metamodel.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.junit.Test;
+import static org.junit.Assert.*;
+
 public class HiveIntegrationTest extends AbstractJdbIntegrationTest {
     private static final Logger logger = LoggerFactory.getLogger(HiveIntegrationTest.class);
 
@@ -61,6 +64,7 @@ public class HiveIntegrationTest extends AbstractJdbIntegrationTest {
         logger.info("SQL updated fired (return {}): {}", st.executeUpdate(deleteLastSql), deleteLastSql);
     }
 
+    @Test
     public void testDefaultGetSchema() throws Exception {
         if (!isConfigured()) {
             return;
@@ -87,6 +91,7 @@ public class HiveIntegrationTest extends AbstractJdbIntegrationTest {
         }
     }
 
+    @Test
     public void testGetSchema() throws Exception {
         if (!isConfigured()) {
             return;
@@ -97,6 +102,7 @@ public class HiveIntegrationTest extends AbstractJdbIntegrationTest {
         assertEquals("Schema[name=default]", schema.toString());
     }
 
+    @Test
     public void testUseCorrectRewriter() throws Exception {
         if (!isConfigured()) {
             return;
@@ -106,6 +112,7 @@ public class HiveIntegrationTest extends AbstractJdbIntegrationTest {
         assertTrue(dataContext.getQueryRewriter() instanceof HiveQueryRewriter);
     }
 
+    @Test
     public void testCreateInsertQueryAndDrop() throws Exception {
         if (!isConfigured()) {
             return;
@@ -155,6 +162,7 @@ public class HiveIntegrationTest extends AbstractJdbIntegrationTest {
      * MetaModel should ignore that for Hive datastores when creating a table.
      * @throws Exception
      */
+    @Test
     public void testCreateTableWithPrimaryKey() throws Exception {
         if (!isConfigured()) {
             return;
