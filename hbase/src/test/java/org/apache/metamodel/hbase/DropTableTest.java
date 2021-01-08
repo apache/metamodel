@@ -60,7 +60,7 @@ public class DropTableTest extends HBaseUpdateCallbackTest {
      * @throws IOException
      */
     @Test
-    public void testDropTableSuccesfully() throws IOException {
+    public void testDropTableSuccessfully() throws IOException {
         final HBaseTable existingTable = createAndAddTableToDatastore(TABLE_NAME, HBaseDataContext.FIELD_ID, CF_FOO,
                 CF_BAR);
         getUpdateCallback().dropTable(existingTable).execute();

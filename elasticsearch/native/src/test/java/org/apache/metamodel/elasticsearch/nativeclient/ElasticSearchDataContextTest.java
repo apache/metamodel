@@ -484,7 +484,7 @@ public class ElasticSearchDataContextTest extends ESSingleNodeTestCase {
     }
 
     @Test
-    public void testNonDynamicMapingTableNames() throws Exception {
+    public void testNonDynamicMappingTableNames() throws Exception {
         CreateIndexRequest cir = new CreateIndexRequest(indexName2);
         client.admin().indices().create(cir).actionGet();
 

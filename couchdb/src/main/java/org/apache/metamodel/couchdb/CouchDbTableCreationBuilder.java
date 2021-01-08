@@ -52,7 +52,7 @@ final class CouchDbTableCreationBuilder extends AbstractTableCreationBuilder<Cou
     }
 
     /**
-     * Verifies, and adds if nescesary, the two mandatory columns: _id and _rev.
+     * Verifies, and adds if necessary, the two mandatory columns: _id and _rev.
      * 
      * @param table
      */

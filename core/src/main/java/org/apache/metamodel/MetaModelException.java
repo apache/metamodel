@@ -19,7 +19,7 @@
 package org.apache.metamodel;
 
 /**
- * Unchecked exception used to signal errors occuring in MetaModel.
+ * Unchecked exception used to signal errors occurring in MetaModel.
  * 
  * All MetaModelExceptions represent errors discovered withing the MetaModel
  * framework. Typically these will occur if you have put together a query that

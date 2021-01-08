@@ -60,8 +60,7 @@ final class ExcelInsertBuilder extends
 				int columnNumber = columns[i].getColumnNumber();
 				Cell cell = row.createCell(columnNumber);
 
-				// use a lazyref and the isFetched method to only create style
-				// if nescesary
+				// use a lazyref and the isFetched method to only create style if necessary
 				LazyRef<CellStyle> cellStyle = new LazyRef<CellStyle>() {
 					@Override
 					protected CellStyle fetch() {

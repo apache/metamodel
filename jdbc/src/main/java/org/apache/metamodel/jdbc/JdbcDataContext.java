@@ -128,7 +128,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     private final String _databaseVersion;
 
     /**
-     * There are some confusion as to the definition of catalogs and schemas. Some databases seperate "groups of tables"
+     * There are some confusion as to the definition of catalogs and schemas. Some databases separate "groups of tables"
      * by using schemas, others by catalogs. This variable indicates whether a MetaModel schema really represents a
      * catalog.
      */
@@ -140,7 +140,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     /**
      * Creates the strategy based on a data source, some table types and an optional catalogName
      * 
-     * @param dataSource the datasource objcet to use for making connections
+     * @param dataSource the datasource object to use for making connections
      * @param tableTypes the types of tables to include
      * @param catalogName a catalog name to use, can be null
      */
@@ -643,7 +643,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     private void closeIfNecessary(Connection con) {
         if (con != null) {
             if (_dataSource != null) {
-                // closing connections after individual usage is only nescesary
+                // closing connections after individual usage is only necessary
                 // when they are being pulled from a DataSource.
                 FileHelper.safeClose(con);
             }
@@ -893,7 +893,7 @@ public class JdbcDataContext extends AbstractDataContext implements UpdateableDa
     /**
      * {@inheritDoc}
      * 
-     * @throws RolledBackUpdateException when a potentially retriable {@link SQLException} was thrown during the
+     * @throws RolledBackUpdateException when a potentially retryable {@link SQLException} was thrown during the
      *             execution of the update script.
      */
     @Override

@@ -64,7 +64,7 @@ public class ExcelDataContextTest extends TestCase {
         return destFile;
     }
 
-    public void testErrornousConstructors() throws Exception {
+    public void testErroneousConstructors() throws Exception {
         try {
             new ExcelDataContext(null);
             fail("Exception expected");

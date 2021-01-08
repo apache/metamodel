@@ -326,7 +326,7 @@ public class DataContextFactory {
     }
 
     /**
-     * Creates a DataContet based on an Excel spreadsheet file
+     * Creates a DataContext based on an Excel spreadsheet file
      * 
      * @param file
      *            an excel spreadsheet file
@@ -353,9 +353,9 @@ public class DataContextFactory {
      * Creates a DataContext based on XML-content from an input source.
      * 
      * Tables are created by examining the data in the XML file, NOT by reading
-     * XML Schemas (xsd/dtd's). This enables compliancy with ALL xml formats but
-     * also raises a risk that two XML files with the same format wont
-     * nescesarily yield the same table model if some optional attributes or
+     * XML Schemas (xsd/dtd's). This enables compliance with ALL xml formats but
+     * also raises a risk that two XML files with the same format won't
+     * necessarily yield the same table model if some optional attributes or
      * tags are omitted in one of the files.
      * 
      * @param inputSource
@@ -379,9 +379,9 @@ public class DataContextFactory {
      * Creates a DataContext based on XML-content from a File.
      * 
      * Tables are created by examining the data in the XML file, NOT by reading
-     * XML Schemas (xsd/dtd's). This enables compliancy with ALL xml formats but
-     * also raises a risk that two XML files with the same format wont
-     * nescesarily yield the same table model if some optional attributes or
+     * XML Schemas (xsd/dtd's). This enables compliance with ALL xml formats but
+     * also raises a risk that two XML files with the same format won't
+     * necessarily yield the same table model if some optional attributes or
      * tags are omitted in one of the files.
      * 
      * @param file
@@ -402,9 +402,9 @@ public class DataContextFactory {
      * Creates a DataContext based on XML-content from a URL.
      * 
      * Tables are created by examining the data in the XML file, NOT by reading
-     * XML Schemas (xsd/dtd's). This enables compliancy with ALL xml formats but
-     * also raises a risk that two XML files with the same format wont
-     * nescesarily yield the same table model if some optional attributes or
+     * XML Schemas (xsd/dtd's). This enables compliance with ALL xml formats but
+     * also raises a risk that two XML files with the same format won't
+     * necessarily yield the same table model if some optional attributes or
      * tags are omitted in one of the files.
      * 
      * @param url
@@ -551,7 +551,7 @@ public class DataContextFactory {
      * @param username
      *            the username, or null if unauthenticated access should be used
      * @param password
-     *            the password, or null if unathenticated access should be used
+     *            the password, or null if unauthenticated access should be used
      * @param tableDefs
      *            an array of table definitions, or null if table definitions
      *            should be autodetected.
@@ -602,7 +602,7 @@ public class DataContextFactory {
      * @param username
      *            the username, or null if unauthenticated access should be used
      * @param password
-     *            the password, or null if unathenticated access should be used
+     *            the password, or null if unauthenticated access should be used
      * @return a DataContext object that matches the request
      */
     public static UpdateableDataContext createMongoDbDataContext(String hostname, Integer port, String databaseName,
@@ -621,7 +621,7 @@ public class DataContextFactory {
      * @param username
      *            the username, or null if unauthenticated access should be used
      * @param password
-     *            the password, or null if unathenticated access should be used
+     *            the password, or null if unauthenticated access should be used
      * @return a DataContext object that matches the request
      */
     public static UpdateableDataContext createCouchDbDataContext(String hostname, Integer port, String username,
@@ -640,7 +640,7 @@ public class DataContextFactory {
      * @param username
      *            the username, or null if unauthenticated access should be used
      * @param password
-     *            the password, or null if unathenticated access should be used
+     *            the password, or null if unauthenticated access should be used
      * @param tableDefs
      *            an array of table definitions, or null if table definitions
      *            should be autodetected.

@@ -112,8 +112,7 @@ final class CsvDataSet extends AbstractDataSet {
             if (columnNumber < csvValues.length) {
                 rowValues[i] = csvValues[columnNumber];
             } else {
-                // Ticket #125: Missing values should be enterpreted as
-                // null.
+                // Ticket #125: Missing values should be interpreted as null.
                 rowValues[i] = null;
             }
         }

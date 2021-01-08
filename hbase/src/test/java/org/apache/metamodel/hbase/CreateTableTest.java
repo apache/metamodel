@@ -175,7 +175,7 @@ public class CreateTableTest extends HBaseUpdateCallbackTest {
      * @throws IOException
      */
     @Test
-    public void testCreateTableColumnFamiliesInConstrutor() throws IOException {
+    public void testCreateTableColumnFamiliesInConstructor() throws IOException {
         final HBaseCreateTableBuilder hBaseCreateTableBuilder = (HBaseCreateTableBuilder) getUpdateCallback()
                 .createTable(getSchema(), TABLE_NAME);
 

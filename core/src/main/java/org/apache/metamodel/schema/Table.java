@@ -95,7 +95,7 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
     /**
      * Gets all relationships for this table.
      * 
-     * @return all relationsips for this table. To add relations use
+     * @return all relationships for this table. To add relations use
      *         TableRelation.createRelation();
      */
     public Collection<Relationship> getRelationships();
@@ -105,7 +105,7 @@ public interface Table extends Comparable<Table>, Serializable, NamedStructure {
      * 
      * @param otherTable
      *            another table for which to find relationships to and from.
-     * @return an array of relationsips between this and the other table.
+     * @return an array of relationships between this and the other table.
      */
     public Collection<Relationship> getRelationships(Table otherTable);
 

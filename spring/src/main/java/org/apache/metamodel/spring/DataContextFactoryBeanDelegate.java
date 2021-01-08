@@ -26,7 +26,7 @@ import org.apache.metamodel.DataContext;
  * 
  * This component helps separate the configuration code (in
  * {@link DataContextFactoryBean}) from the actual instantiation of objects.
- * This is necesary to ensure that the {@link DataContextFactoryBean} is
+ * This is necessary to ensure that the {@link DataContextFactoryBean} is
  * functional for only a subset of MetaModel's modules, since otherwise import
  * statements would hinder use of the class when not all MetaModel modules are
  * available.

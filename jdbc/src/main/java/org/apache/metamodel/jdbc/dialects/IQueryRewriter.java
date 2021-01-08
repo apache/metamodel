@@ -34,8 +34,8 @@ import org.apache.metamodel.schema.ColumnType;
 
 /**
  * A query rewriter can be used for rewriting (part of) a query's string
- * representation. This is usefull for databases that deviate from the SQL 99
- * compliant syntax which is delievered by the query and it's query item's
+ * representation. This is useful for databases that deviate from the SQL 99
+ * compliant syntax which is delivered by the query and it's query item's
  * toString() methods.
  * 
  * @see AbstractQueryRewriter

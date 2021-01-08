@@ -57,11 +57,11 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * XML datacontext which uses SAX parsing for fast and memory effecient reading
+ * XML datacontext which uses SAX parsing for fast and memory efficient reading
  * of XML files.
  * 
  * The DataContext requires the user to specify a set of (simplified) XPaths to
- * define which elements are row delimitors and which elements or attributes are
+ * define which elements are row delimiters and which elements or attributes are
  * value/column definitions.
  */
 public class XmlSaxDataContext extends QueryPostprocessDataContext {

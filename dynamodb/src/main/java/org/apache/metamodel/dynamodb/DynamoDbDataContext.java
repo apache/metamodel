@@ -135,8 +135,8 @@ public class DynamoDbDataContext extends QueryPostprocessDataContext implements 
             final MutableTable table = new MutableTable(tableName, schema);
             schema.addTable(table);
 
-            final DescribeTableResult descripeTableResult = _dynamoDb.describeTable(tableName);
-            final TableDescription tableDescription = descripeTableResult.getTable();
+            final DescribeTableResult describeTableResult = _dynamoDb.describeTable(tableName);
+            final TableDescription tableDescription = describeTableResult.getTable();
 
             // add primary keys
             addColumnFromKeySchema("Primary index", tableDescription.getKeySchema(), table, true);

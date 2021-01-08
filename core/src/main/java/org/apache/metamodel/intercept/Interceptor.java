@@ -21,7 +21,7 @@ package org.apache.metamodel.intercept;
 /**
  * Defines a high-level interface for interceptors in MetaModel.
  * 
- * An intereptor can touch, modify, enhance or do other operations on certain
+ * An interceptor can touch, modify, enhance or do other operations on certain
  * object types as they are passed around for execution in MetaModel. There are
  * 5 types of concrete interceptors:
  * 

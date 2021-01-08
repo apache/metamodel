@@ -54,7 +54,7 @@ public class OperatorTypeImpl implements OperatorType {
             return true;
         }
         if (obj instanceof OperatorType) {
-            // we only require another OperatorType, not necesarily an _Impl_.
+            // we only require another OperatorType, not necessarily an _Impl_.
             // This is to allow other implementations that wrap this. For
             // instance the implementation provided by
             // LegacyDeserializationObjectInputStream.

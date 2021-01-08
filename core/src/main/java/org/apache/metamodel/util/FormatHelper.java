@@ -185,7 +185,7 @@ public final class FormatHelper {
             }
         }
 
-        throw new IllegalArgumentException("String value '" + value + "' not parseable as a " + columnType);
+        throw new IllegalArgumentException("String value '" + value + "' not parsable as a " + columnType);
     }
 
     public static String formatSqlValue(ColumnType columnType, Object value) {

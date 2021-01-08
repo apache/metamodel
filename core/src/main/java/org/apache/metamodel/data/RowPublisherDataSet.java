@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Abstract {@link DataSet} implementation for use in scenarios where a
  * pull-oriented style of reading data is not supported. This implementation
- * instead allows a publshing action to publish rows to the dataset in a
+ * instead allows a publishing action to publish rows to the dataset in a
  * blocking manner, and thereby to adapt without having to load all rows into
  * memory.
  */
@@ -93,7 +93,7 @@ public final class RowPublisherDataSet extends AbstractDataSet {
                     boolean successful = false;
                     try {
                         _publishAction.run(_rowPublisher);
-                        logger.debug("Publshing action finished!");
+                        logger.debug("Publishing action finished!");
                         successful = true;
                     } catch (Exception e) {
                         _rowPublisher.failed(e);
