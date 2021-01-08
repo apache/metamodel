@@ -18,13 +18,15 @@
  */
 package org.apache.metamodel.excel;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
 import org.apache.metamodel.DataContext;
-import org.apache.metamodel.MetaModelException;
 import org.apache.metamodel.MetaModelHelper;
 import org.apache.metamodel.UpdateCallback;
 import org.apache.metamodel.UpdateScript;
@@ -44,26 +46,34 @@ import org.apache.metamodel.util.DateUtils;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.FileResource;
 import org.apache.metamodel.util.Month;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
-import junit.framework.TestCase;
+public class ExcelDataContextTest {
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
 
-public class ExcelDataContextTest extends TestCase {
-
+    @Rule
+    public TestName testName = new TestName();
+    
     /**
      * Creates a copy of a particular file - to avoid changing of Excel files
      * under source control
      * 
      * @param path
      * @return
+     * @throws IOException 
      */
     private File copyOf(String path) {
         final File srcFile = new File(path);
-        final File destFile = new File("target/" + getName() + "-" + srcFile.getName());
+        final File destFile = new File(folder.getRoot(), testName.getMethodName() + "-" + srcFile.getName());
         FileHelper.copy(srcFile, destFile);
         return destFile;
     }
 
+    @Test
     public void testErroneousConstructors() throws Exception {
         try {
             new ExcelDataContext(null);
@@ -81,6 +91,7 @@ public class ExcelDataContextTest extends TestCase {
         }
     }
 
+    @Test
     public void testEmptyFile() throws Exception {
         File file = copyOf("src/test/resources/empty_file.xls");
         ExcelDataContext dc = new ExcelDataContext(file);
@@ -95,6 +106,7 @@ public class ExcelDataContextTest extends TestCase {
         assertSame(file, ((FileResource) dc.getResource()).getFile());
     }
 
+    @Test
     public void testEmptyFileNoHeaderLine() throws Exception {
         DataContext dc = new ExcelDataContext(copyOf("src/test/resources/empty_file.xls"), new ExcelConfiguration(
                 ExcelConfiguration.NO_COLUMN_NAME_LINE, false, false));
@@ -105,6 +117,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(0, table.getColumnCount());
     }
 
+    @Test
     public void testUnexistingHeaderLine() throws Exception {
         DataContext dc = new ExcelDataContext(copyOf("src/test/resources/xls_people.xls"), new ExcelConfiguration(20,
                 true, false));
@@ -115,6 +128,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(0, table.getColumnCount());
     }
 
+    @Test
     public void testSkipEmptyColumns() throws Exception {
         ExcelConfiguration conf = new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, true, true);
         ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/skipped_lines.xlsx"), conf);
@@ -126,6 +140,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals("1", ds.getRow().getValue(0));
     }
 
+    @Test
     public void testDontSkipEmptyLinesNoHeader() throws Exception {
         ExcelConfiguration conf = new ExcelConfiguration(ExcelConfiguration.NO_COLUMN_NAME_LINE, false, true);
         ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/skipped_lines.xlsx"), conf);
@@ -150,6 +165,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals("1", ds.getRow().getValue(0));
     }
 
+    @Test
     public void testDontSkipEmptyLinesAbsoluteHeader() throws Exception {
         ExcelConfiguration conf = new ExcelConfiguration(6, false, true);
         ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/skipped_lines.xlsx"), conf);
@@ -163,6 +179,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals("1", ds.getRow().getValue(0));
     }
 
+    @Test
     public void testInvalidFormula() throws Exception {
         ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/invalid_formula.xls"));
         Table table = dc.getDefaultSchema().getTables().get(0);
@@ -200,6 +217,7 @@ public class ExcelDataContextTest extends TestCase {
         ds.close();
     }
 
+    @Test
     public void testEvaluateFormula() throws Exception {
         ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/xls_formulas.xls"));
 
@@ -276,6 +294,7 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(ds.next());
     }
 
+    @Test
     public void testSingleCellSheet() throws Exception {
         ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/xls_single_cell_sheet.xls"));
 
@@ -290,6 +309,7 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(ds.next());
     }
 
+    @Test
     public void testOpenXlsxFormat() throws Exception {
         ExcelDataContext dc = new ExcelDataContext(copyOf("src/test/resources/Spreadsheet2007.xlsx"));
         Schema schema = dc.getDefaultSchema();
@@ -314,6 +334,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals("[bar, 4, 2010-01-04 00:00:00]", Arrays.toString(objectArrays.get(3)));
     }
 
+    @Test
     public void testConfigurationWithoutHeader() throws Exception {
         File file = copyOf("src/test/resources/xls_people.xls");
         DataContext dc = new ExcelDataContext(file, new ExcelConfiguration(ExcelConfiguration.NO_COLUMN_NAME_LINE,
@@ -337,6 +358,7 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(dataSet.next());
     }
 
+    @Test
     public void testConfigurationNonDefaultColumnNameLineNumber() throws Exception {
         File file = copyOf("src/test/resources/xls_people.xls");
         DataContext dc = new ExcelDataContext(file, new ExcelConfiguration(2, true, true));
@@ -358,6 +380,7 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(dataSet.next());
     }
 
+    @Test
     public void testGetSchemas() throws Exception {
         File file = copyOf("src/test/resources/xls_people.xls");
         DataContext dc = new ExcelDataContext(file);
@@ -379,6 +402,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals("age", columns[3].getName());
     }
 
+    @Test
     public void testMaterializeTable() throws Exception {
         File file = copyOf("src/test/resources/xls_people.xls");
         ExcelDataContext dc = new ExcelDataContext(file);
@@ -401,6 +425,7 @@ public class ExcelDataContextTest extends TestCase {
         assertNull(dataSet.getRow());
     }
 
+    @Test
     public void testMissingValues() throws Exception {
         File file = copyOf("src/test/resources/xls_missing_values.xls");
         DataContext dc = new ExcelDataContext(file);
@@ -425,6 +450,7 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(ds.next());
     }
 
+    @Test
     public void testMissingColumnHeader() throws Exception {
         File file = copyOf("src/test/resources/xls_missing_column_header.xls");
         DataContext dc = new ExcelDataContext(file);
@@ -449,6 +475,7 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(ds.next());
     }
 
+    @Test
     public void testXlsxFormulas() throws Exception {
         File file = copyOf("src/test/resources/formulas.xlsx");
         ExcelDataContext dc = new ExcelDataContext(file);
@@ -525,6 +552,7 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(ds.next());
     }
 
+    @Test
     public void testTicket99defect() throws Exception {
         File file = copyOf("src/test/resources/ticket_199_inventory.xls");
         DataContext dc = new ExcelDataContext(file);
@@ -546,6 +574,7 @@ public class ExcelDataContextTest extends TestCase {
                 Arrays.toString(table.getColumns().toArray()));
     }
 
+    @Test
     public void testInsertInto() throws Exception {
         final File file = copyOf("src/test/resources/xls_people.xls");
 
@@ -600,12 +629,14 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(ds.next());
     }
 
+    @Test
     public void testCreateTableXls() throws Exception {
         // run the same test with both XLS and XLSX (because of different
         // workbook implementations)
         runCreateTableTest(new File("target/xls_people_created.xls"));
     }
 
+    @Test
     public void testCreateTableXlsx() throws Exception {
         // run the same test with both XLS and XLSX (because of different
         // workbook implementations)
@@ -703,6 +734,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(2, dc.getDefaultSchema().getTableCount());
     }
 
+    @Test
     public void testGetStyles() throws Exception {
         DataContext dc = new ExcelDataContext(copyOf("src/test/resources/styles.xlsx"));
         Table table = dc.getDefaultSchema().getTables().get(0);
@@ -766,6 +798,7 @@ public class ExcelDataContextTest extends TestCase {
      * Tests that you can execute a query on a ExcelDataContext even though the
      * schema has not yet been (explicitly) loaded.
      */
+    @Test
     public void testExecuteQueryBeforeLoadingSchema() throws Exception {
         // first use one DataContext to retreive the schema/table/column objects
         ExcelDataContext dc1 = new ExcelDataContext(copyOf("src/test/resources/Spreadsheet2007.xlsx"));
@@ -783,6 +816,7 @@ public class ExcelDataContextTest extends TestCase {
         ds.close();
     }
 
+    @Test
     public void testCustomColumnNames() throws Exception {
         final String firstColumnName = "first";
         final String secondColumnName = "second";
@@ -799,10 +833,12 @@ public class ExcelDataContextTest extends TestCase {
         assertNotNull(table.getColumnByName(thirdColumnName));
     }
 
+    @Test
     public void testDetectingDifferentDataTypesInXls() throws Exception {
         detectingDataTypes("src/test/resources/different_datatypes.xls");
     }
 
+    @Test
     public void testDifferentDataTypesInXlsx() throws Exception {
         detectingDataTypes("src/test/resources/different_datatypes.xlsx");
     }
@@ -831,6 +867,7 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(countDataSet.next());
     }
 
+    @Test
     public void testCellValueWithWrongDatatypeIsSetToNull() {
         // Unless Integers and Doubles are mixed all other incorrect values will be converted to null with a warning
         final DataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
@@ -850,6 +887,7 @@ public class ExcelDataContextTest extends TestCase {
         assertFalse(testWrongDatatypeDataSet.next());
     }
 
+    @Test
     public void testDetectingDataTypeNotSkippingLinesAndColumnsUsingNameLine() {
         final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/skipped_lines.xlsx"),
                 new ExcelConfiguration(6, null, false, false, true, 3));
@@ -859,6 +897,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(ColumnType.INTEGER, table.getColumns().get(7).getType());
     }
 
+    @Test
     public void testDetectingDataTypeNotSkippingLinesAndColumnsNoNameLine() {
         final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/skipped_lines.xlsx"),
                 new ExcelConfiguration(ExcelConfiguration.NO_COLUMN_NAME_LINE, null, false, false, true, 3));
@@ -868,6 +907,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(ColumnType.INTEGER, table.getColumns().get(7).getType());
     }
 
+    @Test
     public void testDetectingDataTypeSkippingLinesAndColumnsUsingNameLine() {
         final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/skipped_lines.xlsx"),
                 new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, true, true, 3));
@@ -876,6 +916,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(ColumnType.INTEGER, table.getColumns().get(1).getType());
     }
 
+    @Test
     public void testDetectingDataTypeSkippingLinesAndColumnsNoNameLine() {
         final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/skipped_lines.xlsx"),
                 new ExcelConfiguration(ExcelConfiguration.NO_COLUMN_NAME_LINE, null, true, true, true, 3));
@@ -884,6 +925,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(ColumnType.INTEGER, table.getColumns().get(1).getType());
     }
 
+    @Test
     public void testToMuchNumberOfLinesToScan() throws Exception {
         final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/skipped_lines.xlsx"),
                 new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, true, true, 4));
@@ -898,6 +940,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(3L, dataSet.getRow().getValue(0));
     }
 
+    @Test
     public void testToMissingValueDoesntEffectDetectedType() throws Exception {
         final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/xls_missing_values.xls"),
                 new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 3));
@@ -919,6 +962,7 @@ public class ExcelDataContextTest extends TestCase {
         assertEquals(12, dataSetColumnD.getRow().getValue(0));
     }
 
+    @Test
     public void testInsertingValueOfValidColumnType() {
         final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
                 new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 19));
@@ -928,7 +972,7 @@ public class ExcelDataContextTest extends TestCase {
         assertTrue(dataSet.next());
     }
 
-    @Test(expected = MetaModelException.class)
+    @Test
     public void testInsertingValueOfInvalidColumnType() {
         final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
                 new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 19));
@@ -936,6 +980,7 @@ public class ExcelDataContextTest extends TestCase {
         dataContext.executeUpdate(new InsertInto(table).value("INTEGER", "this is not an integer"));
     }
 
+    @Test
     public void testUpdatingValueOfValidColumnType() {
         final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
                 new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 19));
@@ -945,7 +990,7 @@ public class ExcelDataContextTest extends TestCase {
         assertTrue(dataSet.next());
     }
 
-    @Test(expected = MetaModelException.class)
+    @Test
     public void testUpdatingValueOfInvalidColumnType() {
         final ExcelDataContext dataContext = new ExcelDataContext(copyOf("src/test/resources/different_datatypes.xls"),
                 new ExcelConfiguration(ExcelConfiguration.DEFAULT_COLUMN_NAME_LINE, null, true, false, true, 19));
