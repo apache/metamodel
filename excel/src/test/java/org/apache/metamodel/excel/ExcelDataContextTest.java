@@ -21,7 +21,6 @@ package org.apache.metamodel.excel;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -64,7 +63,6 @@ public class ExcelDataContextTest {
      * 
      * @param path
      * @return
-     * @throws IOException 
      */
     private File copyOf(String path) {
         final File srcFile = new File(path);
