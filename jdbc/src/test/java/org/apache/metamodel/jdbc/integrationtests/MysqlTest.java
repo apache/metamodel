@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.jdbc.integrationtests;
 
+import static org.junit.Assert.*;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -51,7 +53,6 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * Test case that tests mysql interaction. The test requires the "sakila" sample

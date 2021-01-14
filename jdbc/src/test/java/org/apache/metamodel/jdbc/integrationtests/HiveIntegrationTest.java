@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.jdbc.integrationtests;
 
+import static org.junit.Assert.*;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -36,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 public class HiveIntegrationTest extends AbstractJdbIntegrationTest {
     private static final Logger logger = LoggerFactory.getLogger(HiveIntegrationTest.class);

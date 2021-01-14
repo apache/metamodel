@@ -18,14 +18,10 @@
  */
 package org.apache.metamodel.jdbc.integrationtests;
 
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Set;
-import java.util.stream.Collectors;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import javax.swing.table.TableModel;
-
+import com.google.common.collect.Sets;
 import org.apache.metamodel.data.DataSet;
 import org.apache.metamodel.data.DataSetTableModel;
 import org.apache.metamodel.jdbc.JdbcDataContext;
@@ -35,11 +31,14 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
-
-import com.google.common.collect.Sets;
-
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import javax.swing.table.TableModel;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Integrationtests for Firebird SQL.

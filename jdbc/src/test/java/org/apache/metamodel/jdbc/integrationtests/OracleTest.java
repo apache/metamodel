@@ -12,6 +12,8 @@
  */
 package org.apache.metamodel.jdbc.integrationtests;
 
+import static org.junit.Assert.*;
+
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -44,7 +46,6 @@ import org.apache.metamodel.schema.TableType;
 import com.google.common.collect.Sets;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * Test case that tests oracle interaction. An express edition of the oracle

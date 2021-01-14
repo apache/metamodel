@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.jdbc.integrationtests;
 
+import static org.junit.Assert.*;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -42,7 +44,6 @@ import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * Test case that tests MS SQL Server interaction. The test uses the

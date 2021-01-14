@@ -18,10 +18,11 @@
  */
 package org.apache.metamodel.jdbc.integrationtests;
 
+import static org.junit.Assert.*;
+
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -52,8 +53,6 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * Test case that tests postgresql interaction. The test requires the
@@ -106,7 +105,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         }
         JdbcTestTemplates.interpretationOfNulls(getConnection());
     }
-    
+
     private JdbcDataContext createLimitAndOffsetTestData() {
         final JdbcDataContext dc = new JdbcDataContext(getConnection());
 

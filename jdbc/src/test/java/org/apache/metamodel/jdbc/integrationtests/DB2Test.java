@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.jdbc.integrationtests;
 
+import static org.junit.Assert.*;
+
 import java.util.Arrays;
 
 import org.apache.metamodel.data.DataSet;
@@ -27,7 +29,6 @@ import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * DB2 integration test. This is a read-only integration test, meant to be
