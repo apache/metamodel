@@ -18,15 +18,24 @@
  */
 package org.apache.metamodel.elasticsearch.common;
 
-import junit.framework.TestCase;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.metamodel.data.DataSetHeader;
 import org.apache.metamodel.data.Row;
 import org.apache.metamodel.data.SimpleDataSetHeader;
+import org.apache.metamodel.query.FilterItem;
+import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.schema.ColumnType;
 import org.apache.metamodel.schema.MutableColumn;
+import org.elasticsearch.index.query.QueryBuilder;
 
-import java.util.*;
+import junit.framework.TestCase;
 
 public class ElasticSearchUtilsTest extends TestCase {
 
@@ -59,5 +68,16 @@ public class ElasticSearchUtilsTest extends TestCase {
 
         assertTrue(stringValue instanceof String);
         assertTrue(dateValue instanceof Date);
+    }
+
+    /**
+     * For text-based conditions a 'match' query is recommended (instead of 'term' query).
+     */
+    public void testMatchQueryIsCreatedForTextFilter() {
+        final SelectItem selectItem = new SelectItem(new MutableColumn("column_name", ColumnType.STRING));
+        final FilterItem filterItem = new FilterItem(selectItem, OperatorType.EQUALS_TO, "text-value");
+        final QueryBuilder queryBuilder =
+                ElasticSearchUtils.createQueryBuilderForSimpleWhere(Collections.singletonList(filterItem), null);
+        assertEquals("match", queryBuilder.getName());
     }
 }

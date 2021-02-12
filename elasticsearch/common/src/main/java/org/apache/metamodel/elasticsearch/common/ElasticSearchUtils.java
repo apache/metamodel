@@ -202,6 +202,8 @@ public class ElasticSearchUtils {
                 if (OperatorType.EQUALS_TO.equals(operator)) {
                     if (operand == null) {
                         itemQueryBuilder = getMissingQuery(fieldName);
+                    } else if (column.getType().isLiteral()) {
+                        itemQueryBuilder = QueryBuilders.matchQuery(fieldName, operand);
                     } else {
                         itemQueryBuilder = QueryBuilders.termQuery(fieldName, operand);
                     }
