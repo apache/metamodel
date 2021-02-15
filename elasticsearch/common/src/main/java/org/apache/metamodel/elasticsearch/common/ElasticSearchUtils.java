@@ -216,7 +216,11 @@ public class ElasticSearchUtils {
                     }
                 } else if (OperatorType.IN.equals(operator)) {
                     final List<?> operands = CollectionUtils.toList(operand);
-                    itemQueryBuilder = QueryBuilders.termsQuery(fieldName, operands);
+                    if (column.getType().isLiteral()) {
+                        itemQueryBuilder = QueryBuilders.termQuery(fieldName, operand);
+                    } else {
+                        itemQueryBuilder = QueryBuilders.termsQuery(fieldName, operands);
+                    }
                 } else {
                     // not (yet) support operator types
                     return null;
