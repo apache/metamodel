@@ -73,11 +73,36 @@ public class ElasticSearchUtilsTest extends TestCase {
     /**
      * For text-based conditions a 'match' query is recommended (instead of 'term' query).
      */
-    public void testMatchQueryIsCreatedForTextFilter() {
+    public void testMatchQueryIsCreatedForTextEqualTo() {
         final SelectItem selectItem = new SelectItem(new MutableColumn("column_name", ColumnType.STRING));
         final FilterItem filterItem = new FilterItem(selectItem, OperatorType.EQUALS_TO, "text-value");
         final QueryBuilder queryBuilder =
                 ElasticSearchUtils.createQueryBuilderForSimpleWhere(Collections.singletonList(filterItem), null);
         assertEquals("match", queryBuilder.getName());
+    }
+
+    /**
+     * For text-based conditions a 'match' query is recommended (instead of 'term' query).
+     * In case of 'DIFFERENT_FROM', we need a 'bool' query with 'must not' and 'match' query.
+     */
+    public void testBoolQueryIsCreatedForTextDifferentFrom() {
+        final SelectItem selectItem = new SelectItem(new MutableColumn("column_name", ColumnType.STRING));
+        final FilterItem filterItem = new FilterItem(selectItem, OperatorType.DIFFERENT_FROM, "text-value");
+        final QueryBuilder queryBuilder =
+                ElasticSearchUtils.createQueryBuilderForSimpleWhere(Collections.singletonList(filterItem), null);
+        assertEquals("bool", queryBuilder.getName());
+    }
+
+    /**
+     * For text-based conditions a 'match' query is recommended (instead of 'term' query).
+     * To simulate 'IN' operator, we need a 'bool' query with multiple 'match' queries combined with 'OR'.
+     */
+    public void testBoolQueryIsCreatedForTextIn() {
+        final SelectItem selectItem = new SelectItem(new MutableColumn("column_name", ColumnType.STRING));
+        final FilterItem filterItem =
+                new FilterItem(selectItem, OperatorType.IN, Arrays.asList("text-value-a", "text-value-b"));
+        final QueryBuilder queryBuilder =
+                ElasticSearchUtils.createQueryBuilderForSimpleWhere(Collections.singletonList(filterItem), null);
+        assertEquals("bool", queryBuilder.getName());
     }
 }

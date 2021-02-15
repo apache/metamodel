@@ -170,63 +170,18 @@ public class ElasticSearchUtils {
      * @return a {@link QueryBuilder} if one was produced, or null if the items
      *         could not be pushed down to an ElasticSearch query
      */
-    public static QueryBuilder createQueryBuilderForSimpleWhere(List<FilterItem> whereItems,
-            LogicalOperator logicalOperator) {
+    public static QueryBuilder createQueryBuilderForSimpleWhere(final List<FilterItem> whereItems,
+            final LogicalOperator logicalOperator) {
         if (whereItems.isEmpty()) {
             return QueryBuilders.matchAllQuery();
         }
 
-        List<QueryBuilder> children = new ArrayList<>(whereItems.size());
-        for (FilterItem item : whereItems) {
-            final QueryBuilder itemQueryBuilder;
-
-            if (item.isCompoundFilter()) {
-                final List<FilterItem> childItems = Arrays.asList(item.getChildItems());
-                itemQueryBuilder = createQueryBuilderForSimpleWhere(childItems, item.getLogicalOperator());
-                if (itemQueryBuilder == null) {
-                    // something was not supported, so we have to forfeit here
-                    // too.
-                    return null;
-                }
-            } else {
-                final Column column = item.getSelectItem().getColumn();
-                if (column == null) {
-                    // unsupported type of where item - must have a column
-                    // reference
-                    return null;
-                }
-                final String fieldName = column.getName();
-                final Object operand = item.getOperand();
-                final OperatorType operator = item.getOperator();
-
-                if (OperatorType.EQUALS_TO.equals(operator)) {
-                    if (operand == null) {
-                        itemQueryBuilder = getMissingQuery(fieldName);
-                    } else if (column.getType().isLiteral()) {
-                        itemQueryBuilder = QueryBuilders.matchQuery(fieldName, operand);
-                    } else {
-                        itemQueryBuilder = QueryBuilders.termQuery(fieldName, operand);
-                    }
-                } else if (OperatorType.DIFFERENT_FROM.equals(operator)) {
-                    if (operand == null) {
-                        itemQueryBuilder = getExistsQuery(fieldName);
-                    } else {
-                        itemQueryBuilder = QueryBuilders.boolQuery().mustNot(QueryBuilders.termQuery(fieldName,
-                                operand));
-                    }
-                } else if (OperatorType.IN.equals(operator)) {
-                    final List<?> operands = CollectionUtils.toList(operand);
-                    if (column.getType().isLiteral()) {
-                        itemQueryBuilder = QueryBuilders.termQuery(fieldName, operand);
-                    } else {
-                        itemQueryBuilder = QueryBuilders.termsQuery(fieldName, operands);
-                    }
-                } else {
-                    // not (yet) support operator types
-                    return null;
-                }
+        final List<QueryBuilder> children = new ArrayList<>(whereItems.size());
+        for (final FilterItem item : whereItems) {
+            final QueryBuilder itemQueryBuilder = createFilterItemQueryBuilder(item);
+            if (itemQueryBuilder == null) {
+                return null;
             }
-
             children.add(itemQueryBuilder);
         }
 
@@ -247,6 +202,65 @@ public class ElasticSearchUtils {
         }
 
         return result;
+    }
+
+    private static QueryBuilder createFilterItemQueryBuilder(final FilterItem filterItem) {
+        final QueryBuilder itemQueryBuilder;
+        if (filterItem.isCompoundFilter()) {
+            final List<FilterItem> childItems = Arrays.asList(filterItem.getChildItems());
+            itemQueryBuilder = createQueryBuilderForSimpleWhere(childItems, filterItem.getLogicalOperator());
+        } else {
+            final Column column = filterItem.getSelectItem().getColumn();
+            if (column == null) {
+                // unsupported type of where item - must have a column reference
+                return null;
+            }
+            itemQueryBuilder = createQueryBuilderForOperator(filterItem, column);
+        }
+
+        return itemQueryBuilder;
+    }
+
+    private static QueryBuilder createQueryBuilderForOperator(final FilterItem filterItem, final Column column) {
+        if (OperatorType.EQUALS_TO.equals(filterItem.getOperator())) {
+            if (filterItem.getOperand() == null) {
+                return getMissingQuery(column.getName());
+            } else {
+                return matchOrTermQuery(column, filterItem.getOperand());
+            }
+        } else if (OperatorType.DIFFERENT_FROM.equals(filterItem.getOperator())) {
+            if (filterItem.getOperand() == null) {
+                return getExistsQuery(column.getName());
+            } else {
+                return QueryBuilders.boolQuery().mustNot(matchOrTermQuery(column, filterItem.getOperand()));
+            }
+        } else if (OperatorType.IN.equals(filterItem.getOperator())) {
+            final List<?> operands = CollectionUtils.toList(filterItem.getOperand());
+            if (column.getType().isLiteral()) {
+                return createMultipleValuesQueryBuilder(column.getName(), operands);
+            } else {
+                return QueryBuilders.termsQuery(column.getName(), operands);
+            }
+        } else {
+            // not (yet) supported operator types
+            return null;
+        }
+    }
+
+    private static QueryBuilder matchOrTermQuery(final Column column, final Object operand) {
+        if (column.getType().isLiteral()) {
+            return QueryBuilders.matchQuery(column.getName(), operand);
+        } else {
+            return QueryBuilders.termQuery(column.getName(), operand);
+        }
+    }
+
+    private static QueryBuilder createMultipleValuesQueryBuilder(final String columnName, final List<?> operands) {
+        final BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        for (final Object value : operands) {
+            boolQueryBuilder.should(QueryBuilders.matchQuery(columnName, value.toString()));
+        }
+        return boolQueryBuilder;
     }
 
     public static ColumnType getColumnTypeFromElasticSearchType(final String metaDataFieldType) {
