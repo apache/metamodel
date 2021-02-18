@@ -1,4 +1,4 @@
-### Apache MetaModel [WIP]
+### Apache MetaModel 5.3.3
 
  * [METAMODEL-1233] - Elasticsearch: "term" query is used for text search.
  * [METAMODEL-1229] - FixedWidth works with UrlResource/HttpInputStream.
