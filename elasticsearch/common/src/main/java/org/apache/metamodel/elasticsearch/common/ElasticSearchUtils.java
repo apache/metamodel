@@ -225,8 +225,6 @@ public class ElasticSearchUtils {
         if (OperatorType.EQUALS_TO.equals(filterItem.getOperator())) {
             if (filterItem.getOperand() == null) {
                 return getMissingQuery(column.getName());
-            } else if (filterItem.getOperand().equals("")) {
-                return QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(column.getName()));
             } else {
                 return matchOrTermQuery(column, filterItem.getOperand());
             }
@@ -250,7 +248,7 @@ public class ElasticSearchUtils {
     }
 
     private static QueryBuilder matchOrTermQuery(final Column column, final Object operand) {
-        if (column.getType().isLiteral()) {
+        if (column.getType().isLiteral() && operand != null && !operand.equals("")) {
             return QueryBuilders.matchQuery(column.getName(), operand);
         } else {
             return QueryBuilders.termQuery(column.getName(), operand);
