@@ -225,6 +225,8 @@ public class ElasticSearchUtils {
         if (OperatorType.EQUALS_TO.equals(filterItem.getOperator())) {
             if (filterItem.getOperand() == null) {
                 return getMissingQuery(column.getName());
+            } else if (filterItem.getOperand().equals("")) {
+                return QueryBuilders.boolQuery().mustNot(QueryBuilders.wildcardQuery(column.getName(), "?*"));
             } else {
                 return matchOrTermQuery(column, filterItem.getOperand());
             }
