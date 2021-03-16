@@ -308,19 +308,17 @@ public abstract class AbstractDataContext implements DataContext {
      * @return
      */
     private Column searchColumn(String schemaNameSearch, String columnNameOriginal, String columnNameSearch) {
-        if (columnNameSearch.startsWith(schemaNameSearch)) {
-            Schema schema = getSchemaByName(schemaNameSearch);
-            if (schema != null) {
-                String tableAndColumnPath = columnNameOriginal.substring(schemaNameSearch.length());
-
-                if (tableAndColumnPath.charAt(0) == '.') {
-                    tableAndColumnPath = tableAndColumnPath.substring(1);
-
-                    Column column = getColumn(schema, tableAndColumnPath);
-                    if (column != null) {
-                        return column;
-                    }
-                }
+        final Schema schema = getSchemaByName(schemaNameSearch);
+        if (schema == null) {
+            return null;
+        }
+        if (columnNameSearch.equals(schemaNameSearch)) {
+            return getColumn(schema, columnNameSearch);
+        } else if (columnNameSearch.startsWith(schemaNameSearch)) {
+            String tableAndColumnPath = columnNameOriginal.substring(schemaNameSearch.length());
+            if (tableAndColumnPath.charAt(0) == '.') {
+                tableAndColumnPath = tableAndColumnPath.substring(1);
+                return getColumn(schema, tableAndColumnPath);
             }
         }
         return null;
