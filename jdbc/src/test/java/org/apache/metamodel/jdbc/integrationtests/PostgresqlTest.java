@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.jdbc.integrationtests;
 
+import static org.junit.Assert.*;
+
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -50,6 +52,7 @@ import org.apache.metamodel.schema.Relationship;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * Test case that tests postgresql interaction. The test requires the
@@ -67,6 +70,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         return "postgresql";
     }
 
+    @Test
     public void testTimestampValueInsertSelect() throws Exception {
         if (!isConfigured()) {
             return;
@@ -76,6 +80,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.timestampValueInsertSelect(connection, TimeUnit.MICROSECONDS);
     }
 
+    @Test
     public void testCreateInsertAndUpdate() throws Exception {
         if (!isConfigured()) {
             return;
@@ -84,6 +89,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(getDataContext(), "metamodel_test_simple");
     }
 
+    @Test
     public void testCompositePrimaryKeyCreation() throws Exception {
         if (!isConfigured()) {
             return;
@@ -92,6 +98,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.compositeKeyCreation(getDataContext(), "metamodel_test_composite_keys");
     }
 
+    @Test
     public void testInterpretationOfNull() throws Exception {
         if (!isConfigured()) {
             return;
@@ -127,6 +134,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         return dc;
     }
 
+    @Test
     public void testLimit() throws Exception {
         if (!isConfigured()) {
             return;
@@ -145,6 +153,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         ds.close();
     }
 
+    @Test
     public void testOffset() throws Exception {
         if (!isConfigured()) {
             return;
@@ -163,6 +172,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         ds.close();
     }
 
+    @Test
     public void testLimitAndOffset() throws Exception {
         if (!isConfigured()) {
             return;
@@ -179,6 +189,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         ds.close();
     }
 
+    @Test
     public void testQuotedInsertSyntax() throws Exception {
         if (!isConfigured()) {
             return;
@@ -248,6 +259,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         });
     }
 
+    @Test
     public void testInsertOfDifferentTypes() throws Exception {
         if (!isConfigured()) {
             return;
@@ -330,6 +342,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         }
     }
 
+    @Test
     public void testJsonAndJsonbDatatypes() throws Exception {
         if (!isConfigured()) {
             return;
@@ -380,6 +393,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
      * 
      * @see http://eobjects.org/trac/ticket/829
      */
+    @Test
     public void testBoolean() throws Exception {
         if (!isConfigured()) {
             return;
@@ -423,6 +437,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
      * 
      * @see https://issues.apache.org/jira/browse/METAMODEL-151
      */
+    @Test
     public void testDouble() throws Exception {
         if (!isConfigured()) {
             return;
@@ -477,6 +492,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         }
     }
 
+    @Test
     public void testGetGeneratedKeys() throws Exception {
         if (!isConfigured()) {
             return;
@@ -519,6 +535,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         }
     }
 
+    @Test
     public void testBlob() throws Exception {
         if (!isConfigured()) {
             return;
@@ -582,6 +599,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         }
     }
 
+    @Test
     public void testCreateInsertAndUpdateDateTypes() throws Exception {
         if (!isConfigured()) {
             return;
@@ -592,6 +610,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                 "metamodel_postgresql_test");
     }
 
+    @Test
     public void testCreateTableAndWriteRecords() throws Exception {
         if (!isConfigured()) {
             return;
@@ -658,6 +677,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         }
     }
 
+    @Test
     public void testCreateTableInsertValueFloatForIntColumn() throws Exception {
         if (!isConfigured()) {
             return;
@@ -711,6 +731,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         }
     }
 
+    @Test
     public void testInsertFailureForStringValueForIntegerColumn() throws Exception {
         if (!isConfigured()) {
             return;
@@ -740,6 +761,8 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                 }
             });
 
+            fail("No expected java.sql.BatchUpdateException occurred at case.");
+
         } catch (Exception e) {
             String message = e.getMessage().replaceAll("\n", " ");
             assertEquals(
@@ -758,6 +781,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         }
     }
 
+    @Test
     public void testDatabaseProductName() throws Exception {
         if (!isConfigured()) {
             return;
@@ -767,6 +791,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         assertEquals(JdbcDataContext.DATABASE_PRODUCT_POSTGRESQL, databaseProductName);
     }
 
+    @Test
     public void testGetDefaultSchema() throws Exception {
         if (!isConfigured()) {
             return;
@@ -777,6 +802,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         assertEquals("public", schema.getName());
     }
 
+    @Test
     public void testGetSchema() throws Exception {
         if (!isConfigured()) {
             return;
@@ -854,6 +880,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
                 Arrays.toString(ordersTable.getColumns().toArray()));
     }
 
+    @Test
     public void testExecuteQueryInPublicSchema() throws Exception {
         if (!isConfigured()) {
             return;
@@ -922,6 +949,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         assertEquals("27", tableModel.getValueAt(135, 1).toString());
     }
 
+    @Test
     public void testWhiteSpaceColumns() throws Exception {
         if (!isConfigured()) {
             return;
@@ -931,6 +959,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         assertEquals("\"", metaData.getIdentifierQuoteString());
     }
 
+    @Test
     public void testCreateTableAndInsert1MRecords() throws Exception {
         if (!isConfigured()) {
             return;
@@ -984,6 +1013,7 @@ public class PostgresqlTest extends AbstractJdbIntegrationTest {
         }
     }
 
+    @Test
     public void testCharOfSizeOne() throws Exception {
         if (!isConfigured()) {
             return;

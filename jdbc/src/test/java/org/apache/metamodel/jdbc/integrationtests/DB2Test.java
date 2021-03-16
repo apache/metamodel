@@ -18,6 +18,8 @@
  */
 package org.apache.metamodel.jdbc.integrationtests;
 
+import static org.junit.Assert.*;
+
 import java.util.Arrays;
 
 import org.apache.metamodel.data.DataSet;
@@ -26,6 +28,7 @@ import org.apache.metamodel.jdbc.JdbcTestTemplates;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
+import org.junit.Test;
 
 /**
  * DB2 integration test. This is a read-only integration test, meant to be
@@ -38,6 +41,7 @@ public class DB2Test extends AbstractJdbIntegrationTest {
         return "db2";
     }
 
+    @Test
     public void testCreateInsertAndUpdate() throws Exception {
         if (!isConfigured()) {
             return;
@@ -46,6 +50,7 @@ public class DB2Test extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.simpleCreateInsertUpdateAndDrop(getDataContext(), "metamodel_db2_test");
     }
 
+    @Test
     public void testCompositePrimaryKeyCreation() throws Exception {
         if (!isConfigured()) {
             return;
@@ -54,6 +59,7 @@ public class DB2Test extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.compositeKeyCreation(getDataContext(), "metamodel_test_composite_keys");
     }
 
+    @Test
     public void testInterpretationOfNull() throws Exception {
         if (!isConfigured()) {
             return;
@@ -61,6 +67,7 @@ public class DB2Test extends AbstractJdbIntegrationTest {
         JdbcTestTemplates.interpretationOfNulls(getConnection());
     }
 
+    @Test
     public void testDefaultSchema() throws Exception {
         if (!isConfigured()) {
             return;
@@ -79,6 +86,7 @@ public class DB2Test extends AbstractJdbIntegrationTest {
         ds.close();
     }
 
+    @Test
     public void testMaxRowsOnly() throws Exception {
         if (!isConfigured()) {
             return;
@@ -103,6 +111,7 @@ public class DB2Test extends AbstractJdbIntegrationTest {
         ds.close();
     }
 
+    @Test
     public void testMaxRowsAndOffset() throws Exception {
         if (!isConfigured()) {
             return;

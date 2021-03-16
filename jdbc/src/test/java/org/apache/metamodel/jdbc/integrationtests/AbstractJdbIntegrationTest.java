@@ -28,12 +28,13 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.metamodel.jdbc.JdbcDataContext;
 import org.apache.metamodel.util.FileHelper;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * Convenience super class for integration {@link TestCase}s.
  */
-public abstract class AbstractJdbIntegrationTest extends TestCase {
+public abstract class AbstractJdbIntegrationTest {
 
     private Properties _properties;
     private boolean _configured;
@@ -43,10 +44,8 @@ public abstract class AbstractJdbIntegrationTest extends TestCase {
     private String _driver;
     private Connection _connection;
 
-    @Override
-    protected final void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public final void setUp() throws Exception {
         // create property prefix of the form "jdbc.databasetype.property"
         final String propertyPrefix = "jdbc." + getPropertyPrefix();
 
@@ -84,8 +83,8 @@ public abstract class AbstractJdbIntegrationTest extends TestCase {
         return _url;
     }
 
-    @Override
-    protected final void tearDown() throws Exception {
+    @After
+    public final void tearDown() throws Exception {
         FileHelper.safeClose(_connection);
         _connection = null;
     }
