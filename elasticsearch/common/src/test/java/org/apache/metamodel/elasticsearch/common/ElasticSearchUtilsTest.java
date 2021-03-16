@@ -41,7 +41,7 @@ import junit.framework.TestCase;
 
 public class ElasticSearchUtilsTest extends TestCase {
 
-    public void testAssignDocumentIdForPrimaryKeys() throws Exception {
+    public void testAssignDocumentIdForPrimaryKeys() {
         MutableColumn primaryKeyColumn = new MutableColumn("value1", ColumnType.STRING).setPrimaryKey(true);
         SelectItem primaryKeyItem = new SelectItem(primaryKeyColumn);
         List<SelectItem> selectItems1 = Collections.singletonList(primaryKeyItem);
@@ -55,7 +55,7 @@ public class ElasticSearchUtilsTest extends TestCase {
         assertEquals(primaryKeyValue, documentId);
     }
 
-    public void testCreateRowWithParsableDates() throws Exception {
+    public void testCreateRowWithParsableDates() {
         SelectItem item1 = new SelectItem(new MutableColumn("value1", ColumnType.STRING));
         SelectItem item2 = new SelectItem(new MutableColumn("value2", ColumnType.DATE));
         List<SelectItem> selectItems1 = Arrays.asList(item1, item2);

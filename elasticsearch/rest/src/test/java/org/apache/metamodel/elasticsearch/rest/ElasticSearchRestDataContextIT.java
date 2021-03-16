@@ -21,7 +21,13 @@ package org.apache.metamodel.elasticsearch.rest;
 import static org.apache.metamodel.elasticsearch.rest.ElasticSearchRestDataContext.DEFAULT_TABLE_NAME;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
@@ -48,7 +54,9 @@ import org.apache.metamodel.data.Row;
 import org.apache.metamodel.delete.DeleteFrom;
 import org.apache.metamodel.elasticsearch.common.ElasticSearchUtils;
 import org.apache.metamodel.insert.InsertInto;
+import org.apache.metamodel.query.FilterItem;
 import org.apache.metamodel.query.FunctionType;
+import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
 import org.apache.metamodel.query.parser.QueryParserException;
@@ -60,12 +68,12 @@ import org.apache.metamodel.schema.Schema;
 import org.apache.metamodel.schema.Table;
 import org.apache.metamodel.schema.TableType;
 import org.apache.metamodel.update.Update;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.junit.After;
 import org.junit.Before;
@@ -119,8 +127,60 @@ public class ElasticSearchRestDataContextIT {
         indexOnePeopleDocument("male", 17, 2);
         indexOnePeopleDocument("male", 18, 3);
         indexOnePeopleDocument("male", 18, 4);
+        indexOnePeopleDocument("", 24, 12);
+        indexOnePeopleDocument(null, 25, 13);
 
         dataContext.refreshSchemas();
+    }
+
+    @Test
+    public void testNullAndNotNull() throws IOException {
+        insertPeopleDocuments();
+        final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
+        final Column column = table.getColumnByName("gender");
+
+        final FilterItem nullFilterItem = new FilterItem(new SelectItem(column), OperatorType.EQUALS_TO, null);
+        final FilterItem notNullFilterItem = new FilterItem(new SelectItem(column), OperatorType.DIFFERENT_FROM, null);
+
+        final Query nullQuery =
+                dataContext.query().from(DEFAULT_TABLE_NAME).selectCount().where(nullFilterItem).toQuery();
+        final Query notNullQuery =
+                dataContext.query().from(DEFAULT_TABLE_NAME).selectCount().where(notNullFilterItem).toQuery();
+        final Query allQuery = dataContext.query().from(DEFAULT_TABLE_NAME).selectCount().toQuery();
+
+        final int nullCount =
+                ((Number) MetaModelHelper.executeSingleRowQuery(dataContext, nullQuery).getValue(0)).intValue();
+        final int notNullCount =
+                ((Number) MetaModelHelper.executeSingleRowQuery(dataContext, notNullQuery).getValue(0)).intValue();
+        final int allCount =
+                ((Number) MetaModelHelper.executeSingleRowQuery(dataContext, allQuery).getValue(0)).intValue();
+
+        assertEquals(allCount, nullCount + notNullCount);
+    }
+
+    @Test
+    public void testEmptyAndNotEmpty() throws IOException {
+        insertPeopleDocuments();
+        final Table table = dataContext.getDefaultSchema().getTableByName(DEFAULT_TABLE_NAME);
+        final Column column = table.getColumnByName("gender");
+
+        final FilterItem emptyFilterItem = new FilterItem(new SelectItem(column), OperatorType.EQUALS_TO, "");
+        final FilterItem notEmptyFilterItem = new FilterItem(new SelectItem(column), OperatorType.DIFFERENT_FROM, "");
+
+        final Query emptyQuery =
+                dataContext.query().from(DEFAULT_TABLE_NAME).selectCount().where(emptyFilterItem).toQuery();
+        final Query notEmptyQuery =
+                dataContext.query().from(DEFAULT_TABLE_NAME).selectCount().where(notEmptyFilterItem).toQuery();
+        final Query allQuery = dataContext.query().from(DEFAULT_TABLE_NAME).selectCount().toQuery();
+
+        final int emptyCount =
+                ((Number) MetaModelHelper.executeSingleRowQuery(dataContext, emptyQuery).getValue(0)).intValue();
+        final int notEmptyCount =
+                ((Number) MetaModelHelper.executeSingleRowQuery(dataContext, notEmptyQuery).getValue(0)).intValue();
+        final int allCount =
+                ((Number) MetaModelHelper.executeSingleRowQuery(dataContext, allQuery).getValue(0)).intValue();
+
+        assertEquals(allCount, emptyCount + notEmptyCount);
     }
 
     @Test
@@ -490,13 +550,16 @@ public class ElasticSearchRestDataContextIT {
 
         final Query query = new Query();
         query.from(table);
-        query.groupBy(table.getColumnByName("gender"));
+        final Column genderColumn = table.getColumnByName("gender");
+        query.groupBy(genderColumn);
         query
-                .select(new SelectItem(table.getColumnByName("gender")), new SelectItem(FunctionType.MAX, table
+                .select(new SelectItem(genderColumn), new SelectItem(FunctionType.MAX, table
                         .getColumnByName("age")), new SelectItem(FunctionType.MIN, table.getColumnByName("age")),
                         new SelectItem(FunctionType.COUNT, "*", "total"), new SelectItem(FunctionType.MIN, table
                                 .getColumnByName("id")).setAlias("firstId"));
-        query.orderBy("gender");
+        query.where(new FilterItem(new SelectItem(genderColumn), OperatorType.DIFFERENT_FROM, null));
+        query.where(new FilterItem(new SelectItem(genderColumn), OperatorType.DIFFERENT_FROM, ""));
+        query.orderBy(genderColumn);
         final DataSet data = dataContext.executeQuery(query);
         assertEquals("[" + DEFAULT_TABLE_NAME + ".gender, MAX(" + DEFAULT_TABLE_NAME + ".age), MIN("
                 + DEFAULT_TABLE_NAME + ".age), COUNT(*) AS total, MIN(" + DEFAULT_TABLE_NAME + ".id) AS firstId]",
