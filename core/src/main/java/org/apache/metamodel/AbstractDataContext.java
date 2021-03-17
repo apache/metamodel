@@ -307,7 +307,8 @@ public abstract class AbstractDataContext implements DataContext {
      *            in case of case-insensitive search)
      * @return
      */
-    private Column searchColumn(String schemaNameSearch, String columnNameOriginal, String columnNameSearch) {
+    private Column searchColumn(final String schemaNameSearch, final String columnNameOriginal,
+            final String columnNameSearch) {
         final Schema schema = getSchemaByName(schemaNameSearch);
         if (schema != null) {
             if (columnNameSearch.equals(schemaNameSearch)) {
