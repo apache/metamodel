@@ -155,6 +155,7 @@ public class ElasticSearchRestDataContextIT {
         final int allCount =
                 ((Number) MetaModelHelper.executeSingleRowQuery(dataContext, allQuery).getValue(0)).intValue();
 
+        assertEquals(nullCount, 1);
         assertEquals(allCount, nullCount + notNullCount);
     }
 
@@ -180,6 +181,7 @@ public class ElasticSearchRestDataContextIT {
         final int allCount =
                 ((Number) MetaModelHelper.executeSingleRowQuery(dataContext, allQuery).getValue(0)).intValue();
 
+        assertEquals(emptyCount, 1);
         assertEquals(allCount, emptyCount + notEmptyCount);
     }
 
