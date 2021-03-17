@@ -1,3 +1,9 @@
+### Apache MetaModel [WIP]
+
+ * [METAMODEL-1236] - Elasticsearch: not/empty and is/not null do not work for text based columns
+ * [METAMODEL-1235] - Elasticsearch: "String index out of range" when schema name and column name are equal
+ * [METAMODEL-1232] - Improve stability of Travis CI builds
+
 ### Apache MetaModel 5.3.3
 
  * [METAMODEL-1233] - Elasticsearch: "term" query is used for text search.
