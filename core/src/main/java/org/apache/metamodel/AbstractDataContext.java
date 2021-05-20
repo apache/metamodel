@@ -77,7 +77,7 @@ public abstract class AbstractDataContext implements DataContext {
         for (final String name : schemaNames) {
             final Schema schema = _schemaCache.get(getSchemaCacheKey(name));
             if (schema == null) {
-                final Schema newSchema = getSchemaByName(name);
+                final Schema newSchema = getSchemaByNameInternal(name);
                 if (newSchema == null) {
                     throw new MetaModelException("Declared schema does not exist: " + name);
                 }
