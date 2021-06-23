@@ -26,7 +26,7 @@
     <license rdf:resource="http://spdx.org/licenses/Apache-2.0" />
     <name>Apache MetaModel</name>
     <homepage rdf:resource="http://metamodel.apache.org" />
-    <asfext:pmc rdf:resource="http://metamodel.apache.org" />
+    <asfext:pmc rdf:resource="http://attic.apache.org" />
     <shortdesc>Providing a common interface for discovery, exploration of metadata and querying of different types of data sources.</shortdesc>
     <description>With MetaModel you get a uniform connector and query API to many very different datastore types, including: Relational (JDBC) databases, CSV files, Excel spreadsheets, XML files, JSON files, Fixed width files, MongoDB, Apache CouchDB, Apache HBase, Apache Cassandra, ElasticSearch, OpenOffice.org databases, Salesforce.com, SugarCRM and even collections of plain old Java objects (POJOs).
 
@@ -38,6 +38,7 @@ MetaModel isn't a data mapping framework. Instead we emphasize abstraction of me
     <category rdf:resource="http://projects.apache.org/category/database" />
     <category rdf:resource="http://projects.apache.org/category/big-data" />
     <category rdf:resource="http://projects.apache.org/category/library" />
+    <category rdf:resource="http://projects.apache.org/category/retired" />
     <release>
       <Version>
         <name>MetaModel 4.3.1</name>
