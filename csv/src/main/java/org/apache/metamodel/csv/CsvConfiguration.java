@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.apache.metamodel.schema.naming.ColumnNamingStrategies;
 import org.apache.metamodel.schema.naming.ColumnNamingStrategy;
+import org.apache.metamodel.schema.typing.ColumnTypingStrategies;
+import org.apache.metamodel.schema.typing.ColumnTypingStrategy;
 import org.apache.metamodel.util.BaseObject;
 import org.apache.metamodel.util.FileHelper;
 
@@ -53,6 +55,7 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
     private final boolean failOnInconsistentRowLength;
     private final boolean multilineValues;
     private final ColumnNamingStrategy columnNamingStrategy;
+    private final ColumnTypingStrategy columnTypingStrategy;
 
     public CsvConfiguration() {
         this(DEFAULT_COLUMN_NAME_LINE);
@@ -80,13 +83,15 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
     
     public CsvConfiguration(int columnNameLineNumber, String encoding, char separatorChar, char quoteChar,
             char escapeChar, boolean failOnInconsistentRowLength, boolean multilineValues) {
-        this(columnNameLineNumber, null, encoding, separatorChar, quoteChar, escapeChar, failOnInconsistentRowLength,
-                multilineValues);
+        this(columnNameLineNumber, null, null, encoding, separatorChar, quoteChar, escapeChar,
+                failOnInconsistentRowLength, multilineValues);
     }
 
-    public CsvConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy, String encoding,
-            char separatorChar, char quoteChar, char escapeChar, boolean failOnInconsistentRowLength,
-            boolean multilineValues) {
+
+    public CsvConfiguration(int columnNameLineNumber, ColumnNamingStrategy columnNamingStrategy,
+                             ColumnTypingStrategy columnTypingStrategy, String encoding, char separatorChar,
+                             char quoteChar, char escapeChar, boolean failOnInconsistentRowLength,
+                             boolean multilineValues) {
         this.columnNameLineNumber = columnNameLineNumber;
         this.encoding = encoding;
         this.separatorChar = separatorChar;
@@ -95,6 +100,7 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
         this.failOnInconsistentRowLength = failOnInconsistentRowLength;
         this.multilineValues = multilineValues;
         this.columnNamingStrategy = columnNamingStrategy;
+        this.columnTypingStrategy = columnTypingStrategy;
     }
     
     /**
@@ -106,6 +112,17 @@ public final class CsvConfiguration extends BaseObject implements Serializable {
             return ColumnNamingStrategies.defaultStrategy();
         }
         return columnNamingStrategy;
+    }
+
+    /**
+     * Gets a {@link ColumnTypingStrategy} to use if needed.
+     * @return The configured strategy, or {@link ColumnTypingStrategies#getDefaultStrategy}.
+     */
+    public ColumnTypingStrategy getColumnTypingStrategy() {
+        if (columnTypingStrategy == null) {
+            return ColumnTypingStrategies.getDefaultStrategy();
+        }
+        return columnTypingStrategy;
     }
 
     /**

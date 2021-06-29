@@ -42,11 +42,9 @@ import org.apache.metamodel.query.FunctionType;
 import org.apache.metamodel.query.OperatorType;
 import org.apache.metamodel.query.Query;
 import org.apache.metamodel.query.SelectItem;
-import org.apache.metamodel.schema.Column;
-import org.apache.metamodel.schema.MutableColumn;
-import org.apache.metamodel.schema.Schema;
-import org.apache.metamodel.schema.Table;
+import org.apache.metamodel.schema.*;
 import org.apache.metamodel.schema.naming.CustomColumnNamingStrategy;
+import org.apache.metamodel.schema.typing.CustomColumnTypingStrategy;
 import org.apache.metamodel.util.FileHelper;
 import org.apache.metamodel.util.MutableRef;
 
@@ -492,7 +490,7 @@ public class CsvDataContextTest extends TestCase {
     public void testAlternativeDelimitors() throws Exception {
         File file = new File("src/test/resources/csv_semicolon_singlequote.csv");
         CsvDataContext dc = new CsvDataContext(file, semicolonConfiguration);
-        Table table = dc.getSchemas().get(0).getTables().get(0);
+        Table table = dc.getDefaultSchema().getTables().get(0);
         DataSet dataSet = dc.materializeMainSchemaTable(table, table.getColumns(), -1);
         assertTrue(dataSet.next());
         assertEquals("Row[values=[1, mike, male, 18]]", dataSet.getRow().toString());
@@ -835,6 +833,7 @@ public class CsvDataContextTest extends TestCase {
 
         final CsvConfiguration configuration = new CsvConfiguration(CsvConfiguration.DEFAULT_COLUMN_NAME_LINE,
                 new CustomColumnNamingStrategy(firstColumnName, secondColumnName, thirdColumnName, fourthColumnName),
+                new CustomColumnTypingStrategy(ColumnType.STRING, ColumnType.STRING, ColumnType.STRING, ColumnType.NUMBER),
                 FileHelper.DEFAULT_ENCODING, CsvConfiguration.DEFAULT_SEPARATOR_CHAR,
                 CsvConfiguration.DEFAULT_QUOTE_CHAR, CsvConfiguration.DEFAULT_ESCAPE_CHAR, false, true);
 
